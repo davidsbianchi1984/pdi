@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 700" width="1300" height="700" font-family="Helvetica, Arial, sans-serif">
+  <title>PDI architecture — tenants, encrypted vault, and tamper-evident audit</title>
+  <defs>
+    <linearGradient id="xbg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#141639"/>
+      <stop offset="1" stop-color="#0A0C28"/>
+    </linearGradient>
+    <radialGradient id="xvign" cx="0.5" cy="0.5" r="0.8">
+      <stop offset="0.64" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#06071C" stop-opacity="0.55"/>
+    </radialGradient>
+    <linearGradient id="xcard" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2A2C63"/>
+      <stop offset="1" stop-color="#1C1E4B"/>
+    </linearGradient>
+    <linearGradient id="xvault" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#33367C"/>
+      <stop offset="1" stop-color="#171A46"/>
+    </linearGradient>
+    <filter id="xshadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="9" stdDeviation="11" flood-color="#04051A" flood-opacity="0.6"/>
+    </filter>
+    <filter id="xsoft" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="10"/></filter>
+    <marker id="xarrow" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto">
+      <path d="M1 1 L8.5 5 L1 9 Z" fill="#9FD8E8"/>
+    </marker>
+  </defs>
+
+  <rect width="1300" height="700" fill="url(#xbg)"/>
+
+  <text x="650" y="58" text-anchor="middle" font-size="28" font-weight="bold" fill="#F4E3C8" letter-spacing="1.5">PDI architecture</text>
+  <text x="650" y="86" text-anchor="middle" font-size="15" fill="#8B90A8">Applications store secrets they can trust — encrypted, isolated, and audited</text>
+
+  <!-- ===== tandem clients (top) ===== -->
+  <g filter="url(#xshadow)" text-anchor="middle">
+    <g transform="translate(330 130)">
+      <rect width="240" height="80" rx="16" fill="url(#xcard)"/>
+      <rect width="240" height="80" rx="16" fill="none" stroke="#E8A34D" stroke-opacity="0.5" stroke-width="1.4"/>
+      <text x="120" y="34" font-size="15" font-weight="bold" fill="#F0C482">QRME</text>
+      <text x="120" y="56" font-size="11.5" fill="#8B90A8">profile memories · consents</text>
+    </g>
+    <g transform="translate(730 130)">
+      <rect width="240" height="80" rx="16" fill="url(#xcard)"/>
+      <rect width="240" height="80" rx="16" fill="none" stroke="#7BC47F" stroke-opacity="0.5" stroke-width="1.4"/>
+      <text x="120" y="34" font-size="15" font-weight="bold" fill="#BFEAC8">JIM-mini</text>
+      <text x="120" y="56" font-size="11.5" fill="#8B90A8">biometric events · contacts</text>
+    </g>
+  </g>
+  <g fill="none" stroke="#9FD8E8" stroke-width="2" stroke-opacity="0.7" stroke-linecap="round">
+    <path d="M450 210 C450 240 520 258 590 266" marker-end="url(#xarrow)"/>
+    <path d="M850 210 C850 240 780 258 710 266" marker-end="url(#xarrow)"/>
+  </g>
+  <text x="650" y="245" text-anchor="middle" font-size="11.5" fill="#9FD8E8" letter-spacing="1">HTTPS · bearer token per tenant</text>
+
+  <!-- ===== API gate ===== -->
+  <g transform="translate(500 270)" filter="url(#xshadow)">
+    <rect width="300" height="64" rx="16" fill="#20224F"/>
+    <rect width="300" height="64" rx="16" fill="none" stroke="#9FD8E8" stroke-opacity="0.6" stroke-width="1.6"/>
+    <g transform="translate(30 32)">
+      <rect x="-9" y="-4" width="18" height="15" rx="3.5" fill="#E8A34D"/>
+      <path d="M-5.5 -4 v-5 a5.5 5.5 0 0 1 11 0 v5" fill="none" stroke="#E8A34D" stroke-width="3"/>
+    </g>
+    <text x="60" y="28" font-size="14.5" font-weight="bold" fill="#F4E3C8">PDI API</text>
+    <text x="60" y="48" font-size="11.5" fill="#8B90A8">auth · tenant scoping · never sees other tenants</text>
+  </g>
+
+  <!-- split to vault + audit -->
+  <g fill="none" stroke="#9FD8E8" stroke-width="2" stroke-opacity="0.7" stroke-linecap="round">
+    <path d="M600 334 C560 366 500 380 448 392" marker-end="url(#xarrow)"/>
+    <path d="M700 334 C740 366 800 380 852 392" marker-end="url(#xarrow)"/>
+  </g>
+
+  <!-- ===== vault ===== -->
+  <g transform="translate(160 400)" filter="url(#xshadow)">
+    <rect width="420" height="220" rx="20" fill="url(#xvault)"/>
+    <rect width="420" height="220" rx="20" fill="none" stroke="#8B90A8" stroke-opacity="0.4" stroke-width="1.6"/>
+    <!-- mini vault door -->
+    <g transform="translate(84 110)">
+      <g filter="url(#xsoft)"><circle r="54" fill="#5FA8C0" opacity="0.3"/></g>
+      <circle r="52" fill="#1B1D4E" stroke="#8B90A8" stroke-width="2"/>
+      <circle r="38" fill="none" stroke="#DDE1EC" stroke-opacity="0.6" stroke-width="4"/>
+      <g stroke="#DDE1EC" stroke-opacity="0.7" stroke-width="4" stroke-linecap="round">
+        <line y1="-30" y2="30"/><line x1="-30" x2="30"/>
+      </g>
+      <circle r="13" fill="#12143B" stroke="#E8A34D" stroke-width="2"/>
+    </g>
+    <text x="170" y="52" font-size="16" font-weight="bold" fill="#F4E3C8">Encrypted vault</text>
+    <g font-size="12" fill="#C9CDD8">
+      <text x="170" y="82">AES-256-GCM per record</text>
+      <text x="170" y="106">AAD binds tenant + key</text>
+      <text x="170" y="130">master key via KMS/HSM</text>
+      <text x="170" y="154">ciphertext only on disk</text>
+    </g>
+    <g transform="translate(170 172)" font-family="Courier New, monospace" font-size="10.5">
+      <rect x="-6" y="-14" width="228" height="26" rx="7" fill="#0D0F30"/>
+      <text fill="#9FD8E8" y="3">nonce ‖ ciphertext ‖ tag</text>
+    </g>
+  </g>
+
+  <!-- ===== audit ===== -->
+  <g transform="translate(720 400)" filter="url(#xshadow)">
+    <rect width="420" height="220" rx="20" fill="url(#xvault)"/>
+    <rect width="420" height="220" rx="20" fill="none" stroke="#8B90A8" stroke-opacity="0.4" stroke-width="1.6"/>
+    <text x="30" y="52" font-size="16" font-weight="bold" fill="#F4E3C8">Tamper-evident audit</text>
+    <g font-size="12" fill="#C9CDD8">
+      <text x="30" y="82">append-only log of every access</text>
+      <text x="30" y="106">each entry hashes the previous one</text>
+      <text x="30" y="130">verify() walks the whole chain</text>
+    </g>
+    <!-- hash chain -->
+    <g transform="translate(30 172)">
+      <g fill="#0D0F30" stroke="#9FD8E8" stroke-opacity="0.8" stroke-width="1.4">
+        <rect width="86" height="30" rx="8"/>
+        <rect x="138" width="86" height="30" rx="8"/>
+        <rect x="276" width="86" height="30" rx="8"/>
+      </g>
+      <g font-size="10.5" fill="#9FD8E8" text-anchor="middle" font-family="Courier New, monospace">
+        <text x="43" y="19">put 3f9a…</text>
+        <text x="181" y="19">get b21c…</text>
+        <text x="319" y="19">del e07d…</text>
+      </g>
+      <g stroke="#9FD8E8" stroke-width="1.6" fill="none" stroke-opacity="0.7">
+        <path d="M86 15 H138" marker-end="url(#xarrow)"/>
+        <path d="M224 15 H276" marker-end="url(#xarrow)"/>
+      </g>
+    </g>
+    <!-- broken-link alarm -->
+    <g transform="translate(388 60)">
+      <circle r="13" fill="#33201F" stroke="#D96A6A" stroke-width="1.6"/>
+      <text y="4" text-anchor="middle" font-size="12" fill="#D96A6A" font-weight="bold">!</text>
+    </g>
+  </g>
+
+  <text x="650" y="668" text-anchor="middle" font-size="13.5" fill="#8B90A8">A stolen database file yields nothing readable; a rewritten log breaks its own chain.</text>
+
+  <rect width="1300" height="700" fill="url(#xvign)"/>
+</svg>

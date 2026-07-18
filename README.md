@@ -1,5 +1,7 @@
 # Private Data Infrastructure (PDI)
 
+![PDI — Private Data Infrastructure](assets/cover.svg)
+
 A standalone **secure private data platform** (the "Private Data Infrastructure"
 proposal for Any Corporation): a private, encrypted data vault with a
 tamper-evident audit log and a tenant registry. It is the infrastructure layer
@@ -71,3 +73,9 @@ a tandem run where a simulated AI system uses `PDIClient`.
 Real facility provisioning, HSM/KMS integration, replication/redundancy across
 sites, and billing — represented structurally (deployment record, snapshot
 export), not as live infrastructure.
+
+## Architecture
+
+![PDI architecture — tenants, encrypted vault, tamper-evident audit](assets/architecture.svg)
+
+![PDI encryption flow — seal, store, audit](assets/encryption-flow.svg)

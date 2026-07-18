@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640" font-family="Helvetica, Arial, sans-serif">
+  <title>PDI — Private Data Infrastructure</title>
+  <defs>
+    <linearGradient id="dbg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0A0C28"/>
+      <stop offset="0.55" stop-color="#141639"/>
+      <stop offset="1" stop-color="#1E2050"/>
+    </linearGradient>
+    <radialGradient id="dvign" cx="0.5" cy="0.5" r="0.75">
+      <stop offset="0.62" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#06071C" stop-opacity="0.6"/>
+    </radialGradient>
+    <radialGradient id="dhalo" cx="0.5" cy="0.48" r="0.55">
+      <stop offset="0" stop-color="#9FD8E8" stop-opacity="0.28"/>
+      <stop offset="0.55" stop-color="#5FA8C0" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#5FA8C0" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="dvault" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3A3D7E"/>
+      <stop offset="1" stop-color="#191B47"/>
+    </linearGradient>
+    <linearGradient id="ddoor" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2E3170"/>
+      <stop offset="1" stop-color="#1B1D4E"/>
+    </linearGradient>
+    <linearGradient id="dsteel" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#8B90A8"/>
+      <stop offset="0.5" stop-color="#DDE1EC"/>
+      <stop offset="1" stop-color="#8B90A8"/>
+    </linearGradient>
+    <filter id="dsoft" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="12"/></filter>
+    <filter id="dsoft2" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="2.5"/></filter>
+    <filter id="dshadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#04051A" flood-opacity="0.65"/>
+    </filter>
+  </defs>
+
+  <rect width="1280" height="640" fill="url(#dbg)"/>
+  <ellipse cx="810" cy="310" rx="460" ry="320" fill="url(#dhalo)"/>
+
+  <!-- hex lattice hint -->
+  <g stroke="#5FA8C0" stroke-opacity="0.14" fill="none" stroke-width="1">
+    <path d="M100 90 l22 -13 22 13 v26 l-22 13 -22 -13 Z"/>
+    <path d="M166 129 l22 -13 22 13 v26 l-22 13 -22 -13 Z"/>
+    <path d="M100 168 l22 -13 22 13 v26 l-22 13 -22 -13 Z"/>
+    <path d="M1130 440 l22 -13 22 13 v26 l-22 13 -22 -13 Z"/>
+    <path d="M1064 479 l22 -13 22 13 v26 l-22 13 -22 -13 Z"/>
+  </g>
+  <g fill="#9FD8E8" opacity="0.5">
+    <circle cx="150" cy="330" r="1.6"/><circle cx="240" cy="470" r="1.3"/><circle cx="1210" cy="150" r="1.6"/>
+    <circle cx="1120" cy="80" r="1.3"/><circle cx="1240" cy="560" r="1.3"/>
+  </g>
+
+  <!-- ===== vault door ===== -->
+  <g transform="translate(810 310)">
+    <g filter="url(#dsoft)"><circle r="180" fill="#5FA8C0" opacity="0.25"/></g>
+    <circle r="182" fill="url(#dvault)" filter="url(#dshadow)"/>
+    <circle r="182" fill="none" stroke="#8B90A8" stroke-opacity="0.5" stroke-width="2"/>
+    <circle r="156" fill="url(#ddoor)"/>
+    <circle r="156" fill="none" stroke="#DDE1EC" stroke-opacity="0.25" stroke-width="1.4"/>
+    <!-- rivets -->
+    <g fill="#C9CDD8" opacity="0.7">
+      <circle cx="0" cy="-169" r="4"/><circle cx="119" cy="-119" r="4"/><circle cx="169" cy="0" r="4"/>
+      <circle cx="119" cy="119" r="4"/><circle cx="0" cy="169" r="4"/><circle cx="-119" cy="119" r="4"/>
+      <circle cx="-169" cy="0" r="4"/><circle cx="-119" cy="-119" r="4"/>
+    </g>
+    <!-- spoke handle -->
+    <g stroke="url(#dsteel)" stroke-width="10" stroke-linecap="round">
+      <line x1="0" y1="-96" x2="0" y2="96"/>
+      <line x1="-96" y1="0" x2="96" y2="0"/>
+      <line x1="-68" y1="-68" x2="68" y2="68"/>
+      <line x1="-68" y1="68" x2="68" y2="-68"/>
+    </g>
+    <circle r="104" fill="none" stroke="url(#dsteel)" stroke-width="8"/>
+    <!-- hub with keyhole/lock -->
+    <circle r="46" fill="#12143B" stroke="#DDE1EC" stroke-opacity="0.5" stroke-width="2"/>
+    <g>
+      <rect x="-14" y="-4" width="28" height="24" rx="5" fill="#E8A34D"/>
+      <path d="M-9 -4 v-8 a9 9 0 0 1 18 0 v8" fill="none" stroke="#E8A34D" stroke-width="5"/>
+      <circle cy="6" r="3.4" fill="#12143B"/>
+      <rect x="-1.6" y="6" width="3.2" height="8" rx="1.6" fill="#12143B"/>
+    </g>
+    <!-- cipher ring -->
+    <g fill="#9FD8E8" font-size="10" opacity="0.65" text-anchor="middle" font-family="Courier New, monospace">
+      <text x="0" y="-136">A E S · 2 5 6 · G C M</text>
+      <text x="0" y="146" opacity="0.8">n o n c e · a a d · t a g</text>
+    </g>
+  </g>
+
+  <!-- tenant cells (left) -->
+  <g transform="translate(430 200)" filter="url(#dshadow)">
+    <rect width="150" height="54" rx="12" fill="#20224F" stroke="#5FA8C0" stroke-opacity="0.5" stroke-width="1.4"/>
+    <circle cx="24" cy="27" r="9" fill="#9FD8E8" opacity="0.85"/>
+    <text x="44" y="24" font-size="12" fill="#C9CDD8" font-weight="bold">tenant A</text>
+    <text x="44" y="41" font-size="10.5" fill="#8B90A8">isolated keys</text>
+  </g>
+  <g transform="translate(400 290) " filter="url(#dshadow)">
+    <rect width="150" height="54" rx="12" fill="#20224F" stroke="#5FA8C0" stroke-opacity="0.5" stroke-width="1.4"/>
+    <circle cx="24" cy="27" r="9" fill="#E8A34D" opacity="0.85"/>
+    <text x="44" y="24" font-size="12" fill="#C9CDD8" font-weight="bold">tenant B</text>
+    <text x="44" y="41" font-size="10.5" fill="#8B90A8">isolated keys</text>
+  </g>
+  <g transform="translate(430 380)" filter="url(#dshadow)">
+    <rect width="150" height="54" rx="12" fill="#20224F" stroke="#5FA8C0" stroke-opacity="0.5" stroke-width="1.4"/>
+    <circle cx="24" cy="27" r="9" fill="#C9CDD8" opacity="0.85"/>
+    <text x="44" y="24" font-size="12" fill="#C9CDD8" font-weight="bold">tenant C</text>
+    <text x="44" y="41" font-size="10.5" fill="#8B90A8">isolated keys</text>
+  </g>
+  <g stroke="#5FA8C0" stroke-opacity="0.4" stroke-width="1.4" fill="none" stroke-dasharray="2 7" stroke-linecap="round">
+    <path d="M580 227 C630 240 650 260 664 280"/>
+    <path d="M550 317 C596 317 620 314 640 312"/>
+    <path d="M580 407 C630 394 650 372 664 352"/>
+  </g>
+
+  <!-- audit chain (bottom) -->
+  <g transform="translate(0 560)">
+    <g stroke="#9FD8E8" stroke-opacity="0.55" stroke-width="1.6" fill="none">
+      <path d="M330 0 H460 M520 0 H650 M710 0 H840 M900 0 H1010"/>
+    </g>
+    <g fill="#12143B" stroke="#9FD8E8" stroke-opacity="0.8" stroke-width="1.6">
+      <rect x="460" y="-14" width="60" height="28" rx="8"/>
+      <rect x="650" y="-14" width="60" height="28" rx="8"/>
+      <rect x="840" y="-14" width="60" height="28" rx="8"/>
+    </g>
+    <g font-size="10.5" fill="#9FD8E8" text-anchor="middle" font-family="Courier New, monospace">
+      <text x="490" y="4">3f9a…</text><text x="680" y="4">b21c…</text><text x="870" y="4">e07d…</text>
+    </g>
+    <text x="1046" y="4" font-size="11.5" fill="#8B90A8">tamper-evident audit chain</text>
+  </g>
+
+  <!-- wordmark -->
+  <g transform="translate(72 110)">
+    <text font-size="56" font-weight="bold" letter-spacing="6" fill="#F4E3C8">PDI</text>
+    <text y="32" font-size="17" fill="#C9CDD8" opacity="0.92">Private Data Infrastructure</text>
+    <text y="58" font-size="13.5" fill="#8B90A8">encrypted at rest · isolated per tenant · audited by hash chain</text>
+    <rect x="2" y="74" width="64" height="3" rx="1.5" fill="#9FD8E8"/>
+  </g>
+
+  <rect width="1280" height="640" fill="url(#dvign)"/>
+</svg>
