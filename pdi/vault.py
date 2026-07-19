@@ -41,9 +41,13 @@ def create_tenant(name: str) -> dict:
 
 def tenant_by_token(token: str) -> dict | None:
     """Resolve a token to its tenant. The primary token carries the 'write'
-    role; scoped tokens carry the role they were issued with."""
+    role; scoped tokens carry the role they were issued with. Soft-deleted
+    tenants (deleted_at set) resolve to None — their data is unreachable
+    during the recovery window until wiped or restored."""
     conn = db.connect()
-    row = conn.execute("SELECT * FROM tenants WHERE token=?", (token,)).fetchone()
+    row = conn.execute(
+        "SELECT * FROM tenants WHERE token=? AND deleted_at IS NULL",
+        (token,)).fetchone()
     if row:
         return {**dict(row), "role": "write"}
     scoped = conn.execute(
@@ -64,6 +68,46 @@ def issue_token(tenant_id: str, role: str) -> dict:
     conn.commit()
     audit.record("token.issue", tenant_id=tenant_id, ref=role)
     return {"tenant_id": tenant_id, "role": role, "token": token}
+
+
+def delete_tenant(tenant_id: str, mode: str) -> dict | None:
+    """Tenant deletion. ``soft`` sets a tombstone (data retained, access cut,
+    restorable during the recovery window); ``wipe`` permanently removes the
+    tenant's records, scoped tokens, and the tenant row. Both are audited."""
+    conn = db.connect()
+    row = conn.execute("SELECT id FROM tenants WHERE id=?",
+                       (tenant_id,)).fetchone()
+    if row is None:
+        return None
+    if mode == "wipe":
+        records = conn.execute(
+            "DELETE FROM records WHERE tenant_id=?", (tenant_id,)).rowcount
+        conn.execute("DELETE FROM tenant_tokens WHERE tenant_id=?", (tenant_id,))
+        conn.execute("DELETE FROM tenants WHERE id=?", (tenant_id,))
+        conn.commit()
+        audit.record("tenant.wipe", tenant_id=tenant_id, ref=str(records))
+        return {"tenant_id": tenant_id, "mode": "wipe", "records_wiped": records}
+    conn.execute("UPDATE tenants SET deleted_at=? WHERE id=?",
+                 (db.utcnow(), tenant_id))
+    conn.commit()
+    audit.record("tenant.soft_delete", tenant_id=tenant_id)
+    return {"tenant_id": tenant_id, "mode": "soft",
+            "recoverable": True, "note": "restore with POST /tenants/{id}/restore"}
+
+
+def restore_tenant(tenant_id: str) -> dict | None:
+    """Undo a soft-delete during the recovery window."""
+    conn = db.connect()
+    row = conn.execute(
+        "SELECT deleted_at FROM tenants WHERE id=?", (tenant_id,)).fetchone()
+    if row is None:
+        return None
+    if row["deleted_at"] is None:
+        return {"tenant_id": tenant_id, "restored": False, "note": "not deleted"}
+    conn.execute("UPDATE tenants SET deleted_at=NULL WHERE id=?", (tenant_id,))
+    conn.commit()
+    audit.record("tenant.restore", tenant_id=tenant_id)
+    return {"tenant_id": tenant_id, "restored": True}
 
 
 def revoke_token(token: str) -> bool:

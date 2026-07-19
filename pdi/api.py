@@ -77,6 +77,25 @@ def create_app() -> FastAPI:
         if not vault.revoke_token(token):
             raise HTTPException(404, "token not found")
 
+    @app.delete("/tenants/{tenant_id}")
+    def delete_tenant(tenant_id: str, mode: str = "soft",
+                      _: None = Depends(_admin)) -> dict:
+        # mode=soft (default) tombstones with a recovery window; mode=wipe
+        # permanently removes the tenant's data. Both are audited.
+        if mode not in ("soft", "wipe"):
+            raise HTTPException(422, "mode must be 'soft' or 'wipe'")
+        result = vault.delete_tenant(tenant_id, mode)
+        if result is None:
+            raise HTTPException(404, "tenant not found")
+        return result
+
+    @app.post("/tenants/{tenant_id}/restore")
+    def restore_tenant(tenant_id: str, _: None = Depends(_admin)) -> dict:
+        result = vault.restore_tenant(tenant_id)
+        if result is None:
+            raise HTTPException(404, "tenant not found")
+        return result
+
     # -- data plane (tenant-scoped, encrypted at rest) ----------------------
 
     @app.put("/records")

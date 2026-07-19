@@ -66,3 +66,31 @@ def test_admin_token_guards_tenant_creation(client, monkeypatch):
     ok = client.post("/tenants", json={"name": "cloud-model"},
                      headers={"Authorization": "Bearer admin_secret"})
     assert ok.status_code == 201 and ok.json()["token"].startswith("pdi_")
+
+
+def test_tenant_soft_delete_and_restore(client):
+    token = new_tenant(client)
+    client.put("/records", json={"key": "k", "value": "v"}, headers=_auth(token))
+    tenant = client.get("/audit", headers=_auth(token)).json()[0]["tenant_id"]
+
+    # Soft delete: token stops resolving, data retained.
+    r = client.delete(f"/tenants/{tenant}")
+    assert r.status_code == 200 and r.json()["mode"] == "soft"
+    assert client.get("/records/k", headers=_auth(token)).status_code == 401
+
+    # Restore within the window: access returns, data intact.
+    assert client.post(f"/tenants/{tenant}/restore").json()["restored"] is True
+    assert client.get("/records/k", headers=_auth(token)).json()["value"] == "v"
+
+
+def test_tenant_wipe_is_permanent(client):
+    token = new_tenant(client)
+    client.put("/records", json={"key": "k", "value": "v"}, headers=_auth(token))
+    tenant = client.get("/audit", headers=_auth(token)).json()[0]["tenant_id"]
+
+    r = client.delete(f"/tenants/{tenant}", params={"mode": "wipe"})
+    assert r.status_code == 200 and r.json()["records_wiped"] == 1
+    assert client.get("/records/k", headers=_auth(token)).status_code == 401
+    # A wiped tenant cannot be restored.
+    assert client.post(f"/tenants/{tenant}/restore").status_code == 404
+    assert client.delete(f"/tenants/{tenant}").status_code == 404

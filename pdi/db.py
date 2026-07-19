@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS tenants (
     id          TEXT PRIMARY KEY,
     name        TEXT NOT NULL,   -- integrating system, e.g. "jim-mini"
     token       TEXT NOT NULL UNIQUE,   -- bearer token presented on requests
+    deleted_at  TEXT,            -- soft-delete tombstone (recovery window)
     created_at  TEXT NOT NULL
 );
 
