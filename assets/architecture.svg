@@ -1,5 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 700" width="1300" height="700" font-family="Helvetica, Arial, sans-serif">
-  <title>PDI architecture — tenants, encrypted vault, and tamper-evident audit</title>
+<svg role="img" aria-labelledby="t d" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 700" width="1300" height="700" font-family="Helvetica, Arial, sans-serif">
+  <title id="t">PDI architecture — tenants, encrypted vault, and tamper-evident audit</title>
+  <desc id="d">PDI architecture — tenants, encrypted vault, and tamper-evident audit. Hand-built vector illustration from the QRME product family design system.</desc>
   <defs>
     <linearGradient id="xbg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#141639"/>

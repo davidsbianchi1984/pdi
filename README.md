@@ -66,6 +66,13 @@ secrets in PDI over HTTP — e.g. JIM-mini keeping a user's emergency contact in
 the encrypted vault instead of its own database. The AI systems never import
 PDI internals.
 
+## Configuration
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `PDI_DB` | `pdi.db` | SQLite database path (ciphertext only) |
+| `PDI_MASTER_KEY` | — | Required: base64-encoded 32-byte AES-256 key (use a KMS/HSM in production) |
+
 ## Test
 
 ```bash
@@ -87,3 +94,20 @@ export), not as live infrastructure.
 ![PDI architecture — tenants, encrypted vault, tamper-evident audit](assets/architecture.svg)
 
 ![PDI encryption flow — seal, store, audit](assets/encryption-flow.svg)
+
+## Related projects
+
+Three separate products, each standalone, interoperating only over HTTP —
+see [docs/tandem.md](docs/tandem.md) for the full architecture:
+
+- [**qrme**](https://github.com/davidsbianchi1984/qrme) — AI synthetic
+  profiles: relationship-aware, remembered, moderated.
+- [**jim-mini**](https://github.com/davidsbianchi1984/jim-mini) — Guardian
+  personal guidance: monitor, predict, guide, escalate; can delegate
+  specialist guidance to QRME.
+- [**pdi**](https://github.com/davidsbianchi1984/pdi) — Private Data
+  Infrastructure: the encrypted vault both AI systems can run on top of.
+
+## License
+
+MIT © 2026 David Bianchi — see [LICENSE](LICENSE).
