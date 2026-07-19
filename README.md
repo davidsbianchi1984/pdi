@@ -7,7 +7,9 @@ proposal for Any Corporation): a private, encrypted data vault with a
 tamper-evident audit log and a tenant registry. It is the infrastructure layer
 that AI systems such as QRME and JIM-mini can *optionally* run on top of —
 storing sensitive data in PDI's encrypted vault instead of their own databases,
-reached only over PDI's HTTP API. See [docs/tandem.md](docs/tandem.md).
+reached only over PDI's HTTP API. JIM-mini ships this integration today —
+its medical and context payloads land here as a tenant. See
+[docs/tandem.md](docs/tandem.md).
 
 ## What it provides
 

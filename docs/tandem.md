@@ -44,7 +44,7 @@ colocation deployment, optional AI-system integration).
 
 An AI system (JIM or QRME) can *optionally* use PDI as its secure store for
 sensitive data (emergency contacts, secrets) instead of keeping it in its own
-database — reached only over PDI's HTTP API via `pdi/client.py`. The AI systems
+database — reached only over PDI's HTTP API — `pdi/client.py` here, or the integrating system's own client (JIM-mini ships `jim/pdi_client.py`, configured with `JIM_PDI_URL` + `JIM_PDI_TOKEN`, and vaults its medical and context payloads under `jim/{user}/…` keys). The AI systems
 do not depend on PDI to function; PDI is the "run on top of" infrastructure
 layer they integrate with when deployed in a private environment.
 
