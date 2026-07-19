@@ -21,7 +21,12 @@ source material — each as its own tenant with its own token. See
   data is strictly namespaced per tenant (no cross-tenant reads).
 - **Tamper-evident audit log** — every access is recorded in an append-only,
   SHA-256 hash-chained log; `GET /audit/verify` detects any retroactive edit.
-- **Disaster-recovery snapshot** — `GET /snapshot` exports ciphertext only.
+- **Disaster-recovery snapshot & restore** — `GET /snapshot` exports
+  ciphertext only; `POST /restore` reinserts a snapshot after a loss, with
+  AAD still binding every record to its tenant + key.
+- **Role-based access control** — `POST /tenants/{id}/tokens` issues scoped
+  `read`/`write` tokens; read tokens cannot write or delete, and
+  `DELETE /tokens/{token}` revokes instantly.
 - **Deployment record** — models the on-premises vs. colocation (Tier III+)
   options from the proposal.
 

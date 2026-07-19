@@ -10,7 +10,8 @@ from __future__ import annotations
 from fastapi import Depends, FastAPI, Header, HTTPException
 
 from . import audit, vault
-from .models import DeploymentCreate, RecordPut, TenantCreate
+from .models import (DeploymentCreate, RecordPut, SnapshotRestore,
+                     TenantCreate, TokenIssue)
 
 
 def _tenant(authorization: str = Header(default="")) -> dict:
@@ -19,6 +20,12 @@ def _tenant(authorization: str = Header(default="")) -> dict:
     tenant = vault.tenant_by_token(authorization[len("Bearer "):])
     if tenant is None:
         raise HTTPException(401, "invalid tenant token")
+    return tenant
+
+
+def _writer(tenant: dict = Depends(_tenant)) -> dict:
+    if tenant.get("role") != "write":
+        raise HTTPException(403, "this token is read-only")
     return tenant
 
 
@@ -40,10 +47,20 @@ def create_app() -> FastAPI:
         # Returns the tenant token once — the integrating system stores it.
         return vault.create_tenant(body.name)
 
+    @app.post("/tenants/{tenant_id}/tokens", status_code=201)
+    def issue_token(tenant_id: str, body: TokenIssue) -> dict:
+        # Role-based access control: scoped read or write tokens per tenant.
+        return vault.issue_token(tenant_id, body.role)
+
+    @app.delete("/tokens/{token}", status_code=204)
+    def revoke_token(token: str) -> None:
+        if not vault.revoke_token(token):
+            raise HTTPException(404, "token not found")
+
     # -- data plane (tenant-scoped, encrypted at rest) ----------------------
 
     @app.put("/records")
-    def put_record(body: RecordPut, tenant: dict = Depends(_tenant)) -> dict:
+    def put_record(body: RecordPut, tenant: dict = Depends(_writer)) -> dict:
         return vault.put(tenant, body.key, body.value)
 
     @app.get("/records/{key:path}")
@@ -54,7 +71,7 @@ def create_app() -> FastAPI:
         return rec
 
     @app.delete("/records/{key:path}", status_code=204)
-    def delete_record(key: str, tenant: dict = Depends(_tenant)) -> None:
+    def delete_record(key: str, tenant: dict = Depends(_writer)) -> None:
         if not vault.delete(tenant, key):
             raise HTTPException(404, "record not found")
 
@@ -65,6 +82,12 @@ def create_app() -> FastAPI:
     @app.get("/snapshot")
     def snapshot(tenant: dict = Depends(_tenant)) -> dict:
         return vault.export_snapshot(tenant)
+
+    @app.post("/restore")
+    def restore(body: SnapshotRestore, tenant: dict = Depends(_writer)) -> dict:
+        # Disaster recovery: reinsert a ciphertext-only snapshot.
+        return vault.restore_snapshot(
+            tenant, [r.model_dump() for r in body.records])
 
     # -- compliance ---------------------------------------------------------
 

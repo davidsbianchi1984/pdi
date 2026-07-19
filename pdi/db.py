@@ -30,6 +30,16 @@ CREATE TABLE IF NOT EXISTS tenants (
     created_at  TEXT NOT NULL
 );
 
+-- Additional scoped tokens per tenant (role-based access control):
+-- 'read' tokens can only read; the tenant's primary token is 'write'.
+CREATE TABLE IF NOT EXISTS tenant_tokens (
+    token       TEXT PRIMARY KEY,
+    tenant_id   TEXT NOT NULL REFERENCES tenants(id),
+    role        TEXT NOT NULL,   -- read | write
+    revoked     INTEGER NOT NULL DEFAULT 0,
+    created_at  TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS records (
     id          TEXT PRIMARY KEY,
     tenant_id   TEXT NOT NULL REFERENCES tenants(id),

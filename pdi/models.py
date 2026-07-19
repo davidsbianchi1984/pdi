@@ -21,3 +21,17 @@ class TenantCreate(BaseModel):
 class RecordPut(BaseModel):
     key: str
     value: str    # plaintext from the caller; sealed at rest by PDI
+
+
+class TokenIssue(BaseModel):
+    role: Literal["read", "write"]
+
+
+class SnapshotRecord(BaseModel):
+    key: str
+    ciphertext: str
+    updated_at: str | None = None
+
+
+class SnapshotRestore(BaseModel):
+    records: list[SnapshotRecord]

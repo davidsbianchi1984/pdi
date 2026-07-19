@@ -40,10 +40,40 @@ def create_tenant(name: str) -> dict:
 
 
 def tenant_by_token(token: str) -> dict | None:
-    row = db.connect().execute(
-        "SELECT * FROM tenants WHERE token=?", (token,)
+    """Resolve a token to its tenant. The primary token carries the 'write'
+    role; scoped tokens carry the role they were issued with."""
+    conn = db.connect()
+    row = conn.execute("SELECT * FROM tenants WHERE token=?", (token,)).fetchone()
+    if row:
+        return {**dict(row), "role": "write"}
+    scoped = conn.execute(
+        "SELECT t.*, s.role FROM tenant_tokens s JOIN tenants t"
+        " ON t.id = s.tenant_id WHERE s.token=? AND s.revoked=0", (token,)
     ).fetchone()
-    return dict(row) if row else None
+    return dict(scoped) if scoped else None
+
+
+def issue_token(tenant_id: str, role: str) -> dict:
+    """Role-based access control: issue an additional scoped token."""
+    conn = db.connect()
+    token = "pdi_" + secrets.token_urlsafe(24)
+    conn.execute(
+        "INSERT INTO tenant_tokens (token, tenant_id, role, revoked, created_at)"
+        " VALUES (?,?,?,0,?)", (token, tenant_id, role, db.utcnow()),
+    )
+    conn.commit()
+    audit.record("token.issue", tenant_id=tenant_id, ref=role)
+    return {"tenant_id": tenant_id, "role": role, "token": token}
+
+
+def revoke_token(token: str) -> bool:
+    conn = db.connect()
+    changed = conn.execute(
+        "UPDATE tenant_tokens SET revoked=1 WHERE token=?", (token,)).rowcount
+    conn.commit()
+    if changed:
+        audit.record("token.revoke")
+    return changed > 0
 
 
 # -- encrypted records ------------------------------------------------------
@@ -102,6 +132,28 @@ def list_keys(tenant: dict) -> list[str]:
         "SELECT key FROM records WHERE tenant_id=? ORDER BY key", (tenant["id"],)
     ).fetchall()
     return [r["key"] for r in rows]
+
+
+def restore_snapshot(tenant: dict, records: list[dict]) -> dict:
+    """Disaster-recovery restore: reinsert ciphertext records exported by
+    export_snapshot. Plaintext never appears — AAD still binds each record
+    to this tenant + key, so a snapshot can only restore where it belongs."""
+    conn = db.connect()
+    restored = 0
+    now = db.utcnow()
+    for record in records:
+        conn.execute(
+            "INSERT INTO records (id, tenant_id, key, ciphertext, created_at,"
+            " updated_at) VALUES (?,?,?,?,?,?)"
+            " ON CONFLICT (tenant_id, key) DO UPDATE SET"
+            " ciphertext=excluded.ciphertext, updated_at=excluded.updated_at",
+            (db.new_id("rec"), tenant["id"], record["key"],
+             record["ciphertext"], now, record.get("updated_at", now)),
+        )
+        restored += 1
+    conn.commit()
+    audit.record("snapshot.restore", tenant_id=tenant["id"], ref=str(restored))
+    return {"tenant_id": tenant["id"], "restored": restored}
 
 
 def export_snapshot(tenant: dict) -> dict:
