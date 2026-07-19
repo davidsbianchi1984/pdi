@@ -31,6 +31,10 @@ source material — each as its own tenant with its own token. See
 - **Role-based access control** — `POST /tenants/{id}/tokens` issues scoped
   `read`/`write` tokens; read tokens cannot write or delete, and
   `DELETE /tokens/{token}` revokes instantly.
+- **Tokens hashed at rest** — only the SHA-256 hash of each tenant/scoped
+  token is stored, so a leak of PDI's own database yields no usable
+  credential; the plaintext is shown once at issuance. The admin token is
+  compared in constant time.
 - **Deployment record** — models the on-premises vs. colocation (Tier III+)
   options from the proposal.
 

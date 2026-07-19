@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS deployments (
 CREATE TABLE IF NOT EXISTS tenants (
     id          TEXT PRIMARY KEY,
     name        TEXT NOT NULL,   -- integrating system, e.g. "jim-mini"
-    token       TEXT NOT NULL UNIQUE,   -- bearer token presented on requests
+    token       TEXT NOT NULL UNIQUE,   -- SHA-256 hash of the bearer token
     deleted_at  TEXT,            -- soft-delete tombstone (recovery window)
     created_at  TEXT NOT NULL
 );
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS tenants (
 -- Additional scoped tokens per tenant (role-based access control):
 -- 'read' tokens can only read; the tenant's primary token is 'write'.
 CREATE TABLE IF NOT EXISTS tenant_tokens (
-    token       TEXT PRIMARY KEY,
+    token       TEXT PRIMARY KEY,   -- SHA-256 hash of the scoped bearer token
     tenant_id   TEXT NOT NULL REFERENCES tenants(id),
     role        TEXT NOT NULL,   -- read | write
     revoked     INTEGER NOT NULL DEFAULT 0,

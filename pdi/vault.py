@@ -2,9 +2,22 @@
 
 from __future__ import annotations
 
+import hashlib
 import secrets
 
 from . import audit, crypto, db
+
+
+def _mint() -> tuple[str, str]:
+    """Return a (plaintext, hash) pair for a fresh bearer token. Only the hash
+    is stored, so a database leak never yields a usable credential — the same
+    protection the vault gives the data it holds."""
+    token = "pdi_" + secrets.token_urlsafe(24)
+    return token, _hash(token)
+
+
+def _hash(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
 
 
 # -- deployments ------------------------------------------------------------
@@ -28,14 +41,16 @@ def create_deployment(body: dict) -> dict:
 def create_tenant(name: str) -> dict:
     conn = db.connect()
     tenant_id = db.new_id("ten")
-    token = "pdi_" + secrets.token_urlsafe(24)
+    token, token_hash = _mint()
     conn.execute(
         "INSERT INTO tenants (id, name, token, created_at) VALUES (?,?,?,?)",
-        (tenant_id, name, token, db.utcnow()),
+        (tenant_id, name, token_hash, db.utcnow()),
     )
     conn.commit()
     audit.record("tenant.create", tenant_id=tenant_id, ref=name)
-    # The token is returned once, here — it authenticates the tenant's requests.
+    # The token is returned once, here — it authenticates the tenant's
+    # requests. Only its hash is persisted; the plaintext lives only in the
+    # integrating system's keeping from now on.
     return {"id": tenant_id, "name": name, "token": token}
 
 
@@ -45,25 +60,32 @@ def tenant_by_token(token: str) -> dict | None:
     tenants (deleted_at set) resolve to None — their data is unreachable
     during the recovery window until wiped or restored."""
     conn = db.connect()
+    token_hash = _hash(token)
     row = conn.execute(
         "SELECT * FROM tenants WHERE token=? AND deleted_at IS NULL",
-        (token,)).fetchone()
+        (token_hash,)).fetchone()
     if row:
-        return {**dict(row), "role": "write"}
+        return {**_scrub(row), "role": "write"}
     scoped = conn.execute(
         "SELECT t.*, s.role FROM tenant_tokens s JOIN tenants t"
-        " ON t.id = s.tenant_id WHERE s.token=? AND s.revoked=0", (token,)
+        " ON t.id = s.tenant_id WHERE s.token=? AND s.revoked=0", (token_hash,)
     ).fetchone()
-    return dict(scoped) if scoped else None
+    return {**_scrub(scoped), "role": scoped["role"]} if scoped else None
+
+
+def _scrub(row) -> dict:
+    """Tenant dict without the stored token hash — never hand the credential
+    material (even hashed) back out through a resolved-tenant object."""
+    return {k: v for k, v in dict(row).items() if k != "token"}
 
 
 def issue_token(tenant_id: str, role: str) -> dict:
     """Role-based access control: issue an additional scoped token."""
     conn = db.connect()
-    token = "pdi_" + secrets.token_urlsafe(24)
+    token, token_hash = _mint()
     conn.execute(
         "INSERT INTO tenant_tokens (token, tenant_id, role, revoked, created_at)"
-        " VALUES (?,?,?,0,?)", (token, tenant_id, role, db.utcnow()),
+        " VALUES (?,?,?,0,?)", (token_hash, tenant_id, role, db.utcnow()),
     )
     conn.commit()
     audit.record("token.issue", tenant_id=tenant_id, ref=role)
@@ -113,7 +135,8 @@ def restore_tenant(tenant_id: str) -> dict | None:
 def revoke_token(token: str) -> bool:
     conn = db.connect()
     changed = conn.execute(
-        "UPDATE tenant_tokens SET revoked=1 WHERE token=?", (token,)).rowcount
+        "UPDATE tenant_tokens SET revoked=1 WHERE token=?",
+        (_hash(token),)).rowcount
     conn.commit()
     if changed:
         audit.record("token.revoke")

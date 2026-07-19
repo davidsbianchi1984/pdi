@@ -8,6 +8,7 @@ tenant's namespace — one integrating system cannot read another's records.
 from __future__ import annotations
 
 import os
+import secrets
 
 from fastapi import Depends, FastAPI, Header, HTTPException
 
@@ -37,7 +38,8 @@ def _admin(authorization: str = Header(default="")) -> None:
         return
     if not authorization.startswith("Bearer "):
         raise HTTPException(401, "admin bearer token required")
-    if authorization[len("Bearer "):] != required:
+    # Constant-time compare so a wrong token can't be recovered by timing.
+    if not secrets.compare_digest(authorization[len("Bearer "):], required):
         raise HTTPException(403, "invalid admin token")
 
 
