@@ -55,3 +55,14 @@ def test_snapshot_restore_roundtrip(client):
     # The whole story is in the audit chain, still intact.
     verify = client.get("/audit/verify", headers=_auth(token)).json()
     assert verify["intact"] is True
+
+
+def test_admin_token_guards_tenant_creation(client, monkeypatch):
+    """With PDI_ADMIN_TOKEN set, admin endpoints require it."""
+    monkeypatch.setenv("PDI_ADMIN_TOKEN", "admin_secret")
+    assert client.post("/tenants", json={"name": "x"}).status_code == 401
+    assert client.post("/tenants", json={"name": "x"},
+                       headers={"Authorization": "Bearer wrong"}).status_code == 403
+    ok = client.post("/tenants", json={"name": "cloud-model"},
+                     headers={"Authorization": "Bearer admin_secret"})
+    assert ok.status_code == 201 and ok.json()["token"].startswith("pdi_")

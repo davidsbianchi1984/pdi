@@ -7,6 +7,8 @@ tenant's namespace — one integrating system cannot read another's records.
 
 from __future__ import annotations
 
+import os
+
 from fastapi import Depends, FastAPI, Header, HTTPException
 
 from . import audit, db, vault
@@ -27,6 +29,18 @@ def _tenant(authorization: str = Header(default="")) -> dict:
     return tenant
 
 
+def _admin(authorization: str = Header(default="")) -> None:
+    """Admin endpoints (deployments, tenants, token issuance) are guarded by
+    PDI_ADMIN_TOKEN. Unset = development mode (open, for local use only)."""
+    required = os.environ.get("PDI_ADMIN_TOKEN")
+    if not required:
+        return
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(401, "admin bearer token required")
+    if authorization[len("Bearer "):] != required:
+        raise HTTPException(403, "invalid admin token")
+
+
 def _writer(tenant: dict = Depends(_tenant)) -> dict:
     if tenant.get("role") != "write":
         raise HTTPException(403, "this token is read-only")
@@ -43,21 +57,23 @@ def create_app() -> FastAPI:
     # -- admin: deployments & tenants ---------------------------------------
 
     @app.post("/deployments", status_code=201)
-    def create_deployment(body: DeploymentCreate) -> dict:
+    def create_deployment(body: DeploymentCreate,
+                          _: None = Depends(_admin)) -> dict:
         return vault.create_deployment(body.model_dump())
 
     @app.post("/tenants", status_code=201)
-    def create_tenant(body: TenantCreate) -> dict:
+    def create_tenant(body: TenantCreate, _: None = Depends(_admin)) -> dict:
         # Returns the tenant token once — the integrating system stores it.
         return vault.create_tenant(body.name)
 
     @app.post("/tenants/{tenant_id}/tokens", status_code=201)
-    def issue_token(tenant_id: str, body: TokenIssue) -> dict:
+    def issue_token(tenant_id: str, body: TokenIssue,
+                    _: None = Depends(_admin)) -> dict:
         # Role-based access control: scoped read or write tokens per tenant.
         return vault.issue_token(tenant_id, body.role)
 
     @app.delete("/tokens/{token}", status_code=204)
-    def revoke_token(token: str) -> None:
+    def revoke_token(token: str, _: None = Depends(_admin)) -> None:
         if not vault.revoke_token(token):
             raise HTTPException(404, "token not found")
 
