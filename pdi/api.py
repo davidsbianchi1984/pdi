@@ -9,9 +9,13 @@ from __future__ import annotations
 
 from fastapi import Depends, FastAPI, Header, HTTPException
 
-from . import audit, vault
-from .models import (DeploymentCreate, RecordPut, SnapshotRestore,
-                     TenantCreate, TokenIssue)
+from . import audit, db, vault
+
+
+def vault_module_new_id() -> str:
+    return db.new_id("ctb")
+from .models import (ContributionIn, DeploymentCreate, RecordPut,
+                     SnapshotRestore, TenantCreate, TokenIssue)
 
 
 def _tenant(authorization: str = Header(default="")) -> dict:
@@ -88,6 +92,26 @@ def create_app() -> FastAPI:
         # Disaster recovery: reinsert a ciphertext-only snapshot.
         return vault.restore_snapshot(
             tenant, [r.model_dump() for r in body.records])
+
+    # -- cloud-model contribution intake ------------------------------------
+
+    @app.post("/contributions", status_code=201)
+    def add_contribution(body: ContributionIn,
+                         tenant: dict = Depends(_writer)) -> dict:
+        """Encrypted, audited intake for anonymized model-improvement data
+        contributed by integrating systems (see docs/cloud-model.md)."""
+        import json as _json
+        contribution_id = vault_module_new_id()
+        key = f"contributions/{body.source}/{contribution_id}"
+        vault.put(tenant, key, _json.dumps(
+            {"kind": body.kind, "payload": body.payload}))
+        return {"id": contribution_id, "key": key, "sealed": True}
+
+    @app.get("/contributions")
+    def list_contributions(tenant: dict = Depends(_tenant)) -> dict:
+        keys = [k for k in vault.list_keys(tenant)
+                if k.startswith("contributions/")]
+        return {"count": len(keys), "keys": keys}
 
     # -- compliance ---------------------------------------------------------
 

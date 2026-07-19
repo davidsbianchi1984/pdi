@@ -24,6 +24,10 @@ source material — each as its own tenant with its own token. See
 - **Disaster-recovery snapshot & restore** — `GET /snapshot` exports
   ciphertext only; `POST /restore` reinserts a snapshot after a loss, with
   AAD still binding every record to its tenant + key.
+- **Cloud-model contribution intake** — `POST /contributions` seals
+  anonymized model-improvement data from integrating systems under
+  `contributions/{source}/…` keys, encrypted and audit-chained;
+  `GET /contributions` lists the intake ([docs/cloud-model.md](docs/cloud-model.md)).
 - **Role-based access control** — `POST /tenants/{id}/tokens` issues scoped
   `read`/`write` tokens; read tokens cannot write or delete, and
   `DELETE /tokens/{token}` revokes instantly.
