@@ -38,6 +38,24 @@ source material — each as its own tenant with its own token. See
 - **Deployment record** — models the on-premises vs. colocation (Tier III+)
   options from the proposal.
 
+## Your data promise
+
+**No raw user data ever leaves your vault.** PDI is the vault.
+
+- Everything stored is AES-256-GCM ciphertext, AAD-bound to its tenant and
+  key — one integrating system can never read another's records, and the
+  database on disk holds nothing readable.
+- PDI's own credentials get the same care as your data: bearer tokens are
+  stored only as SHA-256 hashes, shown once at issuance.
+- Every access — store, read, erase — lands in a tamper-evident hash-chained
+  audit log; `GET /audit/verify` proves nothing was retroactively edited, and
+  integrating apps surface a per-user view of it.
+- Deletion is real: the owning app purges its keys, tenant deletion offers a
+  soft recovery window and then a permanent wipe, and no orphaned ciphertext
+  remains.
+- Deployed on-premises or in colocation — your hardware, your keys
+  (`PDI_MASTER_KEY`), your walls.
+
 ## Run
 
 ```bash
