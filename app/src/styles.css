@@ -79,3 +79,15 @@ button.danger { background: rgba(224,104,122,0.14) !important; color: var(--red)
 .verify-banner.bad { background: rgba(224,104,122,0.12); color: var(--red); border: 1px solid var(--red); }
 .verify-banner button { margin-left: auto; background: rgba(255,255,255,0.06); color: var(--txt); border: 1px solid var(--line); border-radius: 8px; padding: 5px 12px; font-size: 12px; }
 pre.mono { overflow-x: auto; font-size: 12px; }
+
+/* Positions — role-mapping questionnaire + assistant blueprint */
+.card h4 { margin: 16px 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--t3); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 12px; }
+.chip { background: rgba(255,255,255,0.05); color: var(--t2); border: 1px solid var(--line);
+  border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 600; }
+.chip.on { background: rgba(56,189,248,0.16); color: #fff; border-color: var(--brand); }
+label.check { display: flex; align-items: center; gap: 8px; color: var(--txt); font-size: 13px; margin-bottom: 10px; }
+label.check input { width: auto; margin-top: 0; }
+.meter { height: 8px; border-radius: 999px; background: rgba(255,255,255,0.07); overflow: hidden; margin: 6px 0; }
+.meter span { display: block; height: 100%; background: linear-gradient(90deg, var(--brand), var(--brand2)); }

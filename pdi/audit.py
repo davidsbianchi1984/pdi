@@ -38,13 +38,14 @@ ACTIONS: dict[str, tuple[str, str]] = {
     "snapshot.restore": ("dr", "snapshot restored"),
     "deployment.create": ("admin", "deployment recorded"),
     "contribution.add": ("contribution", "cloud-model contribution sealed"),
+    "position.create": ("position", "role-mapping intake sealed, assistant blueprint derived"),
 }
 
 EVENT_FIELDS = {
     "seq": "monotonic sequence number (chain order)",
     "tenant_id": "tenant the event belongs to (null for admin/global events)",
     "action": "one of the catalogued actions",
-    "category": "derived group for the action (data, tenant, access, key, retention, dr, contribution, admin)",
+    "category": "derived group for the action (data, tenant, access, key, retention, dr, contribution, position, admin)",
     "ref": "resource reference — record key, tenant id, or a small detail",
     "at": "UTC ISO-8601 timestamp",
     "prev_hash": "SHA-256 of the previous entry (chain link)",

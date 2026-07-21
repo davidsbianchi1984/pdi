@@ -12,9 +12,9 @@ import secrets
 
 from fastapi import Depends, FastAPI, Header, HTTPException
 
-from . import audit, crypto, db, retention, vault
-from .models import (ContributionIn, DeploymentCreate, RecordPut, RetentionSet,
-                     SnapshotRestore, TenantCreate, TokenIssue)
+from . import audit, crypto, db, positions, retention, vault
+from .models import (ContributionIn, DeploymentCreate, PositionIntake, RecordPut,
+                     RetentionSet, SnapshotRestore, TenantCreate, TokenIssue)
 
 
 def _tenant(authorization: str = Header(default="")) -> dict:
@@ -186,6 +186,44 @@ def create_app() -> FastAPI:
             raise HTTPException(404, "no contribution with that ref")
         audit.record("delete", tenant_id=tenant["id"], ref=f"contribution:{ref}")
         return {"ref": ref, "revoked": removed}
+
+    # -- position & assistant builder (AI Integration & Role Mapping) --------
+
+    @app.post("/positions", status_code=201)
+    def create_position(body: PositionIntake, tenant: dict = Depends(_writer)) -> dict:
+        """Turn a completed role-mapping questionnaire into an assistant
+        blueprint. The raw answers are sensitive workforce data, so they are
+        sealed in the tenant's vault under ``positions/{id}``; only the derived
+        blueprint (capabilities, automation opportunities, human-in-the-loop
+        guardrails, reskilling paths, assistant system-prompt) is returned. This
+        is decision support — never an automated staffing decision."""
+        import json as _json
+        intake = body.model_dump()
+        blueprint = positions.build_blueprint(intake)
+        position_id = db.new_id("pos")
+        key = f"positions/{position_id}"
+        # Seal the raw intake *and* the derived blueprint together, so the
+        # sensitive answers never leave the vault but the blueprint is
+        # reproducible without re-decrypting only to re-derive.
+        vault.put(tenant, key, _json.dumps({"intake": intake, "blueprint": blueprint,
+                                            "at": db.utcnow()}))
+        audit.record("position.create", tenant_id=tenant["id"], ref=position_id)
+        return {"id": position_id, "key": key, **blueprint}
+
+    @app.get("/positions")
+    def list_positions(tenant: dict = Depends(_tenant)) -> dict:
+        keys = [k for k in vault.list_keys(tenant) if k.startswith("positions/")]
+        return {"count": len(keys),
+                "ids": [k.split("/", 1)[1] for k in keys]}
+
+    @app.get("/positions/{position_id}")
+    def get_position(position_id: str, tenant: dict = Depends(_tenant)) -> dict:
+        import json as _json
+        rec = vault.get(tenant, f"positions/{position_id}")
+        if rec is None:
+            raise HTTPException(404, "position not found")
+        data = _json.loads(rec["value"])
+        return {"id": position_id, **data["blueprint"]}
 
     # -- key management (production: envelope encryption + rotation) ---------
 

@@ -3,15 +3,17 @@ import { useSession } from "./store";
 import { Overview } from "./screens/Overview";
 import { Tenants } from "./screens/Tenants";
 import { Records } from "./screens/Records";
+import { Positions } from "./screens/Positions";
 import { Keys } from "./screens/Keys";
 import { Audit } from "./screens/Audit";
 import { Settings } from "./screens/Settings";
 
-type Tab = "overview" | "tenants" | "records" | "keys" | "audit" | "settings";
+type Tab = "overview" | "tenants" | "records" | "positions" | "keys" | "audit" | "settings";
 const NAV: { id: Tab; label: string; icon: string }[] = [
   { id: "overview", label: "Overview", icon: "▦" },
   { id: "tenants", label: "Tenants", icon: "👥" },
   { id: "records", label: "Vault", icon: "🔒" },
+  { id: "positions", label: "Positions", icon: "🧭" },
   { id: "keys", label: "Keys & Retention", icon: "🗝" },
   { id: "audit", label: "Audit", icon: "✓" },
   { id: "settings", label: "Settings", icon: "⚙" },
@@ -56,6 +58,7 @@ export function App() {
         {tab === "overview" && <Overview go={setTab} />}
         {tab === "tenants" && <Tenants />}
         {tab === "records" && <Records go={setTab} />}
+        {tab === "positions" && <Positions go={setTab} />}
         {tab === "keys" && <Keys />}
         {tab === "audit" && <Audit />}
         {tab === "settings" && <Settings />}
