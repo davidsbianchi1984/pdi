@@ -70,67 +70,90 @@ private facility (an ephemeral key is generated if unset — dev only).
 
 ## Console screens
 
-The PDI operator console, screen by screen — one per capability of the vault, in the product's design language (Deep Indigo · Vault Cyan · Soft Silver, SF-style type, liquid-glass cards). It shares the night-indigo universe of QRME and JIM-mini, with vault cyan as its accent — one world, three products. Each screen is a self-contained SVG (no fonts, images, or scripts) and maps to a real endpoint. Regenerate with `python3 docs/screens/build.py`.
+The PDI operator console in two form factors — a **desktop dashboard** and a **mobile console** — one screen per capability of the vault, in the product's design language (Deep Indigo · Vault Cyan · Soft Silver, SF-style type, liquid-glass cards). It shares the night-indigo universe of QRME and JIM-mini with vault cyan as its accent — one world, three products. Every screen is a self-contained SVG (no fonts, images, or scripts) and maps to a real endpoint.
 
-### The vault
+### Desktop dashboard
+
+Wide, multi-panel operator views — sidebar nav, live tiles, the hash-chain audit table, and the encryption pipeline. Regenerate with `python3 docs/desktop/build.py`.
 
 <table>
   <tr>
-    <td align="center" width="33%"><a href="docs/screens/01-overview.svg"><img src="docs/screens/01-overview.svg" width="210" alt="Overview — Your encrypted vault, live"></a><br><sub><b>01</b> · Overview</sub></td>
-    <td align="center" width="33%"><a href="docs/screens/02-vault.svg"><img src="docs/screens/02-vault.svg" width="210" alt="Vault — Records, sealed at rest"></a><br><sub><b>02</b> · Vault</sub></td>
-    <td align="center" width="33%"><a href="docs/screens/03-store-a-record.svg"><img src="docs/screens/03-store-a-record.svg" width="210" alt="Store a Record — Sealed the moment it lands"></a><br><sub><b>03</b> · Store a Record</sub></td>
+    <td align="center" width="50%"><a href="docs/desktop/01-overview.svg"><img src="docs/desktop/01-overview.svg" width="460" alt="Overview — PDI desktop console"></a><br><sub><b>01</b> · Overview</sub></td>
+    <td align="center" width="50%"><a href="docs/desktop/02-vault.svg"><img src="docs/desktop/02-vault.svg" width="460" alt="Vault — PDI desktop console"></a><br><sub><b>02</b> · Vault</sub></td>
   </tr>
   <tr>
-    <td align="center" width="33%"><a href="docs/screens/04-encryption.svg"><img src="docs/screens/04-encryption.svg" width="210" alt="Encryption — AES-256-GCM, AAD-bound"></a><br><sub><b>04</b> · Encryption</sub></td>
+    <td align="center" width="50%"><a href="docs/desktop/03-audit-log.svg"><img src="docs/desktop/03-audit-log.svg" width="460" alt="Audit Log — PDI desktop console"></a><br><sub><b>03</b> · Audit Log</sub></td>
+    <td align="center" width="50%"><a href="docs/desktop/04-tenants-access.svg"><img src="docs/desktop/04-tenants-access.svg" width="460" alt="Tenants & Access — PDI desktop console"></a><br><sub><b>04</b> · Tenants & Access</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="50%"><a href="docs/desktop/05-encryption-keys.svg"><img src="docs/desktop/05-encryption-keys.svg" width="460" alt="Encryption & Keys — PDI desktop console"></a><br><sub><b>05</b> · Encryption & Keys</sub></td>
+    <td align="center" width="50%"><a href="docs/desktop/06-deployment-health.svg"><img src="docs/desktop/06-deployment-health.svg" width="460" alt="Deployment & Health — PDI desktop console"></a><br><sub><b>06</b> · Deployment & Health</sub></td>
   </tr>
 </table>
 
-### Tenants, access & intake
+### Mobile console
+
+The same system, glanceable on a phone. Regenerate with `python3 docs/screens/build.py`.
+
+**The vault**
 
 <table>
   <tr>
-    <td align="center" width="33%"><a href="docs/screens/05-tenants.svg"><img src="docs/screens/05-tenants.svg" width="210" alt="Tenants — One per integrating system"></a><br><sub><b>05</b> · Tenants</sub></td>
-    <td align="center" width="33%"><a href="docs/screens/06-create-tenant.svg"><img src="docs/screens/06-create-tenant.svg" width="210" alt="Create Tenant — Token shown once"></a><br><sub><b>06</b> · Create Tenant</sub></td>
-    <td align="center" width="33%"><a href="docs/screens/07-access-control.svg"><img src="docs/screens/07-access-control.svg" width="210" alt="Access Control — Scoped read / write"></a><br><sub><b>07</b> · Access Control</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/01-overview.svg"><img src="docs/screens/01-overview.svg" width="210" alt="Overview — PDI desktop console"></a><br><sub><b>01</b> · Overview</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/02-vault.svg"><img src="docs/screens/02-vault.svg" width="210" alt="Vault — PDI desktop console"></a><br><sub><b>02</b> · Vault</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/03-store-a-record.svg"><img src="docs/screens/03-store-a-record.svg" width="210" alt="Store a Record — PDI desktop console"></a><br><sub><b>03</b> · Store a Record</sub></td>
   </tr>
   <tr>
-    <td align="center" width="33%"><a href="docs/screens/10-contributions.svg"><img src="docs/screens/10-contributions.svg" width="210" alt="Contributions — Anonymized intake, sealed"></a><br><sub><b>10</b> · Contributions</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/04-encryption.svg"><img src="docs/screens/04-encryption.svg" width="210" alt="Encryption — PDI desktop console"></a><br><sub><b>04</b> · Encryption</sub></td>
   </tr>
 </table>
 
-### Audit & integrity
+**Tenants, access & intake**
 
 <table>
   <tr>
-    <td align="center" width="33%"><a href="docs/screens/08-audit-log.svg"><img src="docs/screens/08-audit-log.svg" width="210" alt="Audit Log — Append-only, hash-chained"></a><br><sub><b>08</b> · Audit Log</sub></td>
-    <td align="center" width="33%"><a href="docs/screens/09-verify-chain.svg"><img src="docs/screens/09-verify-chain.svg" width="210" alt="Verify Chain — Prove nothing was edited"></a><br><sub><b>09</b> · Verify Chain</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/05-tenants.svg"><img src="docs/screens/05-tenants.svg" width="210" alt="Tenants — PDI desktop console"></a><br><sub><b>05</b> · Tenants</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/06-create-tenant.svg"><img src="docs/screens/06-create-tenant.svg" width="210" alt="Create Tenant — PDI desktop console"></a><br><sub><b>06</b> · Create Tenant</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/07-access-control.svg"><img src="docs/screens/07-access-control.svg" width="210" alt="Access Control — PDI desktop console"></a><br><sub><b>07</b> · Access Control</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="33%"><a href="docs/screens/10-contributions.svg"><img src="docs/screens/10-contributions.svg" width="210" alt="Contributions — PDI desktop console"></a><br><sub><b>10</b> · Contributions</sub></td>
   </tr>
 </table>
 
-### Operations & deployment
+**Audit & integrity**
 
 <table>
   <tr>
-    <td align="center" width="33%"><a href="docs/screens/11-snapshot-restore.svg"><img src="docs/screens/11-snapshot-restore.svg" width="210" alt="Snapshot & Restore — Disaster recovery"></a><br><sub><b>11</b> · Snapshot & Restore</sub></td>
-    <td align="center" width="33%"><a href="docs/screens/12-deployment.svg"><img src="docs/screens/12-deployment.svg" width="210" alt="Deployment — On-prem or colocation"></a><br><sub><b>12</b> · Deployment</sub></td>
-    <td align="center" width="33%"><a href="docs/screens/13-key-management.svg"><img src="docs/screens/13-key-management.svg" width="210" alt="Key Management — Your keys, your walls"></a><br><sub><b>13</b> · Key Management</sub></td>
-  </tr>
-  <tr>
-    <td align="center" width="33%"><a href="docs/screens/17-system-health.svg"><img src="docs/screens/17-system-health.svg" width="210" alt="System Health — Liveness & integrity"></a><br><sub><b>17</b> · System Health</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/08-audit-log.svg"><img src="docs/screens/08-audit-log.svg" width="210" alt="Audit Log — PDI desktop console"></a><br><sub><b>08</b> · Audit Log</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/09-verify-chain.svg"><img src="docs/screens/09-verify-chain.svg" width="210" alt="Verify Chain — PDI desktop console"></a><br><sub><b>09</b> · Verify Chain</sub></td>
   </tr>
 </table>
 
-### Isolation, the promise & the tandem
+**Operations & deployment**
 
 <table>
   <tr>
-    <td align="center" width="33%"><a href="docs/screens/14-tenant-isolation.svg"><img src="docs/screens/14-tenant-isolation.svg" width="210" alt="Tenant Isolation — Walls between systems"></a><br><sub><b>14</b> · Tenant Isolation</sub></td>
-    <td align="center" width="33%"><a href="docs/screens/15-data-promise.svg"><img src="docs/screens/15-data-promise.svg" width="210" alt="Data Promise — Deletion is real"></a><br><sub><b>15</b> · Data Promise</sub></td>
-    <td align="center" width="33%"><a href="docs/screens/16-your-data.svg"><img src="docs/screens/16-your-data.svg" width="210" alt="Your Data — The per-user audit view"></a><br><sub><b>16</b> · Your Data</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/11-snapshot-restore.svg"><img src="docs/screens/11-snapshot-restore.svg" width="210" alt="Snapshot & Restore — PDI desktop console"></a><br><sub><b>11</b> · Snapshot & Restore</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/12-deployment.svg"><img src="docs/screens/12-deployment.svg" width="210" alt="Deployment — PDI desktop console"></a><br><sub><b>12</b> · Deployment</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/13-key-management.svg"><img src="docs/screens/13-key-management.svg" width="210" alt="Key Management — PDI desktop console"></a><br><sub><b>13</b> · Key Management</sub></td>
   </tr>
   <tr>
-    <td align="center" width="33%"><a href="docs/screens/18-tandem.svg"><img src="docs/screens/18-tandem.svg" width="210" alt="Tandem — Both AI systems, one vault"></a><br><sub><b>18</b> · Tandem</sub></td>
-    <td align="center" width="33%"><a href="docs/screens/19-design-system.svg"><img src="docs/screens/19-design-system.svg" width="210" alt="Design System — One world, vault cyan"></a><br><sub><b>19</b> · Design System</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/17-system-health.svg"><img src="docs/screens/17-system-health.svg" width="210" alt="System Health — PDI desktop console"></a><br><sub><b>17</b> · System Health</sub></td>
+  </tr>
+</table>
+
+**Isolation, the promise & the tandem**
+
+<table>
+  <tr>
+    <td align="center" width="33%"><a href="docs/screens/14-tenant-isolation.svg"><img src="docs/screens/14-tenant-isolation.svg" width="210" alt="Tenant Isolation — PDI desktop console"></a><br><sub><b>14</b> · Tenant Isolation</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/15-data-promise.svg"><img src="docs/screens/15-data-promise.svg" width="210" alt="Data Promise — PDI desktop console"></a><br><sub><b>15</b> · Data Promise</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/16-your-data.svg"><img src="docs/screens/16-your-data.svg" width="210" alt="Your Data — PDI desktop console"></a><br><sub><b>16</b> · Your Data</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="33%"><a href="docs/screens/18-tandem.svg"><img src="docs/screens/18-tandem.svg" width="210" alt="Tandem — PDI desktop console"></a><br><sub><b>18</b> · Tandem</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/19-design-system.svg"><img src="docs/screens/19-design-system.svg" width="210" alt="Design System — PDI desktop console"></a><br><sub><b>19</b> · Design System</sub></td>
   </tr>
 </table>
 
