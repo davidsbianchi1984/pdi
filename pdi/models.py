@@ -45,6 +45,71 @@ class SnapshotRestore(BaseModel):
     records: list[SnapshotRecord]
 
 
+class RoleOverview(BaseModel):
+    """Section 1 — Personal & Role Overview."""
+    job_title: str | None = None
+    department: str | None = None
+    # frontline | administrative | supervisory | executive
+    role_type: str | None = None
+    manages_staff: int = 0
+
+
+class WorkflowAudit(BaseModel):
+    """Section 2 — Daily Workflow Audit."""
+    manages: list[str] = []            # scheduling | timekeeping | dispatch | inventory
+    documents_incidents: bool = False
+    recurring_meetings: bool = False
+    manual_tasks: bool = False
+
+
+class DecisionMaking(BaseModel):
+    """Section 3 — Decision-Making & Oversight."""
+    scope: list[str] = []              # routes | staffing | incident | contracts | budget
+    automatable_decisions: list[str] = []
+
+
+class Bottlenecks(BaseModel):
+    """Section 4 — Workflow Bottlenecks & Obsolescence."""
+    redundant_tasks: list[str] = []
+    outdated_tasks: list[str] = []
+
+
+class Preferences(BaseModel):
+    """Section 5 — AI Adoption & Personalization."""
+    wants: list[str] = []              # capability keys the person explicitly wants
+    tone: str | None = None            # directive | neutral | casual | analytical
+    interaction: str | None = None     # voice | text | hybrid
+    summarize_logs: bool = False
+    learn_decision_style: bool = False
+
+
+class AdminExec(BaseModel):
+    """Section 6 — Administrative & Executive Roles."""
+    compliance_accountable: bool = False
+
+
+class FutureEvolution(BaseModel):
+    """Section 7 — Future AI & Workforce Evolution."""
+    comfortable_automation: bool = False
+    roles_obsolete_3_5yr: list[str] = []
+    reskilling_interest: bool = False
+
+
+class PositionIntake(BaseModel):
+    """A completed AI Integration & Role-Mapping Questionnaire — industry
+    agnostic. Every section is optional so a partial intake still yields a
+    (partial) blueprint; the builder only ever *adds* capability suggestions,
+    never fabricates a staffing verdict."""
+    industry: str | None = None
+    role: RoleOverview = RoleOverview()
+    workflow: WorkflowAudit = WorkflowAudit()
+    decisions: DecisionMaking = DecisionMaking()
+    bottlenecks: Bottlenecks = Bottlenecks()
+    preferences: Preferences = Preferences()
+    admin: AdminExec = AdminExec()
+    future: FutureEvolution = FutureEvolution()
+
+
 class ContributionIn(BaseModel):
     """Anonymized model-improvement contribution from an integrating system.
 

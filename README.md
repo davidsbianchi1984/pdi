@@ -44,6 +44,14 @@ source material — each as its own tenant with its own token. See
   anonymized model-improvement data from integrating systems under
   `contributions/{source}/…` keys, encrypted and audit-chained;
   `GET /contributions` lists the intake ([docs/cloud-model.md](docs/cloud-model.md)).
+- **Position & assistant builder** — `POST /positions` turns a completed
+  AI Integration & Role-Mapping Questionnaire (industry-agnostic) into an
+  assistant *blueprint* — recommended capabilities, an automation-opportunity
+  score, human-in-the-loop guardrails, reskilling paths, and a ready-to-use
+  assistant system-prompt. The raw workforce answers are sealed in the vault
+  under `positions/{id}`; only the derived blueprint is returned. Decision
+  support, never an automated staffing decision
+  ([docs/positions.md](docs/positions.md)).
 - **Role-based access control** — `POST /tenants/{id}/tokens` issues scoped
   `read`/`write` tokens; read tokens cannot write or delete, and
   `DELETE /tokens/{token}` revokes instantly.
@@ -199,6 +207,9 @@ The same system, glanceable on a phone. Regenerate with `python3 docs/screens/bu
 | `POST /contributions` | tenant (write) | Seal an anonymized cloud-model contribution (optional `ref`) |
 | `GET /contributions` | tenant | List contribution keys |
 | `DELETE /contributions/{ref}` | tenant (write) | Revoke a contribution by its anonymous ref |
+| `POST /positions` | tenant (write) | Seal a role-mapping intake and return the assistant blueprint |
+| `GET /positions` | tenant | List saved position ids |
+| `GET /positions/{id}` | tenant | Fetch a saved position's blueprint |
 | `GET /snapshot` | tenant | DR export (ciphertext only) |
 | `POST /keys/rotate` | admin | Rotate the key version (re-seals records; `?reseal=false` to defer) |
 | `GET /keys` | admin | Key versions + provider |

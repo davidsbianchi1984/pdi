@@ -36,6 +36,33 @@ export interface RetentionPolicy {
   record_retention: { tenant_id: string; name: string; retention: string }[];
 }
 
+export interface Blueprint {
+  id: string;
+  industry: string;
+  role: { job_title?: string; department?: string; oversight_level: string; manages_staff: number };
+  assistant: {
+    tone: string;
+    interaction: string;
+    capabilities: { key: string; label: string; why: string }[];
+  };
+  automation: { opportunity_score: number; opportunities: string[]; watch_3_5yr: string[]; note: string };
+  human_in_loop: { required: string[]; note: string };
+  reskilling: { interested: boolean; suggested_paths: string[] };
+  assistant_spec: string;
+}
+
+// The AI Integration & Role-Mapping Questionnaire (all fields optional).
+export interface PositionIntake {
+  industry?: string;
+  role?: { job_title?: string; department?: string; role_type?: string; manages_staff?: number };
+  workflow?: { manages?: string[]; documents_incidents?: boolean; recurring_meetings?: boolean; manual_tasks?: boolean };
+  decisions?: { scope?: string[]; automatable_decisions?: string[] };
+  bottlenecks?: { redundant_tasks?: string[]; outdated_tasks?: string[] };
+  preferences?: { wants?: string[]; tone?: string; interaction?: string; summarize_logs?: boolean; learn_decision_style?: boolean };
+  admin?: { compliance_accountable?: boolean };
+  future?: { comfortable_automation?: boolean; roles_obsolete_3_5yr?: string[]; reskilling_interest?: boolean };
+}
+
 export const api = {
   health: () => req<{ status: string }>("/health"),
 
@@ -69,6 +96,14 @@ export const api = {
     req<{ key: string; value: string; updated_at: string }>(
       `/records/${key}`, { token }),
   listKeys: (token: string) => req<{ keys: string[] }>("/records", { token }),
+
+  // positions — assistant builder
+  buildPosition: (intake: PositionIntake, token: string) =>
+    req<Blueprint>("/positions", { method: "POST", body: intake, token }),
+  listPositions: (token: string) =>
+    req<{ count: number; ids: string[] }>("/positions", { token }),
+  getPosition: (id: string, token: string) =>
+    req<Blueprint>(`/positions/${id}`, { token }),
 
   // audit
   audit: (token: string) => req<AuditEntry[]>("/audit", { token }),
