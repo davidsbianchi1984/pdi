@@ -1,0 +1,81 @@
+:root {
+  --scr: #0c0920; --card: #201a48; --card2: #181240; --line: #302a60;
+  --txt: #f2effc; --t2: #9a93c6; --t3: #6a6399;
+  --brand: #38bdf8; --brand2: #7dd3fc; --cyan: #9fd8e8;
+  --amber: #ffb84d; --green: #7bc47f; --red: #e0687a;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body { font-family: var(--font); color: var(--txt);
+  background: radial-gradient(120% 100% at 20% 0%, #141048 0%, #0b0820 60%, #080614 100%); }
+button { font-family: inherit; cursor: pointer; }
+input, textarea, select { font-family: inherit; width: 100%; margin-top: 6px;
+  background: #0d0a24; color: var(--txt); border: 1px solid var(--line);
+  border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+label { display: block; font-size: 12px; color: var(--t2); margin-bottom: 14px; }
+code, .mono, pre { font-family: ui-monospace, Menlo, monospace; }
+.cyan { color: var(--cyan); } .amber { color: var(--amber); } .green { color: var(--green); }
+.muted { color: var(--t2); } .small { font-size: 12px; } .center { text-align: center; padding: 30px; }
+
+.app { display: grid; grid-template-columns: 232px 1fr; height: 100%; }
+.sidebar { background: linear-gradient(180deg, #161038, #0e0a26); border-right: 1px solid var(--line);
+  padding: 20px 14px; display: flex; flex-direction: column; }
+.brand { display: flex; gap: 10px; align-items: center; margin-bottom: 22px; padding: 0 6px; }
+.brand-name { font-weight: 800; letter-spacing: 0.5px; }
+.brand-sub { font-size: 10px; color: var(--t3); }
+nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.nav-item { display: flex; align-items: center; gap: 10px; text-align: left; background: transparent;
+  color: var(--t2); border: 0; border-radius: 10px; padding: 11px 12px; font-size: 13px; font-weight: 600; }
+.nav-item:hover { color: var(--txt); background: rgba(255,255,255,0.04); }
+.nav-item.active { color: #fff; background: rgba(56,189,248,0.16); box-shadow: inset 3px 0 0 var(--brand); }
+.nav-icon { width: 18px; text-align: center; }
+.tenant-chip { font-size: 12px; color: var(--txt); padding: 8px 10px; border: 1px solid var(--line);
+  border-radius: 10px; background: rgba(255,255,255,0.04); }
+.dot-online { color: var(--green); font-size: 12px; } .dot-online.off { color: var(--red); }
+
+.content { overflow-y: auto; padding: 30px 34px; }
+.screen { max-width: 760px; }
+.screen-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; }
+.screen-head h2 { margin: 0; font-size: 22px; letter-spacing: -0.3px; }
+
+.orb { width: 26px; height: 26px; border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, #cbeeff, #38bdf8 40%, #1f6fb2 80%, #0b2438);
+  box-shadow: 0 0 18px rgba(56,189,248,0.5); }
+
+.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.tile, .card { background: linear-gradient(160deg, var(--card), var(--card2));
+  border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+.tile.wide { margin-top: 16px; }
+.tile-label { font-size: 11px; color: var(--t2); font-weight: 600; }
+.tile-value { font-size: 24px; font-weight: 800; color: var(--brand2); margin-top: 6px; }
+.tile-sub { font-size: 11px; color: var(--t3); }
+.card { margin-top: 16px; }
+.card h3 { margin: 0 0 12px; font-size: 15px; }
+.warn-card { border-color: var(--amber); }
+.token { background: #0d0a24; border: 1px solid var(--line); border-radius: 8px; padding: 10px;
+  color: var(--cyan); font-size: 12px; overflow-x: auto; }
+
+.actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+button.primary { background: linear-gradient(90deg, var(--brand), var(--brand2)); color: #06222e;
+  border: 0; border-radius: 12px; padding: 12px 18px; font-weight: 700; font-size: 14px; }
+button.primary:disabled { opacity: 0.6; }
+.actions button:not(.primary), .card button:not(.primary) { background: rgba(255,255,255,0.05);
+  color: var(--txt); border: 1px solid var(--line); border-radius: 12px; padding: 11px 16px; font-weight: 600; margin-top: 8px; }
+button.danger { background: rgba(224,104,122,0.14) !important; color: var(--red) !important; border: 1px solid var(--red) !important; }
+.error { background: rgba(224,104,122,0.12); color: var(--red); border: 1px solid var(--red); border-radius: 10px; padding: 10px 12px; font-size: 13px; margin: 10px 0; }
+.ok-note { background: rgba(123,196,127,0.12); color: var(--green); border: 1px solid var(--green); border-radius: 10px; padding: 10px 12px; font-size: 13px; margin: 10px 0; }
+
+.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tbl th { text-align: left; color: var(--t3); font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.tbl td { padding: 8px; border-bottom: 1px solid rgba(48,42,96,0.5); }
+.keylist { list-style: none; padding: 0; margin: 0; }
+.keylist li { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(48,42,96,0.5); font-size: 13px; }
+.keylist button { background: rgba(255,255,255,0.05); color: var(--txt); border: 1px solid var(--line); border-radius: 8px; padding: 5px 12px; font-size: 12px; }
+.row-inline { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 8px 0; }
+.row-inline select { width: 130px; margin-top: 0; }
+.verify-banner { border-radius: 12px; padding: 12px 16px; font-weight: 700; font-size: 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; }
+.verify-banner.ok { background: rgba(123,196,127,0.10); color: var(--green); border: 1px solid var(--green); }
+.verify-banner.bad { background: rgba(224,104,122,0.12); color: var(--red); border: 1px solid var(--red); }
+.verify-banner button { margin-left: auto; background: rgba(255,255,255,0.06); color: var(--txt); border: 1px solid var(--line); border-radius: 8px; padding: 5px 12px; font-size: 12px; }
+pre.mono { overflow-x: auto; font-size: 12px; }
