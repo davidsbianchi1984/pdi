@@ -717,6 +717,35 @@ def render(spec):
             out.append(text(CX + 38, y + 23, lbl, 11, C["txt"], 550))
             y += 46
 
+    elif hero == "signin":
+        out.append(orb(W / 2, y + 44, 36))
+        out.append(icon("lock", W / 2, y + 42, "rgba(255,255,255,0.92)", 1.4))
+        y += 106
+        out.append(text(W / 2, y, "Unlock the console", 16, "#fff", 750, "middle"))
+        out.append(text(W / 2, y + 20, "Operator access · audit-logged", 11, C["t2"], 400, "middle"))
+        y += 44
+        out.append(rrect(CX, y, CW, 56, 15, "url(#gCard)", C["line"], 1))
+        out.append(icon("finger", CX + 30, y + 28, C["brandA"], 1.2))
+        out.append(text(CX + 58, y + 24, "Unlock with a scoped token", 12, C["txt"], 650))
+        out.append(text(CX + 58, y + 40, "read or write · revocable", 10, C["t2"]))
+        y += 72
+        out.append(button(CX, y, CW, "Sign In", "brand", 44))
+        out.append(button(CX, y + 54, CW, "Switch tenant", "ghost", 42))
+
+    elif hero == "endsession":
+        out.append(orb(W / 2, y + 40, 32))
+        out.append(icon("lock", W / 2, y + 40, "rgba(255,255,255,0.95)", 1.4))
+        y += 92
+        out.append(text(W / 2, y, "Console locked", 16, "#fff", 750, "middle"))
+        out.append(text(W / 2, y + 20, "Your session ended. The vault stays sealed.", 10, C["t2"], 400, "middle"))
+        y += 42
+        for ic, col, k, s in [("shieldok", "green", "Sign-out recorded", "in the tamper-evident chain"),
+                              ("lock", "cyan", "Vault sealed", "AES-256-GCM at rest"),
+                              ("warn", "amber", "Token still valid", "revoke it any time")]:
+            s2, y = card_block(y, {"icon": ic, "color": col, "k": k, "s": s, "h": 48})
+            out.append(s2)
+        out.append(button(CX, y + 2, CW, "Sign Out", "brand", 42))
+
     else:  # generic stacked cards
 
         for c in spec["cards"]:
@@ -808,6 +837,9 @@ SCREENS = [
         dict(icon="shieldok", color="amber", k="Each its own tenant", s="its own token, its own walls"),
     ]),
     dict(num=19, title="Design System", sub="One world, vault cyan", hero="design", accent="brand", tab=3),
+    # ---- operator session lifecycle ----
+    dict(num=20, title="Sign In", sub="Unlock the console", hero="signin", accent="brand", tab=0),
+    dict(num=21, title="Sign Out", sub="Console locked", hero="endsession", accent="green", tab=0),
 ]
 
 
