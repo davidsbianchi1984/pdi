@@ -24,7 +24,9 @@ dependencies = [
 dev = ["pytest>=8", "httpx>=0.27"]
 
 [project.urls]
+Homepage = "https://github.com/davidsbianchi1984/pdi"
 Repository = "https://github.com/davidsbianchi1984/pdi"
+Changelog = "https://github.com/davidsbianchi1984/pdi/blob/main/CHANGELOG.md"
 
 [build-system]
 requires = ["setuptools>=68"]
