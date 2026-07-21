@@ -38,13 +38,14 @@ def create_deployment(body: dict) -> dict:
 
 # -- tenants (integrating AI systems) ---------------------------------------
 
-def create_tenant(name: str) -> dict:
+def create_tenant(name: str, retention_days: int | None = None) -> dict:
     conn = db.connect()
     tenant_id = db.new_id("ten")
     token, token_hash = _mint()
     conn.execute(
-        "INSERT INTO tenants (id, name, token, created_at) VALUES (?,?,?,?)",
-        (tenant_id, name, token_hash, db.utcnow()),
+        "INSERT INTO tenants (id, name, token, retention_days, created_at)"
+        " VALUES (?,?,?,?,?)",
+        (tenant_id, name, token_hash, retention_days, db.utcnow()),
     )
     conn.commit()
     audit.record("tenant.create", tenant_id=tenant_id, ref=name)
@@ -52,6 +53,27 @@ def create_tenant(name: str) -> dict:
     # requests. Only its hash is persisted; the plaintext lives only in the
     # integrating system's keeping from now on.
     return {"id": tenant_id, "name": name, "token": token}
+
+
+def reseal_all() -> dict:
+    """Re-encrypt every record under the active key version — the second half
+    of a key rotation. Preserves ``updated_at`` (so it doesn't reset retention
+    clocks); afterwards old key versions can be retired safely."""
+    conn = db.connect()
+    active = crypto.active_version()
+    resealed = 0
+    for r in conn.execute(
+            "SELECT id, tenant_id, key, ciphertext FROM records").fetchall():
+        if crypto.sealed_version(r["ciphertext"]) == active:
+            continue
+        aad = f"{r['tenant_id']}:{r['key']}"
+        plain = crypto.open_(r["ciphertext"], aad=aad)
+        conn.execute("UPDATE records SET ciphertext=? WHERE id=?",
+                     (crypto.seal(plain, aad=aad), r["id"]))
+        resealed += 1
+    conn.commit()
+    audit.record("key.reseal", ref=str(resealed))
+    return {"active_version": active, "resealed": resealed}
 
 
 def tenant_by_token(token: str) -> dict | None:
