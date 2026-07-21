@@ -8,12 +8,19 @@ from pdi import crypto
 from pdi.tests.conftest import auth, new_tenant
 
 
-def test_seal_open_roundtrip(monkeypatch):
+def test_seal_open_roundtrip(tmp_path, monkeypatch):
+    # crypto now keeps a versioned keyring in the DB (envelope encryption), so
+    # isolate the DB like the other tests do.
+    from pdi import db as pdi_db
+    monkeypatch.setenv("PDI_DB", str(tmp_path / "pdi.db"))
     monkeypatch.setenv("PDI_MASTER_KEY",
                        base64.b64encode(AESGCM.generate_key(bit_length=256)).decode())
+    pdi_db.reset()
     sealed = crypto.seal("secret value", aad="ten_1:emergency")
     assert sealed != "secret value"
+    assert sealed.startswith("1:")                       # sealed under key version 1
     assert crypto.open_(sealed, aad="ten_1:emergency") == "secret value"
+    pdi_db.reset()
 
 
 def test_health(client):

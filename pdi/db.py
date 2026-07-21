@@ -24,11 +24,21 @@ CREATE TABLE IF NOT EXISTS deployments (
 );
 
 CREATE TABLE IF NOT EXISTS tenants (
-    id          TEXT PRIMARY KEY,
-    name        TEXT NOT NULL,   -- integrating system, e.g. "jim-mini"
-    token       TEXT NOT NULL UNIQUE,   -- SHA-256 hash of the bearer token
-    deleted_at  TEXT,            -- soft-delete tombstone (recovery window)
-    created_at  TEXT NOT NULL
+    id             TEXT PRIMARY KEY,
+    name           TEXT NOT NULL,   -- integrating system, e.g. "jim-mini"
+    token          TEXT NOT NULL UNIQUE,   -- SHA-256 hash of the bearer token
+    deleted_at     TEXT,            -- soft-delete tombstone (recovery window)
+    retention_days INTEGER,         -- NULL = keep forever; N = auto-expire after N days
+    created_at     TEXT NOT NULL
+);
+
+-- Envelope encryption: each version has a data-encryption key (DEK), stored
+-- only wrapped (encrypted) by the KEK in the KMS/HSM. Rotation adds a version.
+CREATE TABLE IF NOT EXISTS key_versions (
+    version      INTEGER PRIMARY KEY,
+    wrapped_dek  TEXT NOT NULL,   -- DEK encrypted by the key-encryption key
+    active       INTEGER NOT NULL DEFAULT 0,
+    created_at   TEXT NOT NULL
 );
 
 -- Additional scoped tokens per tenant (role-based access control):
@@ -76,9 +86,18 @@ def connect() -> sqlite3.Connection:
         conn.row_factory = sqlite3.Row
         conn.execute("PRAGMA journal_mode=WAL")  # concurrent readers
         conn.executescript(_SCHEMA)
+        _migrate(conn)
         _local.conn = conn
         _local.path = db_path()
     return conn
+
+
+def _migrate(conn: sqlite3.Connection) -> None:
+    """Additive migrations for databases created before a column existed."""
+    cols = {r["name"] for r in conn.execute("PRAGMA table_info(tenants)")}
+    if "retention_days" not in cols:
+        conn.execute("ALTER TABLE tenants ADD COLUMN retention_days INTEGER")
+        conn.commit()
 
 
 def reset() -> None:

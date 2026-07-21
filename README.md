@@ -17,6 +17,22 @@ source material — each as its own tenant with its own token. See
 - **Private, encrypted data vault** — record values are sealed at rest with
   AES-256-GCM (`pdi/crypto.py`); only ciphertext touches disk. AAD binds each
   record to its tenant + key so ciphertext can't be relocated.
+- **Production key management (envelope encryption)** — a key-encryption key
+  (KEK) never touches record data; each **key version** owns a random
+  data-encryption key (DEK) stored only *wrapped* by the KEK. `POST /keys/rotate`
+  mints a new version and re-seals records under it (old versions stay readable
+  until `POST /keys/retire`); `GET /keys` reports versions. The KEK lives in the
+  env (dev) or a **KMS/HSM** in production (`PDI_KEY_PROVIDER=kms`, a loud
+  integration seam — never a silent local fallback).
+- **Retention — from a short window up to forever** — per-tenant record
+  retention (`7d`/`30d`/`90d`/`180d`/`1y`/`forever`, default **forever**) and a
+  global soft-delete recovery window (`PDI_RECOVERY_WINDOW`, default forever);
+  `POST /retention/sweep` expires records/purges tombstoned tenants past their
+  window — `forever` expires nothing. The audit chain is always kept forever
+  (pruning it would break tamper-evidence).
+- **Documented audit event schema** — `GET /audit/schema` returns the field
+  definitions and the full action catalogue (each action's category and
+  meaning); every audit entry carries a derived `category`.
 - **Tenant registry** — each integrating system gets a tenant + bearer token;
   data is strictly namespaced per tenant (no cross-tenant reads).
 - **Tamper-evident audit log** — every access is recorded in an append-only,
@@ -52,7 +68,8 @@ source material — each as its own tenant with its own token. See
   integrating apps surface a per-user view of it.
 - Deletion is real: the owning app purges its keys, tenant deletion offers a
   soft recovery window and then a permanent wipe, and no orphaned ciphertext
-  remains.
+  remains. Retention is yours to set — per-tenant, from a short window up to
+  **forever** — while the tamper-evident audit chain is always kept forever.
 - Deployed on-premises or in colocation — your hardware, your keys
   (`PDI_MASTER_KEY`), your walls.
 
@@ -173,14 +190,24 @@ The same system, glanceable on a phone. Regenerate with `python3 docs/screens/bu
 |---|---|---|
 | `GET /health` | — | Liveness |
 | `POST /deployments` | admin | Record a deployment (on-premises / colocation) |
-| `POST /tenants` | admin | Create an integrating tenant; returns its bearer token once |
-| `PUT /records` | tenant | Store `{key, value}` — value sealed at rest |
+| `POST /tenants` | admin | Create a tenant (optional `retention`); returns its bearer token once |
+| `PUT /tenants/{id}/retention` | admin | Set record retention (`7d`…`1y`\|`forever`\|days) |
+| `PUT /records` | tenant (write) | Store `{key, value}` — value sealed at rest |
 | `GET /records/{key}` | tenant | Retrieve and decrypt a value (keys may be path-namespaced) |
-| `DELETE /records/{key}` | tenant | Delete a record |
+| `DELETE /records/{key}` | tenant (write) | Delete a record |
 | `GET /records` | tenant | List this tenant's keys |
+| `POST /contributions` | tenant (write) | Seal an anonymized cloud-model contribution (optional `ref`) |
+| `GET /contributions` | tenant | List contribution keys |
+| `DELETE /contributions/{ref}` | tenant (write) | Revoke a contribution by its anonymous ref |
 | `GET /snapshot` | tenant | DR export (ciphertext only) |
-| `GET /audit` | tenant | This tenant's audit entries |
+| `POST /keys/rotate` | admin | Rotate the key version (re-seals records; `?reseal=false` to defer) |
+| `GET /keys` | admin | Key versions + provider |
+| `POST /keys/reseal` · `POST /keys/retire` | admin | Re-seal records / retire old versions |
+| `GET /retention` | admin | Retention policy (recovery window + per-tenant) |
+| `POST /retention/sweep` | admin | Enforce retention now (expire/purge past-window; `forever` = no-op) |
+| `GET /audit` | tenant | This tenant's audit entries (each with a `category`) |
 | `GET /audit/verify` | tenant | Verify the hash-chain is intact |
+| `GET /audit/schema` | — | Audit event schema: fields + action catalogue |
 
 Tenant endpoints require `Authorization: Bearer pdi_...`.
 
@@ -196,7 +223,11 @@ PDI internals.
 | Variable | Default | Purpose |
 |---|---|---|
 | `PDI_DB` | `pdi.db` | SQLite database path (ciphertext only) |
-| `PDI_MASTER_KEY` | — | Required: base64-encoded 32-byte AES-256 key (use a KMS/HSM in production) |
+| `PDI_MASTER_KEY` | — | Key-encryption key (KEK): base64 of 32 bytes. Wraps the per-version DEKs; ephemeral if unset (dev only) |
+| `PDI_KEY_PROVIDER` | `env` | `env` reads `PDI_MASTER_KEY`; `kms` routes the KEK to a KMS/HSM (see `KmsKeyProvider`) |
+| `PDI_KMS_KEY_ID` | — | KMS/HSM key id used by the `kms` provider |
+| `PDI_RECOVERY_WINDOW` | `forever` | Soft-deleted tenants purge after this window on sweep (`7d`…`1y`\|`forever`\|days) |
+| `PDI_ADMIN_TOKEN` | — | Guards admin endpoints; unset = open (dev only) |
 
 ## Test
 

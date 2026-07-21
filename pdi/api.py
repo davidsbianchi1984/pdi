@@ -12,12 +12,8 @@ import secrets
 
 from fastapi import Depends, FastAPI, Header, HTTPException
 
-from . import audit, db, vault
-
-
-def vault_module_new_id() -> str:
-    return db.new_id("ctb")
-from .models import (ContributionIn, DeploymentCreate, RecordPut,
+from . import audit, crypto, db, retention, vault
+from .models import (ContributionIn, DeploymentCreate, RecordPut, RetentionSet,
                      SnapshotRestore, TenantCreate, TokenIssue)
 
 
@@ -66,7 +62,11 @@ def create_app() -> FastAPI:
     @app.post("/tenants", status_code=201)
     def create_tenant(body: TenantCreate, _: None = Depends(_admin)) -> dict:
         # Returns the tenant token once — the integrating system stores it.
-        return vault.create_tenant(body.name)
+        try:
+            days = retention.parse_window(body.retention)
+        except ValueError as e:
+            raise HTTPException(422, str(e))
+        return vault.create_tenant(body.name, retention_days=days)
 
     @app.post("/tenants/{tenant_id}/tokens", status_code=201)
     def issue_token(tenant_id: str, body: TokenIssue,
@@ -136,19 +136,97 @@ def create_app() -> FastAPI:
     def add_contribution(body: ContributionIn,
                          tenant: dict = Depends(_writer)) -> dict:
         """Encrypted, audited intake for anonymized model-improvement data
-        contributed by integrating systems (see docs/cloud-model.md)."""
+        contributed by integrating systems (see docs/cloud-model.md). The
+        payload is sealed under a ``contributions/`` key and the intake is
+        recorded in the audit chain, so the cloud model's training data is
+        encrypted at rest and every contribution is individually auditable and
+        revocable (delete its key)."""
         import json as _json
-        contribution_id = vault_module_new_id()
+        contribution_id = db.new_id("ctb")
         key = f"contributions/{body.source}/{contribution_id}"
-        vault.put(tenant, key, _json.dumps(
-            {"kind": body.kind, "payload": body.payload}))
-        return {"id": contribution_id, "key": key, "sealed": True}
+        vault.put(tenant, key, _json.dumps({
+            "kind": body.kind, "payload": body.payload, "ref": body.ref,
+            "at": db.utcnow()}))
+        audit.record("contribution.add", tenant_id=tenant["id"], ref=body.ref or key)
+        return {"id": contribution_id, "key": key, "ref": body.ref, "sealed": True}
 
     @app.get("/contributions")
     def list_contributions(tenant: dict = Depends(_tenant)) -> dict:
         keys = [k for k in vault.list_keys(tenant)
                 if k.startswith("contributions/")]
         return {"count": len(keys), "keys": keys}
+
+    @app.delete("/contributions/{ref}", status_code=200)
+    def revoke_contribution(ref: str, tenant: dict = Depends(_writer)) -> dict:
+        """Revoke a contribution by its anonymous ref — deletes the sealed
+        item (and audits it), so a contributor can withdraw a specific
+        exchange without exposing who it belonged to."""
+        import json as _json
+        removed = 0
+        for key in list(vault.list_keys(tenant)):
+            if not key.startswith("contributions/"):
+                continue
+            rec = vault.get(tenant, key)
+            if rec and _json.loads(rec["value"]).get("ref") == ref:
+                vault.delete(tenant, key)
+                removed += 1
+        if not removed:
+            raise HTTPException(404, "no contribution with that ref")
+        audit.record("delete", tenant_id=tenant["id"], ref=f"contribution:{ref}")
+        return {"ref": ref, "revoked": removed}
+
+    # -- key management (production: envelope encryption + rotation) ---------
+
+    @app.get("/keys")
+    def list_keys(_: None = Depends(_admin)) -> dict:
+        return {"provider": os.environ.get("PDI_KEY_PROVIDER", "env"),
+                "versions": crypto.key_versions()}
+
+    @app.post("/keys/rotate", status_code=201)
+    def rotate_key(reseal: bool = True, _: None = Depends(_admin)) -> dict:
+        """Rotate to a new key version. By default immediately re-seals every
+        record under it (``?reseal=false`` to defer). Old versions stay until
+        retired, so nothing becomes unreadable mid-rotation."""
+        result = crypto.rotate()
+        audit.record("key.rotate", ref=str(result["active_version"]))
+        if reseal:
+            result["reseal"] = vault.reseal_all()
+        return result
+
+    @app.post("/keys/reseal")
+    def reseal_keys(_: None = Depends(_admin)) -> dict:
+        return vault.reseal_all()
+
+    @app.post("/keys/retire")
+    def retire_keys(_: None = Depends(_admin)) -> dict:
+        """Retire non-active key versions (only safe after a reseal)."""
+        n = crypto.retire_old_versions()
+        audit.record("key.retire", ref=str(n))
+        return {"retired": n, "versions": crypto.key_versions()}
+
+    # -- retention (up to forever) ------------------------------------------
+
+    @app.get("/retention")
+    def retention_policy(_: None = Depends(_admin)) -> dict:
+        return retention.policy()
+
+    @app.put("/tenants/{tenant_id}/retention")
+    def set_retention(tenant_id: str, body: RetentionSet,
+                      _: None = Depends(_admin)) -> dict:
+        try:
+            result = retention.set_tenant_retention(tenant_id, body.retention)
+        except ValueError as e:
+            raise HTTPException(422, str(e))
+        if result is None:
+            raise HTTPException(404, "tenant not found")
+        return result
+
+    @app.post("/retention/sweep")
+    def retention_sweep(_: None = Depends(_admin)) -> dict:
+        """Enforce retention now — purge soft-deleted tenants past the recovery
+        window and expire records past their tenant's retention. ``forever``
+        windows purge/expire nothing."""
+        return retention.sweep()
 
     # -- compliance ---------------------------------------------------------
 
@@ -160,6 +238,11 @@ def create_app() -> FastAPI:
     def audit_verify(tenant: dict = Depends(_tenant)) -> dict:
         # Chain integrity is global; any tenant may verify the whole chain.
         return audit.verify()
+
+    @app.get("/audit/schema")
+    def audit_schema() -> dict:
+        # The event schema: fields, the action catalogue, and retention stance.
+        return audit.schema()
 
     return app
 

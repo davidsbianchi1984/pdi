@@ -16,6 +16,14 @@ class DeploymentCreate(BaseModel):
 
 class TenantCreate(BaseModel):
     name: str
+    # Record retention for this tenant: a window ("7d"/"30d"/"90d"/"180d"/
+    # "1y"/"forever") or a positive day count. Omitted / "forever" = keep
+    # forever (the default).
+    retention: str | None = None
+
+
+class RetentionSet(BaseModel):
+    retention: str    # "7d" | "30d" | "90d" | "180d" | "1y" | "forever" | <days>
 
 
 class RecordPut(BaseModel):
@@ -48,3 +56,4 @@ class ContributionIn(BaseModel):
     source: str            # e.g. "qrme" | "jim-mini"
     kind: str              # e.g. "rated_exchange" | "guidance_outcome"
     payload: dict
+    ref: str | None = None  # contributor's anonymous ref, for later revocation
