@@ -72,6 +72,21 @@ private facility (an ephemeral key is generated if unset — dev only).
 
 The PDI operator console in two form factors — a **desktop dashboard** and a **mobile console** — one screen per capability of the vault, in the product's design language (Deep Indigo · Vault Cyan · Soft Silver, SF-style type, liquid-glass cards). It shares the night-indigo universe of QRME and JIM-mini with vault cyan as its accent — one world, three products. Every screen is a self-contained SVG (no fonts, images, or scripts) and maps to a real endpoint.
 
+### Platforms
+
+Every screen ships in each platform's native chrome — mobile in **iOS** (`docs/screens/`) and **Android** (`docs/screens/android/`); desktop in **macOS** (`docs/desktop/`) and **Windows** (`docs/desktop/windows/`). iOS's Dynamic Island + home indicator vs Android's punch-hole + gesture nav; macOS traffic-lights vs the Windows caption bar.
+
+<table>
+  <tr>
+    <td align="center" width="50%"><a href="docs/screens/01-overview.svg"><img src="docs/screens/01-overview.svg" width="210" alt="iOS"></a><br><sub>Mobile · <b>iOS</b></sub></td>
+    <td align="center" width="50%"><a href="docs/screens/android/01-overview.svg"><img src="docs/screens/android/01-overview.svg" width="210" alt="Android"></a><br><sub>Mobile · <b>Android</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="docs/desktop/01-overview.svg"><img src="docs/desktop/01-overview.svg" width="440" alt="macOS"></a><br><sub>Desktop · <b>macOS</b></sub></td>
+    <td align="center"><a href="docs/desktop/windows/01-overview.svg"><img src="docs/desktop/windows/01-overview.svg" width="440" alt="Windows"></a><br><sub>Desktop · <b>Windows</b></sub></td>
+  </tr>
+</table>
+
 ### Desktop dashboard
 
 Wide, multi-panel operator views — sidebar nav, live tiles, the hash-chain audit table, and the encryption pipeline. Regenerate with `python3 docs/desktop/build.py`.
