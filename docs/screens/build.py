@@ -790,6 +790,94 @@ def render(spec):
         out.append(text(W / 2, y, "The console then unlocks with a scoped token.", 9.5, C["t3"], 500, "middle"))
         out.append(text(W / 2, y + 16, "By continuing you agree to the Terms & Privacy Policy.", 9, C["t3"], 500, "middle"))
 
+    elif hero == "welcome":
+        out.append(orb(W / 2, y + 40, 34))
+        out.append(icon("lock", W / 2, y + 40, "rgba(255,255,255,0.95)", 1.5))
+        out.append(text(W / 2, y + 106, "PDI", 22, "#fff", 800, "middle", 1))
+        out.append(text(W / 2, y + 128, "Private Data Infrastructure", 11.5, C["t2"], 400, "middle"))
+        y += 156
+        for ic, lbl in [("lock", "Encrypted at rest, sealed per record"),
+                        ("shieldok", "Tamper-evident audit chain"),
+                        ("net", "One vault for QRME, JIM-mini & you"),
+                        ("finger", "Scoped, revocable access tokens")]:
+            out.append(rrect(CX, y, CW, 40, 13, "url(#gCard)", C["line"], 1))
+            out.append(icon(ic, CX + 24, y + 20, C["brandA"], 0.7))
+            out.append(text(CX + 44, y + 24, lbl, 11, C["txt"], 550))
+            y += 48
+        out.append(button(CX, y + 4, CW, "Get Started", "brand", 44))
+
+    elif hero == "keysetup":
+        out.append(text(CX, y, "Where the master key lives — change it later.", 10, C["t2"]))
+        y += 26
+        opts = [("cloud", "Cloud KMS", "managed HSM · auto-rotating", "Recommended", "good", True),
+                ("lock", "Local master key", "for development only", "Dev", "warn", False)]
+        for ic, k, s, tag, tone, sel in opts:
+            fill = A(C["brandA"], 0.10) if sel else "url(#gCard)"
+            stroke = C["brandA"] if sel else C["line"]
+            out.append(rrect(CX, y, CW, 62, 15, fill, stroke, 1.4 if sel else 1))
+            out.append(chip(CX + 12, y + 14, ic, C["brandA"] if sel else C["t3"]))
+            out.append(text(CX + 58, y + 26, k, 13, C["txt"], 700))
+            out.append(text(CX + 58, y + 43, s, 10.5, C["t2"]))
+            out.append(pill(CX + CW - 14, y + 24, tag, tone))
+            rc = C["brandA"] if sel else C["t3"]
+            out.append(f'<circle cx="{CX+CW-24}" cy="{y+45}" r="8" fill="none" stroke="{rc}" stroke-width="1.6"/>')
+            if sel:
+                out.append(f'<circle cx="{CX+CW-24}" cy="{y+45}" r="4" fill="{rc}"/>')
+            y += 74
+        out.append(text(CX, y, "PDI never sees the key — only your provider does.", 9.5, C["t3"], 500))
+        y += 22
+        out.append(button(CX, y, CW, "Continue", "brand", 44))
+
+    elif hero == "grant":
+        out.append(text(CX, y, "Issue a key to a system that will read your vault.", 10, C["t2"]))
+        y += 26
+        out.append(rrect(CX, y, CW, 58, 15, "url(#gCard)", C["line"], 1))
+        out.append(text(CX + 14, y + 22, "TOKEN", 9, C["t3"], 700, "start", 0.6))
+        out.append(text(CX + 14, y + 42, "pdi_live_9f2a … e71b", 12, C["cyan"], 600, "start", 0.5, True))
+        out.append(pill(CX + CW - 14, y + 22, "revocable", "good"))
+        y += 70
+        scopes = [("eye", "Read records", "the AI can fetch values", "on"),
+                  ("pen", "Write records", "let it store new data", "off"),
+                  ("clock", "Expires in 90 days", "auto-revoke on lapse", "on")]
+        for ic, k, s, st in scopes:
+            out.append(rrect(CX, y, CW, 54, 14, "url(#gCard)", C["line"], 1))
+            out.append(chip(CX + 10, y + 10, ic, C["brandA"]))
+            out.append(text(CX + 54, y + 24, k, 12, C["txt"], 650))
+            out.append(text(CX + 54, y + 39, s, 10, C["t2"]))
+            out.append(toggle(CX + CW - 44, y + 17, st == "on"))
+            y += 62
+        out.append(button(CX, y + 2, CW, "Continue", "brand", 44))
+
+    elif hero == "connect":
+        out.append(text(CX, y, "The systems that will use your vault.", 10, C["t2"]))
+        y += 26
+        sysrows = [("robot", "QRME", "Synthetic Profile Management", "Connected", "good", "brand"),
+                   ("heart", "JIM-mini", "Guardian guidance", "Connected", "good", "red"),
+                   ("building", "Your apps", "via the PDI API", "Add", "info", "cyan")]
+        for ic, name, desc, tag, tone, col in sysrows:
+            out.append(rrect(CX, y, CW, 60, 15, "url(#gCard)", C["line"], 1))
+            out.append(chip(CX + 12, y + 13, ic, ACCENT[col]))
+            out.append(text(CX + 58, y + 26, name, 12.5, C["txt"], 700))
+            out.append(text(CX + 58, y + 42, desc, 10, C["t2"]))
+            out.append(pill(CX + CW - 14, y + 26, tag, tone))
+            y += 70
+        out.append(button(CX, y + 2, CW, "Continue", "brand", 44))
+
+    elif hero == "ready":
+        out.append(orb(W / 2, y + 40, 34))
+        out.append(f'<path d="M{W/2-11} {y+40} l7 8 14 -16" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>')
+        y += 100
+        out.append(text(W / 2, y, "Your vault is live", 18, "#fff", 750, "middle", -0.3))
+        out.append(text(W / 2, y + 21, "Sealed, audited, and yours alone.", 11, C["t2"], 400, "middle"))
+        y += 44
+        for ic, col, k, s in [("lock", "brand", "Encryption on", "AES-256-GCM at rest"),
+                              ("net", "cyan", "Key provider set", "managed & rotating"),
+                              ("finger", "amber", "Access scoped", "1 token · read-only"),
+                              ("shieldok", "green", "Audit chain live", "every read is logged")]:
+            s2, y = card_block(y, {"icon": ic, "color": col, "k": k, "s": s, "h": 48})
+            out.append(s2)
+        out.append(button(CX, y + 2, CW, "Open the console", "brand", 44))
+
     else:  # generic stacked cards
 
         for c in spec["cards"]:
@@ -885,6 +973,11 @@ SCREENS = [
     dict(num=20, title="Sign In", sub="Unlock the console", hero="signin", accent="brand", tab=0),
     dict(num=21, title="Sign Out", sub="Console locked", hero="endsession", accent="green", tab=0),
     dict(num=22, title="Log In", sub="Apple, Google or email", hero="auth", accent="brand", tab=0),
+    dict(num=23, title="Welcome", sub="Your encrypted vault", hero="welcome", accent="brand", tab=0),
+    dict(num=24, title="Key Setup", sub="How your keys are held", hero="keysetup", accent="brand", tab=0),
+    dict(num=25, title="Grant Access", sub="Scoped, revocable tokens", hero="grant", accent="cyan", tab=0),
+    dict(num=26, title="Connect Systems", sub="Who uses your vault", hero="connect", accent="brand", tab=0),
+    dict(num=27, title="All Set", sub="The vault is live", hero="ready", accent="green", tab=0),
 ]
 
 

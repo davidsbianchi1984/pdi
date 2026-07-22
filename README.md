@@ -187,6 +187,22 @@ The same system, glanceable on a phone. Regenerate with `python3 docs/screens/bu
   </tr>
 </table>
 
+**First-run setup**
+
+The first-run journey runs **23 Welcome → 22 Log In → 24 Key Setup → 25 Grant Access → 26 Connect Systems → 27 All Set**, then opens the console.
+
+<table>
+  <tr>
+    <td align="center" width="33%"><a href="docs/screens/23-welcome.svg"><img src="docs/screens/23-welcome.svg" width="210" alt="Welcome — PDI"></a><br><sub><b>23</b> · Welcome</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/24-key-setup.svg"><img src="docs/screens/24-key-setup.svg" width="210" alt="Key Setup — KMS/HSM or master key"></a><br><sub><b>24</b> · Key Setup</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/25-grant-access.svg"><img src="docs/screens/25-grant-access.svg" width="210" alt="Grant Access — scoped tokens"></a><br><sub><b>25</b> · Grant Access</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="33%"><a href="docs/screens/26-connect-systems.svg"><img src="docs/screens/26-connect-systems.svg" width="210" alt="Connect Systems — QRME & JIM-mini"></a><br><sub><b>26</b> · Connect Systems</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/27-all-set.svg"><img src="docs/screens/27-all-set.svg" width="210" alt="All Set — the vault is live"></a><br><sub><b>27</b> · All Set</sub></td>
+  </tr>
+</table>
+
 **Operator session lifecycle**
 
 <table>
