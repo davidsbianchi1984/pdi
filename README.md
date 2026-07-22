@@ -193,6 +193,7 @@ The same system, glanceable on a phone. Regenerate with `python3 docs/screens/bu
   <tr>
     <td align="center" width="33%"><a href="docs/screens/20-sign-in.svg"><img src="docs/screens/20-sign-in.svg" width="210" alt="Sign In — PDI desktop console"></a><br><sub><b>20</b> · Sign In</sub></td>
     <td align="center" width="33%"><a href="docs/screens/21-sign-out.svg"><img src="docs/screens/21-sign-out.svg" width="210" alt="Sign Out — PDI desktop console"></a><br><sub><b>21</b> · Sign Out</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/22-log-in.svg"><img src="docs/screens/22-log-in.svg" width="210" alt="Log In — Apple, Google or email"></a><br><sub><b>22</b> · Log In</sub></td>
   </tr>
 </table>
 
