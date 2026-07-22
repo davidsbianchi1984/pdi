@@ -878,6 +878,38 @@ def render(spec):
             out.append(s2)
         out.append(button(CX, y + 2, CW, "Open the console", "brand", 44))
 
+    elif hero == "connectors":
+        out.append(text(CX, y, "Collect into the vault · publish to run.",
+                        10.5, C["t2"]))
+        y += 26
+        out.append(text(CX, y, "COLLECTING", 9.5, C["t3"], 700, "start", 0.8))
+        out.append(pill(CX + CW, y + 3, "→ sealed", "info"))
+        y += 16
+        for ic, col, name, sub in [
+                ("photo", "brandA", "Instagram", "@dana · 1,204 sealed"),
+                ("chat", "cyan", "X", "@dana · 820 sealed")]:
+            out.append(rrect(CX, y, CW, 50, 14, "url(#gCard)", C["line"], 1))
+            out.append(chip(CX + 10, y + 8, ic, C[col]))
+            out.append(text(CX + 54, y + 22, name, 12.5, C["txt"], 650))
+            out.append(text(CX + 54, y + 37, sub, 10, C["t2"]))
+            out.append(pill(CX + CW - 12, y + 25, "COLLECT", "info"))
+            y += 58
+        y += 6
+        out.append(text(CX, y, "PUBLISHING", 9.5, C["t3"], 700, "start", 0.8))
+        out.append(pill(CX + CW, y + 3, "runs on platform", "good"))
+        y += 16
+        ph = 82
+        out.append(rrect(CX, y, CW, ph, 15, "url(#gCard)", C["line"], 1))
+        out.append(chip(CX + 12, y + 12, "building", C["brandA"]))
+        out.append(text(CX + 54, y + 26, "LinkedIn", 12.5, C["txt"], 650))
+        out.append(text(CX + 54, y + 42, "@dana", 10, C["t2"]))
+        out.append(status_dot(CX + 150, y + 30, "LIVE", "on"))
+        out.append(text(CX + 54, y + 62, "scan to reach you", 9, C["t3"]))
+        out.append(qr(CX + CW - 74, y + 10, 62, seed=13))
+        y += ph + 10
+        out.append(text(CX, y, "Collected items are encrypted at rest.",
+                        9.5, C["t3"], 500))
+
     else:  # generic stacked cards
 
         for c in spec["cards"]:
@@ -978,6 +1010,7 @@ SCREENS = [
     dict(num=25, title="Grant Access", sub="Scoped, revocable tokens", hero="grant", accent="cyan", tab=0),
     dict(num=26, title="Connect Systems", sub="Who uses your vault", hero="connect", accent="brand", tab=0),
     dict(num=27, title="All Set", sub="The vault is live", hero="ready", accent="green", tab=0),
+    dict(num=28, title="Connectors", sub="Collect into the vault · publish", hero="connectors", accent="brand", tab=0),
 ]
 
 

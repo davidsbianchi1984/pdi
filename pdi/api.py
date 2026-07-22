@@ -7,14 +7,20 @@ tenant's namespace — one integrating system cannot read another's records.
 
 from __future__ import annotations
 
+import io
 import os
 import secrets
 
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException, Response
 
-from . import audit, crypto, db, positions, retention, vault
-from .models import (ContributionIn, DeploymentCreate, PositionIntake, RecordPut,
+from . import audit, connectors, crypto, db, positions, retention, vault
+from .models import (ConnectorCreate, ConnectorIngest, ConnectorPublish,
+                     ContributionIn, DeploymentCreate, PositionIntake, RecordPut,
                      RetentionSet, SnapshotRestore, TenantCreate, TokenIssue)
+
+
+def _public_base() -> str:
+    return os.environ.get("PDI_PUBLIC_URL", "https://pdi.app").rstrip("/")
 
 
 def _tenant(authorization: str = Header(default="")) -> dict:
@@ -131,6 +137,73 @@ def create_app() -> FastAPI:
     @app.get("/records")
     def list_records(tenant: dict = Depends(_tenant)) -> dict:
         return {"keys": vault.list_keys(tenant)}
+
+    # -- social connectors (tenant-scoped) ----------------------------------
+    # collect seals the account's content as vault records; publish shares an
+    # update on the platform, reachable by a QR beacon.
+
+    def _connector_or_404(cid: str, tenant: dict) -> dict:
+        row = connectors.get(cid)
+        if row is None or row["tenant_id"] != tenant["id"]:
+            raise HTTPException(404, "connector not found")
+        return row
+
+    @app.post("/connectors", status_code=201)
+    def create_connector(body: ConnectorCreate,
+                         tenant: dict = Depends(_writer)) -> dict:
+        return connectors.create(tenant["id"], body.platform, body.direction,
+                                body.handle, body.scope)
+
+    @app.get("/connectors")
+    def list_connectors(tenant: dict = Depends(_tenant)) -> list[dict]:
+        return connectors.for_tenant(tenant["id"])
+
+    @app.delete("/connectors/{cid}")
+    def revoke_connector(cid: str, tenant: dict = Depends(_writer)) -> dict:
+        _connector_or_404(cid, tenant)
+        return connectors.revoke(cid)
+
+    @app.post("/connectors/{cid}/ingest", status_code=201)
+    def ingest_connector(cid: str, body: ConnectorIngest,
+                        tenant: dict = Depends(_writer)) -> dict:
+        row = _connector_or_404(cid, tenant)
+        if row["direction"] != "collect":
+            raise HTTPException(409, "this connector is for publishing, not collecting")
+        if row["status"] != "active":
+            raise HTTPException(409, "connector has been revoked")
+        return connectors.ingest(tenant, row, [i.model_dump() for i in body.items])
+
+    @app.post("/connectors/{cid}/publish", status_code=201)
+    def publish_connector(cid: str, body: ConnectorPublish,
+                         tenant: dict = Depends(_writer)) -> dict:
+        row = _connector_or_404(cid, tenant)
+        if row["direction"] != "publish":
+            raise HTTPException(409, "this connector is for collecting, not publishing")
+        if row["status"] != "active":
+            raise HTTPException(409, "connector has been revoked")
+        return connectors.publish(row, body.content, body.topic)
+
+    @app.get("/connectors/{cid}/beacon")
+    def connector_beacon(cid: str, tenant: dict = Depends(_tenant)) -> dict:
+        row = _connector_or_404(cid, tenant)
+        if row["direction"] != "publish":
+            raise HTTPException(409, "beacons are for publish connectors")
+        return {"connector": cid, "platform": row["platform"],
+                "handle": f"@{row['handle']}" if row["handle"] else None,
+                "presence_url": connectors.presence_url(row, _public_base()),
+                "qr_svg": f"/connectors/{cid}/qr.svg"}
+
+    @app.get("/connectors/{cid}/qr.svg")
+    def connector_qr(cid: str, tenant: dict = Depends(_tenant)) -> Response:
+        row = _connector_or_404(cid, tenant)
+        if row["direction"] != "publish":
+            raise HTTPException(409, "beacons are for publish connectors")
+        import segno
+
+        buf = io.BytesIO()
+        segno.make(connectors.presence_url(row, _public_base()), error="q").save(
+            buf, kind="svg", scale=8, border=2, dark="#181240", light="#ffffff")
+        return Response(content=buf.getvalue(), media_type="image/svg+xml")
 
     @app.get("/snapshot")
     def snapshot(tenant: dict = Depends(_tenant)) -> dict:
