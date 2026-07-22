@@ -13,7 +13,7 @@ import secrets
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Response
 
-from . import audit, connectors, crypto, db, positions, retention, vault
+from . import audit, catalog, connectors, crypto, db, positions, retention, vault
 from .models import (ConnectorCreate, ConnectorIngest, ConnectorPublish,
                      ContributionIn, DeploymentCreate, PositionIntake, RecordPut,
                      RetentionSet, SnapshotRestore, TenantCreate, TokenIssue)
@@ -157,6 +157,12 @@ def create_app() -> FastAPI:
     @app.get("/connectors")
     def list_connectors(tenant: dict = Depends(_tenant)) -> list[dict]:
         return connectors.for_tenant(tenant["id"])
+
+    @app.get("/connectors/catalog")
+    def connector_catalog() -> dict:
+        """The connected-apps catalog: the AI-integrated apps (Apple, Google,
+        Microsoft, Canva) a tenant's agents can connect to."""
+        return catalog.catalog()
 
     @app.delete("/connectors/{cid}")
     def revoke_connector(cid: str, tenant: dict = Depends(_writer)) -> dict:
