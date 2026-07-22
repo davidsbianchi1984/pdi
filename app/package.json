@@ -2,7 +2,7 @@
   "name": "pdi-console",
   "productName": "PDI Console",
   "version": "0.1.0",
-  "description": "PDI operator console — a runnable React front-end wired to the PDI vault API, packaged with Electron.",
+  "description": "PDI operator console \u2014 a runnable React front-end wired to the PDI vault API, packaged with Electron.",
   "author": "David Bianchi",
   "repository": "https://github.com/davidsbianchi1984/pdi",
   "private": true,
@@ -44,7 +44,12 @@
       "electron/**/*"
     ],
     "mac": {
-      "target": "dmg",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": "universal"
+        }
+      ],
       "category": "public.app-category.developer-tools"
     },
     "win": {
