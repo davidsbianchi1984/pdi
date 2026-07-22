@@ -61,6 +61,23 @@ CREATE TABLE IF NOT EXISTS records (
     UNIQUE (tenant_id, key)
 );
 
+-- Social-platform connectors. A tenant links a platform in one of two
+-- directions: collect pulls the account's content in and seals each item as a
+-- vault record (raw data other systems build profiles from); publish shares an
+-- update on the platform, reachable by a QR beacon.
+CREATE TABLE IF NOT EXISTS connectors (
+    id          TEXT PRIMARY KEY,
+    tenant_id   TEXT NOT NULL REFERENCES tenants(id),
+    platform    TEXT NOT NULL,   -- instagram | x | tiktok | facebook | linkedin | youtube | reddit | threads
+    direction   TEXT NOT NULL,   -- collect | publish
+    handle      TEXT,
+    scope       TEXT NOT NULL DEFAULT '[]',
+    status      TEXT NOT NULL DEFAULT 'active',  -- active | revoked
+    collected   INTEGER NOT NULL DEFAULT 0,
+    published   INTEGER NOT NULL DEFAULT 0,
+    created_at  TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS audit (
     seq         INTEGER PRIMARY KEY AUTOINCREMENT,
     tenant_id   TEXT,

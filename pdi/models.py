@@ -4,7 +4,33 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+
+SocialPlatform = Literal[
+    "instagram", "x", "tiktok", "facebook", "linkedin", "youtube", "reddit", "threads",
+]
+
+
+class ConnectorCreate(BaseModel):
+    platform: SocialPlatform
+    direction: Literal["collect", "publish"]
+    handle: str | None = None
+    scope: list[str] = Field(default_factory=list)
+
+
+class ConnectorItem(BaseModel):
+    content: str
+    ref: str | None = None             # the item's id on the platform
+
+
+class ConnectorIngest(BaseModel):
+    items: list[ConnectorItem] = Field(default_factory=list)
+
+
+class ConnectorPublish(BaseModel):
+    content: str
+    topic: str | None = None
 
 
 class DeploymentCreate(BaseModel):

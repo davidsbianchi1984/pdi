@@ -213,6 +213,16 @@ The first-run journey runs **23 Welcome → 22 Log In → 24 Key Setup → 25 Gr
   </tr>
 </table>
 
+**Social connectors — collect into the vault, publish to run**
+
+<table>
+  <tr>
+    <td align="center" width="33%"><a href="docs/screens/28-connectors.svg"><img src="docs/screens/28-connectors.svg" width="210" alt="Connectors — collect & publish"></a><br><sub><b>28</b> · Connectors</sub></td>
+    <td align="center" width="33%"></td>
+    <td align="center" width="33%"></td>
+  </tr>
+</table>
+
 
 ## API
 
