@@ -75,6 +75,20 @@ def test_revoke_stops_ingest(client):
     assert r.status_code == 409
 
 
+def test_all_image_platforms_supported(client):
+    token = new_tenant(client)
+    platforms = ["instagram", "x", "tiktok", "facebook", "linkedin", "youtube",
+                 "reddit", "threads", "whatsapp", "meta", "mastodon", "twitch",
+                 "snapchat", "roblox", "pinterest", "discord"]
+    for p in platforms:
+        assert _create(client, token, platform=p, direction="collect")["platform"] == p
+    for p, url in [("twitch", "https://twitch.tv/dana"),
+                   ("discord", "https://discord.com/users/dana")]:
+        conn = _create(client, token, platform=p, direction="publish", handle="dana")
+        beacon = client.get(f"/connectors/{conn['id']}/beacon", headers=auth(token)).json()
+        assert beacon["presence_url"] == url
+
+
 def test_connectors_are_tenant_isolated(client):
     owner = new_tenant(client, name="owner")
     other = new_tenant(client, name="other")
