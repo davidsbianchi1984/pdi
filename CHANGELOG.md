@@ -6,6 +6,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **First-run onboarding screens** — welcome, provider login (Continue with
+  Apple / Google / email), key-provider setup (managed KMS/HSM vs local master
+  key), scoped-token grant, connected systems, and an "all set" summary — a
+  guided first-run before the operator console, rendered in both iOS and Android
+  chrome.
+
 ## [0.1.0] — 2026-07-21
 
 First public release. PDI (Private Data Infrastructure) is the encrypted-vault
