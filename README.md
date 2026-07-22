@@ -2,12 +2,12 @@
 
 ![PDI — Private Data Infrastructure](assets/cover.svg)
 
-A standalone **secure private data platform** (the "Private Data Infrastructure"enabling seamless support for future AI agent services (**JAN2024 NETWORKED
+A standalone **secure private data platform** (the "Private Data Infrastructure" enabling seamless support for future AI agent services (**JAN2024 NETWORKED
 RESPONSIVE PERSONAL GUIDANCE SYSTEM FOR KNOWN CONDITIONS United States application or CT international application # 19/038,196 ATTORNEY DOCKET # 526.P001 Patent Pending**) through a centralized AI-driven
 management system (**FEB2024 SYNTHETIC USER PROFILE MANAGEMENT United States application or CT international application # 19/056,418 ATTORNEY DOCKET # 526.P002 Patent Pending**). When elected
 to activate these capabilities, the platform will be equipped to deploy intelligent, role-specific AI agents capable of assisting users,
 automating tasks, managing workflows, and enhancing operational decision-making and could potentially run more efficiently, replace
-Mundane Outdated T asks and or Roles within the company.— all within the same secure, private network environment.
+Mundane Outdated Tasks and or Roles within the company.— all within the same secure, private network environment.
 A private, encrypted data vault with a
 tamper-evident audit log and a tenant registry. It is the infrastructure layer
 that AI systems such as QRME and JIM-mini can *optionally* run on top of —
