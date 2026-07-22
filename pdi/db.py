@@ -61,6 +61,23 @@ CREATE TABLE IF NOT EXISTS records (
     UNIQUE (tenant_id, key)
 );
 
+-- Connected-app connectors. Each links a tenant to an AI-integrated app from
+-- the catalog (Apple Photos, Google Calendar, Microsoft 365, Canva, …). The
+-- tenant's agents collect context (sealed as vault records), act, or produce.
+CREATE TABLE IF NOT EXISTS app_connectors (
+    id           TEXT PRIMARY KEY,
+    tenant_id    TEXT NOT NULL REFERENCES tenants(id),
+    provider     TEXT NOT NULL,
+    app          TEXT NOT NULL,
+    label        TEXT NOT NULL,
+    capabilities TEXT NOT NULL DEFAULT '[]',
+    directions   TEXT NOT NULL DEFAULT '[]',
+    status       TEXT NOT NULL DEFAULT 'active',
+    collected    INTEGER NOT NULL DEFAULT 0,
+    actions      INTEGER NOT NULL DEFAULT 0,
+    created_at   TEXT NOT NULL
+);
+
 -- Social-platform connectors. A tenant links a platform in one of two
 -- directions: collect pulls the account's content in and seals each item as a
 -- vault record (raw data other systems build profiles from); publish shares an
