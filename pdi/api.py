@@ -8,15 +8,18 @@ tenant's namespace — one integrating system cannot read another's records.
 from __future__ import annotations
 
 import io
+import json
 import os
 import secrets
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Response
 
-from . import audit, catalog, connectors, crypto, db, positions, retention, vault
-from .models import (ConnectorCreate, ConnectorIngest, ConnectorPublish,
-                     ContributionIn, DeploymentCreate, PositionIntake, RecordPut,
-                     RetentionSet, SnapshotRestore, TenantCreate, TokenIssue)
+from . import (app_connectors, audit, catalog, connectors, crypto, db, positions,
+               retention, vault)
+from .models import (AppCollect, AppConnect, AppInvoke, ConnectorCreate,
+                     ConnectorIngest, ConnectorPublish, ContributionIn,
+                     DeploymentCreate, PositionIntake, RecordPut, RetentionSet,
+                     SnapshotRestore, TenantCreate, TokenIssue)
 
 
 def _public_base() -> str:
@@ -210,6 +213,53 @@ def create_app() -> FastAPI:
         segno.make(connectors.presence_url(row, _public_base()), error="q").save(
             buf, kind="svg", scale=8, border=2, dark="#181240", light="#ffffff")
         return Response(content=buf.getvalue(), media_type="image/svg+xml")
+
+    # -- connected-app connectors (tenant-scoped) ---------------------------
+    # connect a catalog app; agents collect (sealed to the vault), act, produce.
+
+    def _app_or_404(cid: str, tenant: dict) -> dict:
+        row = app_connectors.get(cid)
+        if row is None or row["tenant_id"] != tenant["id"]:
+            raise HTTPException(404, "app connector not found")
+        return row
+
+    @app.post("/apps", status_code=201)
+    def connect_app(body: AppConnect, tenant: dict = Depends(_writer)) -> dict:
+        e = app_connectors.entry(body.provider, body.app)
+        if e is None:
+            raise HTTPException(404, f"unknown connector: {body.provider}/{body.app}")
+        unknown = set(body.capabilities) - set(e["capabilities"])
+        if unknown:
+            raise HTTPException(422, f"{body.app} does not offer: {sorted(unknown)}")
+        return app_connectors.create(tenant["id"], e, body.capabilities)
+
+    @app.get("/apps")
+    def list_apps(tenant: dict = Depends(_tenant)) -> list[dict]:
+        return app_connectors.for_tenant(tenant["id"])
+
+    @app.delete("/apps/{cid}")
+    def revoke_app(cid: str, tenant: dict = Depends(_writer)) -> dict:
+        _app_or_404(cid, tenant)
+        return app_connectors.revoke(cid)
+
+    @app.post("/apps/{cid}/ingest", status_code=201)
+    def ingest_app(cid: str, body: AppCollect, tenant: dict = Depends(_writer)) -> dict:
+        row = _app_or_404(cid, tenant)
+        if "collect" not in json.loads(row["directions"]):
+            raise HTTPException(409, f"{row['app']} does not support collecting context")
+        if row["status"] != "active":
+            raise HTTPException(409, "connector has been revoked")
+        return app_connectors.ingest(tenant, row, [i.model_dump() for i in body.items])
+
+    @app.post("/apps/{cid}/invoke", status_code=201)
+    def invoke_app(cid: str, body: AppInvoke, tenant: dict = Depends(_writer)) -> dict:
+        row = _app_or_404(cid, tenant)
+        if row["status"] != "active":
+            raise HTTPException(409, "connector has been revoked")
+        if body.capability not in json.loads(row["capabilities"]):
+            raise HTTPException(422, f"this {row['app']} connector was not granted "
+                                     f"'{body.capability}'")
+        return app_connectors.invoke(row, body.capability, body.input)
 
     @app.get("/snapshot")
     def snapshot(tenant: dict = Depends(_tenant)) -> dict:

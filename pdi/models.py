@@ -35,6 +35,26 @@ class ConnectorPublish(BaseModel):
     topic: str | None = None
 
 
+class AppConnect(BaseModel):
+    provider: str
+    app: str
+    capabilities: list[str] = Field(default_factory=list)  # empty = grant all
+
+
+class AppItem(BaseModel):
+    content: str
+    ref: str | None = None
+
+
+class AppCollect(BaseModel):
+    items: list[AppItem] = Field(default_factory=list)
+
+
+class AppInvoke(BaseModel):
+    capability: str
+    input: str | None = None
+
+
 class DeploymentCreate(BaseModel):
     name: str
     option: Literal["on_premises", "colocation"]
