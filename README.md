@@ -221,9 +221,12 @@ The first-run journey runs **23 Welcome → 22 Log In → 24 Key Setup → 25 Gr
     <td align="center" width="33%"><a href="docs/screens/29-connected-apps.svg"><img src="docs/screens/29-connected-apps.svg" width="210" alt="Connected Apps"></a><br><sub><b>29</b> · Connected Apps</sub></td>
     <td align="center" width="33%"><a href="docs/screens/30-compliance-transfers.svg"><img src="docs/screens/30-compliance-transfers.svg" width="210" alt="Compliance Transfers"></a><br><sub><b>30</b> · Compliance Transfers</sub></td>
   </tr>
+  <tr>
+    <td align="center" width="33%"><a href="docs/screens/31-secure-intake.svg"><img src="docs/screens/31-secure-intake.svg" width="210" alt="Secure Intake"></a><br><sub><b>31</b> · Secure Intake</sub></td>
+  </tr>
 </table>
 
-**For enterprises:** PDI offers compliance-grade secure file transfer for corporations (carriers, healthcare, financial, public sector) — files sealed under HIPAA / OSHA / CPNI / PCI-DSS and more, with audited chain of custody and enforced retention. See [docs/enterprise.md](docs/enterprise.md).
+**For enterprises:** PDI offers compliance-grade secure file transfer for corporations (carriers, healthcare, financial, public sector) — files sealed under HIPAA / OSHA / CPNI / PCI-DSS and more, with audited chain of custody and enforced retention, in both directions: outbound transfers and inbound secure intake from subscribers and partners. See [docs/enterprise.md](docs/enterprise.md).
 
 
 ## API

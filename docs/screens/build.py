@@ -978,6 +978,45 @@ def render(spec):
             out.append(text(CX + CW, y + 10, s, 9.5, C["t2"], 400, "end"))
             y += 24
 
+    elif hero == "intake":
+        out.append(text(CX, y, "Sent in by a subscriber or partner — sealed & audited.",
+                        9.5, C["t2"]))
+        y += 24
+        out.append(rrect(CX, y, CW, 64, 15, "url(#gCard)", C["line"], 1))
+        out.append(chip(CX + 12, y + 15, "person", C["brandA"]))
+        out.append(text(CX + 54, y + 26, "From subscriber-9", 13, C["txt"], 700))
+        out.append(text(CX + 54, y + 42, "Purpose: ID verification", 10, C["t2"]))
+        out.append(pill(CX + CW - 12, y + 26, "OPEN", "info"))
+        y += 74
+        out.append(rrect(CX, y, CW, 54, 15, "url(#gCard)", C["line"], 1))
+        out.append(text(CX + 14, y + 20, "SUBMIT TOKEN", 9, C["t3"], 700, "start", 0.6))
+        out.append(text(CX + 14, y + 40, "pdi_submit_9f2a… · one-shot", 10.5, C["cyan"], 500, "start", 0.4, True))
+        out.append(text(CX + CW - 14, y + 20, "single-use", 9.5, C["amber"], 600, "end"))
+        y += 64
+        out.append(text(CX, y, "COMPLIANCE", 9, C["t3"], 700, "start", 0.6))
+        y += 16
+        bx = CX
+        for lab, col in [("SUBSCRIBER", C["gold"]), ("CPNI", C["brandA"]), ("HIPAA", C["red"])]:
+            w = 16 + len(lab) * 6.6
+            out.append(rrect(bx, y, w, 22, 11, A(col, 0.16), col, 1))
+            out.append(text(bx + w / 2, y + 15, lab, 10, col, 700, "middle"))
+            bx += w + 8
+        y += 34
+        out.append(rrect(CX, y, CW, 42, 13, A(C["green"], 0.08), C["green"], 1))
+        out.append(icon("shieldok", CX + 24, y + 21, C["green"], 0.85))
+        out.append(text(CX + 46, y + 18, "Sealed in vault · encrypted at rest", 10.5, C["txt"], 600))
+        out.append(text(CX + 46, y + 33, "custody chain intact", 9.5, C["t2"]))
+        y += 52
+        out.append(text(CX, y, "CHAIN OF CUSTODY", 9, C["t3"], 700, "start", 0.6))
+        y += 18
+        for dot, k, s in [(C["amber"], "Requested", "corp · token issued"),
+                          (C["brandA"], "Submitted", "subscriber-9 · sealed"),
+                          (C["cyan"], "Read", "corp · logged")]:
+            out.append(f'<circle cx="{CX+6}" cy="{y+7}" r="4" fill="{dot}"/>')
+            out.append(text(CX + 20, y + 10, k, 11, C["txt"], 650))
+            out.append(text(CX + CW, y + 10, s, 9.5, C["t2"], 400, "end"))
+            y += 24
+
     else:  # generic stacked cards
 
         for c in spec["cards"]:
@@ -1081,6 +1120,7 @@ SCREENS = [
     dict(num=28, title="Connectors", sub="Collect into the vault · publish", hero="connectors", accent="brand", tab=0),
     dict(num=29, title="Connected Apps", sub="Apple · Google · Microsoft · Canva", hero="connectedapps", accent="brand", tab=0),
     dict(num=30, title="Compliance Transfers", sub="HIPAA · OSHA · CPNI — sealed & audited", hero="transfers", accent="brand", tab=1),
+    dict(num=31, title="Secure Intake", sub="Subscribers & partners send files in", hero="intake", accent="brand", tab=1),
 ]
 
 
