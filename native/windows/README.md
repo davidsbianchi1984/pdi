@@ -46,6 +46,7 @@ restriction and can call `127.0.0.1` without an exemption.
 | `Views/VaultPage` | seal / reveal / delete records (`/records`) |
 | `Views/AuditPage` | integrity badge + entries (`/audit`) |
 | `Views/RobotsPage` | bind + sealed ingest (`/robots`, `/robots/{rid}/ingest`) |
+| `Views/ConnectorsPage` | platform connectors (`/connectors`, audited ingest/publish) |
 | `Views/TransfersPage` | outbound transfers + secure intake (`/transfers`, `/intakes`) |
 | `ApiClient.cs` | `HttpClient` client + records |
 | `AppState.cs` | token + base URL, persisted to LocalAppData |

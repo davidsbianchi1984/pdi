@@ -21,6 +21,9 @@
             <NavigationViewItem Content="Robots" Tag="robots">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Contact" /></NavigationViewItem.Icon>
             </NavigationViewItem>
+            <NavigationViewItem Content="Connectors" Tag="connectors">
+                <NavigationViewItem.Icon><SymbolIcon Symbol="Link" /></NavigationViewItem.Icon>
+            </NavigationViewItem>
             <NavigationViewItem Content="Transfers" Tag="transfers">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Send" /></NavigationViewItem.Icon>
             </NavigationViewItem>

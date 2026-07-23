@@ -36,10 +36,9 @@ sets `NSAllowsLocalNetworking` so the Simulator can reach plain-http localhost.
 | `Sources/ApiClient.swift` | async `URLSession` client + wire models |
 | `Sources/AppState.swift` | tenant token + base URL, persisted |
 | `Sources/Theme.swift` | the dark-OLED palette |
-| `Sources/Views/*` | Welcome (sign-in), Overview, Vault, Audit, Robots, Transfers (Outbound/Intake) |
+| `Sources/Views/*` | Welcome (sign-in), Overview, Vault, Audit, Sources (Robots/Connectors), Transfers (Outbound/Intake) |
 
 ## Not yet wired
 
-This is a functional scaffold, not the full screen gallery. Connectors,
-connected apps, and key rotation still have backend endpoints (`pdi/api.py`)
-ready to add as further screens.
+This is a functional scaffold, not the full screen gallery. The connected-apps
+catalog and (admin-gated) key rotation remain backend-only surfaces.

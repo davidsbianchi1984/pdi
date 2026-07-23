@@ -31,7 +31,7 @@ import com.pdi.vault.ui.Pdi
 import com.pdi.vault.ui.PdiTheme
 import com.pdi.vault.ui.AuditScreen
 import com.pdi.vault.ui.OverviewScreen
-import com.pdi.vault.ui.RobotsScreen
+import com.pdi.vault.ui.SourcesScreen
 import com.pdi.vault.ui.TransfersScreen
 import com.pdi.vault.ui.VaultScreen
 import com.pdi.vault.ui.WelcomeScreen
@@ -60,7 +60,7 @@ private fun HomeShell(vm: VaultViewModel) {
         Triple("Overview", Icons.Filled.GridView, 0),
         Triple("Vault", Icons.Filled.Lock, 1),
         Triple("Audit", Icons.Filled.VerifiedUser, 2),
-        Triple("Robots", Icons.Filled.Face, 3),
+        Triple("Sources", Icons.Filled.Face, 3),
         Triple("Transfers", Icons.Filled.Send, 4),
     )
     Scaffold(
@@ -90,7 +90,7 @@ private fun HomeShell(vm: VaultViewModel) {
                 0 -> OverviewScreen(vm)
                 1 -> VaultScreen(vm)
                 2 -> AuditScreen(vm)
-                3 -> RobotsScreen(vm)
+                3 -> SourcesScreen(vm)
                 else -> TransfersScreen(vm)
             }
         }

@@ -24,6 +24,7 @@ import com.pdi.vault.IntakeFile
 import com.pdi.vault.Transfer
 import com.pdi.vault.Robot
 import com.pdi.vault.RobotSpec
+import com.pdi.vault.SocialConn
 import com.pdi.vault.VaultViewModel
 
 @Composable
@@ -572,6 +573,111 @@ private fun IntakePanel(vm: VaultViewModel) {
                          .onFailure { error = it.message }
                         reload()
                     }
+                }
+            }
+        }
+    }
+}
+
+// ---- Sources (Robots · Connectors behind one tab) ----
+
+@Composable
+fun SourcesScreen(vm: VaultViewModel) {
+    var seg by remember { mutableIntStateOf(0) }
+    Column(Modifier.fillMaxSize()) {
+        TabRow(selectedTabIndex = seg, containerColor = Pdi.Card, contentColor = Pdi.BrandA) {
+            listOf("Robots", "Connectors").forEachIndexed { i, t ->
+                Tab(selected = seg == i, onClick = { seg = i },
+                    text = { Text(t, fontSize = 13.sp) })
+            }
+        }
+        Box(Modifier.weight(1f)) {
+            if (seg == 0) RobotsScreen(vm) else ConnectorsPanel(vm)
+        }
+    }
+}
+
+// ---- Connectors (social-platform data sources; ingest is audited) ----
+
+@Composable
+private fun ConnectorsPanel(vm: VaultViewModel) {
+    val platforms = listOf("instagram", "x", "tiktok", "facebook", "linkedin",
+        "youtube", "whatsapp", "discord", "twitch", "pinterest", "snapchat", "mastodon")
+    var platform by remember { mutableStateOf("instagram") }
+    var handle by remember { mutableStateOf("") }
+    var conns by remember { mutableStateOf<List<SocialConn>>(emptyList()) }
+    var status by remember { mutableStateOf<String?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun reload() { vm.call({ ApiClient.connectors(vm.token!!) }) { r -> conns = r.getOrDefault(emptyList()) } }
+    LaunchedEffect(Unit) { reload() }
+
+    fun connect(direction: String) {
+        error = null; status = null
+        vm.call({ ApiClient.createConnector(vm.token!!, platform, direction, handle) }) { r ->
+            r.onSuccess { handle = "" }.onFailure { error = it.message }
+            reload()
+        }
+    }
+
+    screenScroll {
+        Text("Connectors", color = Pdi.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text("Link a platform account. Collected content is sealed into the vault; every ingest is hash-chained in the audit log.",
+            color = Pdi.T2, fontSize = 13.sp)
+
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            platforms.chunked(4).forEach { row ->
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    row.forEach { pl ->
+                        FilterChip(
+                            selected = platform == pl, onClick = { platform = pl },
+                            label = { Text(pl, fontSize = 10.sp) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = Pdi.BrandA,
+                                selectedLabelColor = Color.White, labelColor = Pdi.T2,
+                            ),
+                        )
+                    }
+                }
+            }
+            labeledField("Handle (optional)", handle, "@account") { handle = it }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(onClick = { connect("collect") }) {
+                    Text("Connect to collect", color = Pdi.BrandA, fontSize = 13.sp) }
+                TextButton(onClick = { connect("publish") }) {
+                    Text("Connect to publish", color = Pdi.BrandA, fontSize = 13.sp) }
+            }
+        }
+        error?.let { Text(it, color = Pdi.Red, fontSize = 13.sp) }
+        status?.let { Text(it, color = Pdi.Green, fontSize = 12.sp) }
+
+        conns.forEach { c ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("${c.platform.replaceFirstChar { it.uppercase() }} · ${c.direction}",
+                        color = Pdi.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    c.handle?.let { Text("@$it", color = Pdi.T3, fontSize = 12.sp) }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (c.direction == "collect")
+                        TextButton(onClick = {
+                            vm.call({ ApiClient.connectorIngest(vm.token!!, c.id,
+                                "sample post from ${c.platform}") }) { r ->
+                                r.onSuccess { status = "sealed one item from ${c.platform}" }
+                                 .onFailure { error = it.message }
+                            }
+                        }) { Text("Ingest sample", color = Pdi.BrandA, fontSize = 12.sp) }
+                    else
+                        TextButton(onClick = {
+                            vm.call({ ApiClient.connectorPublish(vm.token!!, c.id,
+                                "An update from the vault.") }) { r ->
+                                r.onSuccess { status = "published to ${c.platform}" }
+                                 .onFailure { error = it.message }
+                            }
+                        }) { Text("Publish update", color = Pdi.BrandA, fontSize = 12.sp) }
+                    TextButton(onClick = {
+                        vm.call({ ApiClient.revokeConnector(vm.token!!, c.id) }) { reload() }
+                    }) { Text("Disconnect", color = Pdi.Red, fontSize = 12.sp) }
                 }
             }
         }

@@ -65,6 +65,14 @@ struct IntakeFile: Decodable {
     let content: String?
 }
 
+struct SocialConn: Decodable {
+    let id: String
+    let platform: String
+    let direction: String
+    let handle: String?
+    let status: String?
+}
+
 // MARK: - Client
 
 enum ApiError: LocalizedError {
@@ -200,6 +208,39 @@ actor ApiClient {
     func closeIntake(token: String, iid: String) async throws {
         struct Ok: Decodable {}
         let _: Ok = try await request("/intakes/\(iid)", method: "DELETE",
+                                      token: token)
+    }
+
+    // MARK: Social-platform connectors (tenant data sources)
+
+    func connectors(token: String) async throws -> [SocialConn] {
+        try await request("/connectors", token: token)
+    }
+
+    func createConnector(token: String, platform: String, direction: String,
+                         handle: String?) async throws -> SocialConn {
+        var body: [String: Any] = ["platform": platform, "direction": direction]
+        if let handle, !handle.isEmpty { body["handle"] = handle }
+        return try await request("/connectors", method: "POST", body: body,
+                                 token: token)
+    }
+
+    func connectorIngest(token: String, cid: String, content: String) async throws {
+        struct Ok: Decodable {}
+        let _: Ok = try await request("/connectors/\(cid)/ingest", method: "POST",
+                                      body: ["items": [["content": content]]],
+                                      token: token)
+    }
+
+    func connectorPublish(token: String, cid: String, content: String) async throws {
+        struct Ok: Decodable {}
+        let _: Ok = try await request("/connectors/\(cid)/publish", method: "POST",
+                                      body: ["content": content], token: token)
+    }
+
+    func revokeConnector(token: String, cid: String) async throws {
+        struct Ok: Decodable {}
+        let _: Ok = try await request("/connectors/\(cid)", method: "DELETE",
                                       token: token)
     }
 
