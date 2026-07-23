@@ -1,0 +1,32 @@
+# XcodeGen spec — generates PdiVault.xcodeproj.
+#   brew install xcodegen && xcodegen generate && open PdiVault.xcodeproj
+name: PdiVault
+options:
+  bundleIdPrefix: com.pdi
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+targets:
+  PdiVault:
+    type: application
+    platform: iOS
+    sources:
+      - Sources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.pdi.vault
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: true
+        INFOPLIST_KEY_UILaunchScreen_Generation: true
+        INFOPLIST_KEY_CFBundleDisplayName: "PDI Vault"
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: true
+        SWIFT_VERSION: "5.9"
+        TARGETED_DEVICE_FAMILY: "1,2"
+    info:
+      properties:
+        # Allow http://127.0.0.1:8000 in the Simulator (local dev backend).
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+        UIStatusBarStyle: UIStatusBarStyleLightContent
+        UIUserInterfaceStyle: Dark

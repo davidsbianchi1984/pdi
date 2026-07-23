@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="PdiVault.Views.VaultPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="{StaticResource PdiScrBotBrush}">
+
+    <ScrollViewer>
+        <StackPanel MaxWidth="640" Spacing="14" Padding="28" HorizontalAlignment="Left">
+            <TextBlock Text="Vault" FontSize="22" FontWeight="Bold" Foreground="{StaticResource PdiTxtBrush}" />
+            <TextBlock Text="Store a value — it is sealed at rest with AES-256-GCM."
+                       Foreground="{StaticResource PdiT2Brush}" FontSize="13" TextWrapping="Wrap" />
+
+            <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="10">
+                    <TextBox x:Name="KeyBox" Header="Key" PlaceholderText="e.g. ssn" />
+                    <TextBox x:Name="ValueBox" Header="Value" PlaceholderText="plaintext to seal" />
+                    <Button x:Name="SealButton" Content="Seal record" HorizontalAlignment="Stretch"
+                            Height="44" Foreground="White" Click="OnSeal">
+                        <Button.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="{StaticResource PdiBrandA}" Offset="0" />
+                                <GradientStop Color="#FF3AA0FF" Offset="1" />
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <TextBlock x:Name="ErrorText" Foreground="{StaticResource PdiRed}" FontSize="13"
+                       TextWrapping="Wrap" Visibility="Collapsed" />
+            <TextBlock x:Name="Empty" Text="No records yet — seal one above."
+                       Foreground="{StaticResource PdiT2Brush}" FontSize="13" Visibility="Collapsed" />
+
+            <ItemsControl x:Name="RecordsList">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
+                                BorderThickness="1" CornerRadius="16" Padding="16" Margin="0,0,0,10">
+                            <StackPanel Spacing="8">
+                                <Grid>
+                                    <TextBlock Text="{Binding Key}" FontWeight="Bold"
+                                               Foreground="{StaticResource PdiTxtBrush}" VerticalAlignment="Center" />
+                                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                                        <Button Content="Reveal" Tag="{Binding Key}" Click="OnReveal"
+                                                Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
+                                        <Button Content="Delete" Tag="{Binding Key}" Click="OnDelete"
+                                                Background="Transparent" Foreground="{StaticResource PdiRed}" />
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock Text="{Binding Value}" FontFamily="Consolas"
+                                           Foreground="{StaticResource PdiT2Brush}" TextWrapping="Wrap"
+                                           Visibility="{Binding ValueVisibility}" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollViewer>
+</Page>
