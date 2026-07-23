@@ -18,6 +18,10 @@ data class ComplianceProgram(val key: String, val label: String)
 data class Transfer(val id: String, val recipient: String, val filename: String,
                     val status: String, val programs: List<String>,
                     val expiresAt: String?, val receiveToken: String?)
+data class Intake(val id: String, val fromParty: String, val purpose: String?,
+                  val status: String, val programs: List<String>,
+                  val filename: String?, val submitToken: String?)
+data class IntakeFile(val filename: String?, val content: String?)
 
 class ApiException(message: String) : Exception(message)
 
@@ -165,5 +169,63 @@ object ApiClient {
 
     suspend fun revokeTransfer(token: String, tid: String) {
         request("/transfers/$tid", "DELETE", token = token)
+    }
+
+    // ---- secure intake ----
+
+    private fun intakeOf(o: JSONObject): Intake {
+        val progs = o.optJSONArray("programs")
+        return Intake(o.getString("id"), o.optString("from_party", ""),
+            o.optString("purpose", null), o.optString("status", ""),
+            (0 until (progs?.length() ?: 0)).map { progs!!.getString(it) },
+            o.optString("filename", null), o.optString("submit_token", null))
+    }
+
+    suspend fun intakes(token: String): List<Intake> {
+        val arr = JSONArray(request("/intakes", token = token))
+        return (0 until arr.length()).map { intakeOf(arr.getJSONObject(it)) }
+    }
+
+    suspend fun createIntake(token: String, fromParty: String, purpose: String?,
+                             programs: List<String>): Intake {
+        val progs = org.json.JSONArray()
+        programs.forEach { progs.put(it) }
+        val body = JSONObject().put("from_party", fromParty).put("programs", progs)
+        if (!purpose.isNullOrBlank()) body.put("purpose", purpose)
+        return intakeOf(JSONObject(request("/intakes", "POST", body, token)))
+    }
+
+    suspend fun intakeFile(token: String, iid: String): IntakeFile {
+        val o = JSONObject(request("/intakes/$iid/file", token = token))
+        return IntakeFile(o.optString("filename", null), o.optString("content", null))
+    }
+
+    suspend fun closeIntake(token: String, iid: String) {
+        request("/intakes/$iid", "DELETE", token = token)
+    }
+
+    /** The sender's side: authenticated by the one-shot X-Submit-Token, not
+     * the tenant bearer. */
+    suspend fun submitIntake(iid: String, submitToken: String, filename: String,
+                             content: String): Unit = withContext(Dispatchers.IO) {
+        val conn = (URL("$base/intakes/$iid/submit").openConnection() as HttpURLConnection).apply {
+            requestMethod = "POST"
+            setRequestProperty("content-type", "application/json")
+            setRequestProperty("X-Submit-Token", submitToken)
+            connectTimeout = 8000; readTimeout = 8000
+            doOutput = true
+            outputStream.use {
+                it.write(JSONObject().put("filename", filename)
+                    .put("content", content).toString().toByteArray())
+            }
+        }
+        val code = conn.responseCode
+        val text = (if (code in 200..299) conn.inputStream else conn.errorStream)
+            ?.bufferedReader()?.use { it.readText() } ?: ""
+        conn.disconnect()
+        if (code !in 200..299) {
+            val detail = runCatching { JSONObject(text).optString("detail") }.getOrNull()
+            throw ApiException(if (detail.isNullOrBlank()) "HTTP $code" else detail)
+        }
     }
 }

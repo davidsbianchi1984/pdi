@@ -50,6 +50,21 @@ struct Transfer: Decodable {
     let receive_token: String?     // present only on creation — shown once
 }
 
+struct Intake: Decodable {
+    let id: String
+    let from_party: String
+    let purpose: String?
+    let status: String
+    let programs: [String]
+    let filename: String?
+    let submit_token: String?      // present only on creation — shown once
+}
+
+struct IntakeFile: Decodable {
+    let filename: String?
+    let content: String?
+}
+
 // MARK: - Client
 
 enum ApiError: LocalizedError {
@@ -162,5 +177,48 @@ actor ApiClient {
         struct Ok: Decodable {}
         let _: Ok = try await request("/transfers/\(tid)", method: "DELETE",
                                       token: token)
+    }
+
+    // MARK: Secure intake (request a file in; the sender submits with a token)
+
+    func intakes(token: String) async throws -> [Intake] {
+        try await request("/intakes", token: token)
+    }
+
+    func createIntake(token: String, fromParty: String, purpose: String?,
+                      programs: [String]) async throws -> Intake {
+        var body: [String: Any] = ["from_party": fromParty, "programs": programs]
+        if let purpose, !purpose.isEmpty { body["purpose"] = purpose }
+        return try await request("/intakes", method: "POST", body: body,
+                                 token: token)
+    }
+
+    func intakeFile(token: String, iid: String) async throws -> IntakeFile {
+        try await request("/intakes/\(iid)/file", token: token)
+    }
+
+    func closeIntake(token: String, iid: String) async throws {
+        struct Ok: Decodable {}
+        let _: Ok = try await request("/intakes/\(iid)", method: "DELETE",
+                                      token: token)
+    }
+
+    /// The sender's side: submit a file into an open intake. Authenticated by
+    /// the one-shot submit token (X-Submit-Token), not the tenant bearer.
+    func submitIntake(iid: String, submitToken: String, filename: String,
+                      content: String) async throws {
+        var req = URLRequest(url: base.appendingPathComponent("/intakes/\(iid)/submit"))
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "content-type")
+        req.setValue(submitToken, forHTTPHeaderField: "X-Submit-Token")
+        req.httpBody = try JSONSerialization.data(withJSONObject: [
+            "filename": filename, "content": content])
+        let (data, resp) = try await URLSession.shared.data(for: req)
+        guard let http = resp as? HTTPURLResponse,
+              (200..<300).contains(http.statusCode) else {
+            let detail = (try? JSONSerialization.jsonObject(with: data)
+                          as? [String: Any])?["detail"] as? String
+            throw ApiError.http(detail ?? "submit failed")
+        }
     }
 }

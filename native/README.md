@@ -17,8 +17,9 @@ screens that exercise the real API end to end:
 **Overview** (record count + audit status) · **Vault** (`GET/PUT/DELETE /records`) ·
 **Audit** (`GET /audit/verify` + `GET /audit`) · **Robots** (bind from
 `/robotics/catalog`, sealed ingest via `/robots/{rid}/ingest`, keys via
-`/robots/{rid}/data`) · **Transfers** (compliance programs, sealed create +
-one-shot receive token, revoke via `/transfers`)
+`/robots/{rid}/data`) · **Transfers** — Outbound (sealed create +
+one-shot receive token, revoke via `/transfers`) and Intake (request a file in,
+one-shot submit token, read/close via `/intakes`)
 
 Unlike a consumer app, PDI does not self-register: a tenant is issued a bearer
 token out of band and pastes it to unlock. The token is persisted so the app
