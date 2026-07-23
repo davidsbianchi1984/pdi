@@ -225,6 +225,11 @@ The first-run journey runs **23 Welcome → 22 Log In → 24 Key Setup → 25 Gr
     <td align="center" width="33%"><a href="docs/screens/31-secure-intake.svg"><img src="docs/screens/31-secure-intake.svg" width="210" alt="Secure Intake"></a><br><sub><b>31</b> · Secure Intake</sub></td>
     <td align="center" width="33%"><a href="docs/screens/32-files-photos.svg"><img src="docs/screens/32-files-photos.svg" width="210" alt="Files & Photos"></a><br><sub><b>32</b> · Files &amp; Photos</sub></td>
   </tr>
+  <tr>
+    <td align="center" width="33%"><a href="docs/screens/33-apple-intelligence.svg"><img src="docs/screens/33-apple-intelligence.svg" width="210" alt="Apple Intelligence"></a><br><sub><b>33</b> · Apple Intelligence</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/34-google-gemini.svg"><img src="docs/screens/34-google-gemini.svg" width="210" alt="Google Gemini"></a><br><sub><b>34</b> · Google Gemini</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/35-microsoft-copilot.svg"><img src="docs/screens/35-microsoft-copilot.svg" width="210" alt="Microsoft Copilot"></a><br><sub><b>35</b> · Microsoft Copilot</sub></td>
+  </tr>
 </table>
 
 **For enterprises:** PDI offers compliance-grade secure file transfer for corporations (carriers, healthcare, financial, public sector) — files sealed under HIPAA / OSHA / CPNI / PCI-DSS and more, with audited chain of custody and enforced retention, in both directions: outbound transfers and inbound secure intake from subscribers and partners. See [docs/enterprise.md](docs/enterprise.md).
