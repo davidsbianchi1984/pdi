@@ -55,12 +55,29 @@ class AppInvoke(BaseModel):
     input: str | None = None
 
 
+PartyType = Literal["subscriber", "organization", "partner"]
+
+
 class TransferCreate(BaseModel):
     recipient: str                     # who the file is for (id / email / handle)
     filename: str
     content: str                       # the file body (sealed at rest)
     programs: list[str] = Field(default_factory=list)  # hipaa | osha | cpni | ...
     classification: str | None = None  # e.g. PHI | PII | confidential
+    party_type: PartyType | None = None  # subscriber (a broadband user) | organization | partner
+
+
+class IntakeCreate(BaseModel):
+    from_party: str                    # who is asked to send a file in
+    party_type: PartyType | None = None
+    purpose: str | None = None
+    programs: list[str] = Field(default_factory=list)
+
+
+class IntakeSubmit(BaseModel):
+    filename: str
+    content: str
+    classification: str | None = None
 
 
 class DeploymentCreate(BaseModel):

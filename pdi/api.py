@@ -15,11 +15,12 @@ import secrets
 from fastapi import Depends, FastAPI, Header, HTTPException, Response
 
 from . import (app_connectors, audit, catalog, compliance, connectors, crypto,
-               db, positions, retention, transfers, vault)
+               db, intakes, positions, retention, transfers, vault)
 from .models import (AppCollect, AppConnect, AppInvoke, ConnectorCreate,
                      ConnectorIngest, ConnectorPublish, ContributionIn,
-                     DeploymentCreate, PositionIntake, RecordPut, RetentionSet,
-                     SnapshotRestore, TenantCreate, TokenIssue, TransferCreate)
+                     DeploymentCreate, IntakeCreate, IntakeSubmit, PositionIntake,
+                     RecordPut, RetentionSet, SnapshotRestore, TenantCreate,
+                     TokenIssue, TransferCreate)
 
 
 def _public_base() -> str:
@@ -282,7 +283,8 @@ def create_app() -> FastAPI:
     def create_transfer(body: TransferCreate, tenant: dict = Depends(_writer)) -> dict:
         try:
             return transfers.create(tenant, body.recipient, body.filename,
-                                    body.content, body.programs, body.classification)
+                                    body.content, body.programs, body.classification,
+                                    body.party_type)
         except transfers.UnknownProgram as exc:
             raise HTTPException(422, str(exc))
 
@@ -314,6 +316,62 @@ def create_app() -> FastAPI:
             raise HTTPException(403, "invalid receive token")
         if result == "revoked":
             raise HTTPException(410, "this transfer has been revoked")
+        return result
+
+    # -- inbound intake: a subscriber or partner sends a file IN ------------
+
+    def _intake_or_404(iid: str, tenant: dict) -> dict:
+        row = intakes.get(iid)
+        if row is None or row["tenant_id"] != tenant["id"]:
+            raise HTTPException(404, "intake not found")
+        return row
+
+    @app.post("/intakes", status_code=201)
+    def create_intake(body: IntakeCreate, tenant: dict = Depends(_writer)) -> dict:
+        try:
+            return intakes.create(tenant, body.from_party, body.party_type,
+                                 body.purpose, body.programs)
+        except intakes.UnknownProgram as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.get("/intakes")
+    def list_intakes(tenant: dict = Depends(_tenant)) -> list[dict]:
+        return intakes.for_tenant(tenant["id"])
+
+    @app.get("/intakes/{iid}")
+    def get_intake(iid: str, tenant: dict = Depends(_tenant)) -> dict:
+        return intakes._out(_intake_or_404(iid, tenant))
+
+    @app.get("/intakes/{iid}/custody")
+    def intake_custody(iid: str, tenant: dict = Depends(_tenant)) -> dict:
+        return intakes.custody(_intake_or_404(iid, tenant))
+
+    @app.get("/intakes/{iid}/file")
+    def read_intake(iid: str, tenant: dict = Depends(_writer)) -> dict:
+        row = _intake_or_404(iid, tenant)
+        result = intakes.read(tenant, row)
+        if result is None:
+            raise HTTPException(409, "nothing has been submitted to this intake yet")
+        return result
+
+    @app.delete("/intakes/{iid}")
+    def close_intake(iid: str, tenant: dict = Depends(_writer)) -> dict:
+        return intakes.close(_intake_or_404(iid, tenant))
+
+    @app.post("/intakes/{iid}/submit", status_code=201)
+    def submit_intake(iid: str, body: IntakeSubmit,
+                      x_submit_token: str = Header(default="")) -> dict:
+        """The subscriber / partner sends their file in with the submit token —
+        no tenant credential; the token is the (auditable) authorization."""
+        row = intakes.get(iid)
+        if row is None:
+            raise HTTPException(404, "intake not found")
+        result = intakes.submit(row, x_submit_token, body.filename, body.content,
+                               body.classification)
+        if result is None:
+            raise HTTPException(403, "invalid submit token")
+        if result == "closed":
+            raise HTTPException(409, "this intake is no longer open")
         return result
 
     @app.get("/snapshot")

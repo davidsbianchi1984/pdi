@@ -55,6 +55,7 @@ def _out(row: dict) -> dict:
         "size": row["size"],
         "classification": row["classification"],
         "programs": json.loads(row["programs"]),
+        "party_type": row["party_type"],
         "status": row["status"],
         "retention_days": row["retention_days"],
         "expires_at": row["expires_at"],
@@ -63,7 +64,8 @@ def _out(row: dict) -> dict:
 
 
 def create(tenant: dict, recipient: str, filename: str, content: str,
-           programs: list[str], classification: str | None) -> dict:
+           programs: list[str], classification: str | None,
+           party_type: str | None = None) -> dict:
     unknown = [p for p in programs if compliance.get(p) is None]
     if unknown:
         raise UnknownProgram(f"unknown compliance program(s): {unknown}")
@@ -76,11 +78,12 @@ def create(tenant: dict, recipient: str, filename: str, content: str,
         if retention else None
     db.connect().execute(
         "INSERT INTO transfers (id, tenant_id, recipient, filename, size,"
-        " classification, programs, vault_key, receive_token_hash, status,"
-        " retention_days, expires_at, created_at)"
-        " VALUES (?,?,?,?,?,?,?,?,?, 'sealed', ?,?,?)",
+        " classification, programs, party_type, vault_key, receive_token_hash,"
+        " status, retention_days, expires_at, created_at)"
+        " VALUES (?,?,?,?,?,?,?,?,?,?, 'sealed', ?,?,?)",
         (tid, tenant["id"], recipient, filename, len(content), classification,
-         json.dumps(programs), vault_key, token_hash, retention, expires, db.utcnow()))
+         json.dumps(programs), party_type, vault_key, token_hash, retention,
+         expires, db.utcnow()))
     db.connect().commit()
     _receipt(tid, "created", tenant.get("name"))
     audit.record("transfer.create", tenant_id=tenant["id"], ref=tid)

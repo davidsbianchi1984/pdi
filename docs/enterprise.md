@@ -59,6 +59,36 @@ curl -sX POST $PDI/transfers -H "authorization: Bearer $TENANT_TOKEN" \
 #                    "operational": ["baa", …] } }
 ```
 
+## Inbound intake — for broadband users *and* companies
+
+PDI carries files **both directions**. Outbound (above) seals a file *out* to a
+recipient. **Intake** is the reverse: a corporation requests a file *in* from a
+broadband **subscriber** or a **partner company**, and that party submits it
+safely — sealed in the vault under the same compliance controls, with a one-shot
+submit token and full chain of custody. Every transfer is tagged with a
+`party_type` (`subscriber` | `organization` | `partner`) so the record shows who
+it served.
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `POST` | `/intakes` | request a file from a party under program(s); returns a one-shot submit token |
+| `GET` | `/intakes` · `/intakes/{id}` | the tenant's intakes / one intake |
+| `POST` | `/intakes/{id}/submit` | the subscriber/partner sends their file in with `X-Submit-Token` |
+| `GET` | `/intakes/{id}/file` | the corporation retrieves the submitted file (audited) |
+| `GET` | `/intakes/{id}/custody` | the compliance record: requested → submitted → read |
+| `DELETE` | `/intakes/{id}` | close the intake |
+
+```bash
+# A carrier requests a document from a subscriber under CPNI + HIPAA.
+curl -sX POST $PDI/intakes -H "authorization: Bearer $TENANT_TOKEN" \
+  -d '{"from_party":"subscriber-9","party_type":"subscriber",
+       "purpose":"ID verification","programs":["cpni","hipaa"]}'
+# -> { "id":"intk_…", "submit_token":"pdi_submit_…" }   (hand the token to the user)
+# The subscriber submits — no tenant credential, just their token:
+curl -sX POST $PDI/intakes/intk_…/submit -H "X-Submit-Token: pdi_submit_…" \
+  -d '{"filename":"id.jpg","content":"…","classification":"PII"}'
+```
+
 ## Compliance programs
 
 `GET /compliance/programs` returns the catalog. Each program lists the controls
