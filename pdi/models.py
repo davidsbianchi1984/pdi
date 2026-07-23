@@ -55,6 +55,14 @@ class AppInvoke(BaseModel):
     input: str | None = None
 
 
+class TransferCreate(BaseModel):
+    recipient: str                     # who the file is for (id / email / handle)
+    filename: str
+    content: str                       # the file body (sealed at rest)
+    programs: list[str] = Field(default_factory=list)  # hipaa | osha | cpni | ...
+    classification: str | None = None  # e.g. PHI | PII | confidential
+
+
 class DeploymentCreate(BaseModel):
     name: str
     option: Literal["on_premises", "colocation"]

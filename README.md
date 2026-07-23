@@ -219,9 +219,11 @@ The first-run journey runs **23 Welcome → 22 Log In → 24 Key Setup → 25 Gr
   <tr>
     <td align="center" width="33%"><a href="docs/screens/28-connectors.svg"><img src="docs/screens/28-connectors.svg" width="210" alt="Connectors — collect & publish"></a><br><sub><b>28</b> · Connectors</sub></td>
     <td align="center" width="33%"><a href="docs/screens/29-connected-apps.svg"><img src="docs/screens/29-connected-apps.svg" width="210" alt="Connected Apps"></a><br><sub><b>29</b> · Connected Apps</sub></td>
-    <td align="center" width="33%"></td>
+    <td align="center" width="33%"><a href="docs/screens/30-compliance-transfers.svg"><img src="docs/screens/30-compliance-transfers.svg" width="210" alt="Compliance Transfers"></a><br><sub><b>30</b> · Compliance Transfers</sub></td>
   </tr>
 </table>
+
+**For enterprises:** PDI offers compliance-grade secure file transfer for corporations (carriers, healthcare, financial, public sector) — files sealed under HIPAA / OSHA / CPNI / PCI-DSS and more, with audited chain of custody and enforced retention. See [docs/enterprise.md](docs/enterprise.md).
 
 
 ## API
