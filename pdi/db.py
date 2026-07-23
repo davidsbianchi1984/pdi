@@ -155,6 +155,19 @@ CREATE TABLE IF NOT EXISTS audit (
     prev_hash   TEXT NOT NULL,
     hash        TEXT NOT NULL
 );
+
+-- Robots bound to a tenant as data sources (see pdi/robotics.py). What a
+-- robot collects (maps, snapshots, sensor logs) is sealed into the vault
+-- under robot/{model}/{id}/{kind}/… and audited like every vault write.
+CREATE TABLE IF NOT EXISTS robots (
+    id         TEXT PRIMARY KEY,
+    tenant_id  TEXT NOT NULL REFERENCES tenants(id),
+    model      TEXT NOT NULL,    -- robotics.BY_KEY key, e.g. saros_20
+    name       TEXT NOT NULL,
+    status     TEXT NOT NULL DEFAULT 'active',   -- active | revoked
+    collected  INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL
+);
 """
 
 _local = threading.local()

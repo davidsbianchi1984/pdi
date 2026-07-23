@@ -1191,6 +1191,13 @@ SCREENS = [
     dict(num=33, title="Apple Intelligence", sub="13 apps · collect, act, produce", hero="assistant", provider="apple", accent="brand", tab=1),
     dict(num=34, title="Google Gemini", sub="11 apps · collect, act, produce", hero="assistant", provider="google", accent="brand", tab=1),
     dict(num=35, title="Microsoft Copilot", sub="8 apps · collect, act, produce", hero="assistant", provider="microsoft", accent="brand", tab=1),
+    dict(num=36, title="Robot Data Vault", sub="What your robots see stays sealed", hero=None, accent="brand", tab=1, cards=[
+        dict(icon="db", color="brand", k="Saros 20 · map", s="5 rooms · sealed AES-256-GCM"),
+        dict(icon="eye", color="cyan", k="NEO · snapshots", s="Camera stills · vault only"),
+        dict(icon="bolt", color="amber", k="Memo · sensor log", s="Steps & doors · hash-chained"),
+        dict(icon="shieldok", color="green", k="Custody provable", s="Every intake in the audit chain"),
+        dict(icon="lock", color="red", k="Unbind keeps data", s="Sealed records stay tenant-owned"),
+    ], button=("Bind a robot", "brand")),
 ]
 
 

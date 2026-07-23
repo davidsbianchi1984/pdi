@@ -15,12 +15,12 @@ import secrets
 from fastapi import Depends, FastAPI, Header, HTTPException, Response
 
 from . import (app_connectors, audit, catalog, compliance, connectors, crypto,
-               db, intakes, positions, retention, transfers, vault)
+               db, intakes, positions, retention, robotics, transfers, vault)
 from .models import (AppCollect, AppConnect, AppInvoke, ConnectorCreate,
                      ConnectorIngest, ConnectorPublish, ContributionIn,
                      DeploymentCreate, IntakeCreate, IntakeSubmit, PositionIntake,
-                     RecordPut, RetentionSet, SnapshotRestore, TenantCreate,
-                     TokenIssue, TransferCreate)
+                     RecordPut, RetentionSet, RobotBind, RobotIngest,
+                     SnapshotRestore, TenantCreate, TokenIssue, TransferCreate)
 
 
 def _public_base() -> str:
@@ -261,6 +261,57 @@ def create_app() -> FastAPI:
             raise HTTPException(422, f"this {row['app']} connector was not granted "
                                      f"'{body.capability}'")
         return app_connectors.invoke(row, body.capability, body.input)
+
+    # -- robots as vault-backed data sources --------------------------------
+    # A home's robots (humanoids, home robots, vacuums) collect maps, camera
+    # snapshots, and sensor logs; PDI seals each item into the tenant's vault
+    # and hash-chains the intake so custody of what a robot saw is provable.
+
+    def _robot_or_404(rid: str, tenant: dict) -> dict:
+        row = robotics.by_id(rid, tenant["id"])
+        if row is None:
+            raise HTTPException(404, "robot not found")
+        return row
+
+    @app.get("/robotics/catalog")
+    def robotics_catalog() -> dict:
+        """Every supported robot platform, and the data kinds PDI accepts from
+        one. Public — it is a static registry."""
+        return robotics.robot_catalog()
+
+    @app.post("/robots", status_code=201)
+    def bind_robot(body: RobotBind, tenant: dict = Depends(_writer)) -> dict:
+        spec = robotics.get(body.model)
+        if spec is None:
+            raise HTTPException(404, f"unknown robot model '{body.model}'")
+        return robotics.create(tenant["id"], spec, body.name)
+
+    @app.get("/robots")
+    def list_robots(tenant: dict = Depends(_tenant)) -> list[dict]:
+        return robotics.for_tenant(tenant["id"])
+
+    @app.post("/robots/{rid}/ingest", status_code=201)
+    def robot_ingest(rid: str, body: RobotIngest,
+                     tenant: dict = Depends(_writer)) -> dict:
+        row = _robot_or_404(rid, tenant)
+        if row["status"] != "active":
+            raise HTTPException(409, "robot has been unbound")
+        if body.kind not in robotics.DATA_KINDS:
+            raise HTTPException(
+                422, f"kind must be one of {', '.join(robotics.DATA_KINDS)}")
+        return robotics.ingest(tenant, row, body.kind, body.content, body.ref)
+
+    @app.get("/robots/{rid}/data")
+    def robot_data(rid: str, tenant: dict = Depends(_tenant)) -> dict:
+        """The vault keys this robot has deposited. Values stay sealed — read
+        one through GET /records/{key}, which is itself audited."""
+        row = _robot_or_404(rid, tenant)
+        return {"robot": rid, "keys": robotics.data_keys(tenant, row)}
+
+    @app.delete("/robots/{rid}")
+    def unbind_robot(rid: str, tenant: dict = Depends(_writer)) -> dict:
+        _robot_or_404(rid, tenant)
+        return robotics.unbind(tenant["id"], rid)
 
     # -- compliance-grade secure file transfers -----------------------------
     # A corporation seals a file for a recipient under HIPAA / OSHA / CPNI / …;
