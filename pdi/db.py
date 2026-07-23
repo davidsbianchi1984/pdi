@@ -61,6 +61,36 @@ CREATE TABLE IF NOT EXISTS records (
     UNIQUE (tenant_id, key)
 );
 
+-- Compliance-grade secure file transfers. A corporation (tenant) seals a file
+-- for a recipient under named compliance programs (HIPAA, OSHA, CPNI, …). The
+-- content lives in the vault (encrypted at rest); a hashed one-shot receive
+-- token authorizes retrieval; retention is the strictest across its programs.
+CREATE TABLE IF NOT EXISTS transfers (
+    id                 TEXT PRIMARY KEY,
+    tenant_id          TEXT NOT NULL REFERENCES tenants(id),
+    recipient          TEXT NOT NULL,
+    filename           TEXT NOT NULL,
+    size               INTEGER NOT NULL DEFAULT 0,
+    classification     TEXT,
+    programs           TEXT NOT NULL DEFAULT '[]',
+    vault_key          TEXT NOT NULL,           -- where the sealed bytes live
+    receive_token_hash TEXT NOT NULL,           -- only the SHA-256 is stored
+    status             TEXT NOT NULL DEFAULT 'sealed',  -- sealed | received | revoked
+    retention_days     INTEGER NOT NULL DEFAULT 0,
+    expires_at         TEXT,                    -- record retained until here
+    created_at         TEXT NOT NULL
+);
+
+-- Chain of custody: every material event on a transfer, for the compliance
+-- record (mirrored into the tamper-evident audit chain).
+CREATE TABLE IF NOT EXISTS transfer_receipts (
+    id          TEXT PRIMARY KEY,
+    transfer_id TEXT NOT NULL REFERENCES transfers(id),
+    event       TEXT NOT NULL,   -- created | received | revoked
+    actor       TEXT,
+    at          TEXT NOT NULL
+);
+
 -- Connected-app connectors. Each links a tenant to an AI-integrated app from
 -- the catalog (Apple Photos, Google Calendar, Microsoft 365, Canva, …). The
 -- tenant's agents collect context (sealed as vault records), act, or produce.

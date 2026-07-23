@@ -14,12 +14,12 @@ import secrets
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Response
 
-from . import (app_connectors, audit, catalog, connectors, crypto, db, positions,
-               retention, vault)
+from . import (app_connectors, audit, catalog, compliance, connectors, crypto,
+               db, positions, retention, transfers, vault)
 from .models import (AppCollect, AppConnect, AppInvoke, ConnectorCreate,
                      ConnectorIngest, ConnectorPublish, ContributionIn,
                      DeploymentCreate, PositionIntake, RecordPut, RetentionSet,
-                     SnapshotRestore, TenantCreate, TokenIssue)
+                     SnapshotRestore, TenantCreate, TokenIssue, TransferCreate)
 
 
 def _public_base() -> str:
@@ -260,6 +260,61 @@ def create_app() -> FastAPI:
             raise HTTPException(422, f"this {row['app']} connector was not granted "
                                      f"'{body.capability}'")
         return app_connectors.invoke(row, body.capability, body.input)
+
+    # -- compliance-grade secure file transfers -----------------------------
+    # A corporation seals a file for a recipient under HIPAA / OSHA / CPNI / …;
+    # the recipient retrieves it with a one-shot receive token, every access
+    # audited, retention enforced by the strictest program.
+
+    @app.get("/compliance/programs")
+    def compliance_programs() -> dict:
+        """The compliance regimes PDI transfers can carry, and the controls PDI
+        satisfies natively."""
+        return compliance.catalog()
+
+    def _transfer_or_404(tid: str, tenant: dict) -> dict:
+        row = transfers.get(tid)
+        if row is None or row["tenant_id"] != tenant["id"]:
+            raise HTTPException(404, "transfer not found")
+        return row
+
+    @app.post("/transfers", status_code=201)
+    def create_transfer(body: TransferCreate, tenant: dict = Depends(_writer)) -> dict:
+        try:
+            return transfers.create(tenant, body.recipient, body.filename,
+                                    body.content, body.programs, body.classification)
+        except transfers.UnknownProgram as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.get("/transfers")
+    def list_transfers(tenant: dict = Depends(_tenant)) -> list[dict]:
+        return transfers.for_tenant(tenant["id"])
+
+    @app.get("/transfers/{tid}")
+    def get_transfer(tid: str, tenant: dict = Depends(_tenant)) -> dict:
+        return transfers._out(_transfer_or_404(tid, tenant))
+
+    @app.get("/transfers/{tid}/custody")
+    def transfer_custody(tid: str, tenant: dict = Depends(_tenant)) -> dict:
+        return transfers.custody(_transfer_or_404(tid, tenant))
+
+    @app.delete("/transfers/{tid}")
+    def revoke_transfer(tid: str, tenant: dict = Depends(_writer)) -> dict:
+        return transfers.revoke(_transfer_or_404(tid, tenant))
+
+    @app.post("/transfers/{tid}/receive")
+    def receive_transfer(tid: str, x_receive_token: str = Header(default="")) -> dict:
+        """The recipient retrieves the file with their receive token — no tenant
+        credential; the token itself is the (auditable) authorization."""
+        row = transfers.get(tid)
+        if row is None:
+            raise HTTPException(404, "transfer not found")
+        result = transfers.receive(row, x_receive_token)
+        if result is None:
+            raise HTTPException(403, "invalid receive token")
+        if result == "revoked":
+            raise HTTPException(410, "this transfer has been revoked")
+        return result
 
     @app.get("/snapshot")
     def snapshot(tenant: dict = Depends(_tenant)) -> dict:
