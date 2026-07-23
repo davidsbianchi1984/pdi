@@ -36,7 +36,7 @@ sets `NSAllowsLocalNetworking` so the Simulator can reach plain-http localhost.
 | `Sources/ApiClient.swift` | async `URLSession` client + wire models |
 | `Sources/AppState.swift` | tenant token + base URL, persisted |
 | `Sources/Theme.swift` | the dark-OLED palette |
-| `Sources/Views/*` | Welcome (sign-in), Overview, Vault, Audit |
+| `Sources/Views/*` | Welcome (sign-in), Overview, Vault, Audit, Robots |
 
 ## Not yet wired
 

@@ -27,6 +27,28 @@ public record AuditEntry(
     [property: JsonPropertyName("at")] string At,
     [property: JsonPropertyName("category")] string? Category);
 
+public record RobotSpec(
+    [property: JsonPropertyName("model")] string Model,
+    [property: JsonPropertyName("label")] string Label,
+    [property: JsonPropertyName("maker")] string Maker);
+
+public record RoboticsCatalog(
+    [property: JsonPropertyName("robots")] RobotSpec[] Robots);
+
+public record Robot(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("model")] string Model,
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("status")] string? Status,
+    [property: JsonPropertyName("collected")] int Collected);
+
+public record IngestResult(
+    [property: JsonPropertyName("sealed")] bool Sealed,
+    [property: JsonPropertyName("key")] string Key);
+
+public record RobotData(
+    [property: JsonPropertyName("keys")] string[] Keys);
+
 /// <summary>
 /// Async client for the PDI vault backend. Every call carries the tenant bearer
 /// token (`pdi_...`), issued out of band and pasted at sign-in. Windows reaches
@@ -97,4 +119,33 @@ public sealed class ApiClient
 
     public Task<AuditEntry[]> AuditEntries(string token) =>
         Send<AuditEntry[]>(new HttpRequestMessage(HttpMethod.Get, "/audit"), token);
+
+    // -- robots as vault-backed data sources --
+
+    public Task<RoboticsCatalog> Robotics(string token) =>
+        Send<RoboticsCatalog>(new HttpRequestMessage(HttpMethod.Get, "/robotics/catalog"), token);
+
+    public Task<Robot[]> Robots(string token) =>
+        Send<Robot[]>(new HttpRequestMessage(HttpMethod.Get, "/robots"), token);
+
+    public Task<Robot> BindRobot(string token, string model)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post, "/robots")
+        {
+            Content = JsonContent.Create(new { model }),
+        };
+        return Send<Robot>(req, token);
+    }
+
+    public Task<IngestResult> Ingest(string token, string rid, string kind, string content)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/robots/{rid}/ingest")
+        {
+            Content = JsonContent.Create(new { kind, content }),
+        };
+        return Send<IngestResult>(req, token);
+    }
+
+    public Task<RobotData> RobotKeys(string token, string rid) =>
+        Send<RobotData>(new HttpRequestMessage(HttpMethod.Get, $"/robots/{rid}/data"), token);
 }

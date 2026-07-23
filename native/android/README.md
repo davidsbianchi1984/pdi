@@ -41,7 +41,7 @@ your computer's LAN IP. Cleartext http to that host is allowed via
 | `.../ApiClient.kt` | coroutine client (`HttpURLConnection` + `org.json`) |
 | `.../AppState.kt` | `VaultViewModel` — token + base URL, persisted |
 | `.../ui/Theme.kt` | the dark-OLED palette + card modifier |
-| `.../ui/Screens.kt` | Welcome (sign-in), Overview, Vault, Audit |
+| `.../ui/Screens.kt` | Welcome (sign-in), Overview, Vault, Audit, Robots |
 
 ## Versions
 

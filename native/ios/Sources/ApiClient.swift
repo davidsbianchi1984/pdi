@@ -13,6 +13,29 @@ struct AuditEntry: Decodable {
     let category: String?
 }
 
+struct RobotSpec: Decodable {
+    let model: String
+    let label: String
+    let maker: String
+    let kind: String
+}
+
+struct RoboticsCatalog: Decodable {
+    let robots: [RobotSpec]
+    let data_kinds: [String]
+}
+
+struct Robot: Decodable {
+    let id: String
+    let model: String
+    let name: String
+    let status: String?
+    let collected: Int?
+}
+
+struct IngestResult: Decodable { let sealed: Bool; let key: String }
+struct RobotData: Decodable { let keys: [String] }
+
 // MARK: - Client
 
 enum ApiError: LocalizedError {
@@ -76,5 +99,30 @@ actor ApiClient {
 
     func auditEntries(token: String) async throws -> [AuditEntry] {
         try await request("/audit", token: token)
+    }
+
+    // MARK: Robots as vault-backed data sources
+
+    func roboticsCatalog(token: String) async throws -> RoboticsCatalog {
+        try await request("/robotics/catalog", token: token)
+    }
+
+    func robots(token: String) async throws -> [Robot] {
+        try await request("/robots", token: token)
+    }
+
+    func bindRobot(token: String, model: String) async throws -> Robot {
+        try await request("/robots", method: "POST",
+                          body: ["model": model], token: token)
+    }
+
+    func ingest(token: String, rid: String, kind: String,
+                content: String) async throws -> IngestResult {
+        try await request("/robots/\(rid)/ingest", method: "POST",
+                          body: ["kind": kind, "content": content], token: token)
+    }
+
+    func robotData(token: String, rid: String) async throws -> RobotData {
+        try await request("/robots/\(rid)/data", token: token)
     }
 }
