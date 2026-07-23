@@ -65,6 +65,19 @@ public record Transfer(
     [property: JsonPropertyName("expires_at")] string? ExpiresAt,
     [property: JsonPropertyName("receive_token")] string? ReceiveToken);
 
+public record Intake(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("from_party")] string FromParty,
+    [property: JsonPropertyName("purpose")] string? Purpose,
+    [property: JsonPropertyName("status")] string Status,
+    [property: JsonPropertyName("programs")] string[] Programs,
+    [property: JsonPropertyName("filename")] string? Filename,
+    [property: JsonPropertyName("submit_token")] string? SubmitToken);
+
+public record IntakeFile(
+    [property: JsonPropertyName("filename")] string? Filename,
+    [property: JsonPropertyName("content")] string? Content);
+
 /// <summary>
 /// Async client for the PDI vault backend. Every call carries the tenant bearer
 /// token (`pdi_...`), issued out of band and pasted at sign-in. Windows reaches
@@ -187,4 +200,52 @@ public sealed class ApiClient
 
     public Task RevokeTransfer(string token, string tid) =>
         SendNoContent(new HttpRequestMessage(HttpMethod.Delete, $"/transfers/{tid}"), token);
+
+    // -- secure intake --
+
+    public Task<Intake[]> Intakes(string token) =>
+        Send<Intake[]>(new HttpRequestMessage(HttpMethod.Get, "/intakes"), token);
+
+    public Task<Intake> CreateIntake(string token, string fromParty,
+                                     string? purpose, string[] programs)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post, "/intakes")
+        {
+            Content = JsonContent.Create(new
+            {
+                from_party = fromParty,
+                purpose = string.IsNullOrEmpty(purpose) ? null : purpose,
+                programs,
+            }),
+        };
+        return Send<Intake>(req, token);
+    }
+
+    public Task<IntakeFile> ReadIntakeFile(string token, string iid) =>
+        Send<IntakeFile>(new HttpRequestMessage(
+            HttpMethod.Get, $"/intakes/{iid}/file"), token);
+
+    public Task CloseIntake(string token, string iid) =>
+        SendNoContent(new HttpRequestMessage(HttpMethod.Delete, $"/intakes/{iid}"), token);
+
+    /// <summary>The sender's side: authenticated by the one-shot
+    /// X-Submit-Token, not the tenant bearer.</summary>
+    public async Task SubmitIntake(string iid, string submitToken,
+                                   string filename, string content)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/intakes/{iid}/submit")
+        {
+            Content = JsonContent.Create(new { filename, content }),
+        };
+        req.Headers.Add("X-Submit-Token", submitToken);
+        var res = await _http.SendAsync(req);
+        if (!res.IsSuccessStatusCode)
+        {
+            var body = await res.Content.ReadAsStringAsync();
+            string? detail = null;
+            try { detail = JsonDocument.Parse(body).RootElement.GetProperty("detail").GetString(); }
+            catch { /* ignore */ }
+            throw new HttpRequestException(detail ?? $"HTTP {(int)res.StatusCode}");
+        }
+    }
 }

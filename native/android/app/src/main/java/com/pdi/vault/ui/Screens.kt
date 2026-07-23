@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.sp
 import com.pdi.vault.ApiClient
 import com.pdi.vault.AuditEntry
 import com.pdi.vault.ComplianceProgram
+import com.pdi.vault.Intake
+import com.pdi.vault.IntakeFile
 import com.pdi.vault.Transfer
 import com.pdi.vault.Robot
 import com.pdi.vault.RobotSpec
@@ -335,10 +337,25 @@ fun RobotsScreen(vm: VaultViewModel) {
     }
 }
 
-// ---- Transfers (compliance-grade secure file transfer) ----
+// ---- Transfers (compliance-grade secure file transfer, both directions) ----
 
 @Composable
 fun TransfersScreen(vm: VaultViewModel) {
+    var seg by remember { mutableIntStateOf(0) }
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        TabRow(selectedTabIndex = seg, containerColor = Pdi.Card, contentColor = Pdi.BrandA) {
+            listOf("Outbound", "Intake").forEachIndexed { i, t ->
+                Tab(selected = seg == i, onClick = { seg = i },
+                    text = { Text(t, fontSize = 13.sp) })
+            }
+        }
+        if (seg == 0) OutboundPanel(vm) else IntakePanel(vm)
+    }
+}
+
+@Composable
+private fun OutboundPanel(vm: VaultViewModel) {
     var programs by remember { mutableStateOf<List<ComplianceProgram>>(emptyList()) }
     var selected by remember { mutableStateOf(setOf("hipaa")) }
     var recipient by remember { mutableStateOf("") }
@@ -355,7 +372,7 @@ fun TransfersScreen(vm: VaultViewModel) {
         reload()
     }
 
-    screenScroll {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text("Transfers", color = Pdi.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
         Text("Seal a file for a recipient under compliance controls. Retention follows the strictest program you pick.",
             color = Pdi.T2, fontSize = 13.sp)
@@ -424,6 +441,137 @@ fun TransfersScreen(vm: VaultViewModel) {
                     TextButton(onClick = {
                         vm.call({ ApiClient.revokeTransfer(vm.token!!, t.id) }) { reload() }
                     }) { Text("Revoke access", color = Pdi.Red, fontSize = 12.sp) }
+                }
+            }
+        }
+    }
+}
+
+// ---- Intake (request a file in; the sender submits with a one-shot token) ----
+
+@Composable
+private fun IntakePanel(vm: VaultViewModel) {
+    var programs by remember { mutableStateOf<List<ComplianceProgram>>(emptyList()) }
+    var selected by remember { mutableStateOf(setOf("hipaa")) }
+    var fromParty by remember { mutableStateOf("") }
+    var purpose by remember { mutableStateOf("") }
+    var intakes by remember { mutableStateOf<List<Intake>>(emptyList()) }
+    var minted by remember { mutableStateOf<String?>(null) }
+    var received by remember { mutableStateOf<Map<String, IntakeFile>>(emptyMap()) }
+    var senderToken by remember { mutableStateOf("") }
+    var senderFile by remember { mutableStateOf("") }
+    var senderContent by remember { mutableStateOf("") }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun reload() { vm.call({ ApiClient.intakes(vm.token!!) }) { r -> intakes = r.getOrDefault(emptyList()) } }
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.compliancePrograms(vm.token!!) }) { r -> programs = r.getOrDefault(emptyList()) }
+        reload()
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Text("Secure intake", color = Pdi.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text("Ask a counterparty to send a file in. They authenticate with the one-shot submit token — no account needed.",
+            color = Pdi.T2, fontSize = 13.sp)
+
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            labeledField("From", fromParty, "who should send it") { fromParty = it }
+            labeledField("Purpose (optional)", purpose, "why you need it") { purpose = it }
+            Text("Programs", color = Pdi.T2, fontSize = 12.sp)
+            programs.chunked(4).forEach { row ->
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    row.forEach { p ->
+                        FilterChip(
+                            selected = p.key in selected,
+                            onClick = {
+                                selected = if (p.key in selected) selected - p.key
+                                           else selected + p.key
+                            },
+                            label = { Text(p.key.uppercase(), fontSize = 10.sp) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = Pdi.BrandA,
+                                selectedLabelColor = Color.White, labelColor = Pdi.T2,
+                            ),
+                        )
+                    }
+                }
+            }
+            BrandButton("Request file",
+                enabled = fromParty.isNotBlank() && selected.isNotEmpty(), busy = busy) {
+                busy = true; error = null
+                vm.call({ ApiClient.createIntake(vm.token!!, fromParty, purpose,
+                                                  selected.toList()) }) { r ->
+                    busy = false
+                    r.onSuccess { minted = it.submitToken; fromParty = ""; purpose = "" }
+                     .onFailure { error = it.message }
+                    reload()
+                }
+            }
+        }
+        error?.let { Text(it, color = Pdi.Red, fontSize = 13.sp) }
+
+        minted?.let { tok ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("Submit token — shown once", color = Pdi.Amber, fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold)
+                Text(tok, color = Pdi.Txt, fontSize = 11.sp)
+                Text("Send this to the counterparty out of band; it is their only way in.",
+                    color = Pdi.T2, fontSize = 11.sp)
+            }
+        }
+
+        intakes.forEach { i ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(i.fromParty, color = Pdi.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text(i.status.replaceFirstChar { it.uppercase() },
+                        color = if (i.status == "submitted") Pdi.Green else Pdi.T2, fontSize = 12.sp)
+                }
+                i.purpose?.let { Text(it, color = Pdi.T2, fontSize = 12.sp) }
+                Text(i.programs.joinToString(" ") { it.uppercase() }, color = Pdi.T3, fontSize = 11.sp)
+                if (i.status == "submitted") {
+                    TextButton(onClick = {
+                        vm.call({ ApiClient.intakeFile(vm.token!!, i.id) }) { r ->
+                            r.getOrNull()?.let { f -> received = received + (i.id to f) }
+                        }
+                    }) { Text("Read sealed file", color = Pdi.BrandA, fontSize = 12.sp) }
+                    received[i.id]?.let { f ->
+                        Text("${f.filename ?: "file"}: ${f.content ?: ""}",
+                            color = Pdi.T2, fontSize = 11.sp,
+                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(9.dp))
+                                .background(Pdi.ScrBot).padding(8.dp))
+                    }
+                }
+                if (i.status == "open") {
+                    TextButton(onClick = {
+                        vm.call({ ApiClient.closeIntake(vm.token!!, i.id) }) { reload() }
+                    }) { Text("Close request", color = Pdi.Red, fontSize = 12.sp) }
+                }
+            }
+        }
+
+        // The counterparty's side, for exercising the loop on-device.
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Act as the sender", color = Pdi.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text("Paste an intake's submit token to answer it — this is what the counterparty does, no vault account involved.",
+                color = Pdi.T2, fontSize = 12.sp)
+            labeledField("Submit token", senderToken, "intk token") { senderToken = it }
+            labeledField("Filename", senderFile, "e.g. w2.pdf") { senderFile = it }
+            labeledField("Content", senderContent, "the file body") { senderContent = it }
+            BrandButton("Submit into the newest open intake",
+                enabled = senderToken.isNotBlank() && senderFile.isNotBlank()
+                          && senderContent.isNotBlank()) {
+                val target = intakes.lastOrNull { it.status == "open" }
+                if (target == null) { error = "no open intake to submit into" }
+                else {
+                    error = null
+                    vm.call({ ApiClient.submitIntake(target.id, senderToken,
+                                                      senderFile, senderContent) }) { r ->
+                        r.onSuccess { senderToken = ""; senderFile = ""; senderContent = "" }
+                         .onFailure { error = it.message }
+                        reload()
+                    }
                 }
             }
         }
