@@ -230,6 +230,9 @@ The first-run journey runs **23 Welcome → 22 Log In → 24 Key Setup → 25 Gr
     <td align="center" width="33%"><a href="docs/screens/34-google-gemini.svg"><img src="docs/screens/34-google-gemini.svg" width="210" alt="Google Gemini"></a><br><sub><b>34</b> · Google Gemini</sub></td>
     <td align="center" width="33%"><a href="docs/screens/35-microsoft-copilot.svg"><img src="docs/screens/35-microsoft-copilot.svg" width="210" alt="Microsoft Copilot"></a><br><sub><b>35</b> · Microsoft Copilot</sub></td>
   </tr>
+  <tr>
+    <td align="center" width="33%"><a href="docs/screens/36-robot-data-vault.svg"><img src="docs/screens/36-robot-data-vault.svg" width="210" alt="Robot Data Vault"></a><br><sub><b>36</b> · Robot Data Vault</sub></td>
+  </tr>
 </table>
 
 **For enterprises:** PDI offers compliance-grade secure file transfer for corporations (carriers, healthcare, financial, public sector) — files sealed under HIPAA / OSHA / CPNI / PCI-DSS and more, with audited chain of custody and enforced retention, in both directions: outbound transfers and inbound secure intake from subscribers and partners. See [docs/enterprise.md](docs/enterprise.md).

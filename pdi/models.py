@@ -55,6 +55,17 @@ class AppInvoke(BaseModel):
     input: str | None = None
 
 
+class RobotBind(BaseModel):
+    model: str                      # pdi.robotics catalog key, e.g. "saros_20"
+    name: str | None = None         # household name; defaults to the label
+
+
+class RobotIngest(BaseModel):
+    kind: str                       # map | snapshot | sensor_log
+    content: str                    # the payload to seal (JSON/base64/text)
+    ref: str | None = None          # vendor-side reference, if any
+
+
 PartyType = Literal["subscriber", "organization", "partner"]
 
 
