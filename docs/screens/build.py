@@ -1017,6 +1017,24 @@ def render(spec):
             out.append(text(CX + CW, y + 10, s, 9.5, C["t2"], 400, "end"))
             y += 24
 
+    elif hero == "filesphotos":
+        out.append(text(CX, y, "Bring in files & photos from your devices.",
+                        10.5, C["t2"]))
+        y += 26
+        for name, ic in [("iOS", "phone"), ("Android", "phone"), ("Windows", "grid")]:
+            out.append(rrect(CX, y, CW, 54, 14, "url(#gCard)", C["line"], 1))
+            out.append(chip(CX + 12, y + 10, ic, C["brandA"]))
+            out.append(text(CX + 56, y + 31, name, 13, C["txt"], 700))
+            bx = CX + CW - 12
+            for lab, col in [("Photos", C["cyan"]), ("Files", C["brandA"])]:
+                w = 16 + len(lab) * 6.4
+                out.append(rrect(bx - w, y + 16, w, 22, 11, A(col, 0.16), col, 1))
+                out.append(text(bx - w / 2, y + 31, lab, 10, col, 700, "middle"))
+                bx -= w + 8
+            y += 62
+        out.append(text(CX, y, "Only the folders & albums you pick — nothing else is read.",
+                        9.5, C["t3"], 500))
+
     else:  # generic stacked cards
 
         for c in spec["cards"]:
@@ -1121,6 +1139,7 @@ SCREENS = [
     dict(num=29, title="Connected Apps", sub="Apple · Google · Microsoft · Canva", hero="connectedapps", accent="brand", tab=0),
     dict(num=30, title="Compliance Transfers", sub="HIPAA · OSHA · CPNI — sealed & audited", hero="transfers", accent="brand", tab=1),
     dict(num=31, title="Secure Intake", sub="Subscribers & partners send files in", hero="intake", accent="brand", tab=1),
+    dict(num=32, title="Files & Photos", sub="Connect device files & photos", hero="filesphotos", accent="brand", tab=1),
 ]
 
 

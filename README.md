@@ -223,6 +223,7 @@ The first-run journey runs **23 Welcome → 22 Log In → 24 Key Setup → 25 Gr
   </tr>
   <tr>
     <td align="center" width="33%"><a href="docs/screens/31-secure-intake.svg"><img src="docs/screens/31-secure-intake.svg" width="210" alt="Secure Intake"></a><br><sub><b>31</b> · Secure Intake</sub></td>
+    <td align="center" width="33%"><a href="docs/screens/32-files-photos.svg"><img src="docs/screens/32-files-photos.svg" width="210" alt="Files & Photos"></a><br><sub><b>32</b> · Files &amp; Photos</sub></td>
   </tr>
 </table>
 
