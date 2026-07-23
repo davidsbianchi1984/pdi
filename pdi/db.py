@@ -73,12 +73,33 @@ CREATE TABLE IF NOT EXISTS transfers (
     size               INTEGER NOT NULL DEFAULT 0,
     classification     TEXT,
     programs           TEXT NOT NULL DEFAULT '[]',
+    party_type         TEXT,                    -- subscriber | organization | partner
     vault_key          TEXT NOT NULL,           -- where the sealed bytes live
     receive_token_hash TEXT NOT NULL,           -- only the SHA-256 is stored
     status             TEXT NOT NULL DEFAULT 'sealed',  -- sealed | received | revoked
     retention_days     INTEGER NOT NULL DEFAULT 0,
     expires_at         TEXT,                    -- record retained until here
     created_at         TEXT NOT NULL
+);
+
+-- Inbound intakes: a corporation requests a file FROM a broadband user or a
+-- partner company; that party submits it in with a one-shot submit token, and
+-- it is sealed in the vault under the same compliance controls.
+CREATE TABLE IF NOT EXISTS intakes (
+    id                TEXT PRIMARY KEY,
+    tenant_id         TEXT NOT NULL REFERENCES tenants(id),
+    from_party        TEXT NOT NULL,            -- who is asked to submit
+    party_type        TEXT,                     -- subscriber | organization | partner
+    purpose           TEXT,
+    programs          TEXT NOT NULL DEFAULT '[]',
+    submit_token_hash TEXT NOT NULL,            -- only the SHA-256 is stored
+    status            TEXT NOT NULL DEFAULT 'open',  -- open | submitted | closed
+    vault_key         TEXT,                     -- set once submitted
+    filename          TEXT,
+    classification    TEXT,
+    retention_days    INTEGER NOT NULL DEFAULT 0,
+    expires_at        TEXT,
+    created_at        TEXT NOT NULL
 );
 
 -- Chain of custody: every material event on a transfer, for the compliance
