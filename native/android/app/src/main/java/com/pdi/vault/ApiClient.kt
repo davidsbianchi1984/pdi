@@ -14,6 +14,10 @@ data class AuditEntry(val seq: Int, val action: String, val ref: String?, val at
 data class RobotSpec(val model: String, val label: String, val maker: String)
 data class Robot(val id: String, val model: String, val name: String, val status: String?, val collected: Int)
 data class IngestResult(val sealed: Boolean, val key: String)
+data class ComplianceProgram(val key: String, val label: String)
+data class Transfer(val id: String, val recipient: String, val filename: String,
+                    val status: String, val programs: List<String>,
+                    val expiresAt: String?, val receiveToken: String?)
 
 class ApiException(message: String) : Exception(message)
 
@@ -124,5 +128,42 @@ object ApiClient {
         val arr = JSONObject(request("/robots/$rid/data", token = token))
             .getJSONArray("keys")
         return (0 until arr.length()).map { arr.getString(it) }
+    }
+
+    // ---- compliance-grade secure transfers ----
+
+    private fun transferOf(o: JSONObject): Transfer {
+        val progs = o.optJSONArray("programs")
+        return Transfer(o.getString("id"), o.optString("recipient", ""),
+            o.optString("filename", ""), o.optString("status", ""),
+            (0 until (progs?.length() ?: 0)).map { progs!!.getString(it) },
+            o.optString("expires_at", null), o.optString("receive_token", null))
+    }
+
+    suspend fun compliancePrograms(token: String): List<ComplianceProgram> {
+        val arr = JSONObject(request("/compliance/programs", token = token))
+            .getJSONArray("programs")
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            ComplianceProgram(o.getString("key"), o.getString("label"))
+        }
+    }
+
+    suspend fun transfers(token: String): List<Transfer> {
+        val arr = JSONArray(request("/transfers", token = token))
+        return (0 until arr.length()).map { transferOf(arr.getJSONObject(it)) }
+    }
+
+    suspend fun createTransfer(token: String, recipient: String, filename: String,
+                               content: String, programs: List<String>): Transfer {
+        val progs = org.json.JSONArray()
+        programs.forEach { progs.put(it) }
+        return transferOf(JSONObject(request("/transfers", "POST",
+            JSONObject().put("recipient", recipient).put("filename", filename)
+                .put("content", content).put("programs", progs), token)))
+    }
+
+    suspend fun revokeTransfer(token: String, tid: String) {
+        request("/transfers/$tid", "DELETE", token = token)
     }
 }

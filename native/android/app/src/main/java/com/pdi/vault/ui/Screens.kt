@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pdi.vault.ApiClient
 import com.pdi.vault.AuditEntry
+import com.pdi.vault.ComplianceProgram
+import com.pdi.vault.Transfer
 import com.pdi.vault.Robot
 import com.pdi.vault.RobotSpec
 import com.pdi.vault.VaultViewModel
@@ -328,6 +330,101 @@ fun RobotsScreen(vm: VaultViewModel) {
                 Text("Sealed", color = Pdi.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Text(key, color = Pdi.T2, fontSize = 11.sp)
                 Text("Read it (audited) via Vault → the key above.", color = Pdi.T3, fontSize = 11.sp)
+            }
+        }
+    }
+}
+
+// ---- Transfers (compliance-grade secure file transfer) ----
+
+@Composable
+fun TransfersScreen(vm: VaultViewModel) {
+    var programs by remember { mutableStateOf<List<ComplianceProgram>>(emptyList()) }
+    var selected by remember { mutableStateOf(setOf("hipaa")) }
+    var recipient by remember { mutableStateOf("") }
+    var filename by remember { mutableStateOf("") }
+    var content by remember { mutableStateOf("") }
+    var transfers by remember { mutableStateOf<List<Transfer>>(emptyList()) }
+    var minted by remember { mutableStateOf<String?>(null) }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun reload() { vm.call({ ApiClient.transfers(vm.token!!) }) { r -> transfers = r.getOrDefault(emptyList()) } }
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.compliancePrograms(vm.token!!) }) { r -> programs = r.getOrDefault(emptyList()) }
+        reload()
+    }
+
+    screenScroll {
+        Text("Transfers", color = Pdi.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text("Seal a file for a recipient under compliance controls. Retention follows the strictest program you pick.",
+            color = Pdi.T2, fontSize = 13.sp)
+
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            labeledField("Recipient", recipient, "who it's for") { recipient = it }
+            labeledField("Filename", filename, "e.g. results.pdf") { filename = it }
+            labeledField("Content", content, "the file body to seal") { content = it }
+            Text("Programs", color = Pdi.T2, fontSize = 12.sp)
+            programs.chunked(4).forEach { row ->
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    row.forEach { p ->
+                        FilterChip(
+                            selected = p.key in selected,
+                            onClick = {
+                                selected = if (p.key in selected) selected - p.key
+                                           else selected + p.key
+                            },
+                            label = { Text(p.key.uppercase(), fontSize = 10.sp) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = Pdi.BrandA,
+                                selectedLabelColor = Color.White, labelColor = Pdi.T2,
+                            ),
+                        )
+                    }
+                }
+            }
+            BrandButton("Seal & create",
+                enabled = recipient.isNotBlank() && filename.isNotBlank()
+                          && content.isNotBlank() && selected.isNotEmpty(),
+                busy = busy) {
+                busy = true; error = null
+                vm.call({ ApiClient.createTransfer(vm.token!!, recipient, filename,
+                                                    content, selected.toList()) }) { r ->
+                    busy = false
+                    r.onSuccess { minted = it.receiveToken
+                                  recipient = ""; filename = ""; content = "" }
+                     .onFailure { error = it.message }
+                    reload()
+                }
+            }
+        }
+        error?.let { Text(it, color = Pdi.Red, fontSize = 13.sp) }
+
+        minted?.let { tok ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("Receive token — shown once", color = Pdi.Amber, fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold)
+                Text(tok, color = Pdi.Txt, fontSize = 11.sp)
+                Text("Hand this to the recipient out of band; it is the only way to retrieve the file.",
+                    color = Pdi.T2, fontSize = 11.sp)
+            }
+        }
+
+        transfers.forEach { t ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(t.filename, color = Pdi.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text(t.status.replaceFirstChar { it.uppercase() },
+                        color = if (t.status == "revoked") Pdi.Red else Pdi.Green, fontSize = 12.sp)
+                }
+                Text("→ ${t.recipient} · ${t.programs.joinToString(" ") { it.uppercase() }}",
+                    color = Pdi.T2, fontSize = 12.sp)
+                t.expiresAt?.let { Text("retained until $it", color = Pdi.T3, fontSize = 11.sp) }
+                if (t.status != "revoked") {
+                    TextButton(onClick = {
+                        vm.call({ ApiClient.revokeTransfer(vm.token!!, t.id) }) { reload() }
+                    }) { Text("Revoke access", color = Pdi.Red, fontSize = 12.sp) }
+                }
             }
         }
     }
