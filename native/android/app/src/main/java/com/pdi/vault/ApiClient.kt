@@ -22,6 +22,8 @@ data class Intake(val id: String, val fromParty: String, val purpose: String?,
                   val status: String, val programs: List<String>,
                   val filename: String?, val submitToken: String?)
 data class IntakeFile(val filename: String?, val content: String?)
+data class SocialConn(val id: String, val platform: String, val direction: String,
+                      val handle: String?, val status: String?)
 
 class ApiException(message: String) : Exception(message)
 
@@ -202,6 +204,38 @@ object ApiClient {
 
     suspend fun closeIntake(token: String, iid: String) {
         request("/intakes/$iid", "DELETE", token = token)
+    }
+
+    // ---- social-platform connectors (tenant data sources) ----
+
+    private fun connOf(o: JSONObject) = SocialConn(
+        o.getString("id"), o.optString("platform", ""), o.optString("direction", ""),
+        o.optString("handle", null), o.optString("status", null))
+
+    suspend fun connectors(token: String): List<SocialConn> {
+        val arr = JSONArray(request("/connectors", token = token))
+        return (0 until arr.length()).map { connOf(arr.getJSONObject(it)) }
+    }
+
+    suspend fun createConnector(token: String, platform: String, direction: String,
+                                handle: String?): SocialConn {
+        val body = JSONObject().put("platform", platform).put("direction", direction)
+        if (!handle.isNullOrBlank()) body.put("handle", handle)
+        return connOf(JSONObject(request("/connectors", "POST", body, token)))
+    }
+
+    suspend fun connectorIngest(token: String, cid: String, content: String) {
+        val items = org.json.JSONArray().put(JSONObject().put("content", content))
+        request("/connectors/$cid/ingest", "POST", JSONObject().put("items", items), token)
+    }
+
+    suspend fun connectorPublish(token: String, cid: String, content: String) {
+        request("/connectors/$cid/publish", "POST",
+            JSONObject().put("content", content), token)
+    }
+
+    suspend fun revokeConnector(token: String, cid: String) {
+        request("/connectors/$cid", "DELETE", token = token)
     }
 
     /** The sender's side: authenticated by the one-shot X-Submit-Token, not

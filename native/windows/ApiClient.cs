@@ -78,6 +78,12 @@ public record IntakeFile(
     [property: JsonPropertyName("filename")] string? Filename,
     [property: JsonPropertyName("content")] string? Content);
 
+public record SocialConn(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("platform")] string Platform,
+    [property: JsonPropertyName("direction")] string Direction,
+    [property: JsonPropertyName("handle")] string? Handle);
+
 /// <summary>
 /// Async client for the PDI vault backend. Every call carries the tenant bearer
 /// token (`pdi_...`), issued out of band and pasted at sign-in. Windows reaches
@@ -227,6 +233,46 @@ public sealed class ApiClient
 
     public Task CloseIntake(string token, string iid) =>
         SendNoContent(new HttpRequestMessage(HttpMethod.Delete, $"/intakes/{iid}"), token);
+
+    // -- social-platform connectors --
+
+    public Task<SocialConn[]> Connectors(string token) =>
+        Send<SocialConn[]>(new HttpRequestMessage(HttpMethod.Get, "/connectors"), token);
+
+    public Task<SocialConn> CreateConnector(string token, string platform,
+                                            string direction, string? handle)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post, "/connectors")
+        {
+            Content = JsonContent.Create(new
+            {
+                platform, direction,
+                handle = string.IsNullOrEmpty(handle) ? null : handle,
+            }),
+        };
+        return Send<SocialConn>(req, token);
+    }
+
+    public Task ConnectorIngest(string token, string cid, string content)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/connectors/{cid}/ingest")
+        {
+            Content = JsonContent.Create(new { items = new[] { new { content } } }),
+        };
+        return SendNoContent(req, token);
+    }
+
+    public Task ConnectorPublish(string token, string cid, string content)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/connectors/{cid}/publish")
+        {
+            Content = JsonContent.Create(new { content }),
+        };
+        return SendNoContent(req, token);
+    }
+
+    public Task RevokeConnector(string token, string cid) =>
+        SendNoContent(new HttpRequestMessage(HttpMethod.Delete, $"/connectors/{cid}"), token);
 
     /// <summary>The sender's side: authenticated by the one-shot
     /// X-Submit-Token, not the tenant bearer.</summary>
