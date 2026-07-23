@@ -25,6 +25,7 @@ struct RootView: View {
                     OverviewView().tabItem { Label("Overview", systemImage: "circle.grid.cross") }
                     VaultView().tabItem { Label("Vault", systemImage: "lock.rectangle.stack") }
                     AuditView().tabItem { Label("Audit", systemImage: "checkmark.seal") }
+                    RobotsView().tabItem { Label("Robots", systemImage: "figure.walk.motion") }
                 }
                 .tint(Theme.brandA)
             } else {

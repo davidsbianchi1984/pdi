@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pdi.vault.ApiClient
 import com.pdi.vault.AuditEntry
+import com.pdi.vault.Robot
+import com.pdi.vault.RobotSpec
 import com.pdi.vault.VaultViewModel
 
 @Composable
@@ -242,6 +244,90 @@ fun AuditScreen(vm: VaultViewModel) {
                     }
                     e.category?.let { Text(it, color = Pdi.BrandA, fontSize = 11.sp, fontWeight = FontWeight.Bold) }
                 }
+            }
+        }
+    }
+}
+
+// ---- Robots (vault-backed data sources) ----
+
+@Composable
+fun RobotsScreen(vm: VaultViewModel) {
+    var catalog by remember { mutableStateOf<List<RobotSpec>>(emptyList()) }
+    var chosen by remember { mutableStateOf("saros_20") }
+    var robots by remember { mutableStateOf<List<Robot>>(emptyList()) }
+    var lastKey by remember { mutableStateOf<String?>(null) }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun reload() { vm.call({ ApiClient.robots(vm.token!!) }) { r -> robots = r.getOrDefault(emptyList()) } }
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.roboticsCatalog(vm.token!!) }) { r -> catalog = r.getOrDefault(emptyList()) }
+        reload()
+    }
+
+    fun seal(rob: Robot, kind: String, content: String) {
+        error = null
+        vm.call({ ApiClient.ingest(vm.token!!, rob.id, kind, content) }) { r ->
+            r.onSuccess { lastKey = it.key }.onFailure { error = it.message }
+            reload()
+        }
+    }
+
+    screenScroll {
+        Text("Robots", color = Pdi.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text("What your robots see stays sealed — every intake is encrypted at rest and hash-chained in the audit log.",
+            color = Pdi.T2, fontSize = 13.sp)
+
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Bind a robot", color = Pdi.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            catalog.chunked(2).forEach { row ->
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    row.forEach { s ->
+                        FilterChip(
+                            selected = chosen == s.model, onClick = { chosen = s.model },
+                            label = { Text(s.label, fontSize = 11.sp) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = Pdi.BrandA,
+                                selectedLabelColor = Color.White, labelColor = Pdi.T2,
+                            ),
+                        )
+                    }
+                }
+            }
+            BrandButton("Bind", enabled = catalog.isNotEmpty(), busy = busy) {
+                busy = true; error = null
+                vm.call({ ApiClient.bindRobot(vm.token!!, chosen) }) { r ->
+                    busy = false
+                    r.onFailure { error = it.message }
+                    reload()
+                }
+            }
+        }
+        error?.let { Text(it, color = Pdi.Red, fontSize = 13.sp) }
+
+        robots.forEach { rob ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(rob.name, color = Pdi.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text("${rob.collected} sealed", color = Pdi.Green, fontSize = 12.sp)
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TextButton(onClick = { seal(rob, "map", "{\"rooms\": 5}") }) {
+                        Text("Seal map", color = Pdi.BrandA, fontSize = 12.sp) }
+                    TextButton(onClick = { seal(rob, "snapshot", "camera still") }) {
+                        Text("Snapshot", color = Pdi.BrandA, fontSize = 12.sp) }
+                    TextButton(onClick = { seal(rob, "sensor_log", "steps & doors") }) {
+                        Text("Sensor log", color = Pdi.BrandA, fontSize = 12.sp) }
+                }
+            }
+        }
+
+        lastKey?.let { key ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("Sealed", color = Pdi.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(key, color = Pdi.T2, fontSize = 11.sp)
+                Text("Read it (audited) via Vault → the key above.", color = Pdi.T3, fontSize = 11.sp)
             }
         }
     }

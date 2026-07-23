@@ -18,6 +18,9 @@
             <NavigationViewItem Content="Audit" Tag="audit">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Accept" /></NavigationViewItem.Icon>
             </NavigationViewItem>
+            <NavigationViewItem Content="Robots" Tag="robots">
+                <NavigationViewItem.Icon><SymbolIcon Symbol="Contact" /></NavigationViewItem.Icon>
+            </NavigationViewItem>
         </NavigationView.MenuItems>
         <NavigationView.PaneFooter>
             <Button Content="Sign out" Margin="12" Click="OnSignOut"

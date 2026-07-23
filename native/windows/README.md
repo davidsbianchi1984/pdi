@@ -45,5 +45,6 @@ restriction and can call `127.0.0.1` without an exemption.
 | `Views/OverviewPage` | record count + audit status |
 | `Views/VaultPage` | seal / reveal / delete records (`/records`) |
 | `Views/AuditPage` | integrity badge + entries (`/audit`) |
+| `Views/RobotsPage` | bind + sealed ingest (`/robots`, `/robots/{rid}/ingest`) |
 | `ApiClient.cs` | `HttpClient` client + records |
 | `AppState.cs` | token + base URL, persisted to LocalAppData |

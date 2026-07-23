@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -29,6 +30,7 @@ import com.pdi.vault.ui.Pdi
 import com.pdi.vault.ui.PdiTheme
 import com.pdi.vault.ui.AuditScreen
 import com.pdi.vault.ui.OverviewScreen
+import com.pdi.vault.ui.RobotsScreen
 import com.pdi.vault.ui.VaultScreen
 import com.pdi.vault.ui.WelcomeScreen
 
@@ -56,6 +58,7 @@ private fun HomeShell(vm: VaultViewModel) {
         Triple("Overview", Icons.Filled.GridView, 0),
         Triple("Vault", Icons.Filled.Lock, 1),
         Triple("Audit", Icons.Filled.VerifiedUser, 2),
+        Triple("Robots", Icons.Filled.Face, 3),
     )
     Scaffold(
         containerColor = Pdi.ScrBot,
@@ -83,7 +86,8 @@ private fun HomeShell(vm: VaultViewModel) {
             when (tab) {
                 0 -> OverviewScreen(vm)
                 1 -> VaultScreen(vm)
-                else -> AuditScreen(vm)
+                2 -> AuditScreen(vm)
+                else -> RobotsScreen(vm)
             }
         }
     }

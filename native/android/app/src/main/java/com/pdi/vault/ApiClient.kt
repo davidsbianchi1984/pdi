@@ -11,6 +11,9 @@ import java.net.URL
 
 data class VaultRecord(val key: String, val value: String, val updatedAt: String?)
 data class AuditEntry(val seq: Int, val action: String, val ref: String?, val at: String, val category: String?)
+data class RobotSpec(val model: String, val label: String, val maker: String)
+data class Robot(val id: String, val model: String, val name: String, val status: String?, val collected: Int)
+data class IngestResult(val sealed: Boolean, val key: String)
 
 class ApiException(message: String) : Exception(message)
 
@@ -84,5 +87,42 @@ object ApiClient {
             AuditEntry(o.optInt("seq"), o.optString("action", ""),
                 o.optString("ref", null), o.optString("at", ""), o.optString("category", null))
         }
+    }
+
+    // ---- robots as vault-backed data sources ----
+
+    private fun robotOf(o: JSONObject) = Robot(
+        o.getString("id"), o.optString("model", ""), o.optString("name", ""),
+        o.optString("status", null), o.optInt("collected"))
+
+    suspend fun roboticsCatalog(token: String): List<RobotSpec> {
+        val arr = JSONObject(request("/robotics/catalog", token = token))
+            .getJSONArray("robots")
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            RobotSpec(o.getString("model"), o.getString("label"), o.getString("maker"))
+        }
+    }
+
+    suspend fun robots(token: String): List<Robot> {
+        val arr = JSONArray(request("/robots", token = token))
+        return (0 until arr.length()).map { robotOf(arr.getJSONObject(it)) }
+    }
+
+    suspend fun bindRobot(token: String, model: String): Robot {
+        return robotOf(JSONObject(request("/robots", "POST",
+            JSONObject().put("model", model), token)))
+    }
+
+    suspend fun ingest(token: String, rid: String, kind: String, content: String): IngestResult {
+        val o = JSONObject(request("/robots/$rid/ingest", "POST",
+            JSONObject().put("kind", kind).put("content", content), token))
+        return IngestResult(o.optBoolean("sealed"), o.getString("key"))
+    }
+
+    suspend fun robotKeys(token: String, rid: String): List<String> {
+        val arr = JSONObject(request("/robots/$rid/data", token = token))
+            .getJSONArray("keys")
+        return (0 until arr.length()).map { arr.getString(it) }
     }
 }
