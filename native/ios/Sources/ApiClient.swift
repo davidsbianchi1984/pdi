@@ -36,6 +36,20 @@ struct Robot: Decodable {
 struct IngestResult: Decodable { let sealed: Bool; let key: String }
 struct RobotData: Decodable { let keys: [String] }
 
+struct ComplianceProgram: Decodable { let key: String; let label: String }
+struct CompliancePrograms: Decodable { let programs: [ComplianceProgram] }
+
+struct Transfer: Decodable {
+    let id: String
+    let recipient: String
+    let filename: String
+    let status: String
+    let programs: [String]
+    let retention_days: Int?
+    let expires_at: String?
+    let receive_token: String?     // present only on creation — shown once
+}
+
 // MARK: - Client
 
 enum ApiError: LocalizedError {
@@ -124,5 +138,29 @@ actor ApiClient {
 
     func robotData(token: String, rid: String) async throws -> RobotData {
         try await request("/robots/\(rid)/data", token: token)
+    }
+
+    // MARK: Compliance-grade secure transfers
+
+    func compliancePrograms(token: String) async throws -> CompliancePrograms {
+        try await request("/compliance/programs", token: token)
+    }
+
+    func transfers(token: String) async throws -> [Transfer] {
+        try await request("/transfers", token: token)
+    }
+
+    func createTransfer(token: String, recipient: String, filename: String,
+                        content: String, programs: [String]) async throws -> Transfer {
+        try await request("/transfers", method: "POST",
+                          body: ["recipient": recipient, "filename": filename,
+                                 "content": content, "programs": programs],
+                          token: token)
+    }
+
+    func revokeTransfer(token: String, tid: String) async throws {
+        struct Ok: Decodable {}
+        let _: Ok = try await request("/transfers/\(tid)", method: "DELETE",
+                                      token: token)
     }
 }

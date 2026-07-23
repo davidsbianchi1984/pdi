@@ -49,6 +49,22 @@ public record IngestResult(
 public record RobotData(
     [property: JsonPropertyName("keys")] string[] Keys);
 
+public record ComplianceProgram(
+    [property: JsonPropertyName("key")] string Key,
+    [property: JsonPropertyName("label")] string Label);
+
+public record CompliancePrograms(
+    [property: JsonPropertyName("programs")] ComplianceProgram[] Programs);
+
+public record Transfer(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("recipient")] string Recipient,
+    [property: JsonPropertyName("filename")] string Filename,
+    [property: JsonPropertyName("status")] string Status,
+    [property: JsonPropertyName("programs")] string[] Programs,
+    [property: JsonPropertyName("expires_at")] string? ExpiresAt,
+    [property: JsonPropertyName("receive_token")] string? ReceiveToken);
+
 /// <summary>
 /// Async client for the PDI vault backend. Every call carries the tenant bearer
 /// token (`pdi_...`), issued out of band and pasted at sign-in. Windows reaches
@@ -148,4 +164,27 @@ public sealed class ApiClient
 
     public Task<RobotData> RobotKeys(string token, string rid) =>
         Send<RobotData>(new HttpRequestMessage(HttpMethod.Get, $"/robots/{rid}/data"), token);
+
+    // -- compliance-grade secure transfers --
+
+    public Task<CompliancePrograms> Programs(string token) =>
+        Send<CompliancePrograms>(new HttpRequestMessage(
+            HttpMethod.Get, "/compliance/programs"), token);
+
+    public Task<Transfer[]> Transfers(string token) =>
+        Send<Transfer[]>(new HttpRequestMessage(HttpMethod.Get, "/transfers"), token);
+
+    public Task<Transfer> CreateTransfer(string token, string recipient,
+                                         string filename, string content,
+                                         string[] programs)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post, "/transfers")
+        {
+            Content = JsonContent.Create(new { recipient, filename, content, programs }),
+        };
+        return Send<Transfer>(req, token);
+    }
+
+    public Task RevokeTransfer(string token, string tid) =>
+        SendNoContent(new HttpRequestMessage(HttpMethod.Delete, $"/transfers/{tid}"), token);
 }
