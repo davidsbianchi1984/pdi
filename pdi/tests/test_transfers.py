@@ -1,6 +1,6 @@
 """Compliance-grade secure file transfers for enterprises (HIPAA, OSHA, CPNI)."""
 
-from pdi.tests.conftest import auth, new_tenant
+from pdi.tests.conftest import auth, new_tenant, new_tenant_with_baa
 
 
 def _create(client, token, **body):
@@ -19,7 +19,7 @@ def test_compliance_catalog_lists_programs(client):
 
 
 def test_create_seals_and_sets_retention(client):
-    token = new_tenant(client, name="verizon")
+    token = new_tenant_with_baa(client, name="verizon")
     t = _create(client, token, recipient="patient-123", filename="labs.pdf",
                 content="AAAA lab results BBBB", programs=["hipaa", "osha"],
                 classification="PHI")
@@ -64,7 +64,7 @@ def test_wrong_token_and_unknown_program(client):
 
 
 def test_revoke_cuts_access_but_retains_record(client):
-    token = new_tenant(client)
+    token = new_tenant_with_baa(client)
     t = _create(client, token, recipient="r", filename="f", content="x",
                 programs=["hipaa"])
     rev = client.delete(f"/transfers/{t['id']}", headers=auth(token)).json()

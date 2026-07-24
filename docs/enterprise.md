@@ -27,6 +27,9 @@ before production PHI flows**. A production-ready template — with the
 required 45 C.F.R. § 164.504(e) provisions and an exhibit mapping every
 contractual promise to the PDI control that keeps it — is maintained at
 [docs/baa-template.md](baa-template.md). Have counsel adapt it per customer.
+Execution is **enforced in code**: the operator records each signed BAA at
+`POST /tenants/{tenant_id}/baa`, and HIPAA-program transfers/intakes are
+refused for any tenant without one on file.
 
 ## How a compliant transfer works
 

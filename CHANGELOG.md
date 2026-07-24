@@ -8,6 +8,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **BAA enforcement** (pdi/baa.py) — the operator records each customer's
+  executed BAA (`POST /tenants/{id}/baa`, metadata + document hash only);
+  HIPAA-program transfers and intakes are refused for tenants without an
+  active record; `GET /baa` gives tenants their own standing;
+  `baa.execute`/`baa.terminate` land in the audit chain. The template
+  itself gains a mitigation clause and the unsuccessful-attempts
+  security-incident carve-out.
+
 - **BAA template** (docs/baa-template.md) — a production-ready Business
   Associate Agreement with the required § 164.504(e) provisions and an
   exhibit mapping each contractual promise to the PDI control that keeps
