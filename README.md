@@ -266,6 +266,7 @@ The first-run journey runs **23 Welcome → 22 Log In → 24 Key Setup → 25 Gr
 | `GET /audit` | tenant | This tenant's audit entries (each with a `category`) |
 | `GET /audit/verify` | tenant | Verify the hash-chain is intact |
 | `GET /audit/schema` | — | Audit event schema: fields + action catalogue |
+| `POST`/`GET /improve` | — (open) | **Help us improve**: product feedback on PDI itself (idea/improvement/bug/praise + optional 1–5 rating). Not tenant record data — a tenant token, if presented, just lets a submitter find their own words again; a submitter sees only their own plus the public per-category tally |
 
 Tenant endpoints require `Authorization: Bearer pdi_...`.
 

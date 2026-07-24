@@ -29,6 +29,9 @@ data class IntakeFile(val filename: String?, val content: String?)
 data class SocialConn(val id: String, val platform: String, val direction: String,
                       val handle: String?, val status: String?)
 
+data class ImproveItem(val category: String, val message: String, val status: String)
+data class ImproveState(val mine: List<ImproveItem>, val tally: Map<String, Int>, val total: Int)
+
 class ApiException(message: String) : Exception(message)
 
 /**
@@ -118,6 +121,26 @@ object ApiClient {
     suspend fun setLanguage(token: String, code: String, mode: String = "pre") {
         request("/language", "PUT",
             JSONObject().put("language", code).put("mode", mode), token)
+    }
+
+    suspend fun submitImprovement(token: String, category: String,
+                                  message: String, rating: Int?) {
+        val body = JSONObject().put("category", category).put("message", message)
+        if (rating != null) body.put("rating", rating)
+        request("/improve", "POST", body, token)
+    }
+
+    suspend fun improvements(token: String): ImproveState {
+        val o = JSONObject(request("/improve", token = token))
+        val mineArr = o.optJSONArray("mine")
+        val mine = (0 until (mineArr?.length() ?: 0)).map { i ->
+            val m = mineArr!!.getJSONObject(i)
+            ImproveItem(m.optString("category", ""), m.optString("message", ""),
+                m.optString("status", ""))
+        }
+        val tallyObj = o.optJSONObject("tally") ?: JSONObject()
+        val tally = tallyObj.keys().asSequence().associateWith { tallyObj.optInt(it) }
+        return ImproveState(mine, tally, o.optInt("total"))
     }
 
     suspend fun auditVerify(token: String): Boolean {

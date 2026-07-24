@@ -6,10 +6,23 @@ namespace PdiVault.Views;
 
 public sealed partial class OverviewPage : Page
 {
+    public record ImproveRow(string Line);
+
+    private static readonly string[] ImproveCategories =
+        { "idea", "improvement", "bug", "praise", "other" };
+
     private LanguageInfo[] _languages = System.Array.Empty<LanguageInfo>();
     private bool _loadingLanguage;
 
-    public OverviewPage() => InitializeComponent();
+    public OverviewPage()
+    {
+        InitializeComponent();
+        ImproveCategory.ItemsSource = ImproveCategories
+            .Select(c => char.ToUpper(c[0]) + c[1..]).ToList();
+        ImproveCategory.SelectedIndex = 0;
+        ImproveRating.ItemsSource = new[] { "—", "1", "2", "3", "4", "5" };
+        ImproveRating.SelectedIndex = 0;
+    }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
@@ -42,6 +55,55 @@ public sealed partial class OverviewPage : Page
         }
         catch { /* backend offline — leave empty */ }
         finally { _loadingLanguage = false; }
+
+        await LoadImprovements();
+    }
+
+    private async System.Threading.Tasks.Task LoadImprovements()
+    {
+        try
+        {
+            var st = await ApiClient.Shared.Improvements(AppState.Current.Token!);
+            if (st.Total > 0)
+            {
+                var parts = ImproveCategories
+                    .Where(c => st.Tally.TryGetValue(c, out var n) && n > 0)
+                    .Select(c => $"{st.Tally[c]} {c}");
+                ImproveTally.Text = "So far: " + string.Join(" · ", parts);
+                ImproveTally.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+            }
+            else ImproveTally.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+
+            var mine = st.Mine.Select(f => new ImproveRow(
+                $"[{f.Category}] {f.Message}  ·  {f.Status}")).ToList();
+            ImproveMine.ItemsSource = mine;
+            ImproveMineHeader.Visibility = mine.Count > 0
+                ? Microsoft.UI.Xaml.Visibility.Visible
+                : Microsoft.UI.Xaml.Visibility.Collapsed;
+        }
+        catch { /* backend offline — leave empty */ }
+    }
+
+    private async void OnSendImprovement(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var message = ImproveMessage.Text.Trim();
+        if (message.Length == 0) return;
+        var cat = ImproveCategories[System.Math.Max(0, ImproveCategory.SelectedIndex)];
+        int? rating = ImproveRating.SelectedIndex >= 1 ? ImproveRating.SelectedIndex : null;
+        try
+        {
+            await ApiClient.Shared.SubmitImprovement(AppState.Current.Token!, cat, message, rating);
+            ImproveMessage.Text = "";
+            ImproveRating.SelectedIndex = 0;
+            ImproveThanks.Text = "Thank you — sent.";
+            ImproveThanks.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+            await LoadImprovements();
+        }
+        catch (System.Exception ex)
+        {
+            ImproveThanks.Text = ex.Message;
+            ImproveThanks.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+        }
     }
 
     private string CurrentMode => PreTranslateToggle.IsOn ? "pre" : "on_demand";

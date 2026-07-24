@@ -19,10 +19,11 @@ from . import (app_connectors, audit, catalog, compliance, connectors, crypto,
                vault)
 from .models import (AppCollect, AppConnect, AppInvoke, ConnectorCreate,
                      ConnectorIngest, ConnectorPublish, ContributionIn,
-                     DeploymentCreate, IntakeCreate, IntakeSubmit,
-                     LanguageChoice, PositionIntake, TranslateRequest,
-                     RecordPut, RetentionSet, RobotBind, RobotIngest,
-                     SnapshotRestore, TenantCreate, TokenIssue, TransferCreate)
+                     DeploymentCreate, FeedbackSubmit, IntakeCreate,
+                     IntakeSubmit, LanguageChoice, PositionIntake,
+                     TranslateRequest, RecordPut, RetentionSet, RobotBind,
+                     RobotIngest, SnapshotRestore, TenantCreate, TokenIssue,
+                     TransferCreate)
 
 
 def _public_base() -> str:
@@ -710,6 +711,66 @@ def create_app() -> FastAPI:
     def audit_schema() -> dict:
         # The event schema: fields, the action catalogue, and retention stance.
         return audit.schema()
+
+    # -- "help us improve": product feedback on the app itself --------------
+    # Meta feedback about PDI as a product — not tenant record data, so it
+    # sits outside the per-tenant namespace and needs no token. When a tenant
+    # token is presented the submitter is recorded so they can find their own
+    # submissions again; otherwise it's anonymous.
+
+    _IMPROVE_CATEGORIES = ("idea", "improvement", "bug", "praise", "other")
+
+    def _improve_submitter(authorization: str) -> str:
+        if authorization.startswith("Bearer "):
+            tenant = vault.tenant_by_token(authorization[len("Bearer "):])
+            if tenant is not None:
+                return f"tenant:{tenant['id']}"
+        return "anonymous"
+
+    @app.post("/improve", status_code=201)
+    def submit_improvement(body: FeedbackSubmit,
+                           authorization: str = Header(default="")) -> dict:
+        """Tell us how to make PDI better — an idea, an improvement, a bug,
+        or praise, with an optional 1–5 rating. Open to anyone."""
+        if body.category not in _IMPROVE_CATEGORIES:
+            raise HTTPException(
+                422, f"category must be one of {', '.join(_IMPROVE_CATEGORIES)}")
+        message = body.message.strip()
+        if not message:
+            raise HTTPException(422, "a message is required")
+        if body.rating is not None and not (1 <= body.rating <= 5):
+            raise HTTPException(422, "rating must be 1–5")
+        conn = db.connect()
+        fid = db.new_id("fbk")
+        conn.execute(
+            "INSERT INTO feedback (id, submitter, category, message, rating,"
+            " status, created_at) VALUES (?,?,?,?,?,'received',?)",
+            (fid, _improve_submitter(authorization), body.category, message,
+             body.rating, db.utcnow()))
+        conn.commit()
+        return {"id": fid, "category": body.category, "status": "received",
+                "note": "thank you — this goes straight to the team"}
+
+    @app.get("/improve")
+    def list_improvements(authorization: str = Header(default="")) -> dict:
+        """The caller's own submissions (newest first) plus the public tally
+        by category — never anyone else's words."""
+        conn = db.connect()
+        submitter = _improve_submitter(authorization)
+        mine = []
+        if submitter != "anonymous":
+            mine = [dict(r) for r in conn.execute(
+                "SELECT id, category, message, rating, status, created_at"
+                " FROM feedback WHERE submitter=?"
+                " ORDER BY created_at DESC, rowid DESC", (submitter,)).fetchall()]
+        tally = {c: 0 for c in _IMPROVE_CATEGORIES}
+        for row in conn.execute(
+                "SELECT category, COUNT(*) AS n FROM feedback"
+                " GROUP BY category").fetchall():
+            if row["category"] in tally:
+                tally[row["category"]] = row["n"]
+        return {"mine": mine, "tally": tally, "total": sum(tally.values()),
+                "categories": list(_IMPROVE_CATEGORIES)}
 
     return app
 
