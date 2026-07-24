@@ -129,6 +129,16 @@ class TokenIssue(BaseModel):
     role: Literal["read", "write"]
 
 
+class BAARecordIn(BaseModel):
+    """Metadata of an executed Business Associate Agreement (docs/baa-template.md)."""
+    customer_legal_name: str
+    operator_legal_name: str
+    effective_date: str                # ISO date the agreement took effect
+    customer_signatory: str | None = None
+    operator_signatory: str | None = None
+    document_sha256: str | None = None  # hash of the signed instrument
+
+
 class FeedbackSubmit(BaseModel):
     """"Help us improve": product feedback on the app itself."""
     category: str = "idea"             # idea | improvement | bug | praise | other

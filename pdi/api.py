@@ -14,11 +14,12 @@ import secrets
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Response
 
-from . import (app_connectors, audit, catalog, compliance, connectors, crypto,
-               db, i18n, intakes, positions, retention, robotics, transfers,
-               vault)
-from .models import (AppCollect, AppConnect, AppInvoke, ConnectorCreate,
-                     ConnectorIngest, ConnectorPublish, ContributionIn,
+from . import (app_connectors, audit, baa, catalog, compliance, connectors,
+               crypto, db, i18n, intakes, positions, retention, robotics,
+               transfers, vault)
+from .models import (AppCollect, AppConnect, AppInvoke, BAARecordIn,
+                     ConnectorCreate, ConnectorIngest, ConnectorPublish,
+                     ContributionIn,
                      DeploymentCreate, FeedbackSubmit, IntakeCreate,
                      IntakeSubmit, LanguageChoice, PositionIntake,
                      TranslateRequest, RecordPut, RetentionSet, RobotBind,
@@ -457,6 +458,10 @@ def create_app() -> FastAPI:
 
     @app.post("/transfers", status_code=201)
     def create_transfer(body: TransferCreate, tenant: dict = Depends(_writer)) -> dict:
+        # No production PHI before the BAA: HIPAA-program transfers require
+        # an executed Business Associate Agreement on file for this tenant.
+        if (refusal := baa.blocks(tenant["id"], body.programs)):
+            raise HTTPException(403, refusal)
         try:
             return transfers.create(tenant, body.recipient, body.filename,
                                     body.content, body.programs, body.classification,
@@ -504,6 +509,8 @@ def create_app() -> FastAPI:
 
     @app.post("/intakes", status_code=201)
     def create_intake(body: IntakeCreate, tenant: dict = Depends(_writer)) -> dict:
+        if (refusal := baa.blocks(tenant["id"], body.programs)):
+            raise HTTPException(403, refusal)
         try:
             return intakes.create(tenant, body.from_party, body.party_type,
                                  body.purpose, body.programs)
@@ -697,6 +704,54 @@ def create_app() -> FastAPI:
         return retention.sweep()
 
     # -- compliance ---------------------------------------------------------
+
+    # -- BAA: executed per customer before production PHI (pdi/baa.py) -----
+
+    def _tenant_or_404(tenant_id: str) -> dict:
+        row = db.connect().execute("SELECT * FROM tenants WHERE id=?",
+                                   (tenant_id,)).fetchone()
+        if row is None:
+            raise HTTPException(404, "tenant not found")
+        return dict(row)
+
+    @app.post("/tenants/{tenant_id}/baa", status_code=201)
+    def record_baa(tenant_id: str, body: BAARecordIn,
+                   _: None = Depends(_admin)) -> dict:
+        """The operator records an executed BAA for a tenant (customer).
+        Metadata only — parties, signatories, effective date, and the hash of
+        the signed document; the instrument itself stays with counsel. From
+        this moment HIPAA-program transfers/intakes are unblocked."""
+        _tenant_or_404(tenant_id)
+        return baa.record(tenant_id, body.model_dump())
+
+    @app.get("/tenants/{tenant_id}/baa")
+    def get_baa(tenant_id: str, _: None = Depends(_admin)) -> dict:
+        _tenant_or_404(tenant_id)
+        row = baa.active(tenant_id)
+        if row is None:
+            raise HTTPException(404, "no executed BAA on file for this tenant")
+        return row
+
+    @app.delete("/tenants/{tenant_id}/baa")
+    def terminate_baa(tenant_id: str, _: None = Depends(_admin)) -> dict:
+        """Terminate the tenant's active BAA — HIPAA-program flows are
+        refused again from this moment. History is kept (status=terminated)."""
+        _tenant_or_404(tenant_id)
+        if not baa.terminate(tenant_id):
+            raise HTTPException(404, "no executed BAA on file for this tenant")
+        return {"tenant_id": tenant_id, "status": "terminated"}
+
+    @app.get("/baa")
+    def my_baa(tenant: dict = Depends(_tenant)) -> dict:
+        """The tenant's own BAA standing — the integrating application's
+        pre-production checklist can verify it programmatically."""
+        row = baa.active(tenant["id"])
+        return {"executed": row is not None,
+                "effective_date": row["effective_date"] if row else None,
+                "note": None if row else
+                    "no executed BAA on file — HIPAA-program transfers and "
+                    "intakes are refused until the operator records one "
+                    "(docs/baa-template.md)"}
 
     @app.get("/audit")
     def audit_log(tenant: dict = Depends(_tenant)) -> list[dict]:

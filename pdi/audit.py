@@ -39,6 +39,8 @@ ACTIONS: dict[str, tuple[str, str]] = {
     "deployment.create": ("admin", "deployment recorded"),
     "contribution.add": ("contribution", "cloud-model contribution sealed"),
     "position.create": ("position", "role-mapping intake sealed, assistant blueprint derived"),
+    "baa.execute": ("compliance", "Business Associate Agreement recorded as executed for a tenant"),
+    "baa.terminate": ("compliance", "tenant's Business Associate Agreement terminated"),
 }
 
 EVENT_FIELDS = {

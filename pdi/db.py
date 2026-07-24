@@ -176,6 +176,24 @@ CREATE TABLE IF NOT EXISTS robots (
     created_at TEXT NOT NULL
 );
 
+-- Per-customer BAA execution records (pdi/baa.py): metadata of the signed
+-- Business Associate Agreement for each tenant. HIPAA-program transfers and
+-- intakes are refused for tenants with no active record. The signed
+-- instrument itself stays with counsel; document_sha256 keeps it verifiable.
+CREATE TABLE IF NOT EXISTS baa_records (
+    id                  TEXT PRIMARY KEY,
+    tenant_id           TEXT NOT NULL REFERENCES tenants(id),
+    customer_legal_name TEXT NOT NULL,
+    operator_legal_name TEXT NOT NULL,
+    effective_date      TEXT NOT NULL,
+    customer_signatory  TEXT,
+    operator_signatory  TEXT,
+    document_sha256     TEXT,          -- hash of the executed document
+    status              TEXT NOT NULL DEFAULT 'executed',  -- executed | superseded | terminated
+    terminated_at       TEXT,
+    created_at          TEXT NOT NULL
+);
+
 -- "Help us improve": product feedback anyone can send about the app itself.
 -- Not tenant record data — this is meta feedback on PDI as a product, so it
 -- sits outside the per-tenant namespace. Submitter is a tenant:id when a

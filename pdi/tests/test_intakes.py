@@ -1,7 +1,7 @@
 """Inbound intake: a broadband subscriber or partner company sends a file IN
 to a corporation, sealed under compliance (HIPAA / OSHA / CPNI)."""
 
-from pdi.tests.conftest import auth, new_tenant
+from pdi.tests.conftest import auth, new_tenant, new_tenant_with_baa
 
 
 def _intake(client, token, **body):
@@ -11,7 +11,7 @@ def _intake(client, token, **body):
 
 
 def test_subscriber_submits_file_in(client):
-    token = new_tenant(client, name="att")
+    token = new_tenant_with_baa(client, name="att")
     intk = _intake(client, token, from_party="subscriber-9", party_type="subscriber",
                    purpose="ID verification", programs=["cpni", "hipaa"])
     assert intk["status"] == "open"

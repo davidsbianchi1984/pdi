@@ -67,6 +67,15 @@ individuals, a description of what happened, the PHI involved, and the
 mitigation taken — drawing on the deployment's audit chain (Exhibit B §3),
 which records every access to every sealed record.
 
+4.3 **Mitigation.** Business Associate shall mitigate, to the extent
+practicable, any harmful effect known to it of a use or disclosure of PHI in
+violation of this Agreement.
+
+4.4 **Unsuccessful attempts.** The Parties acknowledge that routine
+unsuccessful attempts (pings, port scans, malformed requests, and denied
+logins that do not result in unauthorized access to PHI) occur constantly;
+this section deems them reported in aggregate, without individual notice.
+
 ### 5. Subcontractors
 
 Business Associate shall ensure that any subcontractor that creates,
@@ -156,6 +165,17 @@ tamper-evident audit logging; and the operational services in
 | 6 | Verified deletion / return (§ 164.310(d)(2)) | Record deletion and tenant wipe are audited events in the same chain; snapshot export provides return-in-kind |
 | 7 | Transmission security (§ 164.312(e)) | Service boundaries deployed behind TLS termination; no plaintext PHI transport |
 | 8 | Retention | Per-tenant retention windows, from days to `forever`, enforced by the vault |
+
+## Recording execution — the software holds the line
+
+Once signed, the operator records the execution against the customer's
+tenant: `POST /tenants/{tenant_id}/baa` (admin token) with the parties,
+signatories, effective date, and the SHA-256 of the signed document. From
+that record on, PDI **enforces** this Agreement's precondition in code:
+HIPAA-program transfers and intakes are refused (403) for any tenant with
+no active BAA on file, tenants can check their own standing at `GET /baa`,
+and execution/termination land in the tamper-evident audit chain
+(`baa.execute` / `baa.terminate`).
 
 ## Related
 

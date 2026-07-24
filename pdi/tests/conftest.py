@@ -29,5 +29,19 @@ def new_tenant(client, name="jim-mini"):
     return r.json()["token"]
 
 
+def new_tenant_with_baa(client, name="jim-mini"):
+    """A tenant whose BAA is on file — the precondition for HIPAA-program
+    transfers/intakes (see pdi/baa.py)."""
+    r = client.post("/tenants", json={"name": name})
+    assert r.status_code == 201, r.text
+    body = r.json()
+    baa = client.post(f"/tenants/{body['id']}/baa", json={
+        "customer_legal_name": f"{name} Inc.",
+        "operator_legal_name": "Vault Operations LLC",
+        "effective_date": "2026-07-24"})
+    assert baa.status_code == 201, baa.text
+    return body["token"]
+
+
 def auth(token):
     return {"Authorization": f"Bearer {token}"}
