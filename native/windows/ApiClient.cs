@@ -17,6 +17,39 @@ public record VaultRecord(
     [property: JsonPropertyName("value")] string Value,
     [property: JsonPropertyName("updated_at")] string? UpdatedAt);
 
+public record SealedInfo(
+    [property: JsonPropertyName("cipher")] string Cipher,
+    [property: JsonPropertyName("bound_to")] string BoundTo,
+    [property: JsonPropertyName("created_at")] string CreatedAt,
+    [property: JsonPropertyName("updated_at")] string UpdatedAt,
+    [property: JsonPropertyName("ciphertext_bytes")] int CiphertextBytes);
+
+public record ProvenanceAudit(
+    [property: JsonPropertyName("count")] int Count);
+
+public record ChainState(
+    [property: JsonPropertyName("intact")] bool Intact);
+
+public record RecordProvenance(
+    [property: JsonPropertyName("key")] string Key,
+    [property: JsonPropertyName("origin")] string Origin,
+    [property: JsonPropertyName("sealed")] SealedInfo Sealed,
+    [property: JsonPropertyName("audit")] ProvenanceAudit Audit,
+    [property: JsonPropertyName("chain")] ChainState Chain);
+
+public record LanguageInfo(
+    [property: JsonPropertyName("code")] string Code,
+    [property: JsonPropertyName("label")] string Label,
+    [property: JsonPropertyName("notes_translated")] bool NotesTranslated);
+
+public record LanguagesList(
+    [property: JsonPropertyName("languages")] LanguageInfo[] Languages,
+    [property: JsonPropertyName("default")] string Default);
+
+public record LanguageChoice(
+    [property: JsonPropertyName("language")] string Language,
+    [property: JsonPropertyName("label")] string Label);
+
 public record VerifyResult(
     [property: JsonPropertyName("intact")] bool Intact);
 
@@ -133,6 +166,22 @@ public sealed class ApiClient
     /// <summary>List record keys — also the sign-in validation call.</summary>
     public async Task<string[]> Keys(string token) =>
         (await Send<KeysResponse>(new HttpRequestMessage(HttpMethod.Get, "/records"), token)).Keys;
+
+    public Task<RecordProvenance> Provenance(string token, string key) =>
+        Send<RecordProvenance>(new HttpRequestMessage(
+            HttpMethod.Get, $"/provenance/{key}"), token);
+
+    public Task<LanguagesList> Languages(string token) =>
+        Send<LanguagesList>(new HttpRequestMessage(HttpMethod.Get, "/languages"), token);
+
+    public Task<LanguageChoice> Language(string token) =>
+        Send<LanguageChoice>(new HttpRequestMessage(HttpMethod.Get, "/language"), token);
+
+    public Task<LanguageChoice> SetLanguage(string token, string code) =>
+        Send<LanguageChoice>(new HttpRequestMessage(HttpMethod.Put, "/language")
+        {
+            Content = JsonContent.Create(new { language = code }),
+        }, token);
 
     public Task<VaultRecord> Record(string token, string key) =>
         Send<VaultRecord>(new HttpRequestMessage(HttpMethod.Get, $"/records/{key}"), token);

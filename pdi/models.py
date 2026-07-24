@@ -110,6 +110,10 @@ class RetentionSet(BaseModel):
     retention: str    # "7d" | "30d" | "90d" | "180d" | "1y" | "forever" | <days>
 
 
+class LanguageChoice(BaseModel):
+    language: str                      # pdi.i18n.SUPPORTED code, e.g. "es"
+
+
 class RecordPut(BaseModel):
     key: str
     value: str    # plaintext from the caller; sealed at rest by PDI

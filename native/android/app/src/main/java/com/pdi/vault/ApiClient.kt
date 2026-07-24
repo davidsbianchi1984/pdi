@@ -10,6 +10,10 @@ import java.net.URL
 // MARK: wire models (mirror pdi/api.py)
 
 data class VaultRecord(val key: String, val value: String, val updatedAt: String?)
+data class RecordProvenance(val origin: String, val cipher: String, val boundTo: String,
+                            val createdAt: String, val ciphertextBytes: Int,
+                            val auditCount: Int, val chainIntact: Boolean)
+data class LanguageInfo(val code: String, val label: String, val notesTranslated: Boolean)
 data class AuditEntry(val seq: Int, val action: String, val ref: String?, val at: String, val category: String?)
 data class RobotSpec(val model: String, val label: String, val maker: String)
 data class Robot(val id: String, val model: String, val name: String, val status: String?, val collected: Int)
@@ -84,6 +88,34 @@ object ApiClient {
 
     suspend fun deleteRecord(token: String, key: String) {
         request("/records/$key", "DELETE", token = token)
+    }
+
+    suspend fun provenance(token: String, key: String): RecordProvenance {
+        val o = JSONObject(request("/provenance/$key", token = token))
+        val sealed = o.getJSONObject("sealed")
+        return RecordProvenance(
+            o.optString("origin", ""), sealed.optString("cipher", ""),
+            sealed.optString("bound_to", ""), sealed.optString("created_at", ""),
+            sealed.optInt("ciphertext_bytes"),
+            o.getJSONObject("audit").optInt("count"),
+            o.getJSONObject("chain").optBoolean("intact"))
+    }
+
+    suspend fun languages(token: String): List<LanguageInfo> {
+        val arr = JSONObject(request("/languages", token = token)).getJSONArray("languages")
+        return (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            LanguageInfo(o.getString("code"), o.getString("label"),
+                o.optBoolean("notes_translated"))
+        }
+    }
+
+    suspend fun language(token: String): String {
+        return JSONObject(request("/language", token = token)).getString("language")
+    }
+
+    suspend fun setLanguage(token: String, code: String) {
+        request("/language", "PUT", JSONObject().put("language", code), token)
     }
 
     suspend fun auditVerify(token: String): Boolean {

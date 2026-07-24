@@ -17,6 +17,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pdi.vault.ApiClient
+import com.pdi.vault.LanguageInfo
+import com.pdi.vault.RecordProvenance
 import com.pdi.vault.AuditEntry
 import com.pdi.vault.ComplianceProgram
 import com.pdi.vault.Intake
@@ -110,9 +112,13 @@ fun OverviewScreen(vm: VaultViewModel) {
     var count by remember { mutableStateOf<Int?>(null) }
     var intact by remember { mutableStateOf<Boolean?>(null) }
     var loaded by remember { mutableStateOf(false) }
+    var languages by remember { mutableStateOf<List<LanguageInfo>>(emptyList()) }
+    var language by remember { mutableStateOf("en") }
     LaunchedEffect(Unit) {
         vm.call({ ApiClient.keys(vm.token!!) }) { r -> count = r.getOrNull()?.size }
         vm.call({ ApiClient.auditVerify(vm.token!!) }) { r -> intact = r.getOrNull(); loaded = true }
+        vm.call({ ApiClient.languages(vm.token!!) }) { r -> languages = r.getOrDefault(emptyList()) }
+        vm.call({ ApiClient.language(vm.token!!) }) { r -> r.getOrNull()?.let { language = it } }
     }
     screenScroll {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -134,6 +140,30 @@ fun OverviewScreen(vm: VaultViewModel) {
             Text("Token", color = Pdi.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             Text(masked(vm.token ?: ""), color = Pdi.T2, fontSize = 13.sp)
             Text(vm.baseURL, color = Pdi.T3, fontSize = 12.sp)
+        }
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Language", color = Pdi.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text("PDI's explanatory notes arrive in this language; sealed data is untouched.",
+                color = Pdi.T2, fontSize = 12.sp)
+            languages.chunked(3).forEach { row ->
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    row.forEach { l ->
+                        FilterChip(
+                            selected = language == l.code,
+                            onClick = {
+                                vm.call({ ApiClient.setLanguage(vm.token!!, l.code) }) {
+                                    language = l.code
+                                }
+                            },
+                            label = { Text(l.label, fontSize = 11.sp) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = Pdi.BrandA,
+                                selectedLabelColor = Color.White, labelColor = Pdi.T2,
+                            ),
+                        )
+                    }
+                }
+            }
         }
         OutlinedButton(onClick = { vm.signOut() }, modifier = Modifier.fillMaxWidth(),
             border = androidx.compose.foundation.BorderStroke(1.dp, Pdi.Line)) {
@@ -161,6 +191,7 @@ fun VaultScreen(vm: VaultViewModel) {
     var newKey by remember { mutableStateOf("") }
     var newValue by remember { mutableStateOf("") }
     var revealed by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+    var provenance by remember { mutableStateOf<Map<String, RecordProvenance>>(emptyMap()) }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
@@ -201,6 +232,12 @@ fun VaultScreen(vm: VaultViewModel) {
                             }
                         }) { Text(if (revealed.containsKey(key)) "Hide" else "Reveal", color = Pdi.BrandA, fontSize = 12.sp) }
                         TextButton(onClick = {
+                            if (provenance.containsKey(key)) provenance = provenance - key
+                            else vm.call({ ApiClient.provenance(vm.token!!, key) }) { r ->
+                                r.getOrNull()?.let { provenance = provenance + (key to it) }
+                            }
+                        }) { Text("ⓘ", color = Pdi.BrandA, fontSize = 12.sp) }
+                        TextButton(onClick = {
                             vm.call({ ApiClient.deleteRecord(vm.token!!, key) }) { _ ->
                                 revealed = revealed - key; reload()
                             }
@@ -210,6 +247,21 @@ fun VaultScreen(vm: VaultViewModel) {
                         Text(v, color = Pdi.T2, fontSize = 12.sp,
                             modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(9.dp))
                                 .background(Pdi.ScrBot).padding(10.dp))
+                    }
+                    provenance[key]?.let { p ->
+                        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(9.dp))
+                            .background(Pdi.ScrBot).padding(10.dp),
+                            verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text("Origin: ${p.origin}", color = Pdi.Txt, fontSize = 11.sp)
+                            Text(p.cipher, color = Pdi.T2, fontSize = 10.sp)
+                            Text(p.boundTo, color = Pdi.T2, fontSize = 10.sp)
+                            Text("Sealed ${p.createdAt} · ${p.ciphertextBytes} ciphertext bytes",
+                                color = Pdi.T3, fontSize = 10.sp)
+                            Text("${p.auditCount} audit event(s) · chain " +
+                                if (p.chainIntact) "intact ✓" else "BROKEN",
+                                color = if (p.chainIntact) Pdi.Green else Pdi.Red,
+                                fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }

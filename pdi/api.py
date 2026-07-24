@@ -15,10 +15,12 @@ import secrets
 from fastapi import Depends, FastAPI, Header, HTTPException, Response
 
 from . import (app_connectors, audit, catalog, compliance, connectors, crypto,
-               db, intakes, positions, retention, robotics, transfers, vault)
+               db, i18n, intakes, positions, retention, robotics, transfers,
+               vault)
 from .models import (AppCollect, AppConnect, AppInvoke, ConnectorCreate,
                      ConnectorIngest, ConnectorPublish, ContributionIn,
-                     DeploymentCreate, IntakeCreate, IntakeSubmit, PositionIntake,
+                     DeploymentCreate, IntakeCreate, IntakeSubmit,
+                     LanguageChoice, PositionIntake,
                      RecordPut, RetentionSet, RobotBind, RobotIngest,
                      SnapshotRestore, TenantCreate, TokenIssue, TransferCreate)
 
@@ -57,6 +59,35 @@ def _writer(tenant: dict = Depends(_tenant)) -> dict:
 
 def create_app() -> FastAPI:
     app = FastAPI(title="Private Data Infrastructure", version="0.1.0")
+
+    @app.middleware("http")
+    async def localize_response_notes(request, call_next):
+        """When the calling tenant has set a language, swap PDI's fixed
+        explanatory note strings for their hand translations anywhere they
+        appear in a JSON response. Only exact known strings are touched —
+        structured data passes through byte-identical."""
+        response = await call_next(request)
+        auth_header = request.headers.get("authorization", "")
+        if not auth_header.startswith("Bearer "):
+            return response
+        tenant = vault.tenant_by_token(auth_header[7:])
+        if tenant is None:
+            return response
+        language = i18n.get_language(tenant["id"])
+        content_type = response.headers.get("content-type", "")
+        if language == i18n.DEFAULT or not content_type.startswith(
+                "application/json"):
+            return response
+        body = b"".join([chunk async for chunk in response.body_iterator])
+        try:
+            localized = json.dumps(
+                i18n.localize(json.loads(body), language)).encode()
+        except (ValueError, TypeError):
+            localized = body
+        headers = {k: v for k, v in response.headers.items()
+                   if k.lower() != "content-length"}
+        return Response(content=localized, status_code=response.status_code,
+                        headers=headers, media_type="application/json")
 
     # Optional CORS for a packaged operator-console front-end (app/) calling the
     # API from another origin. Off by default; set PDI_CORS_ORIGINS to a
@@ -120,7 +151,76 @@ def create_app() -> FastAPI:
             raise HTTPException(404, "tenant not found")
         return result
 
+    # -- language (per-tenant; known note strings localize in responses) ----
+
+    @app.get("/languages")
+    def list_languages() -> dict:
+        """Supported tenant languages. PDI's fixed explanatory notes are
+        hand-translated for the marked subset; other languages read English
+        notes — structured data is language-neutral either way."""
+        return {"languages": [{"code": code, "label": label,
+                               "notes_translated": code == i18n.DEFAULT
+                                   or code in i18n.HAND_TRANSLATED}
+                              for code, label in i18n.SUPPORTED.items()],
+                "default": i18n.DEFAULT}
+
+    @app.get("/language")
+    def get_language(tenant: dict = Depends(_tenant)) -> dict:
+        code = i18n.get_language(tenant["id"])
+        return {"tenant_id": tenant["id"], "language": code,
+                "label": i18n.SUPPORTED[code]}
+
+    @app.put("/language")
+    def set_language(body: LanguageChoice,
+                     tenant: dict = Depends(_tenant)) -> dict:
+        if body.language not in i18n.SUPPORTED:
+            raise HTTPException(
+                422, f"language must be one of {', '.join(i18n.SUPPORTED)}")
+        i18n.set_language(tenant["id"], body.language)
+        audit.record("language.set", tenant_id=tenant["id"], ref=body.language)
+        return {"tenant_id": tenant["id"], "language": body.language,
+                "label": i18n.SUPPORTED[body.language]}
+
     # -- data plane (tenant-scoped, encrypted at rest) ----------------------
+
+    @app.get("/provenance/{key:path}")
+    def record_provenance(key: str, tenant: dict = Depends(_tenant)) -> dict:
+        """The verifiable derivation trail of a sealed record: where it came
+        from, how it is sealed, and its tamper-evident audit history — proof,
+        not trust."""
+        row = db.connect().execute(
+            "SELECT * FROM records WHERE tenant_id=? AND key=?",
+            (tenant["id"], key)).fetchone()
+        if row is None:
+            raise HTTPException(404, "record not found")
+        if key.startswith("jim/"):
+            origin = "JIM Guardian (sealed via the JIM tandem client)"
+        elif key.startswith("qrme/"):
+            origin = "QRME (sealed via the QRME tandem client)"
+        else:
+            origin = "direct API write by this tenant"
+        trail = [{"action": e["action"], "at": e["at"],
+                  "category": e["category"]}
+                 for e in audit.entries(tenant["id"]) if e["ref"] == key]
+        chain = audit.verify()
+        audit.record("provenance.view", tenant_id=tenant["id"], ref=key)
+        return {
+            "key": key,
+            "origin": origin,
+            "sealed": {
+                "cipher": "AES-256-GCM (envelope encryption: per-deployment "
+                          "DEK, stored only wrapped)",
+                "bound_to": "this tenant + key via AAD — the ciphertext "
+                            "cannot be moved or re-attributed",
+                "created_at": row["created_at"],
+                "updated_at": row["updated_at"],
+                "ciphertext_bytes": len(row["ciphertext"]),
+            },
+            "audit": {"events": trail, "count": len(trail)},
+            "chain": chain,
+            "note": "the audit chain is hash-linked; 'intact' means no entry "
+                    "has been altered or removed since it was written",
+        }
 
     @app.put("/records")
     def put_record(body: RecordPut, tenant: dict = Depends(_writer)) -> dict:

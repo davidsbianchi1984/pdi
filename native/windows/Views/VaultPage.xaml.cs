@@ -14,8 +14,11 @@ public sealed partial class VaultPage : Page
     {
         public string Key { get; set; } = "";
         public string Value { get; set; } = "";
+        public string ProvenanceText { get; set; } = "";
         public Visibility ValueVisibility =>
             string.IsNullOrEmpty(Value) ? Visibility.Collapsed : Visibility.Visible;
+        public Visibility ProvenanceVisibility =>
+            string.IsNullOrEmpty(ProvenanceText) ? Visibility.Collapsed : Visibility.Visible;
     }
 
     private List<RecordRow> _rows = new();
@@ -61,6 +64,25 @@ public sealed partial class VaultPage : Page
         }
         catch (Exception ex) { ShowError(ex.Message); }
         finally { SealButton.IsEnabled = true; }
+    }
+
+    private async void OnProvenance(object sender, RoutedEventArgs e)
+    {
+        if ((sender as Button)?.Tag is not string key) return;
+        var row = _rows.FirstOrDefault(r => r.Key == key);
+        if (row is null) return;
+        if (row.ProvenanceText.Length > 0) { row.ProvenanceText = ""; Render(); return; }
+        try
+        {
+            var p = await ApiClient.Shared.Provenance(AppState.Current.Token!, key);
+            row.ProvenanceText =
+                $"Origin: {p.Origin}\n{p.Sealed.Cipher}\n{p.Sealed.BoundTo}\n" +
+                $"Sealed {p.Sealed.CreatedAt} · {p.Sealed.CiphertextBytes} ciphertext bytes\n" +
+                $"{p.Audit.Count} audit event(s) · chain " +
+                (p.Chain.Intact ? "intact ✓" : "BROKEN");
+            Render();
+        }
+        catch (Exception ex) { ShowError(ex.Message); }
     }
 
     private async void OnReveal(object sender, RoutedEventArgs e)

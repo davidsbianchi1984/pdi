@@ -4,6 +4,44 @@ import Foundation
 
 struct KeysResponse: Decodable { let keys: [String] }
 struct VaultRecord: Decodable { let key: String; let value: String; let updated_at: String? }
+
+struct SealedInfo: Decodable {
+    let cipher: String
+    let bound_to: String
+    let created_at: String
+    let updated_at: String
+    let ciphertext_bytes: Int
+}
+
+struct ProvenanceEvent: Decodable { let action: String; let at: String }
+struct ProvenanceAudit: Decodable { let events: [ProvenanceEvent]; let count: Int }
+struct ChainState: Decodable { let intact: Bool }
+
+struct RecordProvenance: Decodable {
+    let key: String
+    let origin: String
+    let sealed: SealedInfo
+    let audit: ProvenanceAudit
+    let chain: ChainState
+    let note: String
+}
+
+struct LanguageInfo: Decodable {
+    let code: String
+    let label: String
+    let notes_translated: Bool?
+}
+
+struct LanguagesList: Decodable {
+    let languages: [LanguageInfo]
+    let defaultCode: String
+    enum CodingKeys: String, CodingKey {
+        case languages
+        case defaultCode = "default"
+    }
+}
+
+struct LanguageChoice: Decodable { let language: String; let label: String }
 struct VerifyResult: Decodable { let intact: Bool }
 struct AuditEntry: Decodable {
     let seq: Int
@@ -128,6 +166,21 @@ actor ApiClient {
     func deleteRecord(token: String, key: String) async throws {
         struct Ok: Decodable {}
         let _: Ok = try await request("/records/\(key)", method: "DELETE", token: token)
+    }
+
+    func provenance(token: String, key: String) async throws -> RecordProvenance {
+        try await request("/provenance/\(key)", token: token)
+    }
+
+    func languages() async throws -> LanguagesList { try await request("/languages") }
+
+    func language(token: String) async throws -> LanguageChoice {
+        try await request("/language", token: token)
+    }
+
+    func setLanguage(token: String, code: String) async throws -> LanguageChoice {
+        try await request("/language", method: "PUT",
+                          body: ["language": code], token: token)
     }
 
     func auditVerify(token: String) async throws -> VerifyResult {
