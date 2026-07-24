@@ -17,7 +17,7 @@ name: Console release
 
 on:
   push:
-    tags: ["console-v*"]
+    tags: ["app-v*"]
   workflow_dispatch:
 
 permissions:
