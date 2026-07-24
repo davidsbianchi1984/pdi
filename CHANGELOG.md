@@ -6,13 +6,40 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-07-24
+
 ### Added
 
-- **First-run onboarding screens** — welcome, provider login (Continue with
-  Apple / Google / email), key-provider setup (managed KMS/HSM vs local master
-  key), scoped-token grant, connected systems, and an "all set" summary — a
-  guided first-run before the operator console, rendered in both iOS and Android
-  chrome.
+- **First-run onboarding screens** — welcome, provider login (Apple / Google /
+  email), key-provider setup (managed KMS/HSM vs local master key),
+  scoped-token grant, connected systems, and an "all set" summary, in iOS and
+  Android chrome.
+- **Native iOS / Android / Windows apps at parity** — Overview (with language,
+  in-app feedback, and **admin key management**: load / rotate / retire key
+  versions with the deployment's admin token, kept in memory only), Vault,
+  Audit, Robots (vault-backed data sources with sealed ingest), platform
+  Connectors, compliance Transfers, and Secure Intake.
+- **Enterprise compliance transfer** — HIPAA / OSHA / CPNI-grade secure file
+  transfer for corporations (outbound) and **secure intake** (subscribers &
+  partners send files in), sealed and audit-chained end to end.
+- **Robots as vault-backed data sources** — catalog binding, sealed ingest of
+  maps/snapshots/sensor logs, tenant-owned custody that survives unbinding.
+- **Connected platforms** — all 16 suite connection platforms, the Apple /
+  Google / Microsoft / Canva connected-apps catalog, and per-assistant
+  screens (Apple Intelligence, Gemini, Copilot).
+- **Language & provenance** — per-tenant language with hand-translated vault
+  notes in all supported languages, sign-in gateway choice, dictionary
+  translate, and sealed-record provenance (origin, seal, audit trail).
+- **Positions / assistant builder** — the AI-integration & role-mapping
+  questionnaire that blueprints an assistant for any industry role.
+- **Starter vault seed** — a demo tenant with sealed records covering every
+  provenance origin, a bound robot, and a full custody cycle in the audit
+  trail.
+- **Desktop-frame gallery** — all 36 capability screens rendered in a wide
+  operator-console frame alongside the phone sets (108 SVGs total).
+- In-app **"Help us improve" feedback** (`POST`/`GET /improve`) and **chrome
+  localization** — the apps' own nav labels in all 10 languages — plus
+  pull-to-refresh on the mobile Overviews.
 
 ## [0.1.0] — 2026-07-21
 
