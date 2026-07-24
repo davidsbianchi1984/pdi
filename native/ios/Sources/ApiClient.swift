@@ -126,6 +126,17 @@ struct ImproveState: Decodable {
     let total: Int
 }
 
+struct KeyVersion: Decodable, Identifiable {
+    let version: Int
+    let active: Bool
+    let created_at: String?
+    var id: Int { version }
+}
+
+struct KeysInfo: Decodable { let provider: String; let versions: [KeyVersion] }
+
+struct RetireResult: Decodable { let retired: Int; let versions: [KeyVersion] }
+
 // MARK: - Client
 
 enum ApiError: LocalizedError {
@@ -210,6 +221,25 @@ actor ApiClient {
 
     func improvements(token: String) async throws -> ImproveState {
         try await request("/improve", token: token)
+    }
+
+    // MARK: Admin — key management (PDI_ADMIN_TOKEN, never the tenant token)
+
+    func adminKeys(adminToken: String) async throws -> KeysInfo {
+        try await request("/keys", token: adminToken)
+    }
+
+    func rotateKey(adminToken: String) async throws -> KeysInfo {
+        // Server default reseals every record immediately, so nothing is
+        // ever left on a stale key version.
+        struct Ok: Decodable {}
+        let _: Ok = try await request("/keys/rotate", method: "POST",
+                                      token: adminToken)
+        return try await adminKeys(adminToken: adminToken)
+    }
+
+    func retireKeys(adminToken: String) async throws -> RetireResult {
+        try await request("/keys/retire", method: "POST", token: adminToken)
     }
 
     func auditVerify(token: String) async throws -> VerifyResult {

@@ -118,6 +118,19 @@ public record SocialConn(
     [property: JsonPropertyName("direction")] string Direction,
     [property: JsonPropertyName("handle")] string? Handle);
 
+public record KeyVersion(
+    [property: JsonPropertyName("version")] int Version,
+    [property: JsonPropertyName("active")] bool Active,
+    [property: JsonPropertyName("created_at")] string? CreatedAt);
+
+public record KeysInfo(
+    [property: JsonPropertyName("provider")] string Provider,
+    [property: JsonPropertyName("versions")] KeyVersion[] Versions);
+
+public record RetireResult(
+    [property: JsonPropertyName("retired")] int Retired,
+    [property: JsonPropertyName("versions")] KeyVersion[] Versions);
+
 public record ImproveItem(
     [property: JsonPropertyName("category")] string Category,
     [property: JsonPropertyName("message")] string Message,
@@ -209,6 +222,30 @@ public sealed class ApiClient
 
     public Task DeleteRecord(string token, string key) =>
         SendNoContent(new HttpRequestMessage(HttpMethod.Delete, $"/records/{key}"), token);
+
+    // -- admin: key management (PDI_ADMIN_TOKEN, never the tenant token) --
+
+    public Task<KeysInfo> AdminKeys(string adminToken) =>
+        Send<KeysInfo>(new HttpRequestMessage(HttpMethod.Get, "/keys"), adminToken);
+
+    public async Task<KeysInfo> RotateKey(string adminToken)
+    {
+        // Server default reseals every record immediately.
+        var req = new HttpRequestMessage(HttpMethod.Post, "/keys/rotate")
+        {
+            Content = JsonContent.Create(new { }),
+        };
+        req.Headers.Add("authorization", $"Bearer {adminToken}");
+        var res = await _http.SendAsync(req);
+        res.EnsureSuccessStatusCode();
+        return await AdminKeys(adminToken);
+    }
+
+    public Task<RetireResult> RetireKeys(string adminToken) =>
+        Send<RetireResult>(new HttpRequestMessage(HttpMethod.Post, "/keys/retire")
+        {
+            Content = JsonContent.Create(new { }),
+        }, adminToken);
 
     public Task<VerifyResult> AuditVerify(string token) =>
         Send<VerifyResult>(new HttpRequestMessage(HttpMethod.Get, "/audit/verify"), token);

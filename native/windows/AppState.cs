@@ -14,6 +14,14 @@ public sealed class AppState
 
     public string? Token { get; set; }
     public string BaseUrl { get; set; } = "http://127.0.0.1:8000";
+    // The tenant's chosen language also drives the app chrome via L10n.
+    public string Language { get; set; } = "en";
+
+    public void RememberLanguage(string code)
+    {
+        Language = code;
+        Save();
+    }
 
     public bool IsSignedIn => !string.IsNullOrEmpty(Token);
 

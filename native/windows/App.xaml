@@ -25,6 +25,7 @@
             <SolidColorBrush x:Key="PdiT2Brush" Color="{StaticResource PdiT2}" />
             <SolidColorBrush x:Key="PdiBrandABrush" Color="{StaticResource PdiBrandA}" />
             <SolidColorBrush x:Key="PdiGreenBrush" Color="{StaticResource PdiGreen}" />
+            <SolidColorBrush x:Key="PdiRedBrush" Color="{StaticResource PdiRed}" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

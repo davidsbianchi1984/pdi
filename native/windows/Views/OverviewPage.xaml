@@ -15,6 +15,9 @@
             <TextBlock Text="Your vault" FontSize="28" FontWeight="Bold" Foreground="{StaticResource PdiTxtBrush}" />
             <TextBlock Text="Records are sealed at rest; every access is hash-chained in the audit log."
                        Foreground="{StaticResource PdiT2Brush}" FontSize="14" TextWrapping="Wrap" />
+            <Button x:Name="RefreshButton" Content="Refresh" Click="OnRefresh"
+                    Background="Transparent" FontSize="12"
+                    Foreground="{StaticResource PdiBrandABrush}" />
 
             <StackPanel Orientation="Horizontal" Spacing="12">
                 <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
@@ -86,6 +89,37 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                </StackPanel>
+            </Border>
+            <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Admin · Key management" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource PdiTxtBrush}" />
+                    <TextBlock Text="Requires the deployment's admin token (PDI_ADMIN_TOKEN) — not the tenant token. Kept in memory only, never stored. Rotation re-seals every record; retire deletes non-active versions (safe only after a reseal)."
+                               Foreground="{StaticResource PdiT2Brush}" FontSize="12" TextWrapping="Wrap" />
+                    <PasswordBox x:Name="AdminTokenBox" Header="Admin token" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="Load versions" Click="OnLoadKeys"
+                                Background="{StaticResource PdiBrandABrush}" Foreground="White" FontSize="12" />
+                        <Button x:Name="RotateButton" Content="Rotate key" Click="OnRotateKey" IsEnabled="False"
+                                Background="{StaticResource PdiBrandABrush}" Foreground="White" FontSize="12" />
+                        <Button x:Name="RetireButton" Content="Retire old" Click="OnRetireKeys" IsEnabled="False"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiRedBrush}" />
+                    </StackPanel>
+                    <ItemsControl x:Name="KeyList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Line}" FontSize="12" FontFamily="Consolas"
+                                           Foreground="{StaticResource PdiT2Brush}" Margin="0,2" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock x:Name="AdminStatus" Foreground="{StaticResource PdiGreenBrush}" FontSize="12"
+                               TextWrapping="Wrap" Visibility="Collapsed" />
+                    <TextBlock x:Name="AdminError" Foreground="{StaticResource PdiRedBrush}" FontSize="12"
+                               TextWrapping="Wrap" Visibility="Collapsed" />
                 </StackPanel>
             </Border>
         </StackPanel>

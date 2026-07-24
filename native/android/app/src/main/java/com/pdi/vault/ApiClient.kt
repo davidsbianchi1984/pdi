@@ -29,6 +29,8 @@ data class IntakeFile(val filename: String?, val content: String?)
 data class SocialConn(val id: String, val platform: String, val direction: String,
                       val handle: String?, val status: String?)
 
+data class KeyVersion(val version: Int, val active: Boolean, val createdAt: String?)
+data class KeysInfo(val provider: String, val versions: List<KeyVersion>)
 data class ImproveItem(val category: String, val message: String, val status: String)
 data class ImproveState(val mine: List<ImproveItem>, val tally: Map<String, Int>, val total: Int)
 
@@ -141,6 +143,32 @@ object ApiClient {
         val tallyObj = o.optJSONObject("tally") ?: JSONObject()
         val tally = tallyObj.keys().asSequence().associateWith { tallyObj.optInt(it) }
         return ImproveState(mine, tally, o.optInt("total"))
+    }
+
+    // ---- admin: key management (PDI_ADMIN_TOKEN, never the tenant token) ----
+
+    private fun parseKeys(o: JSONObject): KeysInfo {
+        val arr = o.optJSONArray("versions")
+        return KeysInfo(o.optString("provider", "env"),
+            (0 until (arr?.length() ?: 0)).map { i ->
+                val v = arr!!.getJSONObject(i)
+                KeyVersion(v.optInt("version"), v.optBoolean("active"),
+                    v.optString("created_at", null))
+            })
+    }
+
+    suspend fun adminKeys(adminToken: String): KeysInfo =
+        parseKeys(JSONObject(request("/keys", token = adminToken)))
+
+    suspend fun rotateKey(adminToken: String): KeysInfo {
+        // Server default reseals every record immediately.
+        request("/keys/rotate", "POST", JSONObject(), adminToken)
+        return adminKeys(adminToken)
+    }
+
+    suspend fun retireKeys(adminToken: String): Pair<Int, KeysInfo> {
+        val o = JSONObject(request("/keys/retire", "POST", JSONObject(), adminToken))
+        return o.optInt("retired") to parseKeys(o)
     }
 
     suspend fun auditVerify(token: String): Boolean {

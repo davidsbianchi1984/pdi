@@ -22,11 +22,11 @@ struct RootView: View {
             Theme.bg.ignoresSafeArea()
             if state.isSignedIn {
                 TabView {
-                    OverviewView().tabItem { Label("Overview", systemImage: "circle.grid.cross") }
-                    VaultView().tabItem { Label("Vault", systemImage: "lock.rectangle.stack") }
-                    AuditView().tabItem { Label("Audit", systemImage: "checkmark.seal") }
-                    SourcesView().tabItem { Label("Sources", systemImage: "figure.walk.motion") }
-                    TransfersView().tabItem { Label("Transfers", systemImage: "arrow.up.arrow.down.circle") }
+                    OverviewView().tabItem { Label(L10n.t("tab.overview", state.language), systemImage: "circle.grid.cross") }
+                    VaultView().tabItem { Label(L10n.t("tab.vault", state.language), systemImage: "lock.rectangle.stack") }
+                    AuditView().tabItem { Label(L10n.t("tab.audit", state.language), systemImage: "checkmark.seal") }
+                    SourcesView().tabItem { Label(L10n.t("tab.sources", state.language), systemImage: "figure.walk.motion") }
+                    TransfersView().tabItem { Label(L10n.t("tab.transfers", state.language), systemImage: "arrow.up.arrow.down.circle") }
                 }
                 .tint(Theme.brandA)
             } else {
