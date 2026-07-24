@@ -16,7 +16,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Response
 
 from . import (app_connectors, audit, baa, catalog, compliance, connectors,
                crypto, db, i18n, intakes, positions, retention, robotics,
-               transfers, vault)
+               terms as terms_mod, transfers, vault)
 from .models import (AppCollect, AppConnect, AppInvoke, BAARecordIn,
                      ConnectorCreate, ConnectorIngest, ConnectorPublish,
                      ContributionIn,
@@ -102,6 +102,18 @@ def create_app() -> FastAPI:
         app.add_middleware(
             CORSMiddleware, allow_origins=_allow, allow_credentials=False,
             allow_methods=["*"], allow_headers=["*"])
+
+    @app.get("/terms")
+    def get_terms() -> dict:
+        """Current Terms of Service — version, key points, and the full
+        document's path. Public: an integrating system can always show
+        the terms in force. Each tenant records the version in force at
+        provisioning (its receipt)."""
+        return {
+            "version": terms_mod.TERMS_VERSION,
+            "key_points": terms_mod.KEY_POINTS,
+            "document": terms_mod.DOCUMENT,
+        }
 
     @app.get("/health")
     def health() -> dict:
