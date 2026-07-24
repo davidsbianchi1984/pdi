@@ -1,11 +1,11 @@
 """Per-tenant language for the vault's user-facing strings.
 
 PDI generates no free text — its responses are structured facts plus a small
-set of fixed explanatory notes. Those notes are hand-translated here (es, fr)
-and swapped in by a response middleware whenever the calling tenant has set a
-language: any known string anywhere in a JSON response is replaced with its
-translation, unknown strings pass through untouched. Deterministic, and
-nothing is ever machine-mangled.
+set of fixed explanatory notes. Those notes are hand-translated here for
+every supported language and swapped in by a response middleware whenever
+the calling tenant has set a language: any known string anywhere in a JSON
+response is replaced with its translation, unknown strings pass through
+untouched. Deterministic, and nothing is ever machine-mangled.
 """
 
 from __future__ import annotations
@@ -25,8 +25,8 @@ SUPPORTED: dict[str, str] = {
 
 DEFAULT = "en"
 
-# Languages with hand-translated note strings; others fall back to English.
-HAND_TRANSLATED = ("es", "fr")
+# Every supported language carries hand-translated note strings.
+HAND_TRANSLATED = tuple(code for code in SUPPORTED if code != "en")
 
 
 def get_language(tenant_id: str) -> str:
@@ -56,32 +56,84 @@ _STRINGS: dict[str, dict[str, str]] = {
     "collected items are encrypted at rest in the vault": {
         "es": "los elementos recopilados se almacenan cifrados en la bóveda",
         "fr": "les éléments collectés sont chiffrés au repos dans le coffre",
+        "de": "gesammelte Elemente werden im Tresor verschlüsselt "
+              "gespeichert",
+        "pt": "os itens coletados são armazenados criptografados no cofre",
+        "it": "gli elementi raccolti sono conservati cifrati nel caveau",
+        "ja": "収集されたデータは保管庫内で暗号化されて保存されます",
+        "zh": "采集的数据在保险库中加密存储",
+        "hi": "एकत्र किए गए आइटम वॉल्ट में एन्क्रिप्ट करके संग्रहीत होते हैं",
+        "ar": "تُخزَّن العناصر المجمعة مشفرةً في الخزنة",
     },
     "your file was sealed in the vault, encrypted at rest": {
         "es": "su archivo fue sellado en la bóveda, cifrado en reposo",
         "fr": "votre fichier a été scellé dans le coffre, chiffré au repos",
+        "de": "Ihre Datei wurde im Tresor versiegelt und verschlüsselt "
+              "gespeichert",
+        "pt": "seu arquivo foi selado no cofre, criptografado em repouso",
+        "it": "il suo file è stato sigillato nel caveau, cifrato a riposo",
+        "ja": "ファイルは保管庫に封印され、暗号化されて保存されました",
+        "zh": "您的文件已在保险库中封存并加密存储",
+        "hi": "आपकी फ़ाइल वॉल्ट में सील कर दी गई है, एन्क्रिप्टेड रूप में",
+        "ar": "خُتم ملفك في الخزنة وخُزِّن مشفرًا",
     },
     "robot data is encrypted at rest in the vault": {
         "es": "los datos del robot se almacenan cifrados en la bóveda",
         "fr": "les données du robot sont chiffrées au repos dans le coffre",
+        "de": "Roboterdaten werden im Tresor verschlüsselt gespeichert",
+        "pt": "os dados do robô são armazenados criptografados no cofre",
+        "it": "i dati del robot sono conservati cifrati nel caveau",
+        "ja": "ロボットのデータは保管庫内で暗号化されて保存されます",
+        "zh": "机器人数据在保险库中加密存储",
+        "hi": "रोबोट का डेटा वॉल्ट में एन्क्रिप्ट करके संग्रहीत होता है",
+        "ar": "تُخزَّن بيانات الروبوت مشفرةً في الخزنة",
     },
     "sealed data remains in the vault under tenant control": {
         "es": "los datos sellados permanecen en la bóveda bajo control del "
               "titular",
         "fr": "les données scellées restent dans le coffre sous le contrôle "
               "du titulaire",
+        "de": "versiegelte Daten verbleiben im Tresor unter Kontrolle des "
+              "Mandanten",
+        "pt": "os dados selados permanecem no cofre sob controle do titular",
+        "it": "i dati sigillati restano nel caveau sotto il controllo del "
+              "titolare",
+        "ja": "封印されたデータは、契約者の管理下で保管庫に残ります",
+        "zh": "封存的数据仍保留在保险库中，由租户控制",
+        "hi": "सील किया गया डेटा किरायेदार के नियंत्रण में वॉल्ट में रहता है",
+        "ar": "تبقى البيانات المختومة في الخزنة تحت سيطرة المستأجر",
     },
     "Advisory automation opportunities. Not a staffing decision.": {
         "es": "Oportunidades de automatización a título consultivo. No es "
               "una decisión de personal.",
         "fr": "Opportunités d'automatisation à titre consultatif. Ce n'est "
               "pas une décision de dotation.",
+        "de": "Beratende Automatisierungsvorschläge. Keine "
+              "Personalentscheidung.",
+        "pt": "Oportunidades de automação em caráter consultivo. Não é uma "
+              "decisão de pessoal.",
+        "it": "Opportunità di automazione a titolo consultivo. Non è una "
+              "decisione sul personale.",
+        "ja": "自動化の提案は参考情報です。人事上の決定ではありません。",
+        "zh": "自动化建议仅供参考，并非人事决定。",
+        "hi": "स्वचालन के सुझाव केवल परामर्श हेतु हैं। यह कोई स्टाफ़िंग निर्णय नहीं है।",
+        "ar": "فرص أتمتة استشارية فقط، وليست قرارًا يتعلق بالتوظيف.",
     },
     "These decisions keep a human accountable regardless of automation.": {
         "es": "Estas decisiones mantienen a una persona responsable, "
               "independientemente de la automatización.",
         "fr": "Ces décisions maintiennent une personne responsable, quelle "
               "que soit l'automatisation.",
+        "de": "Diese Entscheidungen halten unabhängig von der "
+              "Automatisierung einen Menschen verantwortlich.",
+        "pt": "Essas decisões mantêm um humano responsável, "
+              "independentemente da automação.",
+        "it": "Queste decisioni mantengono una persona responsabile, "
+              "indipendentemente dall'automazione.",
+        "ja": "これらの決定では、自動化の有無にかかわらず人間が責任を負います。",
+        "zh": "无论自动化程度如何，这些决定始终由人负责。",
+        "hi": "ये निर्णय स्वचालन की परवाह किए बिना एक मानव को जवाबदेह रखते हैं।",
+        "ar": "تُبقي هذه القرارات إنسانًا مسؤولًا بصرف النظر عن الأتمتة.",
     },
     "access revoked; the sealed record is retained until the ": {
         # partial-sentence key kept verbatim from transfers.py; translated
@@ -89,6 +141,14 @@ _STRINGS: dict[str, dict[str, str]] = {
         "es": "acceso revocado; el registro sellado se conserva hasta que ",
         "fr": "accès révoqué ; l'enregistrement scellé est conservé "
               "jusqu'à ce que ",
+        "de": "Zugriff widerrufen; der versiegelte Datensatz wird "
+              "aufbewahrt bis ",
+        "pt": "acesso revogado; o registro selado é mantido até ",
+        "it": "accesso revocato; il record sigillato è conservato fino a ",
+        "ja": "アクセスは取り消されました。封印された記録は次の時点まで保持されます：",
+        "zh": "访问已撤销；封存记录将保留至",
+        "hi": "पहुँच रद्द कर दी गई; सील किया गया रिकॉर्ड तब तक रखा जाएगा जब तक ",
+        "ar": "أُلغي الوصول؛ يُحتفظ بالسجل المختوم حتى ",
     },
 }
 

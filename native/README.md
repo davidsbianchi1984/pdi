@@ -30,10 +30,11 @@ README for the exact build/run commands.
 Two cross-cutting guarantees ride on the API:
 
 - **Language** (`/languages`, `GET/PUT /language`, picker on the Overview
-  screen): PDI's fixed explanatory note strings are hand-translated (es, fr)
-  and swapped into every JSON response for tenants who set a language —
-  structured data and sealed values pass through untouched, and unknown
-  languages keep English notes rather than machine-mangling them.
+  screen): PDI's fixed explanatory note strings are hand-translated for
+  every supported language (es, fr, de, pt, it, ja, zh, hi, ar) and swapped
+  into every JSON response for tenants who set a language — structured data
+  and sealed values pass through untouched, and an unkeyed string still
+  falls back to English rather than being machine-mangled.
 - **Provenance** (`GET /provenance/{key}`, the ⓘ action on each vault
   record): a sealed record's verifiable derivation trail — its origin (JIM /
   QRME tandem or direct write), the cipher and tenant+key binding, seal
