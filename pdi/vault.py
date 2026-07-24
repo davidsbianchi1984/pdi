@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import secrets
 
-from . import audit, crypto, db
+from . import audit, crypto, db, terms
 
 
 def _mint() -> tuple[str, str]:
@@ -42,10 +42,14 @@ def create_tenant(name: str, retention_days: int | None = None) -> dict:
     conn = db.connect()
     tenant_id = db.new_id("ten")
     token, token_hash = _mint()
+    # Provisioning records the ToS version in force — the receipt of which
+    # agreement governs this tenant (docs/terms.md).
     conn.execute(
-        "INSERT INTO tenants (id, name, token, retention_days, created_at)"
-        " VALUES (?,?,?,?,?)",
-        (tenant_id, name, token_hash, retention_days, db.utcnow()),
+        "INSERT INTO tenants (id, name, token, retention_days,"
+        " terms_version, terms_accepted_at, created_at)"
+        " VALUES (?,?,?,?,?,?,?)",
+        (tenant_id, name, token_hash, retention_days,
+         terms.TERMS_VERSION, db.utcnow(), db.utcnow()),
     )
     conn.commit()
     audit.record("tenant.create", tenant_id=tenant_id, ref=name)

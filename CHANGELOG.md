@@ -8,6 +8,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Terms of Service** — docs/terms.md (v1.0: B2B service terms — the
+  Customer owns its data, tenant-token safekeeping, acceptable use, PHI
+  requires the recorded BAA, as-is warranty disclaimer, liability cap)
+  served versioned at `GET /terms`; provisioning a tenant records the
+  version in force (`terms_version`/`terms_accepted_at`) as the receipt.
 - **BAA enforcement** (pdi/baa.py) — the operator records each customer's
   executed BAA (`POST /tenants/{id}/baa`, metadata + document hash only);
   HIPAA-program transfers and intakes are refused for tenants without an

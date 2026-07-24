@@ -29,6 +29,8 @@ CREATE TABLE IF NOT EXISTS tenants (
     token          TEXT NOT NULL UNIQUE,   -- SHA-256 hash of the bearer token
     deleted_at     TEXT,            -- soft-delete tombstone (recovery window)
     retention_days INTEGER,         -- NULL = keep forever; N = auto-expire after N days
+    terms_version  TEXT,            -- ToS version in force at provisioning (receipt)
+    terms_accepted_at TEXT,
     created_at     TEXT NOT NULL
 );
 
