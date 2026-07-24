@@ -110,12 +110,14 @@ object ApiClient {
         }
     }
 
-    suspend fun language(token: String): String {
-        return JSONObject(request("/language", token = token)).getString("language")
+    suspend fun language(token: String): Pair<String, String> {
+        val o = JSONObject(request("/language", token = token))
+        return o.getString("language") to o.optString("mode", "pre")
     }
 
-    suspend fun setLanguage(token: String, code: String) {
-        request("/language", "PUT", JSONObject().put("language", code), token)
+    suspend fun setLanguage(token: String, code: String, mode: String = "pre") {
+        request("/language", "PUT",
+            JSONObject().put("language", code).put("mode", mode), token)
     }
 
     suspend fun auditVerify(token: String): Boolean {

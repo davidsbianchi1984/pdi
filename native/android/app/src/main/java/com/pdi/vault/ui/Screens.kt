@@ -71,9 +71,15 @@ private fun labeledField(label: String, value: String, placeholder: String, onCh
 
 // ---- Welcome / token sign-in ----
 
+private val LANGUAGE_CHOICES = listOf(
+    "en" to "English", "es" to "Español", "fr" to "Français",
+    "de" to "Deutsch", "pt" to "Português", "it" to "Italiano",
+    "ja" to "日本語", "zh" to "中文", "hi" to "हिन्दी", "ar" to "العربية")
+
 @Composable
 fun WelcomeScreen(vm: VaultViewModel) {
     var token by remember { mutableStateOf("") }
+    var language by remember { mutableStateOf("en") }
     var base by remember { mutableStateOf(vm.baseURL) }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -93,11 +99,28 @@ fun WelcomeScreen(vm: VaultViewModel) {
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 labeledField("Vault token", token, "pdi_…") { token = it }
                 labeledField("Server", base, "http://10.0.2.2:8000") { base = it }
+                Text("Language", color = Pdi.T2, fontSize = 12.sp)
+                LANGUAGE_CHOICES.chunked(3).forEach { row ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        row.forEach { (code, label) ->
+                            FilterChip(
+                                selected = language == code,
+                                onClick = { language = code },
+                                label = { Text(label, fontSize = 11.sp) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = Pdi.BrandA,
+                                    selectedLabelColor = Color.White, labelColor = Pdi.T2,
+                                ),
+                            )
+                        }
+                    }
+                }
             }
             error?.let { Text(it, color = Pdi.Red, fontSize = 13.sp) }
             BrandButton("Unlock", enabled = token.isNotBlank(), busy = busy) {
                 error = null
-                vm.signIn(token, base, onError = { error = it }, onBusy = { busy = it })
+                vm.signIn(token, base, language,
+                    onError = { error = it }, onBusy = { busy = it })
             }
             Text("Start the backend:  PDI_CORS_ORIGINS=* uvicorn pdi.api:app",
                 color = Pdi.T3, fontSize = 10.sp)
@@ -114,11 +137,16 @@ fun OverviewScreen(vm: VaultViewModel) {
     var loaded by remember { mutableStateOf(false) }
     var languages by remember { mutableStateOf<List<LanguageInfo>>(emptyList()) }
     var language by remember { mutableStateOf("en") }
+    var preTranslate by remember { mutableStateOf(true) }
     LaunchedEffect(Unit) {
         vm.call({ ApiClient.keys(vm.token!!) }) { r -> count = r.getOrNull()?.size }
         vm.call({ ApiClient.auditVerify(vm.token!!) }) { r -> intact = r.getOrNull(); loaded = true }
         vm.call({ ApiClient.languages(vm.token!!) }) { r -> languages = r.getOrDefault(emptyList()) }
-        vm.call({ ApiClient.language(vm.token!!) }) { r -> r.getOrNull()?.let { language = it } }
+        vm.call({ ApiClient.language(vm.token!!) }) { r ->
+            r.getOrNull()?.let { (lang, mode) ->
+                language = lang; preTranslate = mode == "pre"
+            }
+        }
     }
     screenScroll {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -151,7 +179,8 @@ fun OverviewScreen(vm: VaultViewModel) {
                         FilterChip(
                             selected = language == l.code,
                             onClick = {
-                                vm.call({ ApiClient.setLanguage(vm.token!!, l.code) }) {
+                                vm.call({ ApiClient.setLanguage(vm.token!!, l.code,
+                                    if (preTranslate) "pre" else "on_demand") }) {
                                     language = l.code
                                 }
                             },
@@ -163,6 +192,22 @@ fun OverviewScreen(vm: VaultViewModel) {
                         )
                     }
                 }
+            }
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text("Pre-translate notes", color = Pdi.Txt, fontSize = 13.sp)
+                    Text("Off keeps English notes; sealed data is never touched either way.",
+                        color = Pdi.T2, fontSize = 10.sp)
+                }
+                Switch(
+                    checked = preTranslate,
+                    onCheckedChange = { on ->
+                        preTranslate = on
+                        vm.call({ ApiClient.setLanguage(vm.token!!, language,
+                            if (on) "pre" else "on_demand") }) { }
+                    },
+                    colors = SwitchDefaults.colors(checkedTrackColor = Pdi.Green),
+                )
             }
         }
         OutlinedButton(onClick = { vm.signOut() }, modifier = Modifier.fillMaxWidth(),

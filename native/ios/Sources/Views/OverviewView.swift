@@ -8,6 +8,7 @@ struct OverviewView: View {
     @State private var loading = true
     @State private var languages: [LanguageInfo] = []
     @State private var language = "en"
+    @State private var preTranslate = true
 
     var body: some View {
         ScrollView {
@@ -45,6 +46,16 @@ struct OverviewView: View {
                     }
                     .pickerStyle(.menu).tint(Theme.brandA)
                     .onChange(of: language) { _ in applyLanguage() }
+                    Toggle(isOn: $preTranslate) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Pre-translate notes")
+                                .font(.subheadline).foregroundStyle(Theme.txt)
+                            Text("Off keeps English notes; sealed data is never touched either way.")
+                                .font(.caption2).foregroundStyle(Theme.t2)
+                        }
+                    }
+                    .tint(Theme.green)
+                    .onChange(of: preTranslate) { _ in applyLanguage() }
                 }.card()
 
                 Button("Sign out") { state.signOut() }
@@ -72,8 +83,11 @@ struct OverviewView: View {
 
     private func applyLanguage() {
         guard let token = state.token else { return }
-        Task { _ = try? await ApiClient.shared.setLanguage(token: token,
-                                                           code: language) }
+        Task {
+            _ = try? await ApiClient.shared.setLanguage(
+                token: token, code: language,
+                mode: preTranslate ? "pre" : "on_demand")
+        }
     }
 
     private func load() async {
@@ -86,6 +100,7 @@ struct OverviewView: View {
         if let token = state.token,
            let l = try? await ApiClient.shared.language(token: token) {
             language = l.language
+            preTranslate = (l.mode ?? "pre") == "pre"
         }
     }
 }

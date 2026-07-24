@@ -26,6 +26,19 @@
                 <StackPanel Spacing="12">
                     <PasswordBox x:Name="TokenBox" Header="Vault token" PlaceholderText="pdi_…" />
                     <TextBox x:Name="BaseBox" Header="Server" Text="http://127.0.0.1:8000" />
+                    <ComboBox x:Name="LanguageBox" Header="Language" SelectedIndex="0"
+                              HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="English" Tag="en" />
+                        <ComboBoxItem Content="Español" Tag="es" />
+                        <ComboBoxItem Content="Français" Tag="fr" />
+                        <ComboBoxItem Content="Deutsch" Tag="de" />
+                        <ComboBoxItem Content="Português" Tag="pt" />
+                        <ComboBoxItem Content="Italiano" Tag="it" />
+                        <ComboBoxItem Content="日本語" Tag="ja" />
+                        <ComboBoxItem Content="中文" Tag="zh" />
+                        <ComboBoxItem Content="हिन्दी" Tag="hi" />
+                        <ComboBoxItem Content="العربية" Tag="ar" />
+                    </ComboBox>
                 </StackPanel>
             </Border>
 

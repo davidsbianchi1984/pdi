@@ -48,7 +48,8 @@ public record LanguagesList(
 
 public record LanguageChoice(
     [property: JsonPropertyName("language")] string Language,
-    [property: JsonPropertyName("label")] string Label);
+    [property: JsonPropertyName("label")] string Label,
+    [property: JsonPropertyName("mode")] string? Mode);
 
 public record VerifyResult(
     [property: JsonPropertyName("intact")] bool Intact);
@@ -177,10 +178,11 @@ public sealed class ApiClient
     public Task<LanguageChoice> Language(string token) =>
         Send<LanguageChoice>(new HttpRequestMessage(HttpMethod.Get, "/language"), token);
 
-    public Task<LanguageChoice> SetLanguage(string token, string code) =>
+    public Task<LanguageChoice> SetLanguage(string token, string code,
+                                            string mode = "pre") =>
         Send<LanguageChoice>(new HttpRequestMessage(HttpMethod.Put, "/language")
         {
-            Content = JsonContent.Create(new { language = code }),
+            Content = JsonContent.Create(new { language = code, mode }),
         }, token);
 
     public Task<VaultRecord> Record(string token, string key) =>

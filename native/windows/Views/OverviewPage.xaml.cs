@@ -38,17 +38,37 @@ public sealed partial class OverviewPage : Page
             var current = await ApiClient.Shared.Language(s.Token!);
             var idx = System.Array.FindIndex(_languages, l => l.Code == current.Language);
             LanguageBox.SelectedIndex = idx >= 0 ? idx : 0;
+            PreTranslateToggle.IsOn = (current.Mode ?? "pre") == "pre";
         }
         catch { /* backend offline — leave empty */ }
         finally { _loadingLanguage = false; }
     }
+
+    private string CurrentMode => PreTranslateToggle.IsOn ? "pre" : "on_demand";
 
     private async void OnLanguagePicked(object sender, SelectionChangedEventArgs e)
     {
         if (_loadingLanguage) return;
         var idx = LanguageBox.SelectedIndex;
         if (idx < 0 || idx >= _languages.Length) return;
-        try { await ApiClient.Shared.SetLanguage(AppState.Current.Token!, _languages[idx].Code); }
+        try
+        {
+            await ApiClient.Shared.SetLanguage(AppState.Current.Token!,
+                                               _languages[idx].Code, CurrentMode);
+        }
+        catch { /* ignore */ }
+    }
+
+    private async void OnModeToggled(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        if (_loadingLanguage) return;
+        var idx = LanguageBox.SelectedIndex;
+        if (idx < 0 || idx >= _languages.Length) return;
+        try
+        {
+            await ApiClient.Shared.SetLanguage(AppState.Current.Token!,
+                                               _languages[idx].Code, CurrentMode);
+        }
         catch { /* ignore */ }
     }
 
