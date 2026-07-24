@@ -1,11 +1,11 @@
-# PDI v0.1.2 — release notes
+# PDI v0.1.3 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.1.2` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.1.3` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**PDI v0.1.2** — the trust release: B2B service terms with a per-tenant
+**PDI v0.1.3** — the trust release: B2B service terms with a per-tenant
 receipt, and a Business Associate Agreement the vault enforces in code.
 One of three interoperating products (with
 [qrme](https://github.com/davidsbianchi1984/qrme) and
@@ -13,6 +13,13 @@ One of three interoperating products (with
 
 ### Highlights
 
+- **Run it on your phone** — the API serves the built operator console at
+  `/app` (one origin for UI and API — nothing to configure on the phone);
+  `GET /pair` returns the URL on your local network with a scannable QR,
+  and the console installs to the home screen as a standalone app with a
+  thumb-reachable bottom tab bar. Local network only, by design; the
+  service worker never caches API traffic, so sealed records and audit
+  state are always live.
 - **Terms of Service** — docs/terms.md (v1.0): B2B service terms framing
   PDI as encrypted data-custody infrastructure, not advice — the
   Customer owns its data and answers for its lawfulness, consents,
@@ -34,7 +41,7 @@ One of three interoperating products (with
 
 ### Verification
 
-94 tests green; the desktop console builds clean; the cross-product
+101 tests green; the desktop console builds clean; the cross-product
 suite smoke (run from qrme) passes end to end.
 
 ### Install

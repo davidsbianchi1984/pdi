@@ -60,7 +60,7 @@ def _writer(tenant: dict = Depends(_tenant)) -> dict:
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="Private Data Infrastructure", version="0.1.2")
+    app = FastAPI(title="Private Data Infrastructure", version="0.1.3")
 
     @app.middleware("http")
     async def localize_response_notes(request, call_next):
