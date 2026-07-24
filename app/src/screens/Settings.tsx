@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { getBase, setBase } from "../api";
+import { useEffect, useState } from "react";
+import { api, getBase, setBase, type PairInfo } from "../api";
 import { useSession } from "../store";
 
 export function Settings() {
@@ -7,6 +7,11 @@ export function Settings() {
   const [base, setBaseInput] = useState(getBase());
   const [admin, setAdmin] = useState(session.adminToken || "");
   const [saved, setSaved] = useState(false);
+  const [pair, setPair] = useState<PairInfo | null>(null);
+
+  useEffect(() => {
+    api.pair().then(setPair).catch(() => setPair(null));
+  }, []);
 
   function save() {
     setBase(base);
@@ -27,6 +32,19 @@ export function Settings() {
         </label>
         <button className="primary" onClick={save}>{saved ? "Saved ✓" : "Save"}</button>
       </div>
+      {pair && (
+        <div className="card">
+          <h3>Open on your phone</h3>
+          <p className="muted small">{pair.note}</p>
+          <div className="pair">
+            <img className="pair-qr" src={getBase() + pair.qr_svg} alt="QR code for the console URL on this network" />
+            <div>
+              <div className="mono pair-url">{pair.console_url}</div>
+              <ol className="pair-steps">{pair.how.map((s) => <li key={s}>{s}</li>)}</ol>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="card">
         <h3>Session</h3>
         <div className="muted small">Tenant: {session.tenantName || "none"}</div>

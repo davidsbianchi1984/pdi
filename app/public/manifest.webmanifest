@@ -1,0 +1,19 @@
+{
+  "name": "PDI Console",
+  "short_name": "PDI",
+  "description": "Private Data Infrastructure — the encrypted vault's operator console, on your phone.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0c0920",
+  "theme_color": "#0c0920",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

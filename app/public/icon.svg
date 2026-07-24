@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="PDI Console">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#161038"/>
+      <stop offset="1" stop-color="#0c0920"/>
+    </linearGradient>
+    <linearGradient id="seal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7dd3fc"/>
+      <stop offset="1" stop-color="#38bdf8"/>
+    </linearGradient>
+  </defs>
+  <!-- Maskable: the mark stays inside the safe circle (80% of the canvas). -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- A sealed vault: the shield outline with the keyhole. -->
+  <path d="M256 96 L400 152 v104 c0 88 -62 142 -144 168 c-82 -26 -144 -80 -144 -168 v-104 Z"
+        fill="none" stroke="url(#seal)" stroke-width="22" stroke-linejoin="round"/>
+  <circle cx="256" cy="248" r="34" fill="url(#seal)"/>
+  <rect x="242" y="258" width="28" height="66" rx="14" fill="url(#seal)"/>
+</svg>

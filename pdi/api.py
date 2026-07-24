@@ -12,11 +12,11 @@ import json
 import os
 import secrets
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Response
+from fastapi import Depends, FastAPI, Header, HTTPException, Request, Response
 
 from . import (app_connectors, audit, baa, catalog, compliance, connectors,
-               crypto, db, i18n, intakes, positions, retention, robotics,
-               terms as terms_mod, transfers, vault)
+               crypto, db, i18n, intakes, mobile, positions, retention,
+               robotics, terms as terms_mod, transfers, vault)
 from .models import (AppCollect, AppConnect, AppInvoke, BAARecordIn,
                      ConnectorCreate, ConnectorIngest, ConnectorPublish,
                      ContributionIn,
@@ -117,7 +117,27 @@ def create_app() -> FastAPI:
 
     @app.get("/health")
     def health() -> dict:
-        return {"status": "ok"}
+        return {"status": "ok", "console": mobile.console_dir() is not None}
+
+    # -- run it from your phone ---------------------------------------------
+
+    @app.get("/pair")
+    def pair(request: Request) -> dict:
+        """How to open the operator console on a phone: the console's URL on
+        this local network, ready to type or scan. Same Wi-Fi, no app
+        store."""
+        return mobile.pairing(port=request.url.port or 8000)
+
+    @app.get("/pair/qr.svg")
+    def pair_qr(request: Request) -> Response:
+        """The console URL as a QR code — point the phone's camera at it."""
+        import segno
+        buf = io.BytesIO()
+        url = mobile.pairing(port=request.url.port or 8000)["console_url"]
+        segno.make(url, error="q").save(
+            buf, kind="svg", scale=8, border=2,
+            dark="#0c0920", light="#ffffff")
+        return Response(content=buf.getvalue(), media_type="image/svg+xml")
 
     # -- admin: deployments & tenants ---------------------------------------
 
@@ -838,6 +858,15 @@ def create_app() -> FastAPI:
                 tally[row["category"]] = row["n"]
         return {"mine": mine, "tally": tally, "total": sum(tally.values()),
                 "categories": list(_IMPROVE_CATEGORIES)}
+
+    # The console itself, served from this API so a phone loads the UI and
+    # calls the API on one origin (no CORS, nothing to configure). Mounted
+    # last so it can never shadow an API route; absent until app/ is built.
+    _console = mobile.console_dir()
+    if _console is not None:
+        from fastapi.staticfiles import StaticFiles
+        app.mount("/app", StaticFiles(directory=str(_console), html=True),
+                  name="console")
 
     return app
 
