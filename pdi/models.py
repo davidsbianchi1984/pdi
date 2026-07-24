@@ -112,6 +112,12 @@ class RetentionSet(BaseModel):
 
 class LanguageChoice(BaseModel):
     language: str                      # pdi.i18n.SUPPORTED code, e.g. "es"
+    mode: str = "pre"                  # pre (notes swapped in) | on_demand
+
+
+class TranslateRequest(BaseModel):
+    text: str
+    to: str | None = None
 
 
 class RecordPut(BaseModel):

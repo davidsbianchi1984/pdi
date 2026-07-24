@@ -22,6 +22,12 @@ public sealed partial class WelcomePage : Page
         {
             ApiClient.Shared.SetBase(baseUrl);
             await ApiClient.Shared.Keys(token);   // 200 == valid token
+            var language = (LanguageBox.SelectedItem as ComboBoxItem)?.Tag as string;
+            if (language is { Length: > 0 } && language != "en")
+            {
+                try { await ApiClient.Shared.SetLanguage(token, language); }
+                catch { /* language is a preference, not a sign-in blocker */ }
+            }
             AppState.Current.SignIn(token, baseUrl);
             Frame.Navigate(typeof(ShellPage));
         }

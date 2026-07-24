@@ -29,8 +29,11 @@ README for the exact build/run commands.
 
 Two cross-cutting guarantees ride on the API:
 
-- **Language** (`/languages`, `GET/PUT /language`, picker on the Overview
-  screen): PDI's fixed explanatory note strings are hand-translated for
+- **Language** (`/languages`, `GET/PUT /language`; offered at the sign-in
+  gateway and changeable on the Overview screen, with a pre-translate /
+  on-demand mode and a dictionary-only `POST /translate` — PDI runs no
+  model, so it translates exactly its own note strings and says so for
+  anything else): PDI's fixed explanatory note strings are hand-translated for
   every supported language (es, fr, de, pt, it, ja, zh, hi, ar) and swapped
   into every JSON response for tenants who set a language — structured data
   and sealed values pass through untouched, and an unkeyed string still

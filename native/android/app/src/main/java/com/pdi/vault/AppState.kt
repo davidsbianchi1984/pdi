@@ -25,12 +25,15 @@ class VaultViewModel(app: Application) : AndroidViewModel(app) {
     val isSignedIn get() = token != null
 
     /** Validate the pasted token against GET /records, then persist on success. */
-    fun signIn(token: String, base: String, onError: (String) -> Unit, onBusy: (Boolean) -> Unit) {
+    fun signIn(token: String, base: String, language: String? = null,
+               onError: (String) -> Unit, onBusy: (Boolean) -> Unit) {
         onBusy(true)
         ApiClient.setBase(base)
         viewModelScope.launch {
             runCatching { ApiClient.keys(token) }
                 .onSuccess { _ ->
+                    if (!language.isNullOrBlank() && language != "en")
+                        runCatching { ApiClient.setLanguage(token, language) }
                     this@VaultViewModel.token = token
                     this@VaultViewModel.baseURL = base
                     prefs.edit().putString("token", token).putString("base", base).apply()

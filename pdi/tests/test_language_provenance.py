@@ -95,3 +95,41 @@ def test_provenance_missing_record_404(client):
     token = new_tenant(client)
     r = client.get("/provenance/never/stored", headers=auth(token))
     assert r.status_code == 404
+
+
+# ---- delivery mode and the dictionary translate endpoint --------------------
+
+def test_on_demand_mode_keeps_english_notes(client):
+    token = new_tenant(client)
+    client.put("/language", json={"language": "es", "mode": "on_demand"},
+               headers=auth(token))
+    assert client.get("/language", headers=auth(token)).json()["mode"] == \
+        "on_demand"
+    robot = client.post("/robots", json={"model": "neo"},
+                        headers=auth(token)).json()
+    r = client.post(f"/robots/{robot['id']}/ingest",
+                    json={"kind": "map", "content": "hi"},
+                    headers=auth(token)).json()
+    assert "encrypted at rest" in r["note"]
+    # Flipping back to pre restores translated notes.
+    client.put("/language", json={"language": "es", "mode": "pre"},
+               headers=auth(token))
+    r = client.post(f"/robots/{robot['id']}/ingest",
+                    json={"kind": "map", "content": "hola"},
+                    headers=auth(token)).json()
+    assert "cifrados" in r["note"]
+
+
+def test_translate_endpoint_is_dictionary_only_and_honest(client):
+    token = new_tenant(client)
+    client.put("/language", json={"language": "es"}, headers=auth(token))
+    r = client.post("/translate", json={
+        "text": "robot data is encrypted at rest in the vault"},
+        headers=auth(token)).json()
+    assert r["engine"] == "hand" and "cifrados" in r["translation"]
+    r = client.post("/translate", json={"text": "arbitrary tenant prose"},
+                    headers=auth(token)).json()
+    assert r["engine"] == "none" and "no machine translation" in r["note"]
+    r = client.post("/translate", json={"text": "hi", "to": "xx"},
+                    headers=auth(token))
+    assert r.status_code == 422

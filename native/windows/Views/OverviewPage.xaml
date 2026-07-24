@@ -52,6 +52,10 @@
                                FontSize="12" TextWrapping="Wrap" Foreground="{StaticResource PdiT2Brush}" />
                     <ComboBox x:Name="LanguageBox" HorizontalAlignment="Stretch"
                               SelectionChanged="OnLanguagePicked" />
+                    <ToggleSwitch x:Name="PreTranslateToggle" Header="Pre-translate notes"
+                                  OnContent="Translated notes in every response"
+                                  OffContent="English notes kept"
+                                  IsOn="True" Toggled="OnModeToggled" />
                 </StackPanel>
             </Border>
         </StackPanel>

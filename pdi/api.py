@@ -20,7 +20,7 @@ from . import (app_connectors, audit, catalog, compliance, connectors, crypto,
 from .models import (AppCollect, AppConnect, AppInvoke, ConnectorCreate,
                      ConnectorIngest, ConnectorPublish, ContributionIn,
                      DeploymentCreate, IntakeCreate, IntakeSubmit,
-                     LanguageChoice, PositionIntake,
+                     LanguageChoice, PositionIntake, TranslateRequest,
                      RecordPut, RetentionSet, RobotBind, RobotIngest,
                      SnapshotRestore, TenantCreate, TokenIssue, TransferCreate)
 
@@ -73,7 +73,7 @@ def create_app() -> FastAPI:
         tenant = vault.tenant_by_token(auth_header[7:])
         if tenant is None:
             return response
-        language = i18n.get_language(tenant["id"])
+        language = i18n.effective_language(tenant["id"])
         content_type = response.headers.get("content-type", "")
         if language == i18n.DEFAULT or not content_type.startswith(
                 "application/json"):
@@ -166,20 +166,35 @@ def create_app() -> FastAPI:
 
     @app.get("/language")
     def get_language(tenant: dict = Depends(_tenant)) -> dict:
-        code = i18n.get_language(tenant["id"])
+        code, mode = i18n.get_pref(tenant["id"])
         return {"tenant_id": tenant["id"], "language": code,
-                "label": i18n.SUPPORTED[code]}
+                "label": i18n.SUPPORTED[code], "mode": mode}
 
     @app.put("/language")
     def set_language(body: LanguageChoice,
                      tenant: dict = Depends(_tenant)) -> dict:
+        """mode "pre" (default) swaps translated notes into every response;
+        "on_demand" keeps English and POST /translate serves lookups."""
         if body.language not in i18n.SUPPORTED:
             raise HTTPException(
                 422, f"language must be one of {', '.join(i18n.SUPPORTED)}")
-        i18n.set_language(tenant["id"], body.language)
+        if body.mode not in i18n.MODES:
+            raise HTTPException(
+                422, f"mode must be one of {', '.join(i18n.MODES)}")
+        i18n.set_language(tenant["id"], body.language, body.mode)
         audit.record("language.set", tenant_id=tenant["id"], ref=body.language)
         return {"tenant_id": tenant["id"], "language": body.language,
-                "label": i18n.SUPPORTED[body.language]}
+                "label": i18n.SUPPORTED[body.language], "mode": body.mode}
+
+    @app.post("/translate")
+    def translate_text(body: TranslateRequest,
+                       tenant: dict = Depends(_tenant)) -> dict:
+        """Dictionary-only: PDI runs no model, so it translates exactly its
+        own note strings and says so for anything else."""
+        try:
+            return i18n.translate(tenant["id"], body.text, body.to)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
 
     # -- data plane (tenant-scoped, encrypted at rest) ----------------------
 

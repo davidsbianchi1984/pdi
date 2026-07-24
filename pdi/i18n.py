@@ -29,27 +29,63 @@ DEFAULT = "en"
 HAND_TRANSLATED = tuple(code for code in SUPPORTED if code != "en")
 
 
-def get_language(tenant_id: str) -> str:
+# "pre": known note strings are swapped in every response (default).
+# "on_demand": responses keep English; POST /translate serves lookups.
+MODES = ("pre", "on_demand")
+
+
+def get_pref(tenant_id: str) -> tuple[str, str]:
     from . import db
     row = db.connect().execute(
-        "SELECT language FROM language_prefs WHERE tenant_id=?",
+        "SELECT language, mode FROM language_prefs WHERE tenant_id=?",
         (tenant_id,)).fetchone()
-    return row["language"] if row else DEFAULT
+    return (row["language"], row["mode"]) if row else (DEFAULT, "pre")
 
 
-def set_language(tenant_id: str, language: str) -> str:
+def get_language(tenant_id: str) -> str:
+    return get_pref(tenant_id)[0]
+
+
+def effective_language(tenant_id: str) -> str:
+    language, mode = get_pref(tenant_id)
+    return language if mode == "pre" else DEFAULT
+
+
+def set_language(tenant_id: str, language: str, mode: str = "pre") -> str:
     if language not in SUPPORTED:
         raise ValueError(f"unknown language {language!r}")
+    if mode not in MODES:
+        raise ValueError(f"mode must be one of {MODES}")
     from . import db
     conn = db.connect()
     conn.execute(
-        "INSERT INTO language_prefs (tenant_id, language, updated_at)"
-        " VALUES (?,?,?)"
+        "INSERT INTO language_prefs (tenant_id, language, mode, updated_at)"
+        " VALUES (?,?,?,?)"
         " ON CONFLICT(tenant_id) DO UPDATE SET language=excluded.language,"
-        " updated_at=excluded.updated_at",
-        (tenant_id, language, db.utcnow()))
+        " mode=excluded.mode, updated_at=excluded.updated_at",
+        (tenant_id, language, mode, db.utcnow()))
     conn.commit()
     return language
+
+
+def translate(tenant_id: str, text: str, to: str | None = None) -> dict:
+    """Dictionary-only translation: PDI runs no model, so it translates
+    exactly its own note strings and says so for anything else — never a
+    machine-mangled guess."""
+    target = to or get_language(tenant_id)
+    if target not in SUPPORTED:
+        raise ValueError(f"unknown language {target!r}")
+    if target == DEFAULT:
+        return {"text": text, "translation": text, "language": target,
+                "engine": "none", "note": "target language is English"}
+    hand = tr(text, target)
+    if hand != text:
+        return {"text": text, "translation": hand, "language": target,
+                "engine": "hand"}
+    return {"text": text, "translation": text, "language": target,
+            "engine": "none",
+            "note": "PDI performs no machine translation — only its own "
+                    "note strings are translated"}
 
 
 _STRINGS: dict[str, dict[str, str]] = {

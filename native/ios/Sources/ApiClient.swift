@@ -41,7 +41,7 @@ struct LanguagesList: Decodable {
     }
 }
 
-struct LanguageChoice: Decodable { let language: String; let label: String }
+struct LanguageChoice: Decodable { let language: String; let label: String; let mode: String? }
 struct VerifyResult: Decodable { let intact: Bool }
 struct AuditEntry: Decodable {
     let seq: Int
@@ -178,9 +178,10 @@ actor ApiClient {
         try await request("/language", token: token)
     }
 
-    func setLanguage(token: String, code: String) async throws -> LanguageChoice {
+    func setLanguage(token: String, code: String,
+                     mode: String = "pre") async throws -> LanguageChoice {
         try await request("/language", method: "PUT",
-                          body: ["language": code], token: token)
+                          body: ["language": code, "mode": mode], token: token)
     }
 
     func auditVerify(token: String) async throws -> VerifyResult {

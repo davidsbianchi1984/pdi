@@ -4,6 +4,12 @@ import SwiftUI
 struct WelcomeView: View {
     @EnvironmentObject var state: AppState
     @State private var token = ""
+    @State private var language = "en"
+    private let languageChoices = [
+        ("en", "English"), ("es", "Español"), ("fr", "Français"),
+        ("de", "Deutsch"), ("pt", "Português"), ("it", "Italiano"),
+        ("ja", "日本語"), ("zh", "中文"), ("hi", "हिन्दी"), ("ar", "العربية"),
+    ]
     @State private var base = "http://127.0.0.1:8000"
     @State private var busy = false
     @State private var error: String?
@@ -33,6 +39,13 @@ struct WelcomeView: View {
                     field("Server") {
                         TextField("http://127.0.0.1:8000", text: $base).textFieldStyle(.plain).foregroundStyle(Theme.txt)
                             .textInputAutocapitalization(.never).autocorrectionDisabled()
+                    }
+                    field("Language") {
+                        Picker("", selection: $language) {
+                            ForEach(languageChoices, id: \.0) { code, label in
+                                Text(label).tag(code)
+                            }
+                        }.pickerStyle(.menu).tint(Theme.brandA)
                     }
                 }.card()
 
@@ -69,6 +82,10 @@ struct WelcomeView: View {
             await ApiClient.shared.setBase(base)
             do {
                 _ = try await ApiClient.shared.keys(token: token)   // 200 == valid token
+                if language != "en" {
+                    _ = try? await ApiClient.shared.setLanguage(token: token,
+                                                                code: language)
+                }
                 state.signIn(token: token, base: base)
             } catch {
                 self.error = "Couldn't unlock — check the token and server. (\(error.localizedDescription))"
