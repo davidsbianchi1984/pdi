@@ -1,50 +1,41 @@
-# PDI v0.1.1 — release notes
+# PDI v0.1.2 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.1.1` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.1.2` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**PDI (Private Data Infrastructure) v0.1.1** — the vault goes enterprise and
-gets native apps everywhere. One of three interoperating products (with
+**PDI v0.1.2** — the trust release: B2B service terms with a per-tenant
+receipt, and a Business Associate Agreement the vault enforces in code.
+One of three interoperating products (with
 [qrme](https://github.com/davidsbianchi1984/qrme) and
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)).
 
 ### Highlights
 
-- **Native apps at parity** — iOS, Android, and Windows carry the whole
-  operator console: Overview (language, feedback, and **in-app admin key
-  management** — load / rotate / retire key versions with the deployment's
-  admin token, kept in memory only), Vault, Audit, Robots, Connectors,
-  Transfers, and Secure Intake.
-- **Enterprise compliance transfer** — HIPAA / OSHA / CPNI-grade secure file
-  transfer for corporations, plus **secure intake** so subscribers and
-  partner companies can send files *in* — sealed and audit-chained end to
-  end, receipts included.
-- **Robots as vault-backed data sources** — bind catalog robots, seal their
-  maps / snapshots / sensor logs on ingest, and keep tenant-owned custody
-  even after unbinding.
-- **Connected platforms** — all 16 suite connection platforms, the
-  Apple / Google / Microsoft / Canva connected-apps catalog, and
-  per-assistant screens for Apple Intelligence, Gemini, and Copilot.
-- **Language & provenance** — per-tenant language with hand-translated vault
-  notes in all supported languages, sign-in gateway choice, dictionary
-  translate, and sealed-record provenance (origin, seal details, audit
-  trail).
-- **Positions / assistant builder** — the AI-integration & role-mapping
-  questionnaire that blueprints an assistant for any industry role.
-- **Starter vault** — a seeded demo tenant with sealed records covering every
-  provenance origin and a full custody cycle to explore.
-- **Two form factors documented** — every capability screen now renders in
-  both the phone frame and a wide desktop operator-console frame.
-- **First-run onboarding** — welcome → provider login → key setup → token
-  grant → connected systems → all set.
+- **Terms of Service** — docs/terms.md (v1.0): B2B service terms framing
+  PDI as encrypted data-custody infrastructure, not advice — the
+  Customer owns its data and answers for its lawfulness, consents,
+  tenant-token safekeeping, and connected systems; as-is warranty
+  disclaimer and liability cap. Served versioned at `GET /terms`;
+  provisioning a tenant records the version in force
+  (`terms_version`/`terms_accepted_at`) as the receipt.
+- **BAA, executed per customer and enforced in code** — the signable
+  template (docs/baa-template.md) carries the required § 164.504(e)
+  provisions plus an exhibit mapping each promise to the PDI control
+  that keeps it. The operator records each customer's executed BAA
+  (`POST /tenants/{id}/baa`); HIPAA-program transfers and intakes are
+  refused (403) for tenants without an active record; termination
+  re-imposes the block; executions land in the audit chain.
+- **Signed, notarized builds wired** — hardened runtime + entitlements +
+  notarization in the electron-builder config: adding the Apple/Windows
+  signing secrets produces Gatekeeper-clean, SmartScreen-friendly
+  installers. docs/releasing.md walks through obtaining the certificates.
 
 ### Verification
 
-88 tests green; live-server smoke flows pass (seal / read / audit-verify);
-the desktop app builds clean; the cross-product suite smoke (run from qrme)
-passes end to end.
+94 tests green; the desktop console builds clean; the cross-product
+suite smoke (run from qrme) passes end to end.
 
 ### Install
 
