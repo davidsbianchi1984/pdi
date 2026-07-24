@@ -105,10 +105,18 @@ straight from this backend — no app store, no second server, nothing to
 configure on the phone.
 
 ```bash
-python -m pdi phone
+python -m pdi          # the launcher menu: choose your device
+python -m pdi phone    # straight to the phone flow
 ```
 
-One command: it builds the console if it's missing (first run installs the
+Bare `python -m pdi` prints the launcher menu — every way to run the
+vault console, one command each, so you pick per device: **phone** (this
+section), **desktop** (`python -m pdi desktop`, the Electron app on this
+PC), **packaged installer** (`.dmg`/`.exe`/`.AppImage` from the releases
+page — no toolchain needed), or **headless API** (`python -m pdi serve`).
+Same backend, same data, same token checks in every form.
+
+`python -m pdi phone` builds the console if it's missing (first run installs the
 npm dependencies too), prints the phone URL **with a QR code right in the
 terminal**, and starts the API on the network — scan, Add to Home Screen,
 done. Flags: `--port`, `--rebuild`, `--no-build`, `--print-only`.
