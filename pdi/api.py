@@ -121,6 +121,15 @@ def create_app() -> FastAPI:
             raise HTTPException(422, str(e))
         return vault.create_tenant(body.name, retention_days=days)
 
+    @app.post("/seed", status_code=201)
+    def seed_starter_vault(_: None = Depends(_admin)) -> dict:
+        """Seed the starter demo vault: a "starter-demo" tenant with sealed
+        sample records (every provenance origin), a bound robot with sealed
+        collection data, and an audit trail to explore. Idempotent; the
+        tenant token is returned only by the run that creates it."""
+        from . import seed
+        return seed.seed()
+
     @app.post("/tenants/{tenant_id}/tokens", status_code=201)
     def issue_token(tenant_id: str, body: TokenIssue,
                     _: None = Depends(_admin)) -> dict:

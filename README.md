@@ -245,6 +245,7 @@ The first-run journey runs **23 Welcome → 22 Log In → 24 Key Setup → 25 Gr
 | `GET /health` | — | Liveness |
 | `POST /deployments` | admin | Record a deployment (on-premises / colocation) |
 | `POST /tenants` | admin | Create a tenant (optional `retention`); returns its bearer token once |
+| `POST /seed` | admin | Seed the **starter vault** (`pdi/seed.py`, also `python -m pdi.seed`): a `starter-demo` tenant with sealed sample records covering every provenance origin (direct / `jim/` / `qrme/`), a bound home robot with sealed collection data, and an audit trail with a full custody cycle. Idempotent; the tenant token is returned only by the run that creates it |
 | `PUT /tenants/{id}/retention` | admin | Set record retention (`7d`…`1y`\|`forever`\|days) |
 | `PUT /records` | tenant (write) | Store `{key, value}` — value sealed at rest |
 | `GET /records/{key}` | tenant | Retrieve and decrypt a value (keys may be path-namespaced) |
