@@ -12,9 +12,8 @@ from pdi.tests.conftest import auth, new_tenant
 def test_language_catalog_and_choice(client):
     cat = client.get("/languages").json()
     assert cat["default"] == "en"
-    codes = {l["code"]: l for l in cat["languages"]}
-    assert codes["es"]["notes_translated"] is True
-    assert codes["ja"]["notes_translated"] is False
+    # Every supported language now carries hand-translated notes.
+    assert all(l["notes_translated"] for l in cat["languages"])
 
     token = new_tenant(client)
     assert client.get("/language", headers=auth(token)).json()["language"] == "en"
@@ -38,7 +37,7 @@ def test_notes_localize_in_responses(client):
     assert r["sealed"] is True and r["key"].startswith("robot/")
 
 
-def test_unknown_language_keeps_english_notes(client):
+def test_japanese_notes_localize(client):
     token = new_tenant(client)
     client.put("/language", json={"language": "ja"}, headers=auth(token))
     robot = client.post("/robots", json={"model": "neo"},
@@ -46,7 +45,21 @@ def test_unknown_language_keeps_english_notes(client):
     r = client.post(f"/robots/{robot['id']}/ingest",
                     json={"kind": "map", "content": "hi"},
                     headers=auth(token)).json()
-    assert "encrypted at rest" in r["note"]
+    assert "暗号化" in r["note"]
+
+
+def test_unknown_strings_pass_through_untouched(client):
+    from pdi import i18n
+    assert i18n.tr("a string nobody translated", "ja") == \
+        "a string nobody translated"
+
+
+def test_every_language_has_complete_note_coverage(client):
+    from pdi import i18n
+    langs = set(i18n.SUPPORTED) - {i18n.DEFAULT}
+    for source, translations in i18n._STRINGS.items():
+        missing = langs - set(translations)
+        assert not missing, f"{source[:40]!r} missing {sorted(missing)}"
 
 
 def test_record_provenance_trail(client):
