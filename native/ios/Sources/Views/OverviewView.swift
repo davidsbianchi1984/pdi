@@ -58,6 +58,8 @@ struct OverviewView: View {
                     .onChange(of: preTranslate) { _ in applyLanguage() }
                 }.card()
 
+                ImproveCard()
+
                 Button("Sign out") { state.signOut() }
                     .font(.subheadline).foregroundStyle(Theme.t2)
                     .frame(maxWidth: .infinity).padding(.vertical, 12)

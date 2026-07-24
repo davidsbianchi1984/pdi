@@ -111,6 +111,21 @@ struct SocialConn: Decodable {
     let status: String?
 }
 
+struct ImproveReceipt: Decodable { let id: String; let status: String }
+
+struct ImproveItem: Decodable, Identifiable {
+    let id: String
+    let category: String
+    let message: String
+    let status: String
+}
+
+struct ImproveState: Decodable {
+    let mine: [ImproveItem]
+    let tally: [String: Int]
+    let total: Int
+}
+
 // MARK: - Client
 
 enum ApiError: LocalizedError {
@@ -182,6 +197,19 @@ actor ApiClient {
                      mode: String = "pre") async throws -> LanguageChoice {
         try await request("/language", method: "PUT",
                           body: ["language": code, "mode": mode], token: token)
+    }
+
+    // MARK: Help us improve — product feedback
+
+    func submitImprovement(token: String, category: String, message: String,
+                           rating: Int?) async throws -> ImproveReceipt {
+        var body: [String: Any] = ["category": category, "message": message]
+        if let rating { body["rating"] = rating }
+        return try await request("/improve", method: "POST", body: body, token: token)
+    }
+
+    func improvements(token: String) async throws -> ImproveState {
+        try await request("/improve", token: token)
     }
 
     func auditVerify(token: String) async throws -> VerifyResult {

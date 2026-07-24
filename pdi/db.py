@@ -175,6 +175,21 @@ CREATE TABLE IF NOT EXISTS robots (
     collected  INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL
 );
+
+-- "Help us improve": product feedback anyone can send about the app itself.
+-- Not tenant record data — this is meta feedback on PDI as a product, so it
+-- sits outside the per-tenant namespace. Submitter is a tenant:id when a
+-- tenant token is presented, else 'anonymous'; a submitter sees only their
+-- own words, everyone the aggregate tally.
+CREATE TABLE IF NOT EXISTS feedback (
+    id         TEXT PRIMARY KEY,
+    submitter  TEXT NOT NULL DEFAULT 'anonymous',
+    category   TEXT NOT NULL,          -- idea | improvement | bug | praise | other
+    message    TEXT NOT NULL,
+    rating     INTEGER,                -- optional 1..5 satisfaction
+    status     TEXT NOT NULL DEFAULT 'received',   -- received | reviewed | planned | shipped
+    created_at TEXT NOT NULL
+);
 """
 
 _local = threading.local()

@@ -118,6 +118,16 @@ public record SocialConn(
     [property: JsonPropertyName("direction")] string Direction,
     [property: JsonPropertyName("handle")] string? Handle);
 
+public record ImproveItem(
+    [property: JsonPropertyName("category")] string Category,
+    [property: JsonPropertyName("message")] string Message,
+    [property: JsonPropertyName("status")] string Status);
+
+public record ImproveState(
+    [property: JsonPropertyName("mine")] ImproveItem[] Mine,
+    [property: JsonPropertyName("tally")] System.Collections.Generic.Dictionary<string, int> Tally,
+    [property: JsonPropertyName("total")] int Total);
+
 /// <summary>
 /// Async client for the PDI vault backend. Every call carries the tenant bearer
 /// token (`pdi_...`), issued out of band and pasted at sign-in. Windows reaches
@@ -205,6 +215,24 @@ public sealed class ApiClient
 
     public Task<AuditEntry[]> AuditEntries(string token) =>
         Send<AuditEntry[]>(new HttpRequestMessage(HttpMethod.Get, "/audit"), token);
+
+    // -- Help us improve — product feedback --
+
+    public async Task SubmitImprovement(string token, string category,
+                                        string message, int? rating)
+    {
+        object body = rating is { } r
+            ? new { category, message, rating = r }
+            : new { category, message };
+        var req = new HttpRequestMessage(HttpMethod.Post, "/improve")
+        {
+            Content = JsonContent.Create(body),
+        };
+        await SendNoContent(req, token);
+    }
+
+    public Task<ImproveState> Improvements(string token) =>
+        Send<ImproveState>(new HttpRequestMessage(HttpMethod.Get, "/improve"), token);
 
     // -- robots as vault-backed data sources --
 
