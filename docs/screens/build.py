@@ -299,7 +299,17 @@ def status_dot(x, y, label, tone):
 # --------------------------------------------------------------------------- #
 # frame
 # --------------------------------------------------------------------------- #
-PLATFORM = "ios"          # "ios" | "android"
+PLATFORM = "ios"          # "ios" | "android" | "desktop"
+
+# Desktop console frame (PDI is infrastructure — the operator console reads
+# naturally as a wide dashboard): window chrome + left nav rail + right
+# status rail around the same screen content.
+DW, DH = 1000, 700
+DESK_NAV = [
+    ("grid", "Overview"), ("lock", "Vault"), ("people", "Tenants"),
+    ("shieldok", "Audit"), ("db", "Keys"), ("building", "Operations"),
+    ("link", "Connect"), ("bolt", "Robots"),
+]
 
 
 def _status_icons(xr, y, col):
@@ -321,6 +331,8 @@ def _status_icons(xr, y, col):
 
 
 def statusbar():
+    if PLATFORM == "desktop":
+        return []
     tcol = C["silver"] if "silver" in C else C["t2"]
     notch = "#05070d"
     o = []
@@ -335,6 +347,8 @@ def statusbar():
 
 
 def navbar():
+    if PLATFORM == "desktop":
+        return []
     o = []
     yb = SY + SH - 6
     if PLATFORM == "android":
@@ -372,8 +386,51 @@ def head(num, title, sub, accent="brand", locked=False):
       <radialGradient id="glow" cx="50%" cy="50%" r="50%">
         <stop offset="0" stop-color="{ac}" stop-opacity="0.5"/><stop offset="1" stop-color="{ac}" stop-opacity="0"/></radialGradient>
     </defs>''')
-    out.append(rrect(PX, PY, PW, PH, 40, "url(#gFrame)"))
-    out.append(rrect(SX, SY, SW, SH, 31, "url(#gScr)"))
+    if PLATFORM == "desktop":
+        out[0] = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{DW}" height="{DH}" '
+                  f'viewBox="0 0 {DW} {DH}" role="img" aria-label="{esc(title)} console screen">')
+        out.append(rrect(0, 0, DW, DH, 18, "url(#gFrame)"))
+        # title bar with traffic dots
+        for i, dot in enumerate(("#e0687a", "#ffce54", "#7bc47f")):
+            out.append(f'<circle cx="{26 + i * 18}" cy="22" r="5.2" fill="{dot}"/>')
+        out.append(text(DW / 2, 26, f"PDI · Operator Console — {title}", 12,
+                        C["t2"], 600, "middle"))
+        # left nav rail
+        out.append(rrect(16, 44, 196, DH - 62, 14, C["tab"], C["line"], 1))
+        ny = 78
+        out.append(text(34, 66, "PRIVATE DATA INFRA", 9, C["t3"], 700, spacing=0.8))
+        for ic2, lbl in DESK_NAV:
+            on = lbl.lower() in title.lower() or (
+                lbl == "Overview" and not any(
+                    n.lower() in title.lower() for _, n in DESK_NAV[1:]))
+            col = C["brandA"] if on else C["t3"]
+            if on:
+                out.append(rrect(24, ny - 15, 180, 26, 9, A(C["brandA"], 0.12)))
+            out.append(icon(ic2, 40, ny - 2, col, 0.62))
+            out.append(text(56, ny + 2, lbl, 11.5, C["txt"] if on else C["t2"], 650 if on else 500))
+            ny += 34
+        # right status rail — the always-on operator context
+        rx, rw = DW - 268, 252
+        panels = [("shieldok", "Audit chain", "INTACT — hash-chain verified", C["green"]),
+                  ("people", "Tenants", "qrme · jim-mini · starter-demo", C["brandA"]),
+                  ("db", "Records", "1,842 sealed · ciphertext only", C["amber"]),
+                  ("lock", "Key version", "v2 active · v1 retired", C["cyan"])]
+        py = 44
+        for ic2, k, v, col in panels:
+            out.append(rrect(rx, py, rw, 64, 14, "url(#gCard)", C["line"], 1))
+            out.append(icon(ic2, rx + 22, py + 32, col, 0.8))
+            out.append(text(rx + 42, py + 27, k, 11.5, C["txt"], 700))
+            out.append(text(rx + 42, py + 44, v, 9.5, C["t2"], 500))
+            py += 76
+        out.append(rrect(rx, py, rw, DH - py - 18, 14, "url(#gCard)", C["line"], 1))
+        out.append(text(rx + 16, py + 24, "Every access is audited.", 11, C["txt"], 650))
+        out.append(text(rx + 16, py + 40, "Sealed at rest · AES-256-GCM · AAD", 9.5, C["t2"]))
+        # the screen content renders in its own translated panel
+        out.append(f'<g transform="translate(224, 20)">')
+        out.append(rrect(SX, SY, SW, SH, 20, "url(#gScr)", C["line"], 1))
+    else:
+        out.append(rrect(PX, PY, PW, PH, 40, "url(#gFrame)"))
+        out.append(rrect(SX, SY, SW, SH, 31, "url(#gScr)"))
     out += statusbar()
     lockmark = "  🔒" if locked else ""
     out.append(text(CX, SY + 66, title, 20, C["txt"], 700, spacing=-0.4))
@@ -386,6 +443,8 @@ def head(num, title, sub, accent="brand", locked=False):
 
 
 def tabbar(tabs, active):
+    if PLATFORM == "desktop":
+        return []   # the desktop nav rail replaces the bottom tab bar
     out = [rrect(SX, SY + SH - 52, SW, 52, 0, C["tab"])]
     out.append(f'<rect x="{SX}" y="{SY+SH-52}" width="{SW}" height="1" fill="{C["line"]}"/>')
     step = SW / len(tabs)
@@ -405,6 +464,8 @@ OPS = [("building", "Deploy"), ("db", "Backup"), ("chart", "Health"), ("gear", "
 
 
 def close():
+    if PLATFORM == "desktop":
+        return ['</g>', '</svg>']
     return ['</svg>']
 
 
@@ -1204,7 +1265,7 @@ SCREENS = [
 def main():
     global PLATFORM
     total = 0
-    for plat, sub in (("ios", ""), ("android", "android")):
+    for plat, sub in (("ios", ""), ("android", "android"), ("desktop", "desktop")):
         PLATFORM = plat
         outdir = OUT if not sub else os.path.join(OUT, sub)
         os.makedirs(outdir, exist_ok=True)
@@ -1216,7 +1277,7 @@ def main():
                 f.write(render(s))
             total += 1
     PLATFORM = "ios"
-    print(f"generated {total} screens ({total // 2} × 2 platforms)")
+    print(f"generated {total} screens ({total // 3} × 3 platforms)")
     return []
 
 

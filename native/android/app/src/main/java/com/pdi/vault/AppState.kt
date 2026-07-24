@@ -19,10 +19,18 @@ class VaultViewModel(app: Application) : AndroidViewModel(app) {
         private set
     var baseURL by mutableStateOf(prefs.getString("base", "http://10.0.2.2:8000") ?: "http://10.0.2.2:8000")
         private set
+    // The tenant's chosen language also drives the app chrome via L10n.
+    var language by mutableStateOf(prefs.getString("lang", "en") ?: "en")
+        private set
 
     init { ApiClient.setBase(baseURL) }
 
     val isSignedIn get() = token != null
+
+    fun rememberLanguage(code: String) {
+        language = code
+        prefs.edit().putString("lang", code).apply()
+    }
 
     /** Validate the pasted token against GET /records, then persist on success. */
     fun signIn(token: String, base: String, language: String? = null,

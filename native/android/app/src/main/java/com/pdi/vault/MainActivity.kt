@@ -57,11 +57,11 @@ class MainActivity : ComponentActivity() {
 private fun HomeShell(vm: VaultViewModel) {
     var tab by remember { mutableIntStateOf(0) }
     val tabs = listOf(
-        Triple("Overview", Icons.Filled.GridView, 0),
-        Triple("Vault", Icons.Filled.Lock, 1),
-        Triple("Audit", Icons.Filled.VerifiedUser, 2),
-        Triple("Sources", Icons.Filled.Face, 3),
-        Triple("Transfers", Icons.Filled.Send, 4),
+        Triple(L10n.t("tab.overview", vm.language), Icons.Filled.GridView, 0),
+        Triple(L10n.t("tab.vault", vm.language), Icons.Filled.Lock, 1),
+        Triple(L10n.t("tab.audit", vm.language), Icons.Filled.VerifiedUser, 2),
+        Triple(L10n.t("tab.sources", vm.language), Icons.Filled.Face, 3),
+        Triple(L10n.t("tab.transfers", vm.language), Icons.Filled.Send, 4),
     )
     Scaffold(
         containerColor = Pdi.ScrBot,

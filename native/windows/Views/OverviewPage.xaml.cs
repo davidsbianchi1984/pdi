@@ -26,6 +26,15 @@ public sealed partial class OverviewPage : Page
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
+        RefreshButton.Content = L10n.T("action.refresh");
+        await Load();
+    }
+
+    private async void OnRefresh(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) =>
+        await Load();
+
+    private async System.Threading.Tasks.Task Load()
+    {
         var s = AppState.Current;
         ApiClient.Shared.SetBase(s.BaseUrl);
         TokenText.Text = Masked(s.Token ?? "");
@@ -52,6 +61,7 @@ public sealed partial class OverviewPage : Page
             var idx = System.Array.FindIndex(_languages, l => l.Code == current.Language);
             LanguageBox.SelectedIndex = idx >= 0 ? idx : 0;
             PreTranslateToggle.IsOn = (current.Mode ?? "pre") == "pre";
+            s.RememberLanguage(current.Language);   // chrome follows the tenant
         }
         catch { /* backend offline — leave empty */ }
         finally { _loadingLanguage = false; }
@@ -117,6 +127,7 @@ public sealed partial class OverviewPage : Page
         {
             await ApiClient.Shared.SetLanguage(AppState.Current.Token!,
                                                _languages[idx].Code, CurrentMode);
+            AppState.Current.RememberLanguage(_languages[idx].Code);
         }
         catch { /* ignore */ }
     }
@@ -136,4 +147,55 @@ public sealed partial class OverviewPage : Page
 
     private static string Masked(string t) =>
         t.Length > 8 ? t[..6] + "…" + t[^4..] : "••••";
+
+    // -- admin: key management --
+
+    public record KeyRow(string Line);
+
+    private void ShowAdminError(string m)
+    {
+        AdminError.Text = m;
+        AdminError.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+    }
+
+    private void ShowKeys(KeysInfo info)
+    {
+        KeyList.ItemsSource = info.Versions.Select(v =>
+            new KeyRow($"v{v.Version}  {(v.Active ? "active " : "inactive")}  {v.CreatedAt}")).ToList();
+        RotateButton.IsEnabled = true;
+        RetireButton.IsEnabled = true;
+    }
+
+    private async void OnLoadKeys(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        AdminError.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+        AdminStatus.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+        try { ShowKeys(await ApiClient.Shared.AdminKeys(AdminTokenBox.Password)); }
+        catch (System.Exception ex) { ShowAdminError(ex.Message); }
+    }
+
+    private async void OnRotateKey(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        AdminError.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+        try
+        {
+            ShowKeys(await ApiClient.Shared.RotateKey(AdminTokenBox.Password));
+            AdminStatus.Text = "Rotated — every record re-sealed under the new version.";
+            AdminStatus.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+        }
+        catch (System.Exception ex) { ShowAdminError(ex.Message); }
+    }
+
+    private async void OnRetireKeys(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        AdminError.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+        try
+        {
+            var r = await ApiClient.Shared.RetireKeys(AdminTokenBox.Password);
+            ShowKeys(new KeysInfo("env", r.Versions));
+            AdminStatus.Text = $"Retired {r.Retired} old version(s).";
+            AdminStatus.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+        }
+        catch (System.Exception ex) { ShowAdminError(ex.Message); }
+    }
 }

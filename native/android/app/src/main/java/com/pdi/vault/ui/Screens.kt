@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,6 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pdi.vault.ApiClient
+import com.pdi.vault.KeysInfo
+import com.pdi.vault.L10n
 import com.pdi.vault.LanguageInfo
 import com.pdi.vault.RecordProvenance
 import com.pdi.vault.AuditEntry
@@ -50,6 +53,15 @@ private fun BrandButton(text: String, enabled: Boolean = true, busy: Boolean = f
         if (busy) CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
         else Text(text, color = Color.White, fontWeight = FontWeight.Bold)
     }
+}
+
+@Composable
+private fun SmallAction(text: String, onClick: () -> Unit) {
+    Text(text, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold,
+        modifier = Modifier.clip(RoundedCornerShape(50))
+            .background(Pdi.BrandA)
+            .clickable { onClick() }
+            .padding(horizontal = 12.dp, vertical = 8.dp))
 }
 
 @Composable
@@ -131,23 +143,33 @@ fun WelcomeScreen(vm: VaultViewModel) {
 // ---- Overview ----
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun OverviewScreen(vm: VaultViewModel) {
     var count by remember { mutableStateOf<Int?>(null) }
     var intact by remember { mutableStateOf<Boolean?>(null) }
     var loaded by remember { mutableStateOf(false) }
+    var refreshing by remember { mutableStateOf(false) }
     var languages by remember { mutableStateOf<List<LanguageInfo>>(emptyList()) }
     var language by remember { mutableStateOf("en") }
     var preTranslate by remember { mutableStateOf(true) }
-    LaunchedEffect(Unit) {
+    fun reload() {
         vm.call({ ApiClient.keys(vm.token!!) }) { r -> count = r.getOrNull()?.size }
-        vm.call({ ApiClient.auditVerify(vm.token!!) }) { r -> intact = r.getOrNull(); loaded = true }
+        vm.call({ ApiClient.auditVerify(vm.token!!) }) { r ->
+            intact = r.getOrNull(); loaded = true; refreshing = false
+        }
+    }
+    LaunchedEffect(Unit) {
+        reload()
         vm.call({ ApiClient.languages(vm.token!!) }) { r -> languages = r.getOrDefault(emptyList()) }
         vm.call({ ApiClient.language(vm.token!!) }) { r ->
             r.getOrNull()?.let { (lang, mode) ->
                 language = lang; preTranslate = mode == "pre"
+                vm.rememberLanguage(lang)   // chrome follows the tenant
             }
         }
     }
+    PullToRefreshBox(isRefreshing = refreshing,
+        onRefresh = { refreshing = true; reload() }) {
     screenScroll {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Box(Modifier.size(8.dp).clip(CircleShape).background(Pdi.Green))
@@ -182,6 +204,7 @@ fun OverviewScreen(vm: VaultViewModel) {
                                 vm.call({ ApiClient.setLanguage(vm.token!!, l.code,
                                     if (preTranslate) "pre" else "on_demand") }) {
                                     language = l.code
+                                    vm.rememberLanguage(l.code)
                                 }
                             },
                             label = { Text(l.label, fontSize = 11.sp) },
@@ -211,10 +234,78 @@ fun OverviewScreen(vm: VaultViewModel) {
             }
         }
         ImproveCard(vm)
+        AdminCard(vm)
         OutlinedButton(onClick = { vm.signOut() }, modifier = Modifier.fillMaxWidth(),
             border = androidx.compose.foundation.BorderStroke(1.dp, Pdi.Line)) {
-            Text("Sign out", color = Pdi.T2)
+            Text(L10n.t("action.sign_out", vm.language), color = Pdi.T2)
         }
+    }
+    }
+}
+
+// ---- Admin: key management (PDI_ADMIN_TOKEN, never the tenant token) ----
+
+@Composable
+fun AdminCard(vm: VaultViewModel) {
+    var adminToken by remember { mutableStateOf("") }
+    var info by remember { mutableStateOf<KeysInfo?>(null) }
+    var status by remember { mutableStateOf<String?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("Admin · Key management", color = Pdi.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        Text("Requires the deployment's admin token (PDI_ADMIN_TOKEN) — not the tenant " +
+             "token. Kept in memory only, never stored. Rotation re-seals every record; " +
+             "retire deletes non-active versions (safe only after a reseal).",
+            color = Pdi.T2, fontSize = 12.sp)
+        labeledField("Admin token", adminToken, "…") { adminToken = it }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SmallAction("Load versions") {
+                error = null; status = null
+                vm.call({ ApiClient.adminKeys(adminToken) }) { r ->
+                    r.onSuccess { info = it }.onFailure { error = it.message }
+                }
+            }
+            SmallAction("Rotate key") {
+                if (info != null) {
+                    error = null; status = null
+                    vm.call({ ApiClient.rotateKey(adminToken) }) { r ->
+                        r.onSuccess { info = it
+                            status = "Rotated — every record re-sealed under the new version." }
+                         .onFailure { error = it.message }
+                    }
+                }
+            }
+            SmallAction("Retire old") {
+                if (info != null) {
+                    error = null; status = null
+                    vm.call({ ApiClient.retireKeys(adminToken) }) { r ->
+                        r.onSuccess { (n, k) -> info = k
+                            status = "Retired $n old version(s)." }
+                         .onFailure { error = it.message }
+                    }
+                }
+            }
+        }
+        info?.let { k ->
+            Text("provider: ${k.provider}", color = Pdi.T3, fontSize = 10.sp)
+            k.versions.forEach { v ->
+                Row(verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(Modifier.size(8.dp).clip(CircleShape)
+                        .background(if (v.active) Pdi.Green else Pdi.T3))
+                    Text("v${v.version}", color = Pdi.Txt, fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold)
+                    Text(if (v.active) "active" else "inactive",
+                        color = if (v.active) Pdi.Green else Pdi.T3, fontSize = 10.sp)
+                    Spacer(Modifier.weight(1f))
+                    Text(v.createdAt ?: "", color = Pdi.T3, fontSize = 10.sp)
+                }
+            }
+        }
+        status?.let { Text(it, color = Pdi.Green, fontSize = 12.sp) }
+        error?.let { Text(it, color = Pdi.Red, fontSize = 12.sp) }
     }
 }
 

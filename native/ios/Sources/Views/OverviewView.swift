@@ -60,12 +60,15 @@ struct OverviewView: View {
 
                 ImproveCard()
 
-                Button("Sign out") { state.signOut() }
+                AdminCard()
+
+                Button(L10n.t("action.sign_out", state.language)) { state.signOut() }
                     .font(.subheadline).foregroundStyle(Theme.t2)
                     .frame(maxWidth: .infinity).padding(.vertical, 12)
                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.line, lineWidth: 1))
             }.padding(20)
         }
+        .refreshable { await load() }
         .task { await load() }
     }
 
@@ -85,6 +88,7 @@ struct OverviewView: View {
 
     private func applyLanguage() {
         guard let token = state.token else { return }
+        state.rememberLanguage(language)
         Task {
             _ = try? await ApiClient.shared.setLanguage(
                 token: token, code: language,
@@ -103,6 +107,7 @@ struct OverviewView: View {
            let l = try? await ApiClient.shared.language(token: token) {
             language = l.language
             preTranslate = (l.mode ?? "pre") == "pre"
+            state.rememberLanguage(l.language)   // chrome follows the tenant
         }
     }
 }
