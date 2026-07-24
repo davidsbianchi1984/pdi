@@ -27,6 +27,19 @@ token out of band and pastes it to unlock. The token is persisted so the app
 resumes signed-in, and all three share one dark-OLED palette. See each folder's
 README for the exact build/run commands.
 
+Two cross-cutting guarantees ride on the API:
+
+- **Language** (`/languages`, `GET/PUT /language`, picker on the Overview
+  screen): PDI's fixed explanatory note strings are hand-translated (es, fr)
+  and swapped into every JSON response for tenants who set a language —
+  structured data and sealed values pass through untouched, and unknown
+  languages keep English notes rather than machine-mangling them.
+- **Provenance** (`GET /provenance/{key}`, the ⓘ action on each vault
+  record): a sealed record's verifiable derivation trail — its origin (JIM /
+  QRME tandem or direct write), the cipher and tenant+key binding, seal
+  timestamps, and its tamper-evident audit history with the hash-chain
+  verification status. Proof, not trust.
+
 ## Start the backend
 
 All three point at the local dev server. From the repo root:

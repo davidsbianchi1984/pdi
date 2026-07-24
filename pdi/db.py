@@ -51,6 +51,12 @@ CREATE TABLE IF NOT EXISTS tenant_tokens (
     created_at  TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS language_prefs (
+    tenant_id   TEXT PRIMARY KEY REFERENCES tenants(id),
+    language    TEXT NOT NULL,          -- pdi.i18n.SUPPORTED code, e.g. "es"
+    updated_at  TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS records (
     id          TEXT PRIMARY KEY,
     tenant_id   TEXT NOT NULL REFERENCES tenants(id),

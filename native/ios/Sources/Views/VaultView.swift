@@ -7,6 +7,7 @@ struct VaultView: View {
     @State private var newKey = ""
     @State private var newValue = ""
     @State private var revealed: [String: String] = [:]
+    @State private var provenance: [String: RecordProvenance] = [:]
     @State private var loading = true
     @State private var busy = false
     @State private var error: String?
@@ -46,6 +47,10 @@ struct VaultView: View {
                                 Spacer()
                                 Button(revealed[key] == nil ? "Reveal" : "Hide") { toggle(key) }
                                     .font(.caption).foregroundStyle(Theme.brandA)
+                                Button(provenance[key] == nil ? "Provenance" : "ⓘ Hide") {
+                                    toggleProvenance(key)
+                                }
+                                    .font(.caption).foregroundStyle(Theme.brandA)
                                 Button { remove(key) } label: {
                                     Image(systemName: "trash").font(.caption).foregroundStyle(Theme.red)
                                 }
@@ -56,6 +61,21 @@ struct VaultView: View {
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(10).background(Theme.scrBot)
                                     .clipShape(RoundedRectangle(cornerRadius: 9))
+                            }
+                            if let p = provenance[key] {
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text("Origin: \(p.origin)")
+                                        .font(.caption).foregroundStyle(Theme.txt)
+                                    Text(p.sealed.cipher).font(.caption2).foregroundStyle(Theme.t2)
+                                    Text(p.sealed.bound_to).font(.caption2).foregroundStyle(Theme.t2)
+                                    Text("Sealed \(p.sealed.created_at) · \(p.sealed.ciphertext_bytes) ciphertext bytes")
+                                        .font(.caption2).foregroundStyle(Theme.t3)
+                                    Text("\(p.audit.count) audit event(s) · chain \(p.chain.intact ? "intact ✓" : "BROKEN")")
+                                        .font(.caption2.bold())
+                                        .foregroundStyle(p.chain.intact ? Theme.green : Theme.red)
+                                }
+                                .padding(10).background(Theme.scrBot)
+                                .clipShape(RoundedRectangle(cornerRadius: 9))
                             }
                         }.card()
                     }
@@ -92,6 +112,15 @@ struct VaultView: View {
                 await load()
             } catch { self.error = error.localizedDescription }
             busy = false
+        }
+    }
+
+    private func toggleProvenance(_ key: String) {
+        guard let token = state.token else { return }
+        if provenance[key] != nil { provenance[key] = nil; return }
+        Task {
+            provenance[key] = try? await ApiClient.shared.provenance(
+                token: token, key: key)
         }
     }
 

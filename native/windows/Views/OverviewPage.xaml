@@ -43,6 +43,17 @@
                     <TextBlock x:Name="BaseText" FontSize="12" Foreground="{StaticResource PdiT2Brush}" />
                 </StackPanel>
             </Border>
+
+            <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Language" FontWeight="Bold" FontSize="16" Foreground="{StaticResource PdiTxtBrush}" />
+                    <TextBlock Text="PDI's explanatory notes arrive in this language; sealed data is untouched."
+                               FontSize="12" TextWrapping="Wrap" Foreground="{StaticResource PdiT2Brush}" />
+                    <ComboBox x:Name="LanguageBox" HorizontalAlignment="Stretch"
+                              SelectionChanged="OnLanguagePicked" />
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>

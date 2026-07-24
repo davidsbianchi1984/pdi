@@ -6,6 +6,8 @@ struct OverviewView: View {
     @State private var count: Int?
     @State private var intact: Bool?
     @State private var loading = true
+    @State private var languages: [LanguageInfo] = []
+    @State private var language = "en"
 
     var body: some View {
         ScrollView {
@@ -31,6 +33,20 @@ struct OverviewView: View {
                     Text(state.baseURL).font(.caption).foregroundStyle(Theme.t3)
                 }.card()
 
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Language").font(.headline).foregroundStyle(Theme.txt)
+                    Text("PDI's explanatory notes arrive in this language; sealed data is untouched.")
+                        .font(.caption).foregroundStyle(Theme.t2)
+                    Picker("", selection: $language) {
+                        ForEach(languages, id: \.code) { l in
+                            Text(l.label + (l.notes_translated == true
+                                            ? "" : " (notes in English)")).tag(l.code)
+                        }
+                    }
+                    .pickerStyle(.menu).tint(Theme.brandA)
+                    .onChange(of: language) { _ in applyLanguage() }
+                }.card()
+
                 Button("Sign out") { state.signOut() }
                     .font(.subheadline).foregroundStyle(Theme.t2)
                     .frame(maxWidth: .infinity).padding(.vertical, 12)
@@ -54,11 +70,22 @@ struct OverviewView: View {
         return t.prefix(6) + "…" + t.suffix(4)
     }
 
+    private func applyLanguage() {
+        guard let token = state.token else { return }
+        Task { _ = try? await ApiClient.shared.setLanguage(token: token,
+                                                           code: language) }
+    }
+
     private func load() async {
         guard let token = state.token else { return }
         loading = true
         count = (try? await ApiClient.shared.keys(token: token))?.count
         intact = (try? await ApiClient.shared.auditVerify(token: token))?.intact
         loading = false
+        languages = (try? await ApiClient.shared.languages())?.languages ?? []
+        if let token = state.token,
+           let l = try? await ApiClient.shared.language(token: token) {
+            language = l.language
+        }
     }
 }

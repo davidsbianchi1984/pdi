@@ -43,12 +43,18 @@
                                     <TextBlock Text="{Binding Key}" FontWeight="Bold"
                                                Foreground="{StaticResource PdiTxtBrush}" VerticalAlignment="Center" />
                                     <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                                        <Button Content="ⓘ Provenance" Tag="{Binding Key}" Click="OnProvenance"
+                                                Background="Transparent" FontSize="12"
+                                                Foreground="{StaticResource PdiBrandABrush}" />
                                         <Button Content="Reveal" Tag="{Binding Key}" Click="OnReveal"
                                                 Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
                                         <Button Content="Delete" Tag="{Binding Key}" Click="OnDelete"
                                                 Background="Transparent" Foreground="{StaticResource PdiRed}" />
                                     </StackPanel>
                                 </Grid>
+                                <TextBlock Text="{Binding ProvenanceText}" FontSize="11" TextWrapping="Wrap"
+                                           Foreground="{StaticResource PdiT2Brush}"
+                                           Visibility="{Binding ProvenanceVisibility}" />
                                 <TextBlock Text="{Binding Value}" FontFamily="Consolas"
                                            Foreground="{StaticResource PdiT2Brush}" TextWrapping="Wrap"
                                            Visibility="{Binding ValueVisibility}" />
