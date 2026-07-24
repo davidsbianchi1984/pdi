@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **BAA template** (docs/baa-template.md) — a production-ready Business
+  Associate Agreement with the required § 164.504(e) provisions and an
+  exhibit mapping each contractual promise to the PDI control that keeps
+  it; linked from the enterprise guide.
+- **macOS notarization wiring** — hardened runtime + entitlements +
+  `notarize` in the electron-builder config; docs/releasing.md walks
+  through obtaining the macOS and Windows certificates.
+
 ## [0.1.1] — 2026-07-24
 
 ### Added

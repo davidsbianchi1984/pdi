@@ -19,6 +19,15 @@ dependency — and both are forward-compatible with the optional AI-agent servic
 (the QRME synthetic-profile and JIM guidance systems) when you elect to activate
 them.
 
+## The agreement that makes it lawful: the BAA
+
+For HIPAA workloads, the PDI operator is a **Business Associate** of each
+covered-entity customer, and a **Business Associate Agreement must be signed
+before production PHI flows**. A production-ready template — with the
+required 45 C.F.R. § 164.504(e) provisions and an exhibit mapping every
+contractual promise to the PDI control that keeps it — is maintained at
+[docs/baa-template.md](baa-template.md). Have counsel adapt it per customer.
+
 ## How a compliant transfer works
 
 A corporation (a PDI **tenant**) seals a file for a recipient under one or more
