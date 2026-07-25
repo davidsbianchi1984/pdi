@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.5] — 2026-07-25
+
 ### Security
 
 - **BYOK — bring your own key** (`PUT`/`GET`/`DELETE /key`). A tenant can seal
@@ -85,6 +87,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Xcode project could never have been produced. The plist is now written from
   the spec, which also means the local-networking exemption the Simulator
   needs to reach `http://127.0.0.1:8000` actually applies.
+- **Android would not compile the API client.** A public `var base` already
+  generates `setBase(String)` on the JVM, so the explicit `setBase()` helper
+  that trimmed trailing slashes was a signature clash — the class could not be
+  produced at all. The trimming moved into the property's own setter, which
+  keeps both guards and matches the shape qrme and jim-mini use.
+- **iOS could not build the language picker.** `languages()` called `request()`
+  without the token argument it required. `GET /languages` is genuinely public
+  — it is the catalog a client reads before it has a tenant token at all — so
+  the token is now optional rather than the call inventing an empty one, which
+  would have sent a malformed `Bearer ` header.
 
 ## [0.1.4] — 2026-07-24
 
@@ -210,7 +222,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.1.4...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.1.5...HEAD
+[0.1.5]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.1.5
 [0.1.4]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.1.4
 [0.1.3]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.1.3
 [0.1.2]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.1.2
