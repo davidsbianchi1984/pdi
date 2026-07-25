@@ -1,48 +1,73 @@
-# PDI v0.1.8 — release notes
+# PDI v0.1.9 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.1.8` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.1.9` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**PDI v0.1.8** — cut alongside QRME and JIM-mini, as the three always
-are now. One of three interoperating products (with
+**PDI v0.1.9** — the release where handing off at the gate stops meaning
+*writing a name down*. One of three interoperating products (with
 [qrme](https://github.com/davidsbianchi1984/qrme) and
-[jim-mini](https://github.com/davidsbianchi1984/jim-mini)), all three at this
-version.
+[jim-mini](https://github.com/davidsbianchi1984/jim-mini)), all three cut
+together at this version.
 
-### What changed in PDI
+### Highlights
 
-**Nothing functional.** No API, no schema, no behaviour moved, and the vault seals and opens exactly what it did at 0.1.7.
+- **A hand-off reaches a person now.** The agent at the gate could always hand
+  off. What it could not do was *tell anybody*: `handed_to` recorded the on-call
+  contact, the ring went to `handed_off`, and somebody could stand at a door at
+  2am waiting for a person who did not know they were there. An escalation that
+  escalated to a database row.
 
-The only change here is a repair to the changelog itself: `[0.1.5]` and
-`[0.1.6]` linked to release tags that were never pushed, so both were 404s.
-They now point at their release-prep commits. Deliberately *not* fixed by
-backfilling those tags — pushing them now would fire the installer build and
-publish two superseded releases dated *after* v0.1.7, at the top of the page
-people download from. [docs/releasing.md](docs/releasing.md) records that
-reasoning, because an unexplained gap in a tag sequence is exactly what someone
-later "fixes" without knowing why it was left.
+- **PDI ships no vendor.** It cannot know how a deployment reaches its people —
+  a manned NOC, one on-call phone, a pager system, a chat webhook — so it posts
+  a signed JSON envelope to `PDI_NOTIFY_URL` and stops. No SDK, no account, and
+  the same envelope shape JIM-mini uses, so an operator running both can point
+  them at one receiver.
 
-**If you are already running 0.1.7, this upgrade is optional.** Take it to keep
-the three products reporting matching versions; skip it and you lose nothing.
+- **The sentence that made this worth building.** Every scripted hand-off says
+  some version of *I've passed this to the on-call contact* — which a person at
+  a door reads as **someone now knows I am here**. When the page does not go
+  out, that reading is false, and the cost of it is somebody waiting outside in
+  the dark. So the reply carries `reached_somebody: false` and an
+  `unreached_note`, and the scan page renders it as its own warning above the
+  *Passed to* row. Not as a clause at the end of a paragraph, and not by editing
+  words a model may have written.
 
-### What is in the suite at 0.1.8
+- **A page never fails a ring.** The caller gets their answer whether or not the
+  webhook answered; a dead webhook is recorded rather than raised. The envelope
+  inherits the beacon's blindness — kind, outcome, and where to read the rest
+  under the tenant's own token, with **not even the caller's own note**, which
+  is free text typed by a stranger and belongs in the sealed transcript rather
+  than in an outbound webhook that may be a third-party chat room. A test reads
+  the whole envelope as one string and looks for the filename, the counterparty,
+  the classification and the caller's words in it.
 
-The substance is QRME's: a live desk stops being only something you watch. You
-can ask to come up on the stream — which the host has to grant, and which needs
-a verified adult on a rated desk — and the room's comments, likes, shares and
-gifts render *on* the picture rather than beside it. See
-[QRME's notes](https://github.com/davidsbianchi1984/qrme/releases). Nothing in
-it asked PDI to change.
+- **Three audit actions rather than one** — `agent.page`, `agent.page_queued`,
+  `agent.page_failed` — because *a human was told* and *a human was not told*
+  are the two things an auditor is actually asking about, and one action would
+  have hidden the second inside the first. An expected delivery pages nobody at
+  all: waking the on-call for a parcel that was booked in is how a pager becomes
+  something people ignore.
+
+- **Unconfigured stays supported.** With no URL the page is `queued` — exactly
+  what the gate did before — except it is now a row
+  `GET /gate/pages?undelivered_only=true` can list rather than an absence nobody
+  could see. `GET /gate/channel` says whether a page can go out at all, without
+  revealing the URL, so it is checkable in the afternoon rather than at 3am.
+
+- **The tandem doc was describing a past release** — and missing this
+  repository's own arrow. `pdi/qrme_client.py`'s docstring cited *"every arrow
+  in docs/tandem.md points into PDI"* while being the thing that made it false.
+  [docs/tandem.md](docs/tandem.md) is now identical byte-for-byte in all three
+  repos, with a `pdi ✕ qrme` section, a beacon-family section, and
+  `docs/diagrams/tandem-flow.svg` generated rather than hand-drawn.
 
 ### Verification
 
-134 tests green — the same 134, passing the same way, which is rather the
-point of a release that claims to change nothing functional. Version strings
-moved in exactly five places: `pyproject.toml`, the FastAPI app,
-`app/package.json`, and the two root entries in its lockfile (dependency
-versions untouched).
+177 tests green (11 new this release). 78 routes. Version strings moved in
+exactly five places: `pyproject.toml`, the FastAPI app, `app/package.json`, and
+the two root entries in its lockfile (dependency versions untouched).
 
 ### Install
 

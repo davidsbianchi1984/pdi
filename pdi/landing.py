@@ -168,6 +168,12 @@ _RING_JS = """
     w.innerHTML='<div class="badge">'+(o.j.ai_generated?'AI REPLY':'AUTOMATED')
      +'</div><h1>'+esc(o.j.words||'')+'</h1>'
      +'<p class="note">'+esc(o.j.disclosure||'')+'</p>'
+     /* Loud, and above the "Passed to" row rather than below it: the reply
+        says somebody was told, and if nobody was, that is the sentence the
+        person outside most needs and the one they are least likely to hunt
+        for. */
+     +(o.j.unreached_note?'<div class="never">'+esc(o.j.unreached_note)
+       +'</div>':'')
      +(o.j.handed_to?'<div class="row"><span>Passed to</span><span>'
        +esc(o.j.handed_to)+'</span></div>':'');
     f.parentNode.appendChild(w);s.textContent='';}

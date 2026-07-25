@@ -353,12 +353,58 @@ runs, the card is still on screen.
 
 ## What this does not give you
 
-- **No paging.** A hand-off records who it went to and surfaces the ring in
-  `GET /rings?open_only=true`; PDI does not dial anyone. Delivery is the
-  deployment's integration point, and until it is wired, "handed off" means
-  "waiting in the console".
+- **No transport of its own.** PDI posts a signed envelope to
+  `PDI_NOTIFY_URL` and stops (`pdi/notify.py`). Whatever is behind that URL —
+  Twilio, PagerDuty, an SMS gateway, a script that rings a desk phone — is the
+  deployment's, and PDI ships no vendor and holds no account.
 - **No roster.** `PDI_GATE_ONCALL` names one contact. Working a list in order,
   and escalating when the first does not answer, is designed but not built.
+  (JIM-mini's `jim/rota.py` does this for its own relay; PDI has not needed it
+  yet, and copying it before there is a second contact to try would be
+  building the abstraction before the case.)
+
+## Telling somebody
+
+A hand-off used to record a name and tell nobody. `handed_to` held the on-call
+contact, the ring went to `handed_off`, and somebody stood at a door at 2am
+waiting for a person who did not know they were there — an escalation that
+escalated to a database row.
+
+    PDI_NOTIFY_URL=https://pager.internal/hooks/gate
+    PDI_NOTIFY_SECRET=…      # HMAC-SHA256 over "{timestamp}.{body}"
+
+Four rules, in the order they matter:
+
+1. **A page never fails a ring.** The caller gets their answer whether or not
+   the webhook answered. Delivery is attempted once, recorded, and never
+   retried inside the caller's request.
+2. **Not reaching anybody is a fact the caller is told.** This is the whole
+   point of the feature. *"I've passed this to the on-call contact"* reads as
+   **someone now knows**, and if the page did not go out, that sentence leaves
+   a person waiting in the rain for nobody. The reply carries
+   `reached_somebody: false` and an `unreached_note`, and the scan page renders
+   it as its own warning above the "Passed to" row rather than as a clause at
+   the end of a paragraph.
+3. **A page carries no contents, and not even the caller's own words.** It
+   inherits the beacon's blindness: kind, outcome, and where to read the rest
+   under the tenant's own token. The caller's note is free text typed by a
+   stranger and it belongs in the sealed transcript, not in an outbound webhook
+   that may be a third-party chat room.
+4. **Unconfigured is supported, not broken.** With no URL the page is `queued`
+   — exactly what the gate did before — except it is now a row somebody can
+   list rather than an absence nobody can see.
+
+Three audit actions rather than one, because *a human was told* and *a human
+was not told* are the two things an auditor is actually asking about:
+`agent.page`, `agent.page_queued`, `agent.page_failed`. An expected delivery
+pages nobody at all — waking the on-call for a parcel that was booked in is how
+a pager becomes something people ignore.
+
+`GET /gate/channel` says whether a hand-off can reach anybody, without
+revealing the URL, so an operator can check *before* the night it matters.
+`GET /gate/pages?undelivered_only=true` is the list to read in the morning, and
+`POST /gate/pages/{id}/retry` sends one again — a delivered page is refused
+rather than duplicated.
 
 - **No proof the code is on the object it names.** A sticker can be peeled off
   and moved. The chain records what was reported, not what is true — which is
