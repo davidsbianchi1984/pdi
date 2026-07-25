@@ -149,6 +149,27 @@ laptop on the LAN. If `/pair` reports `reachable: false`, it could only find
 loopback (which on a phone means the phone itself): set `PDI_LAN_HOST` to
 this machine's address and restart.
 
+### Hosting a collation facility
+
+A PDI deployment *is* the collation facility. Run your own, or use one
+somebody else runs — the `Dockerfile` packages the console and the API into
+one image either way:
+
+```bash
+docker build -t pdi .
+docker run -p 8100:8100 -v pdi-data:/data \
+  -e PDI_MASTER_KEY="$(openssl rand -base64 32)" \
+  -e PDI_ADMIN_TOKEN="$(openssl rand -base64 24)" \
+  -e PDI_PUBLIC_URL=https://vault.example.com pdi
+```
+
+The choice that matters is not whose rack it sits in — it's **who holds
+`PDI_MASTER_KEY`**. Keep it yourself and a host with root, full disk access,
+and every backup still holds only ciphertext; hand it over and they can read
+the vault. [docs/hosting.md](docs/hosting.md) puts the three postures
+(self-hosted, colocation, managed) side by side and says what each one
+actually means.
+
 ## Console screens
 
 The PDI operator console in two form factors — a **desktop dashboard** and a **mobile console** — one screen per capability of the vault, in the product's design language (Deep Indigo · Vault Cyan · Soft Silver, SF-style type, liquid-glass cards). It shares the night-indigo universe of QRME and JIM-mini with vault cyan as its accent — one world, three products. Every screen is a self-contained SVG (no fonts, images, or scripts) and maps to a real endpoint.
