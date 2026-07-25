@@ -23,7 +23,7 @@ class VaultViewModel(app: Application) : AndroidViewModel(app) {
     var language by mutableStateOf(prefs.getString("lang", "en") ?: "en")
         private set
 
-    init { ApiClient.setBase(baseURL) }
+    init { ApiClient.base = baseURL }
 
     val isSignedIn get() = token != null
 
@@ -36,7 +36,7 @@ class VaultViewModel(app: Application) : AndroidViewModel(app) {
     fun signIn(token: String, base: String, language: String? = null,
                onError: (String) -> Unit, onBusy: (Boolean) -> Unit) {
         onBusy(true)
-        ApiClient.setBase(base)
+        ApiClient.base = base
         viewModelScope.launch {
             runCatching { ApiClient.keys(token) }
                 .onSuccess { _ ->

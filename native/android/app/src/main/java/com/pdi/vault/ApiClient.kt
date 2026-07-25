@@ -44,12 +44,17 @@ class ApiException(message: String) : Exception(message)
  * default. On a physical device, set your machine's LAN IP via [base].
  */
 object ApiClient {
-    @Volatile var base: String = "http://10.0.2.2:8000"
-
-    fun setBase(url: String) {
-        val t = url.trimEnd('/')
-        if (t.isNotBlank()) base = t
-    }
+    // The trimming lives in the property's own setter rather than a
+    // setBase() helper: Kotlin already generates setBase(String) for a public
+    // `var`, so an explicit function by that name is a JVM signature clash.
+    // qrme and jim-mini both declare the bare `var`, and this keeps the shape
+    // the same while holding on to the trailing-slash and blank guards.
+    @Volatile
+    var base: String = "http://10.0.2.2:8000"
+        set(value) {
+            val trimmed = value.trimEnd('/')
+            if (trimmed.isNotBlank()) field = trimmed
+        }
 
     private suspend fun request(
         path: String, method: String = "GET",
