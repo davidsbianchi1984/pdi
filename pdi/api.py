@@ -19,7 +19,7 @@ from . import (app_connectors, audit, baa, catalog, compliance, connectors,
                robotics, terms as terms_mod, transfers, vault)
 from .models import (AppCollect, AppConnect, AppInvoke, BAARecordIn,
                      ConnectorCreate, ConnectorIngest, ConnectorPublish,
-                     ContributionIn,
+                     ContributionIn, CustomerKeyAdopt,
                      DeploymentCreate, FeedbackSubmit, IntakeCreate,
                      IntakeSubmit, LanguageChoice, PositionIntake,
                      TranslateRequest, RecordPut, RetentionSet, RobotBind,
@@ -31,12 +31,21 @@ def _public_base() -> str:
     return os.environ.get("PDI_PUBLIC_URL", "https://pdi.app").rstrip("/")
 
 
-def _tenant(authorization: str = Header(default="")) -> dict:
+def _tenant(authorization: str = Header(default=""),
+            x_tenant_key: str = Header(default="")) -> dict:
     if not authorization.startswith("Bearer "):
         raise HTTPException(401, "missing tenant bearer token")
     tenant = vault.tenant_by_token(authorization[len("Bearer "):])
     if tenant is None:
         raise HTTPException(401, "invalid tenant token")
+    # BYOK: a customer-managed key travels per request and is never stored.
+    # Carried on the tenant dict so it reaches the seal/open calls without
+    # every layer in between having to know about it.
+    tenant = dict(tenant)
+    try:
+        tenant["customer_key"] = crypto.parse_key(x_tenant_key)
+    except crypto.CustomerKeyMismatch as exc:
+        raise HTTPException(400, str(exc)) from exc
     return tenant
 
 
@@ -134,6 +143,23 @@ def create_app() -> FastAPI:
             "key_points": terms_mod.KEY_POINTS,
             "document": terms_mod.DOCUMENT,
         }
+
+    # BYOK failures are a normal, expected answer — "you have to bring the
+    # key" and "that is the wrong key" — not server errors. Handled centrally
+    # so every path that touches a sealed record reports them the same way,
+    # rather than each route remembering to.
+
+    @app.exception_handler(crypto.CustomerKeyRequired)
+    async def _key_required(request: Request, exc: crypto.CustomerKeyRequired):
+        # 428 Precondition Required: the request is fine, it is missing a
+        # precondition the caller can supply and retry with.
+        return Response(status_code=428, media_type="application/json",
+                        content=json.dumps({"detail": str(exc)}))
+
+    @app.exception_handler(crypto.CustomerKeyMismatch)
+    async def _key_mismatch(request: Request, exc: crypto.CustomerKeyMismatch):
+        return Response(status_code=403, media_type="application/json",
+                        content=json.dumps({"detail": str(exc)}))
 
     @app.get("/health")
     def health() -> dict:
@@ -730,6 +756,48 @@ def create_app() -> FastAPI:
         n = crypto.retire_old_versions()
         audit.record("key.retire", ref=str(n))
         return {"retired": n, "versions": crypto.key_versions()}
+
+    # -- BYOK: customer-managed keys ----------------------------------------
+    # The tenant's own decision, so these are authenticated by the tenant's
+    # write token, not the operator's admin token. An operator who could put a
+    # tenant under a key of the operator's choosing would defeat the point.
+
+    @app.get("/key")
+    def key_custody(tenant: dict = Depends(_tenant)) -> dict:
+        """Who holds the key for this tenant's records, and what that
+        guarantees. Deliberately explicit about the limits."""
+        return crypto.custody(tenant["id"])
+
+    @app.put("/key", status_code=201)
+    def adopt_key(body: CustomerKeyAdopt,
+                  tenant: dict = Depends(_writer)) -> dict:
+        """Bring your own key. Every existing record is re-sealed under it in
+        one transaction — a half-migrated tenant would be the worst state to
+        be in, with no way to tell from outside which records the operator can
+        still read."""
+        try:
+            key = crypto.parse_key(body.key)
+            return crypto.adopt_customer_key(
+                tenant["id"], body.provider, key, body.config)
+        except crypto.CustomerKeyMismatch as exc:
+            raise HTTPException(400, str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(409, str(exc)) from exc
+
+    @app.delete("/key")
+    def release_key(tenant: dict = Depends(_writer)) -> dict:
+        """Hand custody back to the deployment. Requires the customer key in
+        ``x-tenant-key``: the records must be opened to be re-sealed, which is
+        the guarantee working, not an obstacle."""
+        try:
+            return crypto.release_customer_key(
+                tenant["id"], tenant.get("customer_key"))
+        except crypto.CustomerKeyRequired as exc:
+            raise HTTPException(428, str(exc)) from exc
+        except crypto.CustomerKeyMismatch as exc:
+            raise HTTPException(403, str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(409, str(exc)) from exc
 
     # -- retention (up to forever) ------------------------------------------
 

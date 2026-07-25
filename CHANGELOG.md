@@ -8,6 +8,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Security
 
+- **BYOK — bring your own key** (`PUT`/`GET`/`DELETE /key`). A tenant can seal
+  its records under a key the deployment never stores, which is what makes an
+  outsourced collation facility workable for a customer who is one tenant
+  among many: the operator's database, backups and snapshots hold only
+  ciphertext for that tenant, and a subpoena to the host yields sealed blobs.
+  The key travels per request in `x-tenant-key`; a stored HMAC witness — not
+  the key — refuses a wrong one *before* it can seal records nothing could
+  later open. Adoption re-seals every existing record in one transaction, so
+  there is no half-migrated tenant whose readability nobody can determine
+  from outside. `GET /key` states the guarantee **and its limits**: it
+  protects data at rest, not against a hostile running operator who could
+  capture the key as it is presented; there is no escrow; and the operator's
+  reseal/rotation skip those tenants and report `customer_managed_skipped`
+  rather than silently passing over them. A `kms` provider (key in the
+  customer's own KMS) is scoped per tenant but remains an integration seam,
+  and is reported as the weaker promise it is — the operator can decrypt
+  while the grant is live.
 - **Open admin now fails closed off-machine** — `PDI_ADMIN_TOKEN` unset is
   still development mode, but only for callers on the same machine. From a
   routable address the admin surface returns 503 instead of exposing tenant
