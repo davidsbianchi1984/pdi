@@ -38,6 +38,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The native apps are compiled in CI** (`.github/workflows/native.yml`) —
+  iOS via XcodeGen + `xcodebuild` on macOS, Android via `gradle assembleDebug`,
+  Windows via MSBuild. The Swift, Kotlin and C# had never been through a
+  compiler in this repository: they were checked by reading and by brace/XML
+  well-formedness, which catches a typo and nothing else. Ported from QRME,
+  where the same gate found five real defects. Compile only — signing and
+  packaging stay in the release workflow — and it runs only when `native/`
+  changes, since macOS runner minutes are not free.
 - **`PDI_PUBLIC_URL` for published deployments** — `GET /pair` advertises
   the deployment's public address (QR included) instead of a LAN address,
   so the phone flow works hosted or local from one code path. Documented
@@ -68,6 +76,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   what shipped. Rotation is implemented as versioned DEKs behind
   `POST /keys/rotate` / `reseal` / `retire`, and the section now documents
   that.
+
+### Fixed
+
+- **The iOS project spec was invalid** — its XcodeGen `info:` block had no
+  `path` (required), while also setting `GENERATE_INFOPLIST_FILE`, which is
+  mutually exclusive with it. `xcodegen generate` failed outright, so the
+  Xcode project could never have been produced. The plist is now written from
+  the spec, which also means the local-networking exemption the Simulator
+  needs to reach `http://127.0.0.1:8000` actually applies.
 
 ## [0.1.4] — 2026-07-24
 

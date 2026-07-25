@@ -155,12 +155,16 @@ actor ApiClient {
         if !t.isEmpty, let u = URL(string: t) { base = u }
     }
 
+    // token is optional because GET /languages is genuinely public — it is
+    // the catalog a client reads before it has a tenant token at all. Sending
+    // an empty "Bearer " there would be a malformed header, not a no-op.
     private func request<T: Decodable>(_ path: String, method: String = "GET",
-                                       body: [String: Any]? = nil, token: String) async throws -> T {
+                                       body: [String: Any]? = nil,
+                                       token: String? = nil) async throws -> T {
         var req = URLRequest(url: base.appendingPathComponent(path))
         req.httpMethod = method
         req.setValue("application/json", forHTTPHeaderField: "content-type")
-        req.setValue("Bearer \(token)", forHTTPHeaderField: "authorization")
+        if let token { req.setValue("Bearer \(token)", forHTTPHeaderField: "authorization") }
         if let body { req.httpBody = try JSONSerialization.data(withJSONObject: body) }
 
         let (data, resp) = try await URLSession.shared.data(for: req)
