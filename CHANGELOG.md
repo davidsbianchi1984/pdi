@@ -6,6 +6,27 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.6] — 2026-07-25
+
+### Changed
+
+- **Version aligned across the suite.** QRME, JIM-mini and PDI are built to run
+  in tandem, but their version numbers drifted apart whenever a round of work
+  landed in one repository and not the others — QRME reached 0.1.6 on its own
+  while this one stayed at 0.1.5. From here the three carry the same number, so
+  "the suite at 0.1.6" names one combination of three products rather than
+  three that merely happen to be nearby. Anyone pinning all three can pin one
+  number.
+
+  **There are no functional changes to PDI in this release.** No API, schema,
+  or app behaviour moved, and the vault seals and opens exactly what it did at
+  0.1.5. Worth noting because it is the interesting part: QRME 0.1.6 added
+  signature evidence sealed into the vault, and it needed **nothing new here**
+  — the evidence package goes in through the same `put` that rated events
+  already used, and chains into the same audit log. A new consumer that
+  required no change to the thing it consumes is the vault's interface working
+  as intended.
+
 ## [0.1.5] — 2026-07-25
 
 ### Security
@@ -222,7 +243,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.1.5...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.1.6...HEAD
+[0.1.6]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.1.6
 [0.1.5]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.1.5
 [0.1.4]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.1.4
 [0.1.3]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.1.3
