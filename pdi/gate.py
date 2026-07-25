@@ -38,7 +38,8 @@ import hashlib
 import json
 import os
 
-from . import audit, beacons, crypto, db, positions, qrme_client, vault
+from . import (audit, beacons, crypto, db, notify, positions, qrme_client,
+               vault)
 
 # What the agent may settle on its own. Every one of these is reversible, or
 # is merely information a sign on the wall could carry.
@@ -215,15 +216,22 @@ def _speak(ring: dict, decision: dict, qrme=None,
     return words, "qrme"
 
 
-def answer(ring: dict, tenant: dict, qrme=None,
-           handle: str | None = None) -> dict:
-    """Take a ring: decide, speak, seal the transcript, land on the chain."""
+def answer(ring: dict, tenant: dict, qrme=None, handle: str | None = None,
+           http=None) -> dict:
+    """Take a ring: decide, speak, page a human, seal, land on the chain."""
     if ring["state"] != "open":
         raise beacons.BeaconError("this ring has already been answered")
 
     audit.record("agent.engage", tenant_id=tenant["id"], ref=ring["id"])
     decision = decide(ring, tenant["id"])
     words, spoken_by = _speak(ring, decision, qrme, handle)
+
+    # Try to reach the human this was handed to. Before this existed, a
+    # hand-off recorded a name and told nobody — an escalation that escalated
+    # to a database row. It runs *before* the reply is assembled because
+    # whether anybody was reached changes what the caller is told.
+    page = (notify.page_handoff(ring, decision, http)
+            if decision["handoff_to"] and not decision["resolved"] else None)
 
     # The transcript is sealed in the tenant's vault and only its key and hash
     # reach the chain — the split PDI already uses for payloads, applied to a
@@ -291,6 +299,20 @@ def answer(ring: dict, tenant: dict, qrme=None,
                        "chain")
         out["transcript_sealed"] = False
         out["transcript_note"] = sealed_note
+
+    if page is not None:
+        out["paged"] = page
+        # The correction that makes the whole feature worth having. Every
+        # scripted hand-off says some version of *I've passed this to X*, which
+        # a person at a door reads as **someone now knows I am here**. When the
+        # page did not go out that reading is false, and the cost of the false
+        # reading is somebody waiting outside in the dark for nobody. So it is
+        # a field of its own rather than a clause appended to the words —
+        # `landing.py` renders it as its own warning, and a client that
+        # ignores it is ignoring something it was handed explicitly.
+        out["reached_somebody"] = page["reached_somebody"]
+        if not page["reached_somebody"]:
+            out["unreached_note"] = notify.UNREACHED
     return out
 
 

@@ -14,8 +14,11 @@ one of them:
 """
 
 import base64
+import hashlib
+import hmac
+import json
 
-from pdi import beacons, gate
+from pdi import beacons, gate, notify
 from pdi.tests.conftest import auth, new_tenant, new_tenant_with_baa
 
 KEY = base64.b64encode(b"k" * 32).decode()
@@ -493,3 +496,185 @@ def test_the_page_does_not_depend_on_an_animation_to_be_visible(client):
     html = client.get(f"/s/{b['id']}").text
     assert "prefers-reduced-motion" in html
     assert "opacity:0" not in html.replace(" ", "")
+
+
+# --- paging a human -------------------------------------------------------
+#
+# The claim under test: a hand-off that reaches nobody must never look like a
+# hand-off that reached somebody. Every test below is an attempt to make the
+# gate quietly claim it told a person when it did not.
+
+class _Webhook:
+    """Whatever the deployment put behind PDI_NOTIFY_URL. Records what it was
+    handed, and can refuse."""
+
+    def __init__(self, status=200, boom=None):
+        self.status, self.boom, self.calls = status, boom, []
+
+    def post(self, url, data, headers):
+        if self.boom:
+            raise self.boom
+        self.calls.append({"url": url, "body": json.loads(data),
+                           "headers": headers})
+        return type("R", (), {"status_code": self.status})()
+
+
+def _ring_it(client, token, kind="access", note=None, http=None):
+    """Ring a gate through the module, so a fake webhook can be injected."""
+    from pdi import vault
+    g = _gate(client, token)
+    row = beacons.get(g["id"])
+    opened = beacons.ring(row, kind, note)
+    tenant = vault.tenant_by_id(row["tenant_id"])
+    return gate.answer(beacons.ring_row(opened["id"]), tenant, http=http)
+
+
+def test_a_handoff_pages_the_configured_channel(client, monkeypatch):
+    monkeypatch.setenv("PDI_NOTIFY_URL", "https://pager.example/hook")
+    hook = _Webhook()
+    out = _ring_it(client, new_tenant(client), http=hook)
+
+    assert out["reached_somebody"] is True
+    assert out["paged"]["state"] == "sent"
+    assert "unreached_note" not in out
+    assert len(hook.calls) == 1
+    assert hook.calls[0]["body"]["envelope"] == "pdi-page/v1"
+    assert hook.calls[0]["body"]["urgency"] == "now"   # somebody is at a door
+
+
+def test_an_unconfigured_channel_queues_and_says_nobody_was_reached(client):
+    """The state this replaces: a hand-off that recorded a name and told no
+    one. It is still allowed — it is just no longer silent."""
+    out = _ring_it(client, new_tenant(client))
+
+    assert out["reached_somebody"] is False
+    assert out["paged"]["state"] == "queued"
+    assert out["unreached_note"] == notify.UNREACHED
+    assert out["state"] == "handed_off"        # the ring still resolved
+    assert notify.channel()["configured"] is False
+
+
+def test_a_dead_webhook_does_not_fail_the_ring(client, monkeypatch):
+    """A caller at a door gets an answer whether or not the pager answered."""
+    monkeypatch.setenv("PDI_NOTIFY_URL", "https://pager.example/hook")
+    out = _ring_it(client, new_tenant(client),
+                   http=_Webhook(boom=OSError("connection refused")))
+
+    assert out["words"]                        # they were still spoken to
+    assert out["state"] == "handed_off"
+    assert out["paged"]["state"] == "failed"
+    assert "connection refused" in out["paged"]["last_error"]
+    assert out["reached_somebody"] is False
+    assert out["unreached_note"] == notify.UNREACHED
+
+
+def test_a_page_carries_no_contents_and_not_the_callers_words(client,
+                                                              monkeypatch):
+    """The page inherits the beacon's blindness. The caller's note is free text
+    typed by a stranger and belongs in the sealed transcript, not in an
+    outbound webhook that may be a third-party chat room."""
+    monkeypatch.setenv("PDI_NOTIFY_URL", "https://pager.example/hook")
+    token = new_tenant_with_baa(client, name="site")
+    _transfer(client, token)                   # a record exists to leak
+    hook = _Webhook()
+    _ring_it(client, token, note="I am Dave from Acme, biopsy pickup", http=hook)
+
+    body = json.dumps(hook.calls[0]["body"]).lower()
+    for leak in ("biopsy", "results.pdf", "lab-partner", "phi", "dave", "acme"):
+        assert leak not in body, f"the page leaked {leak!r}"
+    assert hook.calls[0]["body"]["caller_note_withheld"] is True
+    assert hook.calls[0]["body"]["granted_entry"] is False
+
+
+def test_a_page_is_signed_when_a_secret_is_set(client, monkeypatch):
+    monkeypatch.setenv("PDI_NOTIFY_URL", "https://pager.example/hook")
+    monkeypatch.setenv("PDI_NOTIFY_SECRET", "s3cret")
+    hook = _Webhook()
+    _ring_it(client, new_tenant(client), http=hook)
+
+    call = hook.calls[0]
+    sig = call["headers"]["X-PDI-Signature"]
+    at = call["headers"]["X-PDI-Timestamp"]
+    body = json.dumps(call["body"], sort_keys=True)
+    expected = hmac.new(b"s3cret", f"{at}.{body}".encode(),
+                        hashlib.sha256).hexdigest()
+    assert sig == f"sha256={expected}"
+    assert notify.channel()["signed"] is True
+    # The URL is never published, only whether one exists.
+    assert "pager.example" not in json.dumps(notify.channel())
+
+
+def test_a_resolved_ring_pages_nobody(client):
+    """An expected delivery is settled at the door. Waking the on-call for one
+    is how a pager becomes something people ignore."""
+    token = new_tenant_with_baa(client, name="site")
+    _transfer(client, token)                   # makes a movement 'expected'
+    out = _ring_it(client, token, kind="delivery")
+
+    assert out["outcome"] == "expected_delivery"
+    assert out["state"] == "resolved"
+    assert "paged" not in out
+    assert client.get("/gate/pages", headers=auth(token)).json() == []
+
+
+def test_undelivered_pages_are_listable_and_retryable(client, monkeypatch):
+    token = new_tenant(client)
+    out = _ring_it(client, token)              # no channel -> queued
+    assert out["paged"]["state"] == "queued"
+
+    undelivered = client.get("/gate/pages?undelivered_only=true",
+                             headers=auth(token)).json()
+    assert [p["id"] for p in undelivered] == [out["paged"]["id"]]
+
+    # Configure the channel five minutes later and send it again.
+    monkeypatch.setenv("PDI_NOTIFY_URL", "https://pager.example/hook")
+    page = notify.retry(notify.row(out["paged"]["id"]), http=_Webhook())
+    assert page["state"] == "sent"
+    assert page["attempts"] == 1
+    assert client.get("/gate/pages?undelivered_only=true",
+                      headers=auth(token)).json() == []
+
+
+def test_a_delivered_page_is_not_sent_twice(client, monkeypatch):
+    """Paging the same on-call twice for one ring is how people start
+    ignoring the pager."""
+    monkeypatch.setenv("PDI_NOTIFY_URL", "https://pager.example/hook")
+    token = new_tenant(client)
+    out = _ring_it(client, token, http=_Webhook())
+    assert out["paged"]["state"] == "sent"
+
+    r = client.post(f"/gate/pages/{out['paged']['id']}/retry",
+                    headers=auth(token))
+    assert r.status_code == 409
+    assert "already delivered" in r.json()["detail"]
+
+
+def test_another_tenants_page_is_not_reachable(client):
+    mine = new_tenant(client, name="mine")
+    theirs = new_tenant(client, name="theirs")
+    out = _ring_it(client, mine)
+
+    assert client.get("/gate/pages", headers=auth(theirs)).json() == []
+    r = client.post(f"/gate/pages/{out['paged']['id']}/retry",
+                    headers=auth(theirs))
+    assert r.status_code == 404
+
+
+def test_whether_anybody_was_reached_lands_on_the_audit_chain(client):
+    """An auditor asking 'was a human told?' should not have to infer it."""
+    token = new_tenant(client)
+    _ring_it(client, token)
+    actions = [e["action"] for e in
+               client.get("/audit", headers=auth(token)).json()]
+    assert "agent.page_queued" in actions
+    assert "agent.page" not in actions
+    assert client.get("/audit/verify", headers=auth(token)).json()["intact"]
+
+
+def test_the_gate_page_warns_the_caller_when_nobody_was_reached(client):
+    """The reply says 'I've passed this to X', which reads as *someone now
+    knows*. When that is false the page must say so where it will be read."""
+    token = new_tenant(client)
+    g = _gate(client, token)
+    html = client.get(f"/s/{g['id']}").text
+    assert "unreached_note" in html            # rendered, not merely returned

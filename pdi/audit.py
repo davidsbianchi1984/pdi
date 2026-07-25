@@ -49,6 +49,12 @@ ACTIONS: dict[str, tuple[str, str]] = {
     "agent.decide": ("agent", "gate agent resolved a request within its ceiling"),
     "agent.refuse": ("agent", "gate agent declined, with a reason and a route"),
     "agent.handoff": ("agent", "gate agent escalated to a human"),
+    # Three actions, not one, because "a human was told" and "a human was not
+    # told" are the two outcomes an auditor is actually asking about, and a
+    # single `agent.page` would have hidden the second inside the first.
+    "agent.page": ("agent", "hand-off delivered to the notification channel"),
+    "agent.page_queued": ("agent", "hand-off queued — no notification channel configured, nobody was reached"),
+    "agent.page_failed": ("agent", "hand-off page could not be delivered, nobody was reached"),
 }
 
 EVENT_FIELDS = {

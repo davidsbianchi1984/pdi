@@ -225,6 +225,24 @@ CREATE TABLE IF NOT EXISTS beacon_rings (
     closed_at         TEXT
 );
 
+-- An attempt to reach a human about a hand-off. Its own table rather than
+-- columns on the ring: one ring can be paged more than once (a channel that
+-- was down at 2am and back at 2:05), and the list somebody actually wants in
+-- the morning is "which pages never landed" *across* rings.
+CREATE TABLE IF NOT EXISTS gate_pages (
+    id          TEXT PRIMARY KEY,
+    ring_id     TEXT NOT NULL REFERENCES beacon_rings(id),
+    tenant_id   TEXT NOT NULL REFERENCES tenants(id),
+    urgency     TEXT NOT NULL,   -- now | soon
+    reason      TEXT NOT NULL,   -- the decision outcome that raised it
+    handed_to   TEXT,
+    state       TEXT NOT NULL,   -- queued (no channel) | sent | failed
+    attempts    INTEGER NOT NULL DEFAULT 0,
+    last_error  TEXT,
+    created_at  TEXT NOT NULL,
+    sent_at     TEXT
+);
+
 CREATE TABLE IF NOT EXISTS audit (
     seq         INTEGER PRIMARY KEY AUTOINCREMENT,
     tenant_id   TEXT,

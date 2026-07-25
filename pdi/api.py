@@ -17,8 +17,8 @@ from fastapi.responses import HTMLResponse
 
 from . import (app_connectors, audit, baa, beacons, catalog, compliance,
                connectors, crypto, db, gate, i18n, intakes, landing, mobile,
-               positions, retention, robotics, terms as terms_mod, transfers,
-               vault)
+               notify, positions, retention, robotics, terms as terms_mod,
+               transfers, vault)
 from .models import (AppCollect, AppConnect, AppInvoke, BAARecordIn,
                      BeaconFound, BeaconPlace, BeaconState,
                      ConnectorCreate, ConnectorIngest, ConnectorPublish,
@@ -92,7 +92,7 @@ def _writer(tenant: dict = Depends(_tenant)) -> dict:
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="Private Data Infrastructure", version="0.1.8")
+    app = FastAPI(title="Private Data Infrastructure", version="0.1.9")
 
     @app.middleware("http")
     async def localize_response_notes(request, call_next):
@@ -943,6 +943,33 @@ def create_app() -> FastAPI:
         """What the agent may and may not do, and where the boundary comes
         from — published so a tenant can read the limits without the source."""
         return gate.ceiling()
+
+    @app.get("/gate/channel")
+    def gate_channel() -> dict:
+        """Whether a hand-off can actually reach anybody. Public, and free of
+        the URL itself: an operator should be able to confirm the gate can page
+        a human *before* the night it matters, rather than learning it from a
+        queued page the next morning."""
+        return notify.channel()
+
+    @app.get("/gate/pages")
+    def list_pages(undelivered_only: bool = False,
+                   tenant: dict = Depends(_tenant)) -> list[dict]:
+        """Hand-offs, and whether each one reached anyone.
+        `undelivered_only=true` is the list to read in the morning."""
+        return notify.for_tenant(tenant["id"], undelivered_only)
+
+    @app.post("/gate/pages/{pid}/retry")
+    def retry_page(pid: str, tenant: dict = Depends(_writer)) -> dict:
+        """Send a queued or failed page again — the channel may have been down
+        for a minute, or configured five minutes after the ring."""
+        row = notify.row(pid)
+        if row is None or row["tenant_id"] != tenant["id"]:
+            raise HTTPException(404, "page not found")
+        try:
+            return notify.retry(row)
+        except notify.NotifyError as exc:
+            raise HTTPException(409, str(exc))
 
     @app.get("/rings")
     def list_rings(open_only: bool = False,

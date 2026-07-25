@@ -4,23 +4,68 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-### Changed
-
-- **The three README illustrations are generated now**
-  (`tools/build_assets.py`) rather than hand-built. They had been drawn before
-  BYOK, compliance transfers and intakes, the executed-BAA gate, custody
-  beacons and the gate agent existed — and the cover used amber as its key
-  colour while every screen in `docs/screens/` is night-indigo with vault cyan.
-
-  They now read their palette from the same constants the screens use, so they
-  cannot drift away from what they are pictures of. The architecture diagram
-  ends on the question the product actually turns on — *who holds the key* —
-  and the encryption flow states what a wrong key does *before* it does damage.
-  Regenerate with `python3 tools/build_assets.py`.
+## [0.1.9] — 2026-07-25
 
 ### Added
+
+- **A hand-off reaches a person now** — `pdi/notify.py`, 3 routes, 11 tests.
+  The gate could always hand off. What it could not do was *tell anybody*:
+  `handed_to` recorded the on-call contact, the ring went to `handed_off`, and
+  somebody stood at a door at 2am waiting for a person who did not know they
+  were there. An escalation that escalated to a database row.
+
+  **PDI ships no vendor.** It cannot know how a deployment reaches its people —
+  a manned NOC, one on-call phone, a pager system, a chat webhook — so it posts
+  a signed JSON envelope to `PDI_NOTIFY_URL` and stops. No SDK, no account, and
+  the same envelope shape JIM-mini uses, so an operator running both can point
+  them at one receiver.
+
+  **The sentence that made this worth building:** every scripted hand-off says
+  some version of *I've passed this to the on-call contact*, which a person at
+  a door reads as **someone now knows I am here**. When the page does not go
+  out, that reading is false and the cost of it is somebody waiting outside in
+  the dark. So the reply carries `reached_somebody: false` and an
+  `unreached_note`, and the scan page renders it as its own warning above the
+  *Passed to* row — not as a clause at the end of a paragraph, and not by
+  editing words a model may have written.
+
+  A page never fails a ring: the caller gets their answer whether or not the
+  webhook answered, and a dead webhook is recorded rather than raised. It
+  inherits the beacon's blindness — kind, outcome, and where to read the rest
+  under the tenant's own token, with **not even the caller's own note**, which
+  is free text typed by a stranger and belongs in the sealed transcript rather
+  than in an outbound webhook that may be a third-party chat room. A test
+  reads the whole envelope as one string and looks for the filename, the
+  counterparty, the classification and the caller's words in it.
+
+  Three audit actions rather than one — `agent.page`, `agent.page_queued`,
+  `agent.page_failed` — because *a human was told* and *a human was not told*
+  are the two things an auditor is asking about, and one action would have
+  hidden the second inside the first. An expected delivery pages nobody at all.
+
+  Unconfigured stays supported: the page is `queued`, which is exactly what the
+  gate did before, except it is now a row `GET /gate/pages?undelivered_only=true`
+  can list rather than an absence nobody could see. `GET /gate/channel` says
+  whether a page can go out at all, without revealing the URL, so it is
+  checkable in the afternoon rather than at 3am.
+
+- **The tandem doc describes the architecture that actually exists** —
+  [docs/tandem.md](docs/tandem.md), identical byte-for-byte in all three
+  repositories. This copy was twelve lines and four `[planned]` markers behind
+  QRME's: it described the suite gateway's erase, export, consent and metering
+  as intentions when `suite/gateway.py` had shipped them, and the
+  docker-compose e2e harness as planned when it runs in CI.
+
+  It was also missing an arrow — **this repository's own**. `pdi/gate.py` asks
+  a QRME profile for the words it speaks at a door, and `pdi/qrme_client.py`'s
+  docstring cited *"every arrow in docs/tandem.md points into PDI"* while being
+  the thing that made that false. There is a `pdi ✕ qrme` section now, and a
+  beacon-family section covering what all three products do with a printed
+  code.
+
+- **The diagram is generated** — `tools/build_assets.py` writes
+  `docs/diagrams/tandem-flow.svg`, from a block identical in all three repos so
+  one picture cannot become three that disagree.
 
 - **A phone that scans a custody beacon gets a page now** — `pdi/landing.py`.
   `GET /s/{id}` served JSON, so a courier pointing a camera at a records box
@@ -122,6 +167,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   airlock and page a human, but may never grant entry, assert a person's
   identity, or let a refusal be a dead end. Every turn lands on the audit chain
   with the transcript sealed in the vault and only its key and hash on the log.
+
+### Changed
+
+- **The three README illustrations are generated now**
+  (`tools/build_assets.py`) rather than hand-built. They had been drawn before
+  BYOK, compliance transfers and intakes, the executed-BAA gate, custody
+  beacons and the gate agent existed — and the cover used amber as its key
+  colour while every screen in `docs/screens/` is night-indigo with vault cyan.
+
+  They now read their palette from the same constants the screens use, so they
+  cannot drift away from what they are pictures of. The architecture diagram
+  ends on the question the product actually turns on — *who holds the key* —
+  and the encryption flow states what a wrong key does *before* it does damage.
+  Regenerate with `python3 tools/build_assets.py`.
 
 ## [0.1.8] — 2026-07-25
 

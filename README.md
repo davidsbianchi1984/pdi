@@ -77,7 +77,10 @@ source material — each as its own tenant with its own token. See
   `HUMAN_IN_LOOP` set `positions.py` already publishes, and is itself published
   at `GET /gate/ceiling`: the agent may direct, check, structure a receipt and
   hand off, and may **never** grant entry, assert identity, override an
-  authorization, or see contents.
+  authorization, or see contents. A hand-off is **delivered**, not merely
+  filed: PDI posts a signed envelope to `PDI_NOTIFY_URL` and, when nobody was
+  reached, says so on the scan page rather than letting *"I've passed this to
+  the on-call contact"* leave somebody waiting in the rain for nobody.
 - **Role-based access control** — `POST /tenants/{id}/tokens` issues scoped
   `read`/`write` tokens; read tokens cannot write or delete, and
   `DELETE /tokens/{token}` revokes instantly.
@@ -385,6 +388,9 @@ PDI internals.
 | `PDI_KMS_KEY_ID` | — | KMS/HSM key id used by the `kms` provider |
 | `PDI_RECOVERY_WINDOW` | `forever` | Soft-deleted tenants purge after this window on sweep (`7d`…`1y`\|`forever`\|days) |
 | `PDI_ADMIN_TOKEN` | — | Guards admin endpoints; unset = open (dev only) |
+| `PDI_QRME_URL` / `PDI_GATE_PROFILE` | — | The gate agent's voice: a QRME `@handle` over HTTP. Both required, or the gate answers from its written script |
+| `PDI_GATE_ONCALL` | `the site's on-call contact` | Who a hand-off is routed to |
+| `PDI_NOTIFY_URL` / `PDI_NOTIFY_SECRET` | — | Where a hand-off is actually delivered; signed HMAC-SHA256. Unset = queued, and the caller is told nobody was reached ([docs/beacons.md](docs/beacons.md#telling-somebody)) |
 
 ## Test
 
@@ -402,9 +408,10 @@ Real facility provisioning, HSM/KMS integration, replication/redundancy across
 sites, and billing — represented structurally (deployment record, snapshot
 export), not as live infrastructure.
 
-**Not yet built:** paging for a gate hand-off (it records who it went to and
-queues the ring; PDI dials nobody), and an on-call roster rather than a single
-contact. See [docs/beacons.md](docs/beacons.md).
+**Not built:** a transport of PDI's own — a hand-off is delivered as a signed
+envelope to `PDI_NOTIFY_URL`, and whatever rings a phone behind it is the
+deployment's — and an on-call roster rather than a single contact. See
+[docs/beacons.md](docs/beacons.md).
 
 ## Architecture
 
