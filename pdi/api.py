@@ -40,12 +40,32 @@ def _tenant(authorization: str = Header(default="")) -> dict:
     return tenant
 
 
-def _admin(authorization: str = Header(default="")) -> None:
-    """Admin endpoints (deployments, tenants, token issuance) are guarded by
-    PDI_ADMIN_TOKEN. Unset = development mode (open, for local use only)."""
+# Addresses that can only be a caller on this machine. "testclient" is
+# Starlette's in-process sentinel — it names no socket, so no network peer
+# can ever present it.
+_LOCAL_CALLERS = {"127.0.0.1", "::1", "localhost", "testclient"}
+
+
+def _admin(request: Request, authorization: str = Header(default="")) -> None:
+    """Admin endpoints (deployments, tenants, token issuance, deletion,
+    snapshot restore) are guarded by PDI_ADMIN_TOKEN.
+
+    Unset is development mode — open, but **only to callers on this
+    machine**. A deployment reachable from anywhere else fails closed
+    instead: an open admin surface on a routable address would let any
+    caller who finds it create tenants, mint tokens, wipe a vault, or
+    restore a snapshot over it. Refusing is the safe failure; the operator
+    sets a token and restarts.
+    """
     required = os.environ.get("PDI_ADMIN_TOKEN")
     if not required:
-        return
+        caller = request.client.host if request.client else ""
+        if caller in _LOCAL_CALLERS:
+            return
+        raise HTTPException(
+            503, "this deployment is reachable beyond localhost but has no "
+                 "PDI_ADMIN_TOKEN set — admin endpoints stay closed until "
+                 "one is configured (see docs/operations.md)")
     if not authorization.startswith("Bearer "):
         raise HTTPException(401, "admin bearer token required")
     # Constant-time compare so a wrong token can't be recovered by timing.

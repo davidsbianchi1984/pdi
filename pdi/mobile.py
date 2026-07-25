@@ -73,9 +73,41 @@ def lan_address() -> str:
     return "127.0.0.1"
 
 
+def public_base() -> str | None:
+    """The address this deployment answers on from outside, when it is
+    hosted rather than run on a laptop. Set ``PDI_PUBLIC_URL`` and pairing
+    advertises that instead of a LAN address — same QR, same phone flow,
+    reachable from anywhere the operator has published it."""
+    url = os.environ.get("PDI_PUBLIC_URL")
+    return url.rstrip("/") if url else None
+
+
 def pairing(port: int = 8000) -> dict:
-    """Everything the phone needs: the console URL on this network, whether
-    the console has actually been built, and the same-network caveat."""
+    """Everything the phone needs: the console URL, whether the console has
+    actually been built, and the reachability caveat that applies.
+
+    Two postures, one flow: a hosted deployment advertises its public URL,
+    a laptop advertises its LAN address."""
+    hosted = public_base()
+    if hosted:
+        built = console_dir() is not None
+        how = ["Build the console first: npm --prefix app run build",
+               "Then restart the API and re-read GET /pair."] if not built else [
+            f"Open {hosted}/app/ on the phone (or scan the QR).",
+            "Add to Home Screen — it installs and runs full-screen."]
+        return {
+            "console_url": f"{hosted}/app/",
+            "api_url": hosted,
+            "console_built": built,
+            "reachable": True,
+            "hosted": True,
+            "qr_svg": "/pair/qr.svg",
+            "how": how,
+            "note": "Published deployment — serve it over HTTPS and treat "
+                    "tenant tokens as secrets; admin endpoints require "
+                    "PDI_ADMIN_TOKEN once the address is routable.",
+        }
+
     host = lan_address()
     base = f"http://{host}:{port}"
     built = console_dir() is not None
@@ -104,6 +136,7 @@ def pairing(port: int = 8000) -> dict:
         "api_url": base,
         "console_built": built,
         "reachable": reachable,
+        "hosted": False,
         "qr_svg": "/pair/qr.svg",
         "how": how,
         "note": "Local network only — this address is not reachable from the "

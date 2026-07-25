@@ -4,6 +4,26 @@ How the Private Data Infrastructure behaves in production. Sections marked
 **[implemented]** are in the codebase and tested; **[planned]** documents the
 intended design for v1+ that isn't code yet.
 
+## Publishing a deployment (self-hosted or run for others)
+
+A PDI deployment is the collation facility: run your own, or use one an
+operator runs for you. Either way, the moment its address is routable —
+not just a laptop on Wi-Fi — two things change:
+
+* **`PDI_ADMIN_TOKEN` becomes mandatory.** Unset is development mode, and
+  it is honoured **only for callers on the same machine**. From any other
+  address the admin surface fails closed (503) rather than exposing tenant
+  creation, token minting, tenant deletion, and snapshot restore to whoever
+  finds the URL. Set the token and restart.
+* **`PDI_PUBLIC_URL` tells the deployment its own address.** `GET /pair`
+  then advertises that URL (and its QR points there), so the phone flow
+  works over the internet exactly as it does on a LAN. Serve it over HTTPS:
+  tenant tokens travel in the `Authorization` header.
+
+Tenant isolation, hashed-at-rest tokens, the audit chain, and the BAA gate
+are unchanged by hosting posture — an operator holding someone else's PHI
+needs an executed BAA on file exactly as they would on-premises.
+
 ## Master key & key rotation
 
 - **At rest** every record value is sealed with AES-256-GCM (`pdi/crypto.py`).
