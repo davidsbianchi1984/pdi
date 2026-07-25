@@ -80,3 +80,14 @@ intake, key rotation, retention) already has backend endpoints in
 [`pdi/api.py`](../pdi/api.py) to grow into further native screens.
 
 These native targets are additive and do not change the backend.
+
+## Do they compile?
+
+`.github/workflows/native.yml` builds all three on every change to `native/`:
+XcodeGen + `xcodebuild` for the simulator on macOS, `gradle assembleDebug` on
+Linux, and MSBuild on Windows. Compile only — no signing, no packaging.
+
+This is newer than the code it checks. Until it existed, these sources had
+been verified by reading and by brace/XML well-formedness checks, which catch
+a typo and nothing else. Treat a green run as the first real evidence, not a
+long-standing guarantee.
