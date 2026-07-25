@@ -13,6 +13,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   routable address the admin surface returns 503 instead of exposing tenant
   creation, token minting, tenant deletion, and snapshot restore to anyone
   who finds the URL.
+- **A published deployment refuses an ephemeral key** — with `PDI_PUBLIC_URL`
+  set and no `PDI_MASTER_KEY` (or KMS provider), sealing fails closed instead
+  of encrypting under a process-local key that vanishes on restart, which
+  would have made every sealed record silently unreadable. Laptop use without
+  a key is unchanged.
 
 ### Added
 
@@ -20,6 +25,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the deployment's public address (QR included) instead of a LAN address,
   so the phone flow works hosted or local from one code path. Documented
   in docs/operations.md alongside the HTTPS and token guidance.
+
+### Documentation
+
+- docs/operations.md gains a **key-custody table** stating plainly what is
+  implemented (AES-256-GCM, envelope encryption, AAD binding, rotation) and
+  what is a seam (the KMS/HSM provider) or out of scope (TLS in transit).
 
 ## [0.1.4] — 2026-07-24
 

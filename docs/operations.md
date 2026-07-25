@@ -24,6 +24,24 @@ Tenant isolation, hashed-at-rest tokens, the audit chain, and the BAA gate
 are unchanged by hosting posture — an operator holding someone else's PHI
 needs an executed BAA on file exactly as they would on-premises.
 
+## Key custody — what is established, and what is a seam
+
+| Control | State |
+|---|---|
+| AES-256-GCM per record | **implemented** |
+| Envelope encryption — versioned DEKs, stored only wrapped by the KEK | **implemented**; the database never holds usable key material |
+| AAD binding to tenant + key version | **implemented**; a record cannot be read or moved across tenants |
+| Rotation — rotate → reseal → retire, old versions retained | **implemented** |
+| KEK from `PDI_MASTER_KEY` | **implemented** — acceptable for development and single-operator deployments |
+| KEK from a KMS/HSM (`PDI_KEY_PROVIDER=kms`) | **integration seam** — `KmsKeyProvider.kek()` raises rather than silently falling back to a local key. Wire it to AWS KMS `Decrypt` on a stored wrapped KEK, or a PKCS#11 unwrap, before holding regulated data for others. |
+| Encryption in transit | **not in the app** — terminate TLS at a reverse proxy or platform. Required for CPNI/PHI over any network you don't own. |
+
+A key-less deployment generates an **ephemeral** KEK. That is fine on a
+laptop and fatal in production: it lives only in that process, so every
+sealed record becomes unreadable after a restart. When `PDI_PUBLIC_URL` is
+set, starting without a configured key **fails closed** rather than sealing
+data under a key that is about to vanish.
+
 ## Master key & key rotation
 
 - **At rest** every record value is sealed with AES-256-GCM (`pdi/crypto.py`).
