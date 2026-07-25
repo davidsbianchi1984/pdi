@@ -49,6 +49,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   whether a page can go out at all, without revealing the URL, so it is
   checkable in the afternoon rather than at 3am.
 
+  **Screen 38 stopped where the feature used to stop.** *"Access request ·
+  always handed to a person"* was the end of the story before this round. It
+  says *handed to a person, and paged* now, and a new card carries the part
+  that matters: *Paged, not just filed · and says when nobody was reached*.
+  Rendered and checked.
+
 - **The tandem doc describes the architecture that actually exists** —
   [docs/tandem.md](docs/tandem.md), identical byte-for-byte in all three
   repositories. This copy was twelve lines and four `[planned]` markers behind
