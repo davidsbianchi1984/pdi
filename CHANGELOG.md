@@ -6,7 +6,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Nothing yet.
+### Security
+
+- **Open admin now fails closed off-machine** — `PDI_ADMIN_TOKEN` unset is
+  still development mode, but only for callers on the same machine. From a
+  routable address the admin surface returns 503 instead of exposing tenant
+  creation, token minting, tenant deletion, and snapshot restore to anyone
+  who finds the URL.
+
+### Added
+
+- **`PDI_PUBLIC_URL` for published deployments** — `GET /pair` advertises
+  the deployment's public address (QR included) instead of a LAN address,
+  so the phone flow works hosted or local from one code path. Documented
+  in docs/operations.md alongside the HTTPS and token guidance.
 
 ## [0.1.4] — 2026-07-24
 
