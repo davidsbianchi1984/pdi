@@ -41,13 +41,21 @@ ACTIONS: dict[str, tuple[str, str]] = {
     "position.create": ("position", "role-mapping intake sealed, assistant blueprint derived"),
     "baa.execute": ("compliance", "Business Associate Agreement recorded as executed for a tenant"),
     "baa.terminate": ("compliance", "tenant's Business Associate Agreement terminated"),
+    "beacon.place": ("custody", "custody beacon placed on a carrier or a gate"),
+    "beacon.found": ("custody", "carrier reported found by a finder"),
+    "beacon.ring": ("custody", "facility gate beacon rung"),
+    "beacon.retire": ("custody", "custody beacon retired"),
+    "agent.engage": ("agent", "gate agent took a ring"),
+    "agent.decide": ("agent", "gate agent resolved a request within its ceiling"),
+    "agent.refuse": ("agent", "gate agent declined, with a reason and a route"),
+    "agent.handoff": ("agent", "gate agent escalated to a human"),
 }
 
 EVENT_FIELDS = {
     "seq": "monotonic sequence number (chain order)",
     "tenant_id": "tenant the event belongs to (null for admin/global events)",
     "action": "one of the catalogued actions",
-    "category": "derived group for the action (data, tenant, access, key, retention, dr, contribution, position, admin)",
+    "category": "derived group for the action (data, tenant, access, key, retention, dr, contribution, position, admin, compliance, custody, agent)",
     "ref": "resource reference — record key, tenant id, or a small detail",
     "at": "UTC ISO-8601 timestamp",
     "prev_hash": "SHA-256 of the previous entry (chain link)",

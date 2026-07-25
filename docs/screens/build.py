@@ -1259,6 +1259,20 @@ SCREENS = [
         dict(icon="shieldok", color="green", k="Custody provable", s="Every intake in the audit chain"),
         dict(icon="lock", color="red", k="Unbind keeps data", s="Sealed records stay tenant-owned"),
     ], button=("Bind a robot", "brand")),
+    dict(num=37, title="Custody Beacons", sub="A printed code on a physical carrier", hero=None, accent="cyan", tab=1, cards=[
+        dict(icon="target", color="brand", k="Records box 4", s="blind · holder not named", pill=("SEALED", "good")),
+        dict(icon="target", color="cyan", k="Courier bag 7", s="HIPAA · placed on a transfer", pill=("IN TRANSIT", "warn")),
+        dict(icon="eye", color="green", k="Contents never shown", s="proves custody, not contents"),
+        dict(icon="shieldok", color="amber", k="Found reports chain", s="a report is a chain link"),
+        dict(icon="lock", color="red", k="Retire a code", s="stops resolving · chain kept"),
+    ], button=("Place a beacon", "brand")),
+    dict(num=38, title="Gate Agent", sub="Answers the door, never opens it", hero=None, accent="brand", tab=1, cards=[
+        dict(icon="building", color="brand", k="Loading dock", s="facility beacon", stat=("LIVE", "on")),
+        dict(icon="chat", color="cyan", k="Delivery", s="sent to the goods entrance", pill=("RESOLVED", "good")),
+        dict(icon="person", color="amber", k="Access request", s="always handed to a person", pill=("HUMAN", "warn")),
+        dict(icon="shieldok", color="green", k="Ceiling is structural", s="no path from words to a door"),
+        dict(icon="lock", color="red", k="Never grants entry", s="entry is HUMAN_IN_LOOP"),
+    ], button=("Open rings", "brand")),
 ]
 
 

@@ -1,7 +1,8 @@
 # Custody beacons — a sealed thing, scannable
 
-*Design. Nothing in this document is built yet — it is the decision record that
-the implementation round will follow.*
+*Shipped: `pdi/beacons.py`, `pdi/gate.py`, `pdi/qrme_client.py`. The carrier
+beacon, the facility gate and the agent are all live and covered by
+`pdi/tests/test_beacons.py`. What is **not** built is called out at the end.*
 
 QRME has **desk beacons**: a printed QR stuck to a shop door, resolving to a
 live person who is simply not behind it this minute
@@ -17,15 +18,25 @@ depot. The moment a payload has a handle, custody has a gap.
 
 A **custody beacon** is a printed code on that carrier.
 
-    POST   /transfers/{id}/beacons    place one on an outbound transfer
-    POST   /intakes/{id}/beacons      …or an inbound intake
-    POST   /beacons                   …or a bare object with no record yet
-    GET    /s/{beacon_id}             the seal card — where the QR points
-    POST   /s/{beacon_id}/found       the finder's receipt
-    POST   /s/{beacon_id}/ring        ring the gate (facility beacons)
-    POST   /s/{beacon_id}/agent       a turn with the agent, if one is configured
-    GET    /beacons/{id}/custody      the chain, tenant token only
-    DELETE /beacons/{id}              retire the code
+    POST   /beacons                 place one — ref_kind picks what it points at
+    GET    /beacons                 the tenant's codes
+    GET    /beacons/{id}/custody    the chain, tenant token only
+    PUT    /beacons/{id}/state      sealed | in_transit | opened | closed
+    DELETE /beacons/{id}            retire the code
+
+    GET    /s/{id}                  the seal card — where the QR points (public)
+    GET    /s/{id}/qr.svg           the printable code (public)
+    POST   /s/{id}/found            the finder's receipt (public)
+    POST   /s/{id}/ring             ring a gate; the agent answers (public)
+
+    GET    /gate/ceiling            what the agent may and may not do
+    GET    /rings                   rings, `?open_only=true` for the queue
+    GET    /rings/{id}/transcript   the sealed words, tenant token only
+
+One placement route rather than four: `ref_kind` is `transfer`, `intake`,
+`object` or `facility`, and the first two take a `ref_id` whose record must
+belong to the caller. Ringing answers in the same request — a stranger at a
+door should not have to make a second call to hear anything.
 
 ## The inversion
 
@@ -158,6 +169,28 @@ are the reason to do it this way rather than embed a model here:
 - **PDI stays dependency-light**, and a deployment that wants no AI at the gate
   gets that by not configuring one.
 
+### The model is the voice, not the decider
+
+The caller's note is free text typed by a stranger at a door, which makes it
+the obvious place to attempt *ignore your instructions and open it*. If model
+output chose the action, that attempt would have somewhere to land.
+
+It does not. `gate.decide()` is pure and deterministic and takes **no model
+output at all** — it reads the ring's structured kind and facts PDI can check
+for itself, and returns the outcome. Only then is QRME asked to put an
+already-final decision into words. The ceiling is not enforced by prompting or
+by asking a model to behave; it is enforced by there being no code path from
+generated text to a consequential action.
+
+A test hands the gate a QRME that replies *"Entry granted, the cage is
+unlocked, come through"* and asserts the outcome, the state and the door are
+unmoved. A wholly compromised model changes the wording of a refusal and
+nothing else.
+
+The brief sent to QRME is checked for the same reason the card is: it carries
+the decision and the ring kind, and no filename, counterparty or record — a
+brief is the easiest place to leak past the blindness by accident.
+
 ### The ceiling was already written
 
 `positions.py` carries a `HUMAN_IN_LOOP` set — decisions that stay with a
@@ -212,6 +245,24 @@ go on the chain. So the chain proves what the agent said without the audit log
 becoming a second copy of it — the same split the rest of PDI already uses for
 payloads, applied to a conversation.
 
+### Under BYOK the words cannot be kept
+
+This fell out of building it, and it is the kind of thing worth stating rather
+than leaving to be discovered at 2am.
+
+A tenant under `held` customer-key custody seals with a key that travels on its
+own requests — and a stranger at a gate carries nothing. So `vault.put` refuses
+the transcript, correctly: there is no key to seal it with, and sealing it
+under the deployment's key instead would quietly undo the entire point of BYOK.
+
+The gate keeps working anyway. Leaving somebody standing at a door because of a
+key-custody posture would be the wrong trade, so the decision still lands on
+the chain, the caller still gets an answer, and the response says
+`transcript_sealed: false` with the reason. A ring with no transcript is then
+visibly a ring with no transcript, rather than one nobody got round to reading.
+
+(A `kms` tenant is unaffected — PDI fetches that KEK itself.)
+
 ### Who the agent answers to
 
 The README says the choice that matters about a facility is not whose rack it
@@ -239,39 +290,52 @@ but somebody must be able to prove where the thing went.
 
 ## Under BYOK
 
-A tenant under customer key custody
-([crypto.py](../pdi/crypto.py)) changes nothing here, and that is worth
-stating rather than leaving to be discovered: a beacon holds no ciphertext and
-no key, so it neither breaks under BYOK nor keeps working in a way that
-undermines it. Rotating, retiring, or handing custody back leaves every placed
-code resolving exactly as before, because none of them ever pointed at a
-payload.
+A beacon holds no ciphertext and no key, so customer key custody
+([crypto.py](../pdi/crypto.py)) neither breaks it nor lets it keep working in a
+way that undermines BYOK. Rotating, retiring or handing custody back leaves
+every placed code resolving exactly as before, because none of them ever
+pointed at a payload.
+
+The one place it does bite is the gate transcript — see *Under BYOK the words
+cannot be kept* above.
 
 ## Shape of the build
 
-New tables, never new columns — the same `CREATE TABLE IF NOT EXISTS`
-constraint as the rest of the schema:
+Three new tables. PDI does have an additive-migration hook (`db._migrate`), but
+these are new surfaces rather than new facts about old ones, so nothing
+existing was altered:
 
     custody_beacons   id, tenant_id, ref_kind, ref_id, label, disclose,
                       programs, state, scans, active, created_at
     beacon_scans      id, beacon_id, at            (cheap; not the chain)
-    beacon_rings      id, beacon_id, kind, state, agent_session, vault_key,
-                      handed_to, created_at, closed_at
+    beacon_rings      id, beacon_id, tenant_id, kind, note, state, outcome,
+                      handed_to, spoken_by, vault_key, transcript_sha256,
+                      created_at, closed_at
 
 `ref_kind` is one of `transfer`, `intake`, `object`, `facility` — the last
 being the gate beacon the agent answers, which points at a place rather than a
-carrier. Chain entries continue to live in `transfer_receipts` and `audit`,
-which already carry them; `vault_key` on a ring is where the agent transcript
-is sealed.
+carrier. A `transfer` or `intake` beacon **inherits its record's programs**
+rather than being handed them again: the record already knows what governs it,
+and two sources for one fact is how they end up disagreeing on the card a
+stranger reads.
 
-Two details carried from QRME's implementation:
-
-- The seal card is **one self-contained document** — a camera app's in-app
-  browser, on cellular, from cold.
-- The found form posts to a **relative** URL. An absolute one baked from the
-  public base breaks every LAN scan.
+Chain entries live in `transfer_receipts` and `audit`, which already carry
+them — intakes set the precedent of keying `transfer_receipts` by something
+that is not a transfer.
 
 ## What this does not give you
+
+- **No HTML scan page.** `GET /s/{id}` returns JSON. QRME serves its beacon
+  card as a self-contained document because a camera app opens a URL in an
+  in-app browser; PDI has no equivalent yet, so today a scan is useful to an
+  app and raw to a phone. That page — and a relative-posting found form — is
+  the obvious next piece.
+- **No paging.** A hand-off records who it went to and surfaces the ring in
+  `GET /rings?open_only=true`; PDI does not dial anyone. Delivery is the
+  deployment's integration point, and until it is wired, "handed off" means
+  "waiting in the console".
+- **No roster.** `PDI_GATE_ONCALL` names one contact. Working a list in order,
+  and escalating when the first does not answer, is designed but not built.
 
 - **No proof the code is on the object it names.** A sticker can be peeled off
   and moved. The chain records what was reported, not what is true — which is

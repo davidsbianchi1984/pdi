@@ -179,6 +179,52 @@ CREATE TABLE IF NOT EXISTS connectors (
     created_at  TEXT NOT NULL
 );
 
+-- Custody beacons (pdi/beacons.py): a printed code on a physical carrier — a
+-- records box, a decommissioned drive, a courier bag — or on the facility door
+-- itself. The card a stranger sees says that the thing is under custody and
+-- what governs it, and never a word about what is inside. See docs/beacons.md.
+CREATE TABLE IF NOT EXISTS custody_beacons (
+    id          TEXT PRIMARY KEY,
+    tenant_id   TEXT NOT NULL REFERENCES tenants(id),
+    ref_kind    TEXT NOT NULL,   -- transfer | intake | object | facility
+    ref_id      TEXT,            -- NULL for a bare object or a facility gate
+    label       TEXT NOT NULL,
+    disclose    TEXT NOT NULL DEFAULT 'blind',   -- blind | contact
+    programs    TEXT NOT NULL DEFAULT '[]',
+    state       TEXT NOT NULL DEFAULT 'sealed',  -- sealed | in_transit | opened | closed
+    scans       INTEGER NOT NULL DEFAULT 0,
+    active      INTEGER NOT NULL DEFAULT 1,
+    created_at  TEXT NOT NULL
+);
+
+-- Scans are cheap and frequent — a barcode gun sweeping a pallet sees the same
+-- code hundreds of times — so they land here rather than on the audit chain.
+-- Only a `found` report is chain-worthy; volume is how a chain stops being read.
+CREATE TABLE IF NOT EXISTS beacon_scans (
+    id          TEXT PRIMARY KEY,
+    beacon_id   TEXT NOT NULL REFERENCES custody_beacons(id),
+    at          TEXT NOT NULL
+);
+
+-- A ring at a facility gate, and the agent session that answered it. The
+-- transcript is sealed in the vault; only its key and hash reach the audit
+-- chain, so the chain proves what was said without becoming a copy of it.
+CREATE TABLE IF NOT EXISTS beacon_rings (
+    id                TEXT PRIMARY KEY,
+    beacon_id         TEXT NOT NULL REFERENCES custody_beacons(id),
+    tenant_id         TEXT NOT NULL REFERENCES tenants(id),
+    kind              TEXT NOT NULL,   -- delivery | access | collection | other
+    note              TEXT,
+    state             TEXT NOT NULL DEFAULT 'open',  -- open | resolved | refused | handed_off | closed
+    outcome           TEXT,            -- the policy outcome that was applied
+    handed_to         TEXT,            -- the human it was routed to
+    spoken_by         TEXT,            -- qrme | scripted — who wrote the words
+    vault_key         TEXT,            -- sealed agent transcript
+    transcript_sha256 TEXT,
+    created_at        TEXT NOT NULL,
+    closed_at         TEXT
+);
+
 CREATE TABLE IF NOT EXISTS audit (
     seq         INTEGER PRIMARY KEY AUTOINCREMENT,
     tenant_id   TEXT,
