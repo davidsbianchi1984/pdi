@@ -12,33 +12,90 @@ BAAs, compliant transfer, broadband intake — see
 [docs/enterprise.md](enterprise.md). This document covers deployment and the
 trust boundary.
 
-## Three postures, and the only line that matters
+## Four postures, and the only line that matters
 
 The line is **who holds the key-encryption key**. Everything else — whose
 rack, whose bandwidth, whose invoice — is logistics.
 
-| | Self-hosted | Colocation | Managed |
-|---|---|---|---|
-| Runs the container | you | a hosting company | a hosting company |
-| Holds `PDI_MASTER_KEY` (or the KMS credential) | **you** | **you** | **they** |
-| Can the host read your records? | n/a | **no** — they hold ciphertext | **yes** |
-| What a subpoena to the host yields | n/a | sealed blobs | plaintext |
-| Who is liable for the key | you | you | them, by contract |
+| | Self-hosted | Colocation | Managed | Managed + BYOK |
+|---|---|---|---|---|
+| Runs the container | you | a hosting company | a hosting company | a hosting company |
+| Holds the key | **you** | **you** | **they** | **you** |
+| Can the host read your records? | n/a | **no** | **yes** | **not at rest** |
+| What a subpoena to the host yields | n/a | sealed blobs | plaintext | sealed blobs |
+| Works for one tenant among many | — | no | yes | **yes** |
 
-Colocation is the interesting one and the reason envelope encryption is
-built the way it is: the database on disk never holds usable key material,
-so a host with full disk access, full backups, and root on the box still has
-nothing to read. That is not a promise about their intentions — it is a
-property of the ciphertext.
+Colocation is the reason envelope encryption is built the way it is: the
+database on disk never holds usable key material, so a host with full disk
+access, full backups, and root on the box still has nothing to read. That is
+not a promise about their intentions — it is a property of the ciphertext.
+But it is deployment-wide: it protects *everyone* on that box or no one.
 
-Managed hosting is a legitimate choice, and it is a *different* choice. If
-the operator sets `PDI_MASTER_KEY`, the operator can decrypt. Say so to your
-users rather than implying otherwise; "encrypted at rest" is true in both
-columns and means very different things.
+**BYOK is the per-tenant version**, and it is what makes an outsourced
+collation facility workable for a customer who is one tenant among many. See
+[Bring your own key](#bring-your-own-key) below.
 
-Picking colocation is one decision made twice: the host runs the container,
-and you supply the key at runtime — from your own secret store, your own KMS,
-or by hand at start. Nothing in the image or the repository carries it.
+Managed hosting without BYOK is a legitimate choice, and it is a *different*
+choice. If the operator sets `PDI_MASTER_KEY`, the operator can decrypt. Say
+so to your users rather than implying otherwise; "encrypted at rest" is true
+in every column above and means very different things in each.
+
+## Bring your own key
+
+A tenant can take its own records out of the operator's reach without moving
+off the operator's deployment:
+
+```bash
+# One decision, made once. Every existing record is re-sealed under your key
+# in the same transaction — there is no half-migrated state.
+curl -X PUT https://vault.example.com/key \
+  -H "authorization: Bearer $TENANT_TOKEN" \
+  -d '{"provider":"held","key":"'"$(openssl rand -base64 32)"'"}'
+
+# Afterwards the key travels with each request and is never stored.
+curl https://vault.example.com/records/my/key \
+  -H "authorization: Bearer $TENANT_TOKEN" \
+  -H "x-tenant-key: $MY_KEY"
+```
+
+`GET /key` reports which custody model a tenant is under and what it
+guarantees. Two providers, and the difference between them is the whole
+point:
+
+| | `held` | `kms` |
+|---|---|---|
+| Where the key lives | you present it per request | your own KMS |
+| Operator can decrypt at rest | **no** | yes, while your grant is live |
+| You revoke by | withholding the key | revoking at your KMS |
+| Background reseal / rotation | needs you | works |
+| Status | implemented | integration seam — `KmsKeyProvider.kek()` raises |
+
+### What `held` actually guarantees — and what it does not
+
+**It does**: make the operator's database, backups, snapshots, and disk
+images unreadable for your records without your participation. An operator
+who is compelled to hand over the disk hands over ciphertext.
+
+**It does not**: protect you from a hostile *running* operator. They run the
+process, so a modified deployment could capture your key at the moment you
+present it. This is a guarantee about data at rest, not about a live
+adversary with root — and anyone who tells you otherwise is selling
+something.
+
+Three consequences worth accepting deliberately:
+
+- **No escrow, no recovery.** Lose the key and those records are gone. That
+  is the same property that makes the guarantee real.
+- **Background jobs stop at your door.** A retention sweep still deletes your
+  expired records (deletion needs no key), but the operator's reseal and
+  rotation skip you and *say* they skipped you — `reseal` reports
+  `customer_managed_skipped`. Rotating your own keyring is your job.
+- **Handing custody back needs the key.** `DELETE /key` re-seals everything
+  under the deployment's key, which means opening it first.
+
+Adoption is all-or-nothing on purpose. A half-migrated tenant — some records
+the operator can still read, some not, and no way to tell which from the
+outside — is a worse position than either end state.
 
 ## Deploying
 
@@ -96,12 +153,14 @@ whatever the key custody says.
 - **An executed BAA is not optional** for PHI. `docs/baa-template.md` is the
   signable template and PDI gates on it; [docs/enterprise.md](enterprise.md)
   covers the compliant-transfer flow.
-- **Wire the KMS seam before taking regulated data.** `PDI_MASTER_KEY` in an
-  environment variable is acceptable for a single operator holding their own
-  records. Holding other people's, with a real key-custody obligation, is
-  what `PDI_KEY_PROVIDER=kms` exists for — and it is an integration seam
-  today, not a finished control. `KmsKeyProvider.kek()` raises rather than
+- **Offer BYOK to anyone who asks how you protect them from yourself.** It
+  is the honest answer, and it costs you nothing to enable — see
+  [Bring your own key](#bring-your-own-key). `held` custody is implemented;
+  the `kms` provider is still an integration seam that raises rather than
   falling back to a local key, so it cannot be half-configured silently.
+- **Deployment-wide keys are still yours to manage.** `PDI_MASTER_KEY` in an
+  environment variable is acceptable for a single operator holding their own
+  records; for everyone who has not adopted BYOK, you are the custodian.
 - **Rotation is a practice, not a feature.** `POST /keys/rotate` works; a
   schedule for calling it is yours to set.
 - **Deletion has to actually work.** Tenant soft-delete, wipe, and restore

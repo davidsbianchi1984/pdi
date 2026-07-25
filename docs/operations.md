@@ -33,6 +33,8 @@ needs an executed BAA on file exactly as they would on-premises.
 | AAD binding to tenant + key version | **implemented**; a record cannot be read or moved across tenants |
 | Rotation — rotate → reseal → retire, old versions retained | **implemented** |
 | KEK from `PDI_MASTER_KEY` | **implemented** — acceptable for development and single-operator deployments |
+| **BYOK — per-tenant customer-managed keys** (`held`) | **implemented** — the tenant presents its key per request and nothing derived from it is stored, so the operator's database and backups are unreadable for that tenant's records. `GET /key` states the guarantee and its limits; see [docs/hosting.md](hosting.md#bring-your-own-key) |
+| BYOK via the customer's own KMS (`kms`) | **integration seam** — same unimplemented `KmsKeyProvider`, scoped per tenant. The operator can decrypt while the customer's grant is live, which is a materially weaker promise than `held` and is reported as such |
 | KEK from a KMS/HSM (`PDI_KEY_PROVIDER=kms`) | **integration seam** — `KmsKeyProvider.kek()` raises rather than silently falling back to a local key. Wire it to AWS KMS `Decrypt` on a stored wrapped KEK, or a PKCS#11 unwrap, before holding regulated data for others. |
 | Encryption in transit | **not in the app** — terminate TLS at a reverse proxy or platform. Required for CPNI/PHI over any network you don't own. |
 

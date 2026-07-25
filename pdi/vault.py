@@ -65,9 +65,16 @@ def reseal_all() -> dict:
     clocks); afterwards old key versions can be retired safely."""
     conn = db.connect()
     active = crypto.active_version()
-    resealed = 0
+    # BYOK tenants are sealed under keys this deployment does not hold, so an
+    # operator-run reseal cannot touch them — and must not pretend it did.
+    byok = {r["tenant_id"] for r in conn.execute(
+        "SELECT tenant_id FROM tenant_keys").fetchall()}
+    resealed, skipped = 0, 0
     for r in conn.execute(
             "SELECT id, tenant_id, key, ciphertext FROM records").fetchall():
+        if r["tenant_id"] in byok:
+            skipped += 1
+            continue
         if crypto.sealed_version(r["ciphertext"]) == active:
             continue
         aad = f"{r['tenant_id']}:{r['key']}"
@@ -77,7 +84,8 @@ def reseal_all() -> dict:
         resealed += 1
     conn.commit()
     audit.record("key.reseal", ref=str(resealed))
-    return {"active_version": active, "resealed": resealed}
+    return {"active_version": active, "resealed": resealed,
+            "customer_managed_skipped": skipped}
 
 
 def tenant_by_token(token: str) -> dict | None:
@@ -174,7 +182,11 @@ def revoke_token(token: str) -> bool:
 def put(tenant: dict, key: str, value: str) -> dict:
     conn = db.connect()
     # AAD binds the ciphertext to this tenant+key, so a record can't be moved.
-    sealed = crypto.seal(value, aad=f"{tenant['id']}:{key}")
+    # customer_key is present only for a BYOK tenant (set by the auth
+    # dependency from x-tenant-key); None means deployment custody.
+    sealed = crypto.seal(value, aad=f"{tenant['id']}:{key}",
+                         tenant_id=tenant["id"],
+                         customer_key=tenant.get("customer_key"))
     existing = conn.execute(
         "SELECT id FROM records WHERE tenant_id=? AND key=?", (tenant["id"], key)
     ).fetchone()
@@ -203,7 +215,9 @@ def get(tenant: dict, key: str) -> dict | None:
     ).fetchone()
     if row is None:
         return None
-    value = crypto.open_(row["ciphertext"], aad=f"{tenant['id']}:{key}")
+    value = crypto.open_(row["ciphertext"], aad=f"{tenant['id']}:{key}",
+                         tenant_id=tenant["id"],
+                         customer_key=tenant.get("customer_key"))
     audit.record("get", tenant_id=tenant["id"], ref=key)
     return {"key": key, "value": value, "updated_at": row["updated_at"]}
 

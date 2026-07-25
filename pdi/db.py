@@ -43,6 +43,30 @@ CREATE TABLE IF NOT EXISTS key_versions (
     created_at   TEXT NOT NULL
 );
 
+-- BYOK: a tenant that brings its own key gets its own keyring, kept separate
+-- from the deployment's above so an existing vault needs no migration and the
+-- two custody models never share a version number.
+CREATE TABLE IF NOT EXISTS tenant_key_versions (
+    tenant_id    TEXT NOT NULL REFERENCES tenants(id),
+    version      INTEGER NOT NULL,
+    wrapped_dek  TEXT NOT NULL,   -- DEK wrapped by the *customer's* KEK
+    active       INTEGER NOT NULL DEFAULT 0,
+    created_at   TEXT NOT NULL,
+    PRIMARY KEY (tenant_id, version)
+);
+
+-- Which custody model a tenant is under. No row = the deployment's own key
+-- (the operator can decrypt). A row means the KEK is the customer's, and this
+-- table deliberately holds *no key material* — only where the key comes from.
+CREATE TABLE IF NOT EXISTS tenant_keys (
+    tenant_id   TEXT PRIMARY KEY REFERENCES tenants(id),
+    provider    TEXT NOT NULL,          -- held | kms
+    config      TEXT NOT NULL DEFAULT '{}',   -- provider settings, never a key
+    check_value TEXT,                   -- proves a presented key is the right
+                                        -- one, without storing the key
+    adopted_at  TEXT NOT NULL
+);
+
 -- Additional scoped tokens per tenant (role-based access control):
 -- 'read' tokens can only read; the tenant's primary token is 'write'.
 CREATE TABLE IF NOT EXISTS tenant_tokens (

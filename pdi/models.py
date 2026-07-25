@@ -125,6 +125,20 @@ class RecordPut(BaseModel):
     value: str    # plaintext from the caller; sealed at rest by PDI
 
 
+class CustomerKeyAdopt(BaseModel):
+    """Bring your own key (BYOK).
+
+    ``held`` — you supply the key and present it on every request; PDI stores
+    nothing derived from it, so the operator's disk and backups are unreadable
+    without you. ``kms`` — the key stays in your own KMS and PDI calls out to
+    unwrap; the operator can decrypt while your grant is live, and cannot once
+    you revoke it.
+    """
+    provider: Literal["held", "kms"] = "held"
+    key: str | None = None        # held: base64 of 32 bytes. Never stored.
+    config: dict = {}             # kms: {"key_id": "..."} — never key material
+
+
 class TokenIssue(BaseModel):
     role: Literal["read", "write"]
 
