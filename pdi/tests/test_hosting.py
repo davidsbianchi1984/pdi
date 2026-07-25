@@ -87,3 +87,35 @@ def test_public_base_normalises_trailing_slash(monkeypatch):
     assert mobile.public_base() == "https://vault.example.com"
     monkeypatch.delenv("PDI_PUBLIC_URL")
     assert mobile.public_base() is None
+
+
+def test_published_deployment_refuses_an_ephemeral_key(tmp_path, monkeypatch):
+    """An ephemeral key lives only in this process: everything sealed under
+    it is unreadable after a restart. On a published deployment that is
+    silent, unrecoverable data loss, so key-less startup fails closed."""
+    monkeypatch.setenv("PDI_DB", str(tmp_path / "pdi.db"))
+    monkeypatch.delenv("PDI_MASTER_KEY", raising=False)
+    monkeypatch.setenv("PDI_PUBLIC_URL", "https://vault.example.com")
+    pdi_db.reset()
+
+    from pdi import crypto
+    monkeypatch.setattr(crypto, "_EPHEMERAL", None)
+    with pytest.raises(RuntimeError) as excinfo:
+        crypto.seal("a subscriber record")
+    message = str(excinfo.value)
+    assert "PDI_MASTER_KEY" in message and "unreadable after the next restart" in message
+    pdi_db.reset()
+
+
+def test_local_development_still_gets_an_ephemeral_key(tmp_path, monkeypatch):
+    """Unpublished and key-less is the laptop case — it still just works."""
+    monkeypatch.setenv("PDI_DB", str(tmp_path / "pdi.db"))
+    monkeypatch.delenv("PDI_MASTER_KEY", raising=False)
+    monkeypatch.delenv("PDI_PUBLIC_URL", raising=False)
+    pdi_db.reset()
+
+    from pdi import crypto
+    monkeypatch.setattr(crypto, "_EPHEMERAL", None)
+    sealed = crypto.seal("a note", aad="ten_1")
+    assert crypto.open_(sealed, aad="ten_1") == "a note"
+    pdi_db.reset()

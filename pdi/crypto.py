@@ -47,6 +47,17 @@ def _kek() -> bytes:
         if len(key) != 32:
             raise ValueError("PDI_MASTER_KEY must be base64 of 32 bytes")
         return key
+    # No configured key. An ephemeral one is fine for a laptop — but it lives
+    # only in this process, so anything sealed under it is unreadable after a
+    # restart. On a published deployment that is silent, unrecoverable data
+    # loss, which is worse than refusing to start: fail closed instead.
+    from . import mobile
+    if mobile.public_base():
+        raise RuntimeError(
+            "PDI_PUBLIC_URL is set (this deployment is published) but no key "
+            "is configured. Set PDI_MASTER_KEY (base64 of 32 bytes) or "
+            "PDI_KEY_PROVIDER=kms — an ephemeral key would make every sealed "
+            "record unreadable after the next restart.")
     global _EPHEMERAL
     if _EPHEMERAL is None:
         _EPHEMERAL = AESGCM.generate_key(bit_length=256)
