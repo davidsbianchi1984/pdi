@@ -247,3 +247,38 @@ class ContributionIn(BaseModel):
     kind: str              # e.g. "rated_exchange" | "guidance_outcome"
     payload: dict
     ref: str | None = None  # contributor's anonymous ref, for later revocation
+
+
+class BeaconPlace(BaseModel):
+    """Print a carrier — or a gate — onto something.
+
+    ``programs`` is only read for ``object`` and ``facility``: a beacon on a
+    transfer or an intake inherits that record's programs, because the record
+    already knows what governs it and two sources for one fact is how they end
+    up disagreeing on the card a stranger reads.
+    """
+
+    ref_kind: Literal["transfer", "intake", "object", "facility"]
+    ref_id: str | None = None
+    label: str
+    disclose: Literal["blind", "contact"] = "blind"
+    programs: list[str] = Field(default_factory=list)
+
+
+class BeaconState(BaseModel):
+    state: Literal["sealed", "in_transit", "opened", "closed"]
+
+
+class BeaconFound(BaseModel):
+    """A finder's report. Not a message — a custody receipt."""
+
+    where: str | None = None
+    contact: str | None = None
+
+
+class GateRing(BaseModel):
+    """Somebody at the door. ``note`` is their own words, and is treated as
+    evidence of what was asked rather than as an instruction to anything."""
+
+    kind: Literal["delivery", "access", "collection", "other"]
+    note: str | None = None

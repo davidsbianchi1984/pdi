@@ -107,6 +107,21 @@ def tenant_by_token(token: str) -> dict | None:
     return {**_scrub(scoped), "role": scoped["role"]} if scoped else None
 
 
+def tenant_by_id(tenant_id: str) -> dict | None:
+    """Resolve a tenant by id, for surfaces reached without a credential.
+
+    A stranger scanning a beacon holds no token, but the code they scanned
+    names the tenant it belongs to — so the tenant is looked up from the
+    resource rather than from the caller. It carries no ``customer_key``: an
+    anonymous caller has nothing to present, which is exactly why a BYOK
+    tenant's gate transcripts cannot be sealed (see pdi/gate.py).
+    """
+    row = db.connect().execute(
+        "SELECT * FROM tenants WHERE id=? AND deleted_at IS NULL",
+        (tenant_id,)).fetchone()
+    return _scrub(row) if row else None
+
+
 def _scrub(row) -> dict:
     """Tenant dict without the stored token hash — never hand the credential
     material (even hashed) back out through a resolved-tenant object."""

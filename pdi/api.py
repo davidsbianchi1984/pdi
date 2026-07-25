@@ -14,13 +14,14 @@ import secrets
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, Response
 
-from . import (app_connectors, audit, baa, catalog, compliance, connectors,
-               crypto, db, i18n, intakes, mobile, positions, retention,
-               robotics, terms as terms_mod, transfers, vault)
+from . import (app_connectors, audit, baa, beacons, catalog, compliance,
+               connectors, crypto, db, gate, i18n, intakes, mobile, positions,
+               retention, robotics, terms as terms_mod, transfers, vault)
 from .models import (AppCollect, AppConnect, AppInvoke, BAARecordIn,
+                     BeaconFound, BeaconPlace, BeaconState,
                      ConnectorCreate, ConnectorIngest, ConnectorPublish,
                      ContributionIn, CustomerKeyAdopt,
-                     DeploymentCreate, FeedbackSubmit, IntakeCreate,
+                     DeploymentCreate, FeedbackSubmit, GateRing, IntakeCreate,
                      IntakeSubmit, LanguageChoice, PositionIntake,
                      TranslateRequest, RecordPut, RetentionSet, RobotBind,
                      RobotIngest, SnapshotRestore, TenantCreate, TokenIssue,
@@ -822,6 +823,124 @@ def create_app() -> FastAPI:
         window and expire records past their tenant's retention. ``forever``
         windows purge/expire nothing."""
         return retention.sweep()
+
+    # -- custody beacons: a printed code on a physical thing ----------------
+    # The seal card says a carrier is under custody and what governs it, and
+    # never what is in it. See docs/beacons.md.
+
+    def _beacon_or_404(bid: str, tenant: dict) -> dict:
+        row = beacons.get(bid)
+        if row is None or row["tenant_id"] != tenant["id"]:
+            raise HTTPException(404, "beacon not found")
+        return row
+
+    @app.post("/beacons", status_code=201)
+    def place_beacon(body: BeaconPlace, tenant: dict = Depends(_writer)) -> dict:
+        try:
+            return beacons.place(tenant, body.ref_kind, body.ref_id,
+                                 body.label, body.disclose, body.programs)
+        except beacons.BeaconError as exc:
+            raise HTTPException(
+                404 if str(exc).startswith("no such") else 422, str(exc))
+
+    @app.get("/beacons")
+    def list_beacons(tenant: dict = Depends(_tenant)) -> list[dict]:
+        return beacons.for_tenant(tenant["id"])
+
+    @app.get("/beacons/{bid}")
+    def get_beacon(bid: str, tenant: dict = Depends(_tenant)) -> dict:
+        return beacons._out(_beacon_or_404(bid, tenant))
+
+    @app.get("/beacons/{bid}/custody")
+    def beacon_custody(bid: str, tenant: dict = Depends(_tenant)) -> dict:
+        return beacons.custody(_beacon_or_404(bid, tenant))
+
+    @app.put("/beacons/{bid}/state")
+    def set_beacon_state(bid: str, body: BeaconState,
+                         tenant: dict = Depends(_writer)) -> dict:
+        try:
+            return beacons.set_state(_beacon_or_404(bid, tenant), body.state)
+        except beacons.BeaconError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.delete("/beacons/{bid}")
+    def retire_beacon(bid: str, tenant: dict = Depends(_writer)) -> dict:
+        return beacons.retire(_beacon_or_404(bid, tenant))
+
+    # The public surface. No token — a stranger holding a phone at a sticker is
+    # exactly the caller this exists for.
+
+    @app.get("/s/{bid}")
+    def seal_card(bid: str) -> dict:
+        """What a scanned code shows. Never the contents."""
+        card = beacons.seal_card(bid)
+        if card is None:
+            raise HTTPException(404, "this code does not resolve to anything")
+        return card
+
+    @app.get("/s/{bid}/qr.svg")
+    def beacon_qr(bid: str) -> Response:
+        """The printable code. Public: the sticker has to be made before
+        anybody scans it, and the card behind it discloses nothing anyway."""
+        row = beacons.get(bid)
+        if row is None or not row["active"]:
+            raise HTTPException(404, "this code does not resolve to anything")
+        import segno
+
+        buf = io.BytesIO()
+        segno.make(f"{_public_base()}/s/{bid}", error="q").save(
+            buf, kind="svg", scale=8, border=2, dark="#181240", light="#ffffff")
+        return Response(content=buf.getvalue(), media_type="image/svg+xml")
+
+    @app.post("/s/{bid}/found", status_code=201)
+    def report_found(bid: str, body: BeaconFound) -> dict:
+        """A finder's custody receipt — the one thing a stranger can do with a
+        carrier, and it is an instrument rather than a message."""
+        try:
+            out = beacons.found(bid, body.where, body.contact)
+        except beacons.BeaconError as exc:
+            raise HTTPException(409, str(exc))
+        if out is None:
+            raise HTTPException(404, "this code does not resolve to anything")
+        return out
+
+    @app.post("/s/{bid}/ring", status_code=201)
+    def ring_gate(bid: str, body: GateRing) -> dict:
+        """Ring a facility gate. The agent answers within its ceiling and hands
+        off everything else — it can never grant entry, whatever it says."""
+        row = beacons.get(bid)
+        if row is None or not row["active"]:
+            raise HTTPException(404, "this code does not resolve to anything")
+        try:
+            opened = beacons.ring(row, body.kind, body.note)
+        except beacons.BeaconError as exc:
+            raise HTTPException(409, str(exc))
+        tenant = vault.tenant_by_id(row["tenant_id"])
+        if tenant is None:                       # tenant deleted under a live code
+            raise HTTPException(404, "this code does not resolve to anything")
+        answered = gate.answer(beacons.ring_row(opened["id"]), tenant)
+        return {**opened, **answered}
+
+    @app.get("/gate/ceiling")
+    def gate_ceiling() -> dict:
+        """What the agent may and may not do, and where the boundary comes
+        from — published so a tenant can read the limits without the source."""
+        return gate.ceiling()
+
+    @app.get("/rings")
+    def list_rings(open_only: bool = False,
+                   tenant: dict = Depends(_tenant)) -> list[dict]:
+        return beacons.rings_for(tenant["id"], open_only)
+
+    @app.get("/rings/{rid}/transcript")
+    def ring_transcript(rid: str, tenant: dict = Depends(_tenant)) -> dict:
+        row = beacons.ring_row(rid)
+        if row is None or row["tenant_id"] != tenant["id"]:
+            raise HTTPException(404, "ring not found")
+        out = gate.transcript(row, tenant)
+        if out is None:
+            raise HTTPException(404, "no transcript for this ring")
+        return out
 
     # -- compliance ---------------------------------------------------------
 
