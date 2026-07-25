@@ -28,6 +28,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   no record behind it, which inverts the usual order: custody starts first and
   the record may never arrive.
 
+  Also designed: **the agent at the gate.** A facility beacon rung at 2am
+  currently waits for a human who may be asleep, and a moderating agent stands
+  in that gap. PDI does not grow a model to do it — every arrow in the tandem
+  architecture points *into* PDI, so the agent is a QRME profile over HTTP via
+  a `pdi/qrme_client.py` mirroring JIM's, which also means it carries QRME's AI
+  mark (somebody being talked to by software at a gate must know it is
+  software) and that an unconfigured deployment degrades to exactly the
+  human-routing this document already specifies. Its ceiling did not need
+  inventing: `positions.py` already lists `incident_response` and
+  `safety_compliance` as `HUMAN_IN_LOOP`, and granting entry to a room of
+  regulated data is both — so the agent may triage, check arrivals against
+  expected transfers, give directions, structure a receipt, open a reception
+  airlock and page a human, but may never grant entry, assert a person's
+  identity, or let a refusal be a dead end. Every turn lands on the audit chain
+  with the transcript sealed in the vault and only its key and hash on the log.
+
 ## [0.1.8] — 2026-07-25
 
 ### Fixed

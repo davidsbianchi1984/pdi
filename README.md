@@ -384,6 +384,10 @@ QR on a physical carrier (a records box, a decommissioned drive, a courier
 bag), so custody stays visible once a payload has a handle. QRME's desk beacon
 inverted: it reveals that a thing is sealed and nothing about what is inside,
 and every scan is a link in the hash-chained audit log rather than a counter.
+Includes **the agent at the gate** — a QRME profile over HTTP (PDI grows no
+model of its own) that triages a facility ring when no human is awake, bounded
+by the `HUMAN_IN_LOOP` set `positions.py` already publishes: it may direct,
+check, and page, and may never grant entry.
 
 ## Architecture
 
