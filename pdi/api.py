@@ -17,8 +17,8 @@ from fastapi.responses import HTMLResponse
 
 from . import (app_connectors, audit, baa, beacons, catalog, compliance,
                connectors, crypto, db, gate, i18n, intakes, landing, mobile,
-               notify, positions, retention, robotics, terms as terms_mod,
-               transfers, vault)
+               notify, positions, retention, robotics, roster,
+               terms as terms_mod, transfers, vault)
 from .models import (AppCollect, AppConnect, AppInvoke, BAARecordIn,
                      BeaconFound, BeaconPlace, BeaconState,
                      ConnectorCreate, ConnectorIngest, ConnectorPublish,
@@ -26,8 +26,8 @@ from .models import (AppCollect, AppConnect, AppInvoke, BAARecordIn,
                      DeploymentCreate, FeedbackSubmit, GateRing, IntakeCreate,
                      IntakeSubmit, LanguageChoice, PositionIntake,
                      TranslateRequest, RecordPut, RetentionSet, RobotBind,
-                     RobotIngest, SnapshotRestore, TenantCreate, TokenIssue,
-                     TransferCreate)
+                     RobotIngest, RosterAdd, SnapshotRestore, TenantCreate,
+                     TokenIssue, TransferCreate, GateTimezone)
 
 
 def _public_base() -> str:
@@ -92,7 +92,7 @@ def _writer(tenant: dict = Depends(_tenant)) -> dict:
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="Private Data Infrastructure", version="0.1.9")
+    app = FastAPI(title="Private Data Infrastructure", version="0.2.0")
 
     @app.middleware("http")
     async def localize_response_notes(request, call_next):
@@ -943,6 +943,41 @@ def create_app() -> FastAPI:
         """What the agent may and may not do, and where the boundary comes
         from — published so a tenant can read the limits without the source."""
         return gate.ceiling()
+
+    @app.get("/gate/roster")
+    def get_roster(tenant: dict = Depends(_tenant)) -> dict:
+        """This facility's roster, and **who it would reach right now** — so
+        "who answers the gate at 3am?" has an answer in the afternoon."""
+        return roster.describe(tenant["id"])
+
+    @app.post("/gate/roster", status_code=201)
+    def add_to_roster(body: RosterAdd,
+                      tenant: dict = Depends(_writer)) -> dict:
+        """Add somebody to the rota. Validated here, on the way in, so a
+        malformed shift is a 422 an operator reads in daylight rather than a
+        surprise at the door."""
+        try:
+            return roster.add(tenant, body.name, body.role, body.days,
+                              body.from_time, body.to_time)
+        except roster.RosterError as exc:
+            raise HTTPException(422, str(exc))
+
+    @app.delete("/gate/roster/{rid}")
+    def remove_from_roster(rid: str, tenant: dict = Depends(_writer)) -> dict:
+        if not roster.remove(tenant, rid):
+            raise HTTPException(404, "roster entry not found")
+        return {"id": rid, "removed": True}
+
+    @app.put("/gate/timezone")
+    def set_gate_timezone(body: GateTimezone,
+                          tenant: dict = Depends(_writer)) -> dict:
+        """The facility's own timezone. A rota written in local time and read
+        in UTC is wrong by the offset — and by a *different* offset in summer,
+        so it looks right for half the year."""
+        try:
+            return roster.set_timezone(tenant, body.timezone)
+        except roster.RosterError as exc:
+            raise HTTPException(422, str(exc))
 
     @app.get("/gate/channel")
     def gate_channel() -> dict:

@@ -81,6 +81,14 @@ source material — each as its own tenant with its own token. See
   filed: PDI posts a signed envelope to `PDI_NOTIFY_URL` and, when nobody was
   reached, says so on the scan page rather than letting *"I've passed this to
   the on-call contact"* leave somebody waiting in the rain for nobody.
+- **A per-tenant on-call roster** — `POST /gate/roster` sets who answers *this*
+  facility's gate and when, in the tenant's own database rows under the
+  tenant's own token. It replaces one deployment-wide `PDI_GATE_ONCALL` that
+  routed every customer's courier to the same name. Shifts cross midnight
+  correctly (`18:00`–`06:00` belongs to the day it started), the facility's
+  IANA timezone is **refused if unknown** rather than silently read as UTC, and
+  a page that a webhook rejects moves to the next name — with one contact, a
+  failed page was the end of the line.
 - **Role-based access control** — `POST /tenants/{id}/tokens` issues scoped
   `read`/`write` tokens; read tokens cannot write or delete, and
   `DELETE /tokens/{token}` revokes instantly.
@@ -389,7 +397,7 @@ PDI internals.
 | `PDI_RECOVERY_WINDOW` | `forever` | Soft-deleted tenants purge after this window on sweep (`7d`…`1y`\|`forever`\|days) |
 | `PDI_ADMIN_TOKEN` | — | Guards admin endpoints; unset = open (dev only) |
 | `PDI_QRME_URL` / `PDI_GATE_PROFILE` | — | The gate agent's voice: a QRME `@handle` over HTTP. Both required, or the gate answers from its written script |
-| `PDI_GATE_ONCALL` | `the site's on-call contact` | Who a hand-off is routed to |
+| `PDI_GATE_ONCALL` | `the site's on-call contact` | Fallback for a tenant with **no roster**. Who a hand-off is routed to is per tenant now (`POST /gate/roster`) — a deployment-wide name sent every customer's courier to the same person ([docs/beacons.md](docs/beacons.md#who-answers-and-when)) |
 | `PDI_NOTIFY_URL` / `PDI_NOTIFY_SECRET` | — | Where a hand-off is actually delivered; signed HMAC-SHA256. Unset = queued, and the caller is told nobody was reached ([docs/beacons.md](docs/beacons.md#telling-somebody)) |
 
 ## Test

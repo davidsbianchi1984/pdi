@@ -54,7 +54,7 @@ import os
 import urllib.error
 import urllib.request
 
-from . import audit, db
+from . import audit, db, roster
 
 ENVELOPE = "pdi-page/v1"
 
@@ -134,6 +134,9 @@ def _envelope(page_id: str, ring: dict, decision: dict, urgency: str,
         "beacon": ring["beacon_id"],
         "kind": ring["kind"],
         "handed_to": decision["handoff_to"],
+        # Whether this person was actually rostered at this hour, or is being
+        # woken because the roster had a gap. They cannot tell otherwise.
+        "on_shift": decision.get("on_shift", True),
         # Stated rather than merely absent, so the receiving end does not read
         # an empty field as "the caller said nothing".
         "caller_note_withheld": True,
@@ -150,47 +153,70 @@ def _summary(ring: dict, decision: dict) -> str:
             f"expected. The agent couldn't settle it.")
 
 
-def page_handoff(ring: dict, decision: dict, http=None) -> dict:
-    """Try to reach a human about a hand-off. Never raises.
-
-    Returns the page row. ``state`` is ``sent`` when the webhook took it,
-    ``queued`` when no channel is configured, and ``failed`` when a channel is
-    configured and did not answer — three different situations that used to be
-    one silence.
-    """
-    # An access request means a person is standing at a door right now. An
-    # unexpected delivery can wait for someone to look at a queue.
-    urgency = "now" if decision["outcome"] == "access_request" else "soon"
-    at = db.utcnow()
-    page_id = db.new_id("page")
-    url = os.environ.get("PDI_NOTIFY_URL")
-
-    state, attempts, err = "queued", 0, None
-    if url:
-        attempts = 1
-        try:
-            _post(url, _envelope(page_id, ring, decision, urgency, at), http)
-            state = "sent"
-        except (urllib.error.URLError, OSError, RuntimeError, ValueError) as exc:
-            # Deliberately broad, and deliberately not re-raised. A webhook
-            # that 500s, times out, or resolves to nothing must not turn into
-            # a 500 on a stranger's phone at a gate.
-            state, err = "failed", f"{type(exc).__name__}: {exc}"[:300]
-
+def _record(page_id, ring, decision, urgency, who, on_shift, state, attempts,
+            err, at) -> dict:
     conn = db.connect()
     conn.execute(
         "INSERT INTO gate_pages (id, ring_id, tenant_id, urgency, reason,"
-        " handed_to, state, attempts, last_error, created_at, sent_at)"
-        " VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+        " handed_to, on_shift, state, attempts, last_error, created_at, sent_at)"
+        " VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
         (page_id, ring["id"], ring["tenant_id"], urgency, decision["outcome"],
-         decision["handoff_to"], state, attempts, err, at,
+         who, 1 if on_shift else 0, state, attempts, err, at,
          at if state == "sent" else None))
     conn.commit()
-
     audit.record({"sent": "agent.page", "queued": "agent.page_queued",
                   "failed": "agent.page_failed"}[state],
                  tenant_id=ring["tenant_id"], ref=page_id)
     return out(page_id)
+
+
+def page_handoff(ring: dict, decision: dict, http=None) -> dict:
+    """Reach a human about a hand-off, working the tenant's roster. Never
+    raises.
+
+    Returns the page that landed, or the last one that did not. ``state`` is
+    ``sent`` when a webhook took it, ``queued`` when no channel is configured,
+    and ``failed`` when a channel is configured and did not answer — three
+    situations that used to be one silence.
+
+    **It walks the roster rather than stopping at the first name.** Before
+    there was a roster there was only one name, so a failed page was the end of
+    the line; now a webhook that rejects the first responder is a reason to try
+    the second, which is the entire point of having a second. Every attempt is
+    its own row, so the morning list shows who was tried and in what order
+    rather than one entry that says "failed".
+    """
+    # An access request means a person is standing at a door right now. An
+    # unexpected delivery can wait for someone to look at a queue.
+    urgency = "now" if decision["outcome"] == "access_request" else "soon"
+    url = os.environ.get("PDI_NOTIFY_URL")
+    people, anybody_on = roster.order(ring["tenant_id"])
+
+    if not url:
+        # No channel: one row, naming who it *would* have gone to, rather than
+        # one row per name — nobody was tried, and a queue of five identical
+        # untried pages would read as five attempts.
+        return _record(db.new_id("page"), ring, decision, urgency,
+                       decision["handoff_to"], anybody_on, "queued", 0, None,
+                       db.utcnow())
+
+    last = None
+    for person in people:
+        at = db.utcnow()
+        page_id = db.new_id("page")
+        d = {**decision, "handoff_to": person["name"], "on_shift": anybody_on}
+        try:
+            _post(url, _envelope(page_id, ring, d, urgency, at), http)
+            return _record(page_id, ring, d, urgency, person["name"],
+                           anybody_on, "sent", 1, None, at)
+        except (urllib.error.URLError, OSError, RuntimeError, ValueError) as exc:
+            # Deliberately broad, and deliberately not re-raised. A webhook
+            # that 500s, times out, or resolves to nothing must not turn into
+            # a 500 on a stranger's phone at a gate.
+            last = _record(page_id, ring, d, urgency, person["name"],
+                           anybody_on, "failed", 1,
+                           f"{type(exc).__name__}: {exc}"[:300], at)
+    return last
 
 
 def retry(page: dict, http=None) -> dict:
@@ -247,6 +273,10 @@ def out(page_id: str) -> dict:
         "urgency": r["urgency"],
         "reason": r["reason"],
         "handed_to": r["handed_to"],
+        # Whether the roster was actually covering. A page sent because the
+        # gate ran out of rostered people is a guess, and the person it wakes
+        # has no other way to know that.
+        "on_shift": bool(r["on_shift"]),
         "state": r["state"],
         "attempts": r["attempts"],
         "last_error": r["last_error"],

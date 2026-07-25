@@ -4,7 +4,54 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.0] — 2026-07-25
+
+### Added
+
+- **A per-tenant on-call roster** — `pdi/roster.py`, 4 routes, 15 tests.
+  `PDI_GATE_ONCALL` named **one contact for the whole deployment**. In a
+  single-tenant install that is merely thin; in PDI it is wrong, because PDI is
+  multi-tenant. A courier at customer A's loading dock was handed off to a name
+  belonging to whoever set the environment variable — in a colocation facility,
+  the operator rather than the tenant. Everything else in this product is
+  scoped to a tenant and enforced by a token; the one name a stranger at a door
+  got routed to was global.
+
+  The roster is database rows per tenant, written with the tenant's own write
+  token — the same authority as placing a beacon. A tenant with no roster still
+  gets `PDI_GATE_ONCALL`, so nothing already deployed changes.
+
+  **Validation happens on write**, which is the interesting difference from
+  JIM-mini's `jim/rota.py`. That module solves the same who-is-on-shift problem
+  but parses its rota out of an environment variable at the moment somebody
+  needs help, so it needs a never-raises read path and a loud degradation
+  story. PDI has an API: a malformed shift is a 422 an operator reads in
+  daylight, and the bad rota never reaches the door. Same property, bought with
+  a gate instead of a guard.
+
+  Three things it is careful about, each a way of paging the wrong person:
+
+  - **Shifts cross midnight.** `18:00–06:00` is the shift a facility gate
+    exists for, and `start <= now <= end` is false for every minute of it. A
+    wrapping shift is two intervals and belongs to the day it *started*: at
+    02:00 on Saturday it is Friday's night porter on the desk.
+  - **A facility is somewhere.** Each tenant sets its own IANA zone, and an
+    unknown one is **refused** rather than quietly read as UTC — the silent
+    version is wrong by the offset, and by a *different* offset in summer, so
+    it looks correct for half the year.
+  - **A rota has gaps.** The gate then tries everybody rather than nobody, and
+    reports `on_shift: false` on the page and in the envelope, so whoever it
+    wakes knows they were a guess.
+
+  **A failed page moves to the next name.** With one contact, a webhook that
+  rejected the page was the end of the line; trying the second is the entire
+  point of having a second. Every attempt is its own row, so the morning list
+  shows who was tried and in what order rather than one entry saying *failed*.
+
+  Roster changes land on the chain as `gate.roster` — who can be summoned to a
+  controlled facility is a governance fact, not a preference. Tenant scoping is
+  tested by trying to read and delete another tenant's roster, and by ringing
+  two tenants' gates and asserting each reaches its own person.
 
 ### Fixed
 

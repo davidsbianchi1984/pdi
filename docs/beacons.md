@@ -357,11 +357,10 @@ runs, the card is still on screen.
   `PDI_NOTIFY_URL` and stops (`pdi/notify.py`). Whatever is behind that URL —
   Twilio, PagerDuty, an SMS gateway, a script that rings a desk phone — is the
   deployment's, and PDI ships no vendor and holds no account.
-- **No roster.** `PDI_GATE_ONCALL` names one contact. Working a list in order,
-  and escalating when the first does not answer, is designed but not built.
-  (JIM-mini's `jim/rota.py` does this for its own relay; PDI has not needed it
-  yet, and copying it before there is a second contact to try would be
-  building the abstraction before the case.)
+- **No scheduling product.** `pdi/roster.py` knows named people, the days they
+  work, the hours, and the facility's timezone. It does not know leave, swaps,
+  fairness or recurrence. What it does get right is the part that was hurting:
+  shifts crossing midnight, attributed to the day they started.
 
 ## Telling somebody
 
@@ -405,6 +404,62 @@ revealing the URL, so an operator can check *before* the night it matters.
 `GET /gate/pages?undelivered_only=true` is the list to read in the morning, and
 `POST /gate/pages/{id}/retry` sends one again — a delivered page is refused
 rather than duplicated.
+
+## Who answers, and when
+
+`PDI_GATE_ONCALL` named **one contact for the whole deployment**. In a
+single-tenant install that is merely thin. In PDI it is wrong, because PDI is
+multi-tenant: one vault, many customers, each with their own facility. A
+courier at customer A's loading dock was handed off to a name belonging to
+whoever set the environment variable — in a colocation facility, the operator
+rather than the tenant. Everything else in this product is scoped to a tenant
+and enforced by a token; the one name a stranger at a door got routed to was
+global.
+
+So the roster lives in the database, per tenant, written with the tenant's own
+write token — the same authority as placing a beacon.
+
+    POST   /gate/roster        add somebody, and when they are on
+    GET    /gate/roster        the roster, and who it would reach right now
+    DELETE /gate/roster/{id}   take somebody off it
+    PUT    /gate/timezone      the facility's own IANA zone
+
+A tenant with no roster still gets `PDI_GATE_ONCALL`, so nothing already
+deployed changes.
+
+**Validation happens on write.** JIM-mini's `jim/rota.py` solves the same
+who-is-on-shift problem, but has to parse its rota out of an environment
+variable at the moment somebody needs help — which is why it needs a
+never-raises read path and a loud degradation story. PDI has an API, so a
+malformed shift is refused at `POST /gate/roster` with a 422 an operator reads
+in daylight. The bad rota never reaches the door: the same property, bought
+with a gate instead of a guard.
+
+Three things it is careful about, each a way of paging the wrong person:
+
+**Shifts cross midnight.** `18:00–06:00` is the shift a facility gate exists
+for, and `start <= now <= end` is false for every minute of it. A wrapping
+shift is two intervals and belongs to the day it *started* — at 02:00 on
+Saturday it is Friday's night porter on the desk, not the weekend rota.
+
+**A facility is somewhere.** Each tenant sets its own zone, and an unknown one
+is **refused** rather than quietly read as UTC. The silent version is wrong by
+the offset, and by a *different* offset in summer, so it looks correct for half
+the year.
+
+**A rota has gaps.** Nobody is rostered at 4am on a public holiday. The gate
+tries everybody rather than nobody — better to wake the wrong person than leave
+a stranger at a door — and reports `on_shift: false` on the page *and in the
+envelope*, so whoever it wakes knows they were a guess.
+
+**A failed page moves to the next name.** With one contact, a webhook that
+rejected the page was the end of the line. Trying the second is the entire
+point of having a second, and every attempt is its own row, so the morning list
+shows who was tried and in what order rather than a single entry saying
+*failed*.
+
+Roster changes land on the audit chain as `gate.roster`: who can be summoned to
+a controlled facility is a governance fact, not a preference.
 
 - **No proof the code is on the object it names.** A sticker can be peeled off
   and moved. The chain records what was reported, not what is true — which is

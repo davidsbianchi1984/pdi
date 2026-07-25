@@ -1271,7 +1271,7 @@ SCREENS = [
         dict(icon="chat", color="cyan", k="Delivery", s="sent to the goods entrance", pill=("RESOLVED", "good")),
         dict(icon="person", color="amber", k="Access request", s="handed to a person, and paged", pill=("HUMAN", "warn")),
         dict(icon="shieldok", color="green", k="Ceiling is structural", s="no path from words to a door"),
-        dict(icon="phone", color="red", k="Paged, not just filed", s="and says when nobody was reached"),
+        dict(icon="phone", color="red", k="Works this site's roster", s="next name when a page bounces"),
     ], button=("Open rings", "brand")),
 ]
 

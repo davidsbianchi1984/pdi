@@ -678,3 +678,262 @@ def test_the_gate_page_warns_the_caller_when_nobody_was_reached(client):
     g = _gate(client, token)
     html = client.get(f"/s/{g['id']}").text
     assert "unreached_note" in html            # rendered, not merely returned
+
+
+# --- the roster -----------------------------------------------------------
+#
+# The claim: who answers a gate is **this tenant's** business. PDI is
+# multi-tenant, and PDI_GATE_ONCALL was one name for the whole deployment — so
+# the tests below try to see another tenant's roster, and try to get paged in
+# their place.
+
+def _tenant_id(token):
+    from pdi import vault
+    return vault.tenant_by_token(token)["id"]
+
+
+def _rota(client, token, name, **over):
+    body = {"name": name}
+    body.update(over)
+    r = client.post("/gate/roster", json=body, headers=auth(token))
+    assert r.status_code == 201, r.text
+    return r.json()
+
+
+def test_a_roster_is_scoped_to_its_own_tenant(client):
+    """The whole product is tenant isolation; a roster is a new place to leak
+    across it."""
+    mine = new_tenant(client, name="mine")
+    theirs = new_tenant(client, name="theirs")
+    _rota(client, mine, "Dana Okafor")
+
+    assert [p["name"] for p in
+            client.get("/gate/roster", headers=auth(mine)).json()["roster"]] \
+        == ["Dana Okafor"]
+    theirs_view = client.get("/gate/roster", headers=auth(theirs)).json()
+    assert theirs_view["roster"] == []
+    assert "Dana" not in json.dumps(theirs_view)
+
+
+def test_another_tenants_entry_cannot_be_removed(client):
+    mine = new_tenant(client, name="mine")
+    theirs = new_tenant(client, name="theirs")
+    e = _rota(client, mine, "Dana Okafor")
+
+    assert client.delete(f"/gate/roster/{e['id']}",
+                         headers=auth(theirs)).status_code == 404
+    assert len(client.get("/gate/roster",
+                          headers=auth(mine)).json()["roster"]) == 1
+
+
+def test_each_tenants_gate_hands_off_to_its_own_person(client, monkeypatch):
+    """The defect this replaces: one PDI_GATE_ONCALL for the whole deployment
+    meant every customer's courier was routed to the same name."""
+    monkeypatch.setenv("PDI_GATE_ONCALL", "the operator's night desk")
+    a = new_tenant(client, name="alpha")
+    b = new_tenant(client, name="beta")
+    _rota(client, a, "Alpha Reception")
+    _rota(client, b, "Beta Security", role="security")
+
+    ga = _gate(client, a)
+    gb = _gate(client, b)
+    ra = client.post(f"/s/{ga['id']}/ring", json={"kind": "access"}).json()
+    rb = client.post(f"/s/{gb['id']}/ring", json={"kind": "access"}).json()
+
+    assert ra["handed_to"] == "Alpha Reception"
+    assert rb["handed_to"] == "Beta Security"
+
+
+def test_a_tenant_with_no_roster_still_gets_the_old_behaviour(client,
+                                                              monkeypatch):
+    """Nothing already deployed changes."""
+    monkeypatch.setenv("PDI_GATE_ONCALL", "the site's night desk")
+    token = new_tenant(client)
+    g = _gate(client, token)
+    body = client.post(f"/s/{g['id']}/ring", json={"kind": "access"}).json()
+
+    assert body["handed_to"] == "the site's night desk"
+    assert client.get("/gate/roster",
+                      headers=auth(token)).json()["configured"] is False
+
+
+# --- shifts ---------------------------------------------------------------
+
+def _at(s):
+    """A facility-local moment. 2026-07-20 is a Monday."""
+    from datetime import datetime, timezone as _tz
+    return datetime.fromisoformat(s).replace(tzinfo=_tz.utc)
+
+
+def test_a_night_shift_is_on_at_2am(client):
+    """The shift a facility gate exists for, and the one `start <= now <= end`
+    is false for every minute of."""
+    from pdi import roster
+    token = new_tenant(client)
+    _rota(client, token, "Night Porter", days="mon-fri",
+          from_time="18:00", to_time="06:00")
+    _rota(client, token, "Day Reception", role="reception", days="mon-fri",
+          from_time="06:00", to_time="18:00")
+    tid = _tenant_id(token)
+
+    # Tuesday 02:00 — Monday's 18:00-06:00 shift is still running.
+    assert [p["name"] for p in roster.on_now(tid, _at("2026-07-21T02:00"))] \
+        == ["Night Porter"]
+    # …and at noon it is the day desk.
+    assert [p["name"] for p in roster.on_now(tid, _at("2026-07-20T12:00"))] \
+        == ["Day Reception"]
+
+
+def test_a_wrapping_shift_belongs_to_the_day_it_started(client):
+    from pdi import roster
+    token = new_tenant(client)
+    _rota(client, token, "Night Porter", days="mon-fri",
+          from_time="18:00", to_time="06:00")
+    tid = _tenant_id(token)
+
+    # Saturday 02:00 — Friday's night porter is still on the desk.
+    assert [p["name"] for p in roster.on_now(tid, _at("2026-07-25T02:00"))] \
+        == ["Night Porter"]
+    # Sunday 02:00 — Saturday was never rostered, so nobody started.
+    assert roster.on_now(tid, _at("2026-07-26T02:00")) == []
+
+
+def test_a_gap_tries_everybody_and_says_it_was_guessing(client):
+    from pdi import roster
+    token = new_tenant(client)
+    _rota(client, token, "Night Porter", days="mon-fri",
+          from_time="18:00", to_time="06:00")
+    tid = _tenant_id(token)
+
+    people, anybody = roster.order(tid, _at("2026-07-26T04:00"))
+    assert anybody is False
+    assert [p["name"] for p in people] == ["Night Porter"]   # woken anyway
+    d = roster.describe(tid, _at("2026-07-26T04:00"))
+    assert "nobody is rostered" in d["note"]
+
+
+def test_a_malformed_shift_is_refused_on_the_way_in(client):
+    """PDI has an API, so the bad rota never reaches the door — the same
+    property JIM buys with a never-raises read guard."""
+    token = new_tenant(client)
+    for bad in ({"name": "X", "days": "funday"},
+                {"name": "X", "from_time": "twenty past"},
+                {"name": "  "}):
+        r = client.post("/gate/roster", json=bad, headers=auth(token))
+        assert r.status_code == 422, (bad, r.text)
+
+
+def test_an_unknown_timezone_is_refused_rather_than_read_as_utc(client):
+    token = new_tenant(client)
+    r = client.put("/gate/timezone", json={"timezone": "Mars/Olympus"},
+                   headers=auth(token))
+    assert r.status_code == 422
+    assert "not a timezone" in r.json()["detail"]
+
+    ok = client.put("/gate/timezone", json={"timezone": "America/Los_Angeles"},
+                    headers=auth(token))
+    assert ok.status_code == 200
+
+
+def test_the_facility_timezone_moves_the_boundary(client):
+    from pdi import roster
+    token = new_tenant(client)
+    _rota(client, token, "Night Porter", days="mon-fri",
+          from_time="18:00", to_time="06:00")
+    tid = _tenant_id(token)
+
+    # 2026-07-21T12:00Z is 05:00 Tuesday in Los Angeles — Monday's night shift,
+    # still running. Read in UTC it is noon on a Tuesday: firmly the day desk.
+    client.put("/gate/timezone", json={"timezone": "America/Los_Angeles"},
+               headers=auth(token))
+    assert [p["name"] for p in roster.on_now(tid, _at("2026-07-21T12:00"))] \
+        == ["Night Porter"]
+    client.put("/gate/timezone", json={"timezone": "UTC"}, headers=auth(token))
+    assert roster.on_now(tid, _at("2026-07-21T12:00")) == []
+
+
+# --- walking the roster ---------------------------------------------------
+
+def test_a_failed_page_moves_to_the_next_name(client, monkeypatch):
+    """Before there was a roster there was one name, so a failed page was the
+    end of the line. Trying the second is the entire point of having one."""
+    monkeypatch.setenv("PDI_NOTIFY_URL", "https://pager.example/hook")
+    token = new_tenant(client)
+    _rota(client, token, "First Choice")
+    _rota(client, token, "Second Choice", role="supervisor")
+
+    class _FlakyOnce:
+        def __init__(self):
+            self.calls = []
+
+        def post(self, url, data, headers):
+            body = json.loads(data)
+            self.calls.append(body["handed_to"])
+            if len(self.calls) == 1:
+                raise OSError("connection refused")
+            return type("R", (), {"status_code": 200})()
+
+    hook = _FlakyOnce()
+    out = _ring_it(client, token, http=hook)
+
+    assert hook.calls == ["First Choice", "Second Choice"]
+    assert out["reached_somebody"] is True
+    assert out["paged"]["handed_to"] == "Second Choice"
+    # Both attempts are their own rows, so the morning list shows the order.
+    pages = client.get("/gate/pages", headers=auth(token)).json()
+    assert sorted(p["handed_to"] for p in pages) == ["First Choice",
+                                                     "Second Choice"]
+
+
+def test_everybody_failing_still_tells_the_caller(client, monkeypatch):
+    monkeypatch.setenv("PDI_NOTIFY_URL", "https://pager.example/hook")
+    token = new_tenant(client)
+    _rota(client, token, "First Choice")
+    _rota(client, token, "Second Choice", role="supervisor")
+
+    out = _ring_it(client, token,
+                   http=_Webhook(boom=OSError("connection refused")))
+    assert out["reached_somebody"] is False
+    assert out["unreached_note"] == notify.UNREACHED
+    assert len(client.get("/gate/pages?undelivered_only=true",
+                          headers=auth(token)).json()) == 2
+
+
+def test_no_channel_queues_one_page_not_one_per_name(client):
+    """Nobody was tried, and five identical untried rows would read as five
+    attempts."""
+    token = new_tenant(client)
+    _rota(client, token, "First Choice")
+    _rota(client, token, "Second Choice", role="supervisor")
+
+    out = _ring_it(client, token)
+    assert out["paged"]["state"] == "queued"
+    assert len(client.get("/gate/pages", headers=auth(token)).json()) == 1
+
+
+def test_a_page_says_whether_the_roster_was_covering(client, monkeypatch):
+    monkeypatch.setenv("PDI_NOTIFY_URL", "https://pager.example/hook")
+    token = new_tenant(client)
+    # Rostered only on Sundays, so on any other day this is a guess.
+    _rota(client, token, "Sunday Only", days="sun",
+          from_time="00:00", to_time="23:59")
+    hook = _Webhook()
+    out = _ring_it(client, token, http=hook)
+
+    from pdi import roster
+    tid = _tenant_id(token)
+    if not roster.on_now(tid):                 # unless the test runs a Sunday
+        assert out["paged"]["on_shift"] is False
+        assert hook.calls[0]["body"]["on_shift"] is False
+
+
+def test_roster_changes_land_on_the_audit_chain(client):
+    """Who can be summoned to a controlled facility is a governance fact."""
+    token = new_tenant(client)
+    e = _rota(client, token, "Dana Okafor")
+    client.delete(f"/gate/roster/{e['id']}", headers=auth(token))
+
+    actions = [a["action"] for a in
+               client.get("/audit", headers=auth(token)).json()]
+    assert actions.count("gate.roster") == 2
+    assert client.get("/audit/verify", headers=auth(token)).json()["intact"]
