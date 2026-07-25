@@ -6,6 +6,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **The three README illustrations are generated now**
+  (`tools/build_assets.py`) rather than hand-built. They had been drawn before
+  BYOK, compliance transfers and intakes, the executed-BAA gate, custody
+  beacons and the gate agent existed — and the cover used amber as its key
+  colour while every screen in `docs/screens/` is night-indigo with vault cyan.
+
+  They now read their palette from the same constants the screens use, so they
+  cannot drift away from what they are pictures of. The architecture diagram
+  ends on the question the product actually turns on — *who holds the key* —
+  and the encryption flow states what a wrong key does *before* it does damage.
+  Regenerate with `python3 tools/build_assets.py`.
+
 ### Added
 
 - **Custody beacons and the agent at the gate are built** —
