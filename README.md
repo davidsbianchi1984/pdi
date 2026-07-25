@@ -379,6 +379,12 @@ Real facility provisioning, HSM/KMS integration, replication/redundancy across
 sites, and billing — represented structurally (deployment record, snapshot
 export), not as live infrastructure.
 
+**Designed, not yet built:** [**custody beacons**](docs/beacons.md) — a printed
+QR on a physical carrier (a records box, a decommissioned drive, a courier
+bag), so custody stays visible once a payload has a handle. QRME's desk beacon
+inverted: it reveals that a thing is sealed and nothing about what is inside,
+and every scan is a link in the hash-chained audit log rather than a counter.
+
 ## Architecture
 
 ![PDI architecture — tenants, encrypted vault, tamper-evident audit](assets/architecture.svg)

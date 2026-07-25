@@ -6,6 +6,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Custody beacons, designed** — [docs/beacons.md](docs/beacons.md). QRME
+  ships desk beacons: a printed QR on a shop door that reveals a person. The
+  gesture ports here; what it resolves to inverts. PDI's subject is custody of
+  data, and custody keeps escaping into the physical world where PDI cannot see
+  it — a records box in a van, a decommissioned drive on a pallet, a robot out
+  for service. Design only; no code yet.
+
+  The load-bearing decisions: a seal card reveals **that** a thing is sealed
+  and what governs it, and **nothing about its contents** — the surface never
+  holds a key or touches ciphertext, so it neither breaks under BYOK nor
+  quietly undermines it. A scan is **a link in the hash-chained audit log**
+  rather than a counter, which turns a physical custody gap into a compliance
+  finding PDI can produce on demand; only a `found` report writes to the chain,
+  because a barcode gun sweeping a pallet must not put four hundred rows into a
+  tamper-evidence log. Disclosure defaults to **blind** — naming a regulated
+  carrier is itself a disclosure, and should be a decision somebody made rather
+  than one they inherited. And a beacon can be placed on a **bare object** with
+  no record behind it, which inverts the usual order: custody starts first and
+  the record may never arrive.
+
 ## [0.1.8] — 2026-07-25
 
 ### Fixed
