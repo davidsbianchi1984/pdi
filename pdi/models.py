@@ -282,3 +282,27 @@ class GateRing(BaseModel):
 
     kind: Literal["delivery", "access", "collection", "other"]
     note: str | None = None
+
+
+class RosterAdd(BaseModel):
+    """Somebody who answers this facility's gate, and when.
+
+    ``days``/``from_time``/``to_time`` are optional and default to always on,
+    which is what a roster of plain names meant before shifts existed. A shift
+    whose ``to_time`` is at or before its ``from_time`` crosses midnight —
+    ``18:00``–``06:00`` is the case a facility gate exists for.
+    """
+
+    name: str
+    role: Literal["on-call", "supervisor", "reception", "security",
+                  "site lead"] = "on-call"
+    days: str | None = None          # "mon-fri" | "sat,sun" | "all"
+    from_time: str | None = None     # "18:00"
+    to_time: str | None = None       # "06:00"
+
+
+class GateTimezone(BaseModel):
+    """The facility's own IANA zone. Refused if unknown rather than silently
+    read as UTC — the silent version looks correct for half the year."""
+
+    timezone: str

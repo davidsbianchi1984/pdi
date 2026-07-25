@@ -225,6 +225,30 @@ CREATE TABLE IF NOT EXISTS beacon_rings (
     closed_at         TEXT
 );
 
+-- Who answers this tenant's facility gate, and when (see pdi/roster.py).
+-- Per tenant and in the database rather than one deployment-wide env var:
+-- PDI is multi-tenant, so a global on-call name routed every customer's
+-- courier to whoever set the variable.
+CREATE TABLE IF NOT EXISTS gate_roster (
+    id         TEXT PRIMARY KEY,
+    tenant_id  TEXT NOT NULL REFERENCES tenants(id),
+    name       TEXT NOT NULL,
+    role       TEXT NOT NULL DEFAULT 'on-call',  -- a label, never a permission
+    position   INTEGER NOT NULL DEFAULT 0,       -- order to try within a shift
+    days       TEXT NOT NULL DEFAULT 'mon,tue,wed,thu,fri,sat,sun',
+    from_time  TEXT NOT NULL DEFAULT '00:00:00',
+    to_time    TEXT NOT NULL DEFAULT '23:59:59',  -- <= from_time ⇒ crosses midnight
+    created_at TEXT NOT NULL
+);
+
+-- Facility-level settings the roster is read against. A separate table rather
+-- than a column on `tenants`, which is the convention everywhere else here.
+CREATE TABLE IF NOT EXISTS gate_settings (
+    tenant_id  TEXT PRIMARY KEY REFERENCES tenants(id),
+    timezone   TEXT NOT NULL DEFAULT 'UTC',   -- IANA; a rota read in the wrong
+    updated_at TEXT NOT NULL                  -- zone pages the wrong person
+);
+
 -- An attempt to reach a human about a hand-off. Its own table rather than
 -- columns on the ring: one ring can be paged more than once (a channel that
 -- was down at 2am and back at 2:05), and the list somebody actually wants in
@@ -236,6 +260,7 @@ CREATE TABLE IF NOT EXISTS gate_pages (
     urgency     TEXT NOT NULL,   -- now | soon
     reason      TEXT NOT NULL,   -- the decision outcome that raised it
     handed_to   TEXT,
+    on_shift    INTEGER NOT NULL DEFAULT 1,  -- was the roster actually covering?
     state       TEXT NOT NULL,   -- queued (no channel) | sent | failed
     attempts    INTEGER NOT NULL DEFAULT 0,
     last_error  TEXT,
@@ -325,6 +350,16 @@ def _migrate(conn: sqlite3.Connection) -> None:
     cols = {r["name"] for r in conn.execute("PRAGMA table_info(tenants)")}
     if "retention_days" not in cols:
         conn.execute("ALTER TABLE tenants ADD COLUMN retention_days INTEGER")
+        conn.commit()
+
+    # `gate_pages` shipped in 0.1.9 without `on_shift`; CREATE TABLE IF NOT
+    # EXISTS will not add it to a vault that already has the table. Defaulting
+    # to 1 is right for the rows already there: they predate the roster, so
+    # there was exactly one name and it was always the one on duty.
+    cols = {r["name"] for r in conn.execute("PRAGMA table_info(gate_pages)")}
+    if cols and "on_shift" not in cols:
+        conn.execute("ALTER TABLE gate_pages ADD COLUMN on_shift INTEGER"
+                     " NOT NULL DEFAULT 1")
         conn.commit()
 
 

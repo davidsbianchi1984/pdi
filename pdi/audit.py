@@ -55,6 +55,9 @@ ACTIONS: dict[str, tuple[str, str]] = {
     "agent.page": ("agent", "hand-off delivered to the notification channel"),
     "agent.page_queued": ("agent", "hand-off queued — no notification channel configured, nobody was reached"),
     "agent.page_failed": ("agent", "hand-off page could not be delivered, nobody was reached"),
+    # Who can be summoned to a controlled facility is a governance fact, not a
+    # preference — it belongs on the chain beside who was let in.
+    "gate.roster": ("agent", "facility gate roster or timezone changed"),
 }
 
 EVENT_FIELDS = {

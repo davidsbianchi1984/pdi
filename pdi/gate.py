@@ -39,7 +39,7 @@ import json
 import os
 
 from . import (audit, beacons, crypto, db, notify, positions, qrme_client,
-               vault)
+               roster, vault)
 
 # What the agent may settle on its own. Every one of these is reversible, or
 # is merely information a sign on the wall could carry.
@@ -77,8 +77,19 @@ ALWAYS_HUMAN = ("access",)
 DISCLOSURE = "You are talking to an automated assistant, not a person."
 
 
-def oncall() -> str:
-    return os.environ.get("PDI_GATE_ONCALL", "the site's on-call contact")
+def oncall(tenant_id: str | None = None) -> str:
+    """Who a hand-off is routed to — **this tenant's** first responder.
+
+    Was a single deployment-wide `PDI_GATE_ONCALL`, which in a multi-tenant
+    vault meant every customer's gate named the same person. It is now the
+    first entry on the tenant's own roster, on shift if anybody is; the
+    environment variable remains the fallback for a tenant that has not set
+    one, so nothing already deployed changes. See :mod:`pdi.roster`.
+    """
+    if tenant_id is None:
+        return roster.fallback()
+    people, _on_shift = roster.order(tenant_id)
+    return people[0]["name"] if people else roster.fallback()
 
 
 def available(qrme=None, handle: str | None = None) -> bool:
@@ -120,7 +131,7 @@ def decide(ring: dict, tenant_id: str) -> dict:
             "outcome": "access_request",
             "action": "handoff",
             "reason": FORBIDDEN["grant_entry"],
-            "handoff_to": oncall(),
+            "handoff_to": oncall(tenant_id),
             "resolved": False,
         }
 
@@ -137,7 +148,7 @@ def decide(ring: dict, tenant_id: str) -> dict:
             "outcome": f"unexpected_{kind}",
             "action": "handoff",
             "reason": "nothing is expected at this site right now",
-            "handoff_to": oncall(),
+            "handoff_to": oncall(tenant_id),
             "resolved": False,
         }
 
