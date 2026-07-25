@@ -402,11 +402,9 @@ Real facility provisioning, HSM/KMS integration, replication/redundancy across
 sites, and billing — represented structurally (deployment record, snapshot
 export), not as live infrastructure.
 
-**Not yet built:** an HTML scan page for a beacon (today `GET /s/{id}` returns
-JSON, so a scan is useful to an app and raw to a phone), paging for a gate
-hand-off (it records who it went to and queues the ring; PDI dials nobody), and
-an on-call roster rather than a single contact. See
-[docs/beacons.md](docs/beacons.md).
+**Not yet built:** paging for a gate hand-off (it records who it went to and
+queues the ring; PDI dials nobody), and an on-call roster rather than a single
+contact. See [docs/beacons.md](docs/beacons.md).
 
 ## Architecture
 

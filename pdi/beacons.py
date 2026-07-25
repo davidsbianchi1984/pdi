@@ -55,6 +55,12 @@ FOUND_WINDOW_MINUTES = 60
 # rather than relying on the missing AI mark.
 BADGE = "Sealed — this code proves custody, not contents."
 
+# A gate is not a carrier, so the carrier's claim is the wrong one to make at a
+# door: nothing there is sealed, and nobody standing outside is wondering what
+# is inside a building. The claim that matters is the one they might actually
+# get wrong — and it is stated positively, for the same reason as above.
+GATE_BADGE = "Ringing this does not open anything."
+
 
 class BeaconError(Exception):
     pass
@@ -206,6 +212,7 @@ def seal_card(beacon_id: str) -> dict | None:
     }
     if row["ref_kind"] == "facility":
         card["gate"] = True
+        card["badge"] = GATE_BADGE
         card["ring_url"] = f"/s/{row['id']}/ring"
         card["note"] = ("This is a controlled facility. Ring, and someone — "
                         "or something answering for them — will respond.")

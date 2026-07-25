@@ -13,10 +13,12 @@ import os
 import secrets
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, Response
+from fastapi.responses import HTMLResponse
 
 from . import (app_connectors, audit, baa, beacons, catalog, compliance,
-               connectors, crypto, db, gate, i18n, intakes, mobile, positions,
-               retention, robotics, terms as terms_mod, transfers, vault)
+               connectors, crypto, db, gate, i18n, intakes, landing, mobile,
+               positions, retention, robotics, terms as terms_mod, transfers,
+               vault)
 from .models import (AppCollect, AppConnect, AppInvoke, BAARecordIn,
                      BeaconFound, BeaconPlace, BeaconState,
                      ConnectorCreate, ConnectorIngest, ConnectorPublish,
@@ -870,9 +872,24 @@ def create_app() -> FastAPI:
     # The public surface. No token — a stranger holding a phone at a sticker is
     # exactly the caller this exists for.
 
-    @app.get("/s/{bid}")
+    @app.get("/s/{bid}", response_class=HTMLResponse)
+    def seal_card_page(bid: str) -> HTMLResponse:
+        """What a phone's camera app opens when somebody scans the sticker.
+
+        HTML, because a QR is pointed at by a human holding a phone — this
+        used to answer JSON and show a courier a wall of braces. The JSON is
+        still served at ``/s/{id}/card`` for anything reading it
+        programmatically.
+        """
+        card = beacons.seal_card(bid)
+        if card is None:
+            return HTMLResponse(landing.gone(), status_code=404)
+        return HTMLResponse(landing.page_for(card))
+
+    @app.get("/s/{bid}/card")
     def seal_card(bid: str) -> dict:
-        """What a scanned code shows. Never the contents."""
+        """The same scan, as JSON — for an app rather than a phone browser.
+        Never the contents, on either surface."""
         card = beacons.seal_card(bid)
         if card is None:
             raise HTTPException(404, "this code does not resolve to anything")
