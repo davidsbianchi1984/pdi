@@ -44,25 +44,29 @@ data under a key that is about to vanish.
 
 ## Master key & key rotation
 
-- **At rest** every record value is sealed with AES-256-GCM (`pdi/crypto.py`).
-  The data-encryption key is derived from `PDI_MASTER_KEY` (base64, 32 bytes).
-  **[implemented]**
+- **At rest** every record value is sealed with AES-256-GCM (`pdi/crypto.py`)
+  under a per-version **data-encryption key**. The DEK is itself stored only
+  wrapped by the **key-encryption key**, which comes from `PDI_MASTER_KEY`
+  (base64, 32 bytes) or a key provider — so the database on disk never holds
+  usable key material. **[implemented]**
 - **AAD binding**: each record's ciphertext carries `tenant_id:key` as
   additional authenticated data, so a blob cannot be moved between tenants or
   keys without failing authentication. **[implemented]**
-- **Production KMS/HSM** **[planned]**: `PDI_MASTER_KEY` is the dev seam. In
-  production the master key lives in a KMS/HSM (AWS KMS, GCP KMS, or a
-  PKCS#11 HSM); PDI calls `Decrypt`/`GenerateDataKey` at boot to obtain a
-  short-lived data key held only in memory, never on disk. Envelope
-  encryption: KMS holds the key-encrypting key; per-record data keys are
-  wrapped.
-- **Rotation** **[planned]**: `POST /rotate` (admin) re-seals every record
-  under a new key. During rotation both `PDI_MASTER_KEY` (new) and
-  `PDI_MASTER_KEY_PREV` (old) are present; each record is opened with the key
-  that authenticates it and re-sealed under the new key, one tenant at a
-  time, recorded in the audit chain (`rotate.begin` / `rotate.complete`).
-  Rotation is idempotent and resumable — a `key_version` column on `records`
-  tracks progress so a crash resumes where it stopped.
+- **Rotation** **[implemented]**: `POST /keys/rotate` (admin) mints a new key
+  version and, by default, immediately re-seals every record under it
+  (`?reseal=false` to defer, `POST /keys/reseal` to run it later). Old
+  versions are kept so existing ciphertext still decrypts — nothing becomes
+  unreadable mid-rotation — and `POST /keys/retire` drops them once the
+  reseal is done. `GET /keys` lists versions and the active provider; the
+  rotation and retirement are recorded in the audit chain (`key.rotate`,
+  `key.retire`). Blobs written before versioning (no version prefix) are
+  still read and are upgraded on the next write or reseal.
+- **Production KMS/HSM** **[integration seam]**: `PDI_MASTER_KEY` is
+  acceptable for development and single-operator deployments. For regulated
+  data held on someone else's behalf, set `PDI_KEY_PROVIDER=kms` and wire
+  `KmsKeyProvider.kek()` to your HSM — e.g. AWS KMS `Decrypt` on a stored
+  wrapped KEK, or a PKCS#11 unwrap. It deliberately raises rather than
+  falling back to a local key, so a mis-set provider fails loudly.
 
 ## Audit log
 

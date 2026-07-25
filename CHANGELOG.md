@@ -26,11 +26,31 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   so the phone flow works hosted or local from one code path. Documented
   in docs/operations.md alongside the HTTPS and token guidance.
 
+- **Deployable as one container** — a two-stage `Dockerfile` builds the vault
+  console and installs the API into a single image, so a hosted instance
+  serves UI and API from one origin exactly as the phone flow does. Runs as a
+  non-root user, keeps the vault on a `/data` volume, honours `$PORT`, and
+  reports health at `/health`. No key material is baked in: `PDI_MASTER_KEY`
+  is supplied at runtime, so the image itself is safe to push to a registry.
+
 ### Documentation
 
+- **docs/hosting.md** — hosting a collation facility, and the only line that
+  matters when outsourcing it: *who holds the key-encryption key*.
+  Self-hosted, colocation, and managed side by side, with what each one means
+  for whether the host can read your records and what a subpoena to them
+  yields. Plus the deploy commands, what the image cannot protect for you
+  (the volume, and the key — lost means unrecoverable, by design), and what
+  the deployment does not give you: no rate limiting, no backups, no key
+  escrow, no attestation.
 - docs/operations.md gains a **key-custody table** stating plainly what is
   implemented (AES-256-GCM, envelope encryption, AAD binding, rotation) and
   what is a seam (the KMS/HSM provider) or out of scope (TLS in transit).
+- docs/operations.md's key-rotation section corrected: it still described a
+  planned `POST /rotate` with a `PDI_MASTER_KEY_PREV` handoff, which is not
+  what shipped. Rotation is implemented as versioned DEKs behind
+  `POST /keys/rotate` / `reseal` / `retire`, and the section now documents
+  that.
 
 ## [0.1.4] — 2026-07-24
 
