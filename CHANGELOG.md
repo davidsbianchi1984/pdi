@@ -22,6 +22,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **A phone that scans a custody beacon gets a page now** — `pdi/landing.py`.
+  `GET /s/{id}` served JSON, so a courier pointing a camera at a records box
+  got a wall of braces; the JSON moved to `/s/{id}/card` and the scan URL
+  serves HTML, matching how QRME's desk beacons already work.
+
+  One self-contained document — inline CSS and script, no font, image or
+  stylesheet fetch — because it opens in a camera app's in-app browser, on
+  cellular, from cold, possibly in a loading bay with one bar. The found form
+  posts to a **relative** URL, since an absolute one baked from
+  `PDI_PUBLIC_URL` breaks every LAN scan. It renders what `seal_card` returned
+  and looks nothing up, so there is no second place for contents to leak from
+  — a test searches the served HTML for the filename, the counterparty and the
+  tenant name.
+
+  A gate now carries its own claim. *Sealed — this code proves custody, not
+  contents* is the wrong sentence at a door: nothing there is sealed and
+  nobody outside a building is wondering what is inside it. `GATE_BADGE` says
+  *ringing this does not open anything* instead — positive, because silence is
+  not a disclosure.
+
+  Found by screenshotting the pages in a real browser rather than trusting the
+  HTML to parse: the badge is a full sentence and was rendering as a rounded
+  pill with two wrapped lines in it, and the card's entrance animation faded
+  `opacity` from zero — so a browser that dropped the animation would have
+  shown a blank card. It animates `transform` only now, and honours
+  `prefers-reduced-motion`.
+
 - **Custody beacons and the agent at the gate are built** —
   `pdi/beacons.py`, `pdi/gate.py`, `pdi/qrme_client.py`, 13 routes, 25 tests.
   A printed code goes on a physical carrier (a records box, a decommissioned

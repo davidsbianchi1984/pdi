@@ -63,7 +63,7 @@ def test_seal_card_says_it_is_sealed_and_nothing_about_contents(client):
     b = _place(client, token, ref_kind="transfer", ref_id=xfer["id"],
                label="courier bag 7")
 
-    card = client.get(f"/s/{b['id']}").json()
+    card = client.get(f"/s/{b['id']}/card").json()
     assert card["under_custody"] is True
     assert card["contents"] is None
     assert "not contents" in card["badge"]
@@ -88,7 +88,7 @@ def test_blind_is_the_default_and_hides_the_holder(client):
     b = _place(client, token, ref_kind="object", label="records box 4")
     assert b["disclose"] == "blind"
 
-    card = client.get(f"/s/{b['id']}").json()
+    card = client.get(f"/s/{b['id']}/card").json()
     # Naming the tenant would itself be the disclosure.
     assert card["held_by"] is None
     assert "oncology" not in str(card).lower()
@@ -99,7 +99,7 @@ def test_contact_mode_names_the_holder_when_it_is_opted_into(client):
     token = new_tenant(client, name="Acme Facilities")
     b = _place(client, token, ref_kind="object", label="internal box",
                disclose="contact")
-    card = client.get(f"/s/{b['id']}").json()
+    card = client.get(f"/s/{b['id']}/card").json()
     assert card["held_by"] == "Acme Facilities"
     assert card["label"] == "internal box"
 
@@ -109,8 +109,8 @@ def test_a_retired_code_is_indistinguishable_from_one_that_never_existed(client)
     b = _place(client, token, ref_kind="object")
     assert client.delete(f"/beacons/{b['id']}", headers=auth(token)).status_code == 200
 
-    retired = client.get(f"/s/{b['id']}")
-    never = client.get("/s/bcn_neverexisted")
+    retired = client.get(f"/s/{b['id']}/card")
+    never = client.get("/s/bcn_neverexisted/card")
     assert retired.status_code == never.status_code == 404
     assert retired.json() == never.json()
 
@@ -142,7 +142,7 @@ def test_scans_are_counted_but_stay_off_the_audit_chain(client):
     before = len(client.get("/audit", headers=auth(token)).json())
 
     for _ in range(25):                       # a barcode gun sweeping a pallet
-        client.get(f"/s/{b['id']}")
+        client.get(f"/s/{b['id']}/card")
 
     assert client.get(f"/beacons/{b['id']}", headers=auth(token)).json()["scans"] == 25
     after = client.get("/audit", headers=auth(token)).json()
@@ -169,7 +169,7 @@ def test_found_writes_a_chain_link_and_is_capped(client):
 def test_the_custody_record_carries_the_chain_and_attests_it(client):
     token = new_tenant(client)
     b = _place(client, token, ref_kind="object", label="drive 14")
-    client.get(f"/s/{b['id']}")
+    client.get(f"/s/{b['id']}/card")
     client.post(f"/s/{b['id']}/found", json={"where": "depot 3"})
 
     rec = client.get(f"/beacons/{b['id']}/custody", headers=auth(token)).json()
@@ -410,3 +410,86 @@ def test_the_ceiling_is_published_and_points_at_the_existing_doctrine(client):
     assert "incident_response" in body["human_in_loop"]
     assert "safety_compliance" in body["human_in_loop"]
     assert "structural" in body["enforcement"]
+
+
+# --- the page a phone actually opens ---------------------------------------
+
+def test_the_scan_url_serves_a_page_not_json(client):
+    """A QR is pointed at by a human holding a phone. It used to answer JSON
+    and show a courier a wall of braces."""
+    token = new_tenant(client)
+    b = _place(client, token, ref_kind="object", label="records box 4")
+
+    page = client.get(f"/s/{b['id']}")
+    assert page.status_code == 200
+    assert page.headers["content-type"].startswith("text/html")
+    assert "<!doctype html>" in page.text.lower()
+
+    # The JSON is still there for anything reading it programmatically.
+    assert client.get(f"/s/{b['id']}/card").json()["reference"] == b["id"]
+
+
+def test_the_page_is_one_self_contained_document(client):
+    """It opens in a camera app's in-app browser, on cellular, from cold. A
+    stylesheet or font that has to be fetched is a page that is blank when it
+    matters."""
+    token = new_tenant(client)
+    b = _place(client, token, ref_kind="object")
+    html = client.get(f"/s/{b['id']}").text
+    for external in ('src="http', 'href="http', "@import", "<link"):
+        assert external not in html, f"page reaches out for {external!r}"
+
+
+def test_the_form_posts_to_a_relative_url(client):
+    """An absolute URL baked from PDI_PUBLIC_URL breaks every LAN scan, which
+    is most of them while anybody is testing."""
+    token = new_tenant(client)
+    b = _place(client, token, ref_kind="object")
+    html = client.get(f"/s/{b['id']}").text
+    assert f'"/s/{b["id"]}/found"' in html
+    assert "https://pdi.app" not in html
+
+
+def test_the_page_discloses_no_more_than_the_card(client):
+    """Everything beacons.seal_card withholds, the page withholds — it renders
+    what it was handed and looks nothing up."""
+    token = new_tenant_with_baa(client, name="St Annes Oncology")
+    xfer = _transfer(client, token)
+    b = _place(client, token, ref_kind="transfer", ref_id=xfer["id"],
+               label="courier bag 7")
+
+    html = client.get(f"/s/{b['id']}").text.lower()
+    for leak in ("biopsy", "results.pdf", "lab-partner", "oncology",
+                 "courier bag"):
+        assert leak not in html, f"the page leaked {leak!r}"
+
+
+def test_a_gate_page_rings_and_does_not_claim_to_be_sealed(client):
+    """A gate is not a carrier: nothing there is sealed, and the claim
+    somebody outside might actually get wrong is a different one."""
+    token = new_tenant(client)
+    g = _place(client, token, ref_kind="facility", label="loading dock")
+    html = client.get(f"/s/{g['id']}").text
+
+    assert f'"/s/{g["id"]}/ring"' in html
+    assert beacons.GATE_BADGE in html
+    assert beacons.BADGE not in html
+    assert "cannot let anyone in" in html
+
+
+def test_a_dead_code_renders_a_page_too(client):
+    """A 404 that renders raw JSON is the same failure in a smaller box."""
+    r = client.get("/s/bcn_neverexisted")
+    assert r.status_code == 404
+    assert r.headers["content-type"].startswith("text/html")
+    assert "doesn't resolve" in r.text
+
+
+def test_the_page_does_not_depend_on_an_animation_to_be_visible(client):
+    """If the animation never runs — reduced motion, an in-app browser that
+    drops it — the card must still be on screen."""
+    token = new_tenant(client)
+    b = _place(client, token, ref_kind="object")
+    html = client.get(f"/s/{b['id']}").text
+    assert "prefers-reduced-motion" in html
+    assert "opacity:0" not in html.replace(" ", "")

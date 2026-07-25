@@ -24,7 +24,8 @@ A **custody beacon** is a printed code on that carrier.
     PUT    /beacons/{id}/state      sealed | in_transit | opened | closed
     DELETE /beacons/{id}            retire the code
 
-    GET    /s/{id}                  the seal card — where the QR points (public)
+    GET    /s/{id}                  the page a phone opens (public)
+    GET    /s/{id}/card             the same scan as JSON (public)
     GET    /s/{id}/qr.svg           the printable code (public)
     POST   /s/{id}/found            the finder's receipt (public)
     POST   /s/{id}/ring             ring a gate; the agent answers (public)
@@ -323,13 +324,35 @@ Chain entries live in `transfer_receipts` and `audit`, which already carry
 them — intakes set the precedent of keying `transfer_receipts` by something
 that is not a transfer.
 
+## What a phone actually opens
+
+`GET /s/{id}` serves **HTML**, because a QR is pointed at by a human holding a
+phone — it used to answer JSON and show a courier a wall of braces. The JSON
+moved to `/s/{id}/card` for anything reading it programmatically.
+
+The page is **one self-contained document** — inline CSS, inline script, no
+font, image or stylesheet fetch. It opens in a camera app's in-app browser, on
+cellular, from cold, possibly in a loading bay with one bar; anything it has to
+go and get is a page that is blank when it matters. The form posts to a
+**relative** URL, because an absolute one baked from `PDI_PUBLIC_URL` breaks
+every LAN scan.
+
+It renders exactly what `seal_card` returned and looks nothing up, so there is
+no second place for the contents to leak from — asserted by searching the
+served HTML for the filename, the counterparty and the tenant name.
+
+A gate gets a different claim from a carrier. `Sealed — this code proves
+custody, not contents` is the wrong sentence at a door: nothing there is
+sealed, and nobody outside a building is wondering what is inside it. So a
+facility beacon carries `GATE_BADGE` instead — *ringing this does not open
+anything* — stated positively, because silence is not a disclosure.
+
+Nothing about the page's legibility depends on its animation. The rise
+animates `transform` only and honours `prefers-reduced-motion`: if it never
+runs, the card is still on screen.
+
 ## What this does not give you
 
-- **No HTML scan page.** `GET /s/{id}` returns JSON. QRME serves its beacon
-  card as a self-contained document because a camera app opens a URL in an
-  in-app browser; PDI has no equivalent yet, so today a scan is useful to an
-  app and raw to a phone. That page — and a relative-posting found form — is
-  the obvious next piece.
 - **No paging.** A hand-off records who it went to and surfaces the ring in
   `GET /rings?open_only=true`; PDI does not dial anyone. Delivery is the
   deployment's integration point, and until it is wired, "handed off" means
