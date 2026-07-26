@@ -1,5 +1,11 @@
 # Private Data Infrastructure (PDI)
 
+**Current release: v0.3.0** ([changelog](CHANGELOG.md) ·
+[release notes](RELEASE_NOTES.md)) — one of three products
+([qrme](https://github.com/davidsbianchi1984/qrme),
+[jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
+together, so one number names one combination of all three.
+
 ![PDI — Private Data Infrastructure](assets/cover.svg)
 
 A standalone **secure private data platform** (the "Private Data Infrastructure" enabling seamless support for future AI agent services (**JAN2024 NETWORKED
@@ -16,6 +22,29 @@ reached only over PDI's HTTP API. Both integrations are live: JIM-mini
 vaults its medical and context payloads here, and QRME seals its profile
 source material — each as its own tenant with its own token. See
 [docs/tandem.md](docs/tandem.md).
+
+## What's in the current release
+
+The sections below describe every capability in detail. This is the short
+version of how it got here — what each release actually added, newest first.
+Full detail in [CHANGELOG.md](CHANGELOG.md).
+
+Several rounds land here as **no functional change**, and the changelog says so
+in those words rather than padding the entry. PDI is the bottom layer: when the
+products above it learn to handle something new, the vault's correct
+contribution is usually to hold the bytes exactly as it already did.
+
+| Release | What landed |
+|---|---|
+| **0.3.0** | **No functional change to PDI** — but the round's most sensitive new payload lands here. QRME learned to put somebody in front of a real clinician and let that clinician write back; the note is sealed under a `qrme/{profile}/clinical/…` key, content in the vault with only a key reference held next door |
+| **0.2.2** | A documentation release — no code changed in any of the three products |
+| **0.2.1**–**0.2.0** | **A per-tenant on-call roster**, so an escalation reaches a named person rather than a queue |
+| **0.1.9** | **A hand-off reaches a person now.** Custody beacons designed and built, the agent at the gate, and a phone that scans a custody beacon lands on a page rather than on JSON |
+| **0.1.8**–**0.1.7** | Release-link repairs, and the point at which the three products began being **cut as one release** |
+| **0.1.6**–**0.1.5** | Version aligned across the suite. **BYOK — bring your own key.** Open admin now **fails closed** off-machine, and a published deployment refuses an ephemeral key. Native apps compiled in CI, one-container deploy |
+| **0.1.4**–**0.1.2** | `python -m pdi` launcher, running it on your phone, Terms of Service, **BAA enforcement** and template, macOS notarization |
+| **0.1.1** | Native iOS / Android / Windows apps at parity. First-run onboarding. Enterprise compliance transfer, robots as vault-backed data sources, connected platforms, language & provenance |
+| **0.1.0** | First public release — the **encrypted vault**, envelope encryption & key management, **tamper-evident audit**, tenant registry & RBAC, retention up to forever, and tenant deletion |
 
 ## What it provides
 
