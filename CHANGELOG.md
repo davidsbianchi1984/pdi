@@ -4,6 +4,15 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] — 2026-07-26
+
+There are no functional changes to PDI in this release. The three products
+version as one, and this round's work was next door: QRME grew a profile front
+page and a help box on every screen, and JIM-mini learned how much to trust a
+biometric reading.
+
+Version strings only.
+
 ## [0.2.0] — 2026-07-25
 
 ### Added
