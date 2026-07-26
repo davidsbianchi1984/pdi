@@ -6,7 +6,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [0.4.0] — 2026-07-26
+## [0.3.1] — 2026-07-26
 
 There are no functional changes to PDI in this release — no new routes, no
 schema, no behaviour. The version moves because the three products are cut as
@@ -634,8 +634,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.4.0...HEAD
-[0.4.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.0
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.3.1...HEAD
+[0.3.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.3.1
 [0.3.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.3.0
 [0.2.2]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.2.2
 [0.2.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.2.1

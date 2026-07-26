@@ -1,11 +1,11 @@
-# PDI v0.4.0 — release notes
+# PDI v0.3.1 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.4.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.3.1` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**PDI v0.4.0** — **no functional change to PDI in this release**: no new routes,
+**PDI v0.3.1** — **no functional change to PDI in this release**: no new routes,
 no schema, no behaviour. The version moves because the three products are cut as
 one release, and a number naming one combination of three is only useful if it
 never skips one. One of three interoperating products (with
