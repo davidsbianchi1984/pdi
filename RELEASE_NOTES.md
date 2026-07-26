@@ -1,33 +1,64 @@
-# PDI v0.2.1 — release notes
+# PDI v0.2.2 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.2.1` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.2.2` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**PDI v0.2.1** — **there are no functional changes to PDI in this release.** The
-three products version as one, and this round's work was next door. One of three
-interoperating products (with [qrme](https://github.com/davidsbianchi1984/qrme)
-and [jim-mini](https://github.com/davidsbianchi1984/jim-mini)), all three cut
+**PDI v0.2.2** — a documentation release. **No code changed**: no new routes, no
+schema, no behaviour, and nothing about how the vault seals or releases
+anything. Everything here corrects something that was *described* wrongly. One
+of three interoperating products (with
+[qrme](https://github.com/davidsbianchi1984/qrme) and
+[jim-mini](https://github.com/davidsbianchi1984/jim-mini)), all three cut
 together at this version.
+
+Unlike v0.2.1 — which was an honestly empty round here, with the work next door
+— this one has entries of its own.
+
+### Fixed
+
+- **Three releases of changelog links were missing.** `[0.1.9]`, `[0.2.0]` and
+  `[0.2.1]` had headings but no link definitions, so three shipped versions
+  rendered as literal `[0.2.1]` bracket text rather than linking to their
+  releases, and `[Unreleased]` still compared against `app-v0.1.8` —
+  presenting a three-release diff as though it were an empty one.
+
+- **The release checklist is why that kept happening**, and is the entry that
+  matters. `docs/releasing.md` step 1 said to move the `Unreleased` items under
+  the new heading and date it, and stopped — it never mentioned the link
+  definition at the bottom of the file. The step was skipped three releases
+  running by someone following the instructions correctly, and nothing
+  complains when you miss it: the heading renders fine without a definition,
+  and the damage appears hundreds of lines from where the edit was made.
+
+  Step 2 was wrong in the same direction. It named `pyproject.toml` and
+  `app/package.json` when the version string lives in **five** places — the two
+  it omitted being the `FastAPI(...)` call in `pdi/api.py` and the second root
+  entry in `app/package-lock.json`, both of which had to be rediscovered each
+  round. Both steps now say what they meant.
+
+  The `0.1.5` and `0.1.6` entries still point at commits rather than tags.
+  That is deliberate and explained in `docs/releasing.md`; they are untouched.
 
 ### What changed in the siblings
 
-- **QRME** — a profile front page (skills, experience, reviews, rating), a help
-  box on every screen that is structurally not a synthetic profile, and real
-  portraits on the screens that used to draw a generic orb.
-- **JIM-mini** — signal confidence for biometrics. `escalation.decide` always
-  took a `confidence` but only forecasts supplied one, so a measurement was a
-  fact by virtue of arriving; a reading the system does not trust now caps at
-  `check_in` instead of ringing an emergency contact.
+- **QRME** — `POST /marketplace/seed` still advertised itself as *"Idempotent —
+  already-seeded profiles are skipped"* after v0.2.1 taught it to **repair**
+  too, so the text in the OpenAPI docs pointed away from the one call that
+  fixes a deployment showing bare initials instead of portraits. Corrected in
+  four places.
+
+- **JIM-mini** — the same checklist and changelog-link corrections as here.
 
 ### Verification
 
-192 tests green — the same 192, passing the same way, which is rather the point
-of a release that claims no functional change here. 81 routes. Version strings
-moved in exactly five places: `pyproject.toml`, the FastAPI app,
+192 tests green — **the same 192, passing the same way**, which is the point of
+a release that claims no functional change. 81 routes, also unchanged. Version
+strings moved in exactly five places: `pyproject.toml`, the FastAPI app,
 `app/package.json`, and the two root entries in its lockfile (dependency
-versions untouched).
+versions untouched). Every version heading in the changelog was checked against
+its link definition — 12 for 12.
 
 ### Install
 
