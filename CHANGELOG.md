@@ -6,6 +6,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-07-26
+
+**No functional change to PDI in this release** — but not an empty round
+either. The vault is where this round's most sensitive new payload lands: a
+clinician's note back to a QRME synthetic profile is sealed here under a
+`qrme/{profile}/clinical/…` key, the same treatment source material gets.
+
+### Changed
+
+- **`docs/tandem.md`** — the shared architecture doc, byte-identical across the
+  three repos, gained two sections it did not describe: handing a specialist a
+  *task* rather than a chat turn, and reaching a real clinician with the
+  release authorised by a verified WebAuthn assertion instead of a consent
+  boolean. Both record why the obvious implementation was rejected, which is
+  the part worth having written down — the routes are discoverable, the reason
+  they are not the obvious ones is not.
+
 ## [0.2.2] — 2026-07-26
 
 **A documentation release.** No code changed in any of the three products — no
@@ -588,7 +605,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.2.2...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.3.0...HEAD
+[0.3.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.3.0
 [0.2.2]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.2.2
 [0.2.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.2.1
 [0.2.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.2.0
