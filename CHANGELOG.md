@@ -6,6 +6,35 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-07-26
+
+There are no functional changes to PDI in this release — no new routes, no
+schema, no behaviour. The version moves because the three products are cut as
+one release, and a number that names one combination of three is only useful if
+it never skips one.
+
+### Changed
+
+- **The README names its release, and says what each one added.** The same
+  section went into all three repositories, with one difference that belongs
+  only here: several rounds land in PDI as *no functional change*, and the table
+  says so rather than padding them. PDI is the bottom layer, and when the
+  products above it learn to handle something new, the vault's correct
+  contribution is usually to hold the bytes exactly as it already did. A release
+  history that invented activity for those rounds would misrepresent what this
+  product is for.
+
+### Known gap
+
+- **`docs/tandem.md` is still 92 lines shorter here than in the sibling
+  repositories.** That file is meant to be byte-identical across `qrme`,
+  `jim-mini` and `pdi`, and the *Reaching a real clinician* section added in
+  0.3.0 never reached this one — so the vault product's own copy omits the flow
+  that seals clinical notes into the vault. The fix is written and is being held
+  with unrelated unreleased work rather than split apart; it lands next round.
+  Recorded here rather than left silent, because a gap nobody wrote down is one
+  that survives another release.
+
 ## [0.3.0] — 2026-07-26
 
 **No functional change to PDI in this release** — but not an empty round
@@ -605,7 +634,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.3.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.4.0...HEAD
+[0.4.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.0
 [0.3.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.3.0
 [0.2.2]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.2.2
 [0.2.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.2.1
