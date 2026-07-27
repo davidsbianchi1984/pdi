@@ -248,6 +248,21 @@ def pill(x, y, label, tone):
             + text(x - w / 2, y + 1, label, 9.5, col, 700, "middle", 0.4))
 
 
+def agent_light(x, y, colour, label):
+    """The agent status light — green working, amber needs you, red stopped.
+
+    The gate agent is the one PDI runs, and the question is the same one the
+    other two products ask of theirs: does this need a person right now? Green
+    means it resolved the ring within its ceiling; amber means it handed the
+    request to somebody and is waiting. Meaning defined once, in
+    qrme/agentlight.py.
+    """
+    col = {"green": C["green"], "amber": C["amber"], "red": C["red"]}[colour]
+    return (f'<circle cx="{x}" cy="{y}" r="10" fill="{A(col, 0.16)}"/>'
+            + f'<circle cx="{x}" cy="{y}" r="4.6" fill="{col}"/>'
+            + text(x + 15, y + 4, label, 10.5, col, 700))
+
+
 def meter(x, y, w, pct, grad):
     return (rrect(x, y, w, 7, 4, "#0d0a24", C["line"], 1)
             + rrect(x, y, max(6, w * pct), 7, 4, f"url(#{grad})"))
@@ -615,6 +630,12 @@ def render(spec):
     out = head(f"{num:02d}", spec["title"], spec.get("sub", ""),
                spec.get("accent", "brand"), spec.get("locked", False))
     y = SY + 100
+
+    # The agent's status light, when the screen shows one at work.
+    if spec.get("light"):
+        colour, label = spec["light"]
+        out.append(agent_light(CX + 8, y - 6, colour, label))
+        y += 22
     hero = spec.get("hero")
 
     if hero == "overview":
@@ -1266,7 +1287,9 @@ SCREENS = [
         dict(icon="shieldok", color="amber", k="Found reports chain", s="a report is a chain link"),
         dict(icon="lock", color="red", k="Retire a code", s="stops resolving · chain kept"),
     ], button=("Place a beacon", "brand")),
-    dict(num=38, title="Gate Agent", sub="Answers the door, never opens it", hero=None, accent="brand", tab=1, cards=[
+    dict(num=38, title="Gate Agent", sub="Answers the door, never opens it", hero=None,
+         accent="brand", tab=1, light=("amber", "needs you — access request paged"),
+         cards=[
         dict(icon="building", color="brand", k="Loading dock", s="facility beacon", stat=("LIVE", "on")),
         dict(icon="chat", color="cyan", k="Delivery", s="sent to the goods entrance", pill=("RESOLVED", "good")),
         dict(icon="person", color="amber", k="Access request", s="handed to a person, and paged", pill=("HUMAN", "warn")),

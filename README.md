@@ -130,6 +130,33 @@ contribution is usually to hold the bytes exactly as it already did.
 - **Deployment record** — models the on-premises vs. colocation (Tier III+)
   options from the proposal.
 
+## The agent status light
+
+An agent working on its own raises one question, and it is not *what phase is
+it in* — it is **does this need me right now?** Three colours answer it.
+
+| | | |
+| --- | --- | --- |
+| 🟢 **green** | working · done | in progress, or finished. Nothing wanted from you |
+| 🟡 **amber** | needs you | it has stopped and is waiting on a person |
+| 🔴 **red** | stopped | it hit an error or was cancelled, and will not continue |
+
+**Derived, never stored.** There is no `light` column and nothing sets one — it
+is computed from the status the work already keeps. A second field naming the
+same fact is a second field that can disagree with the first, and the one a
+screen reads would be the one nobody remembers to update.
+
+**The word rides with the colour**, because green alone cannot separate an
+agent that is still going from one that has finished, and those call for
+opposite reactions. On a watch face the word is doing most of the reading
+anyway.
+
+**An unrecognised state raises rather than defaulting.** A default would paint
+an unknown status green, and green is the colour that means *ignore me* — the
+one failure this must not have.
+
+Defined once, in [`qrme/agentlight.py`](https://github.com/davidsbianchi1984/qrme/blob/main/qrme/agentlight.py), for all three products.
+
 ## Your data promise
 
 **No raw user data ever leaves your vault.** PDI is the vault.
