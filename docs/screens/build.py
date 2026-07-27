@@ -1290,9 +1290,9 @@ SCREENS = [
     dict(num=38, title="Gate Agent", sub="Answers the door, never opens it", hero=None,
          accent="brand", tab=1, light=("amber", "needs you — access request paged"),
          cards=[
-        dict(icon="building", color="brand", k="Loading dock", s="facility beacon", stat=("LIVE", "on")),
-        dict(icon="chat", color="cyan", k="Delivery", s="sent to the goods entrance", pill=("RESOLVED", "good")),
-        dict(icon="person", color="amber", k="Access request", s="handed to a person, and paged", pill=("HUMAN", "warn")),
+        dict(icon="building", color="brand", k="Someone at the door", s="back entrance · 6:42pm", stat=("LIVE", "on")),
+        dict(icon="chat", color="cyan", k="A delivery", s="directed round to goods-in", pill=("RESOLVED", "good")),
+        dict(icon="person", color="amber", k="Wants to be let in", s="handed to a person, and paged", pill=("HUMAN", "warn")),
         dict(icon="shieldok", color="green", k="Ceiling is structural", s="no path from words to a door"),
         dict(icon="phone", color="red", k="Works this site's roster", s="next name when a page bounces"),
     ], button=("Open rings", "brand")),
