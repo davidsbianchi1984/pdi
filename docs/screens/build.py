@@ -263,6 +263,62 @@ def agent_light(x, y, colour, label):
             + text(x + 15, y + 4, label, 10.5, col, 700))
 
 
+def agent_groups(y, groups):
+    """Three tappable groups, one per light. Every gate agent, folded.
+
+    A site with a dozen entrances has a dozen agents, and a flat list makes
+    somebody scan for the one that changed. Grouping by light puts the answer
+    first: on this console the amber group is a person waiting at a door, and
+    that is the row a thumb should land on without aiming.
+    """
+    out, yy = [], y
+    for colour, label, n, sub in groups:
+        # The chevron owns the right edge of the row. A sub that runs under it
+        # reads as a rendering fault, so it is caught here rather than in a
+        # screenshot somebody sends back weeks later.
+        if len(sub) > 30:
+            raise ValueError(f"agent group sub runs under the chevron: {sub!r}")
+        col = {"green": C["green"], "amber": C["amber"], "red": C["red"]}[colour]
+        h = 66
+        out.append(rrect(CX, yy, CW, h, 16, "url(#gCard)", C["line"], 1))
+        out.append(f'<circle cx="{CX+34}" cy="{yy+33}" r="17" fill="{A(col, 0.18)}"/>')
+        out.append(f'<circle cx="{CX+34}" cy="{yy+33}" r="8" fill="{col}"/>')
+        out.append(text(CX + 62, yy + 28, f"{n} {label}", 14.5, C["txt"], 700))
+        out.append(text(CX + 62, yy + 46, sub, 10, C["t2"], 500))
+        # The chevron is the whole affordance: these rows go somewhere.
+        out.append(f'<path d="M{CX+CW-30} {yy+26} l8 7 -8 7" fill="none" '
+                   f'stroke="{C["t3"]}" stroke-width="2" stroke-linecap="round"/>')
+        yy += h + 10
+    return out, yy
+
+
+def agent_overlay(y, counts):
+    """The lights, floating over whatever screen the console is actually on.
+
+    This is the piece that makes the rest useful. An agent that only reports
+    on its own screen is one somebody has to remember to go and check, and on
+    a gate console the amber state is a person standing at a door — the worst
+    possible thing to leave sitting on a screen nobody is looking at. It rides
+    above the tab bar so it is never tapped by accident, and each light is its
+    own target.
+    """
+    out = []
+    w, h = CW, 46
+    out.append(rrect(CX, y, w, h, 15, "url(#gCard)", C["brandA"], 1.4))
+    out.append(text(CX + 16, y + 28, "AGENTS", 9, C["t3"], 700, "start", 0.7))
+    x = CX + 74
+    for colour, n in zip(("green", "amber", "red"), counts):
+        col = {"green": C["green"], "amber": C["amber"], "red": C["red"]}[colour]
+        dim = n == 0
+        out.append(f'<circle cx="{x}" cy="{y+23}" r="6" fill="{col}"'
+                   + (' opacity="0.25"' if dim else "") + "/>")
+        out.append(text(x + 12, y + 28, str(n), 14,
+                        col if not dim else C["t3"], 800))
+        x += 46
+    out.append(text(CX + w - 16, y + 28, "open ›", 10.5, C["brandA"], 700, "end"))
+    return out
+
+
 def meter(x, y, w, pct, grad):
     return (rrect(x, y, w, 7, 4, "#0d0a24", C["line"], 1)
             + rrect(x, y, max(6, w * pct), 7, 4, f"url(#{grad})"))
@@ -636,6 +692,12 @@ def render(spec):
         colour, label = spec["light"]
         out.append(agent_light(CX + 8, y - 6, colour, label))
         y += 22
+
+    if spec.get("groups"):
+        block, y = agent_groups(y, spec["groups"])
+        out += block
+        y += 4
+
     hero = spec.get("hero")
 
     if hero == "overview":
@@ -1167,7 +1229,7 @@ def render(spec):
 
     else:  # generic stacked cards
 
-        for c in spec["cards"]:
+        for c in spec.get("cards", []):
             s, y = card_block(y, c)
             out.append(s)
         if spec.get("button"):
@@ -1175,6 +1237,11 @@ def render(spec):
 
     out += tabbar(spec.get("tabs", MAIN), spec.get("tab", 0))
     out += navbar()
+    # Drawn after the tab bar so nothing sits on top of it, and before close()
+    # because close() emits the closing tag — appending past it produces a
+    # valid-looking file that no renderer will parse.
+    if spec.get("overlay_agents"):
+        out += agent_overlay(SY + SH - 52 - 58, spec["overlay_agents"])
     out += close()
     return "".join(out)
 
@@ -1296,6 +1363,21 @@ SCREENS = [
         dict(icon="shieldok", color="green", k="Ceiling is structural", s="no path from words to a door"),
         dict(icon="phone", color="red", k="Works this site's roster", s="next name when a page bounces"),
     ], button=("Open rings", "brand")),
+    dict(num=39, title="Gate Agents", sub="What they need, at a glance",
+         accent="green", tab=0, groups=[
+        ("green", "working", 4, "four entrances, quiet"),
+        ("amber", "need you", 1, "a person waiting at a door"),
+        ("red", "stopped", 1, "the page bounced twice"),
+    ]),
+    # The overlay, over an ordinary console view. This is the point of the
+    # feature: amber here is somebody standing outside, and it is exactly the
+    # state nobody thinks to go and check.
+    dict(num=40, title="Audit", sub="Agents keep running behind you",
+         accent="cyan", tab=2, overlay_agents=(4, 1, 1), cards=[
+        dict(icon="shieldok", color="green", k="Sealed 18:41", s="ring resolved · no door opened"),
+        dict(icon="person", color="amber", k="Handed to a person", s="paged · waiting on the roster"),
+        dict(icon="eye", color="cyan", k="The bar follows you", s="the work stays where it is"),
+    ]),
 ]
 
 
