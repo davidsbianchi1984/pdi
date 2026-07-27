@@ -509,11 +509,47 @@ VIEWS = [
 ]
 
 
+def agent_overlay(counts):
+    """The agent lights, pinned to every desktop view.
+
+    The console is where a site is watched from, and a gate agent going amber
+    means somebody is standing at a door right now. That cannot depend on
+    anyone remembering to open the agents page — amber and red are precisely
+    the states nobody thinks to go looking for.
+
+    Bottom-right, above the content and clear of the sidebar: the corner a
+    dashboard convention already reserves for status, and the one place a
+    persistent strip does not cover something a person is reading.
+    """
+    w, h = 132, 116
+    x = WIN_X + WIN_W - w - 24
+    y = WIN_Y + WIN_H - h - 24
+    o = [rrect(x, y, w, h, 15, "rgba(9,7,26,0.62)", A(C["brandA"], 0.5), 1)]
+    yy = y + 26
+    rows = (("green", "running"), ("amber", "need help"), ("red", "stopped"))
+    for (colour, word), n in zip(rows, counts):
+        col = {"green": C["green"], "amber": C["amber"], "red": C["red"]}[colour]
+        dim = n == 0
+        o.append(f'<circle cx="{x+18}" cy="{yy}" r="5.5" fill="{col}"'
+                 + (' opacity="0.28"' if dim else "") + "/>")
+        o.append(text(x + 32, yy + 5, str(n), 14,
+                      col if not dim else C["t3"], 800))
+        o.append(text(x + 46, yy + 5, word, 9.5,
+                      C["t2"] if not dim else C["t3"], 600))
+        yy += 28
+    o.append(text(x + w / 2, y + h - 12, "open \u203a", 9,
+                  C["brandA"], 700, "middle"))
+    return o
+
+
 def render(num, title, nav, fn):
     o = frame(title, nav)
     o.append('<marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">'
              f'<path d="M0 0 L6 3 L0 6 Z" fill="{C["t3"]}"/></marker>')
     o += fn()
+    # On every view, not just Overview: the whole point is that it is there
+    # while somebody is doing something else.
+    o += agent_overlay((4, 1, 1))
     o += close()
     return "".join(o)
 

@@ -248,6 +248,90 @@ def pill(x, y, label, tone):
             + text(x - w / 2, y + 1, label, 9.5, col, 700, "middle", 0.4))
 
 
+def agent_light(x, y, colour, label):
+    """The agent status light — green working, amber needs you, red stopped.
+
+    The gate agent is the one PDI runs, and the question is the same one the
+    other two products ask of theirs: does this need a person right now? Green
+    means it resolved the ring within its ceiling; amber means it handed the
+    request to somebody and is waiting. Meaning defined once, in
+    qrme/agentlight.py.
+    """
+    col = {"green": C["green"], "amber": C["amber"], "red": C["red"]}[colour]
+    return (f'<circle cx="{x}" cy="{y}" r="10" fill="{A(col, 0.16)}"/>'
+            + f'<circle cx="{x}" cy="{y}" r="4.6" fill="{col}"/>'
+            + text(x + 15, y + 4, label, 10.5, col, 700))
+
+
+def agent_groups(y, groups):
+    """Three tappable groups, one per light. Every gate agent, folded.
+
+    A site with a dozen entrances has a dozen agents, and a flat list makes
+    somebody scan for the one that changed. Grouping by light puts the answer
+    first: on this console the amber group is a person waiting at a door, and
+    that is the row a thumb should land on without aiming.
+    """
+    out, yy = [], y
+    for colour, label, n, sub in groups:
+        # The chevron owns the right edge of the row. A sub that runs under it
+        # reads as a rendering fault, so it is caught here rather than in a
+        # screenshot somebody sends back weeks later.
+        if len(sub) > 30:
+            raise ValueError(f"agent group sub runs under the chevron: {sub!r}")
+        col = {"green": C["green"], "amber": C["amber"], "red": C["red"]}[colour]
+        h = 66
+        out.append(rrect(CX, yy, CW, h, 16, "url(#gCard)", C["line"], 1))
+        out.append(f'<circle cx="{CX+34}" cy="{yy+33}" r="17" fill="{A(col, 0.18)}"/>')
+        out.append(f'<circle cx="{CX+34}" cy="{yy+33}" r="8" fill="{col}"/>')
+        out.append(text(CX + 62, yy + 28, f"{n} {label}", 14.5, C["txt"], 700))
+        out.append(text(CX + 62, yy + 46, sub, 10, C["t2"], 500))
+        # The chevron is the whole affordance: these rows go somewhere.
+        out.append(f'<path d="M{CX+CW-30} {yy+26} l8 7 -8 7" fill="none" '
+                   f'stroke="{C["t3"]}" stroke-width="2" stroke-linecap="round"/>')
+        yy += h + 10
+    return out, yy
+
+
+OVERLAY_ROWS = (("green", "running"), ("amber", "need help"), ("red", "stopped"))
+# The floor the overlay sits on — clear of the tab bar, so it is never the
+# thing a thumb hits by accident on the way to a tab.
+OVERLAY_FLOOR = SY + SH - 52 - 12
+
+
+def agent_overlay(counts):
+    """The lights, floating over whatever screen the console is actually on.
+
+    This is the piece that makes the rest useful. An agent that only reports
+    on its own screen is one somebody has to remember to go and check, and on
+    a gate console the amber state is a person standing at a door — the worst
+    possible thing to leave sitting on a screen nobody is looking at.
+
+    Shaped like the watch face rather than as a full-width bar: a small
+    translucent box in the bottom-right corner, three stacked rows, each its
+    own tap target. A bar spanning the screen reads as chrome and cuts the
+    content in half; a corner box reads as something floating above the work,
+    which is what it is. Same three words as the wrist, so the two surfaces
+    are never saying the same thing differently.
+    """
+    w, h = 112, 100
+    x = SX + SW - w - 12
+    y = OVERLAY_FLOOR - h
+    out = [rrect(x, y, w, h, 14, "rgba(9,7,26,0.62)", A(C["brandA"], 0.5), 1)]
+    yy = y + 22
+    for (colour, word), n in zip(OVERLAY_ROWS, counts):
+        col = {"green": C["green"], "amber": C["amber"], "red": C["red"]}[colour]
+        dim = n == 0
+        out.append(f'<circle cx="{x+16}" cy="{yy}" r="5" fill="{col}"'
+                   + (' opacity="0.28"' if dim else "") + "/>")
+        out.append(text(x + 28, yy + 4, str(n), 12.5,
+                        col if not dim else C["t3"], 800))
+        out.append(text(x + 40, yy + 4, word, 8.5,
+                        C["t2"] if not dim else C["t3"], 600))
+        yy += 24
+    out.append(text(x + w / 2, y + h - 10, "open ›", 8, C["brandA"], 700, "middle"))
+    return out
+
+
 def meter(x, y, w, pct, grad):
     return (rrect(x, y, w, 7, 4, "#0d0a24", C["line"], 1)
             + rrect(x, y, max(6, w * pct), 7, 4, f"url(#{grad})"))
@@ -615,6 +699,18 @@ def render(spec):
     out = head(f"{num:02d}", spec["title"], spec.get("sub", ""),
                spec.get("accent", "brand"), spec.get("locked", False))
     y = SY + 100
+
+    # The agent's status light, when the screen shows one at work.
+    if spec.get("light"):
+        colour, label = spec["light"]
+        out.append(agent_light(CX + 8, y - 6, colour, label))
+        y += 22
+
+    if spec.get("groups"):
+        block, y = agent_groups(y, spec["groups"])
+        out += block
+        y += 4
+
     hero = spec.get("hero")
 
     if hero == "overview":
@@ -1146,7 +1242,7 @@ def render(spec):
 
     else:  # generic stacked cards
 
-        for c in spec["cards"]:
+        for c in spec.get("cards", []):
             s, y = card_block(y, c)
             out.append(s)
         if spec.get("button"):
@@ -1154,6 +1250,11 @@ def render(spec):
 
     out += tabbar(spec.get("tabs", MAIN), spec.get("tab", 0))
     out += navbar()
+    # Drawn after the tab bar so nothing sits on top of it, and before close()
+    # because close() emits the closing tag — appending past it produces a
+    # valid-looking file that no renderer will parse.
+    if spec.get("overlay_agents"):
+        out += agent_overlay(spec["overlay_agents"])
     out += close()
     return "".join(out)
 
@@ -1266,13 +1367,30 @@ SCREENS = [
         dict(icon="shieldok", color="amber", k="Found reports chain", s="a report is a chain link"),
         dict(icon="lock", color="red", k="Retire a code", s="stops resolving · chain kept"),
     ], button=("Place a beacon", "brand")),
-    dict(num=38, title="Gate Agent", sub="Answers the door, never opens it", hero=None, accent="brand", tab=1, cards=[
-        dict(icon="building", color="brand", k="Loading dock", s="facility beacon", stat=("LIVE", "on")),
-        dict(icon="chat", color="cyan", k="Delivery", s="sent to the goods entrance", pill=("RESOLVED", "good")),
-        dict(icon="person", color="amber", k="Access request", s="handed to a person, and paged", pill=("HUMAN", "warn")),
+    dict(num=38, title="Gate Agent", sub="Answers the door, never opens it", hero=None,
+         accent="brand", tab=1, light=("amber", "needs you — access request paged"),
+         cards=[
+        dict(icon="building", color="brand", k="Someone at the door", s="back entrance · 6:42pm", stat=("LIVE", "on")),
+        dict(icon="chat", color="cyan", k="A delivery", s="directed round to goods-in", pill=("RESOLVED", "good")),
+        dict(icon="person", color="amber", k="Wants to be let in", s="handed to a person, and paged", pill=("HUMAN", "warn")),
         dict(icon="shieldok", color="green", k="Ceiling is structural", s="no path from words to a door"),
         dict(icon="phone", color="red", k="Works this site's roster", s="next name when a page bounces"),
     ], button=("Open rings", "brand")),
+    dict(num=39, title="Gate Agents", sub="What they need, at a glance",
+         accent="green", tab=0, groups=[
+        ("green", "working", 4, "four entrances, quiet"),
+        ("amber", "need you", 1, "a person waiting at a door"),
+        ("red", "stopped", 1, "the page bounced twice"),
+    ]),
+    # The overlay, over an ordinary console view. This is the point of the
+    # feature: amber here is somebody standing outside, and it is exactly the
+    # state nobody thinks to go and check.
+    dict(num=40, title="Audit", sub="Agents keep running behind you",
+         accent="cyan", tab=2, overlay_agents=(4, 1, 1), cards=[
+        dict(icon="shieldok", color="green", k="Sealed 18:41", s="ring resolved · no door opened"),
+        dict(icon="person", color="amber", k="Handed to a person", s="paged · waiting on the roster"),
+        dict(icon="eye", color="cyan", k="The lights follow you", s="the work stays where it is"),
+    ]),
 ]
 
 
