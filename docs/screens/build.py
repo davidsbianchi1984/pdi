@@ -1402,6 +1402,38 @@ SCREENS = [
         dict(icon="speaker", color="brand", k="Read it or hear it", s="voice drops the numbers"),
         dict(icon="shieldok", color="cyan", k="Every screen covered", s="a test holds it to the console"),
     ]),
+    # Where the vault lives. Card five is the one that keeps the page honest:
+    # the guarantees are identical on every option, so the free one is not the
+    # weakened one.
+    dict(num=42, title="Where It Lives", sub="Four places, two of them free",
+         accent="cyan", tab=0, cards=[
+        dict(icon="shield", color="green", k="Our facility · free",
+             s="for JIM-mini and QRME data"),
+        dict(icon="building", color="cyan", k="Leased space · quoted",
+             s="a rack or a cage we own"),
+        dict(icon="lock", color="indigo", k="Your facility · quoted",
+             s="you host it, we tie in"),
+        dict(icon="phone", color="brand", k="Your own device · free",
+             s="a phone or a laptop, your line"),
+        dict(icon="shieldok", color="amber", k="Same encryption everywhere",
+             s="only uptime differs"),
+    ], button=("Choose a home", "brand")),
+    # The pane in the corner, replacing the pinned lights panel. Card four is
+    # the one specific to an operator console: it cannot read a record, and
+    # under BYOK nobody at this console can.
+    dict(num=43, title="The Corner Pane", sub="Counts and states, never records",
+         accent="brand", tab=0, cards=[
+        dict(icon="eye", color="brand", k="The lights, with a lid",
+             s="the panel you could not close"),
+        dict(icon="warn", color="amber", k="It shows, it never acts",
+             s="no keys, no tokens, no wipes"),
+        dict(icon="chart", color="cyan", k="Counts and states",
+             s="how many, and is the chain good"),
+        dict(icon="lock", color="green", k="It cannot read a record",
+             s="under BYOK, nor can anyone here"),
+        dict(icon="shield", color="indigo", k="Screenshots go in tickets",
+             s="so no tenant names, ever"),
+    ], button=("Move it left", "brand")),
 ]
 
 

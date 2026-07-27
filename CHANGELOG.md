@@ -6,6 +6,55 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-07-27
+
+### Added
+
+- **Where the vault lives** — `pdi/hosting.py`, 4 routes, 16 tests, screen 42.
+  Four places a vault can sit: our facility (**free** for holding JIM-mini and
+  QRME user data), leased space in a facility we own, a facility you own and
+  host, or your own phone or computer on your own broadband (**free**, because
+  it is your hardware).
+
+  **Colocation being free is structural, not promotional**: the tandem is the
+  only place those two products may put sensitive material, and a price on the
+  only place it can go would make their data promise conditional on somebody's
+  card.
+
+  **The encouragement to lease must not make the free option worse.** Every
+  mode runs the same code, and `GUARANTEES` is one list shared by all four with
+  no per-mode copy to quietly drop an entry from — which is how that erosion
+  would actually happen, a field at a time. What differs is availability, not
+  security, and every mode states who is responsible for what: a phone in a
+  pocket is not a Tier III facility, the bytes on it are exactly as encrypted
+  as ours, and whether they are there tomorrow is the customer's question.
+
+  Leased options are **quoted rather than listed** — a made-up figure on a page
+  like this is the kind of thing somebody plans a budget around. Choosing a
+  mode records an arrangement and moves nothing.
+
+- **A guided walkthrough of the console, and an assistant that delivers it** —
+  `pdi/tutorial.py`, `pdi/assistant.py`, 7 routes, 29 tests, screen 41. PDI was
+  the only one of the three products without a guide.
+
+  **It cannot read the vault**, and that is the design rather than a promise:
+  no code path from either module to `pdi.vault`, asserted from the AST so that
+  writing the rule down in a docstring does not trip the guard enforcing it.
+  Under BYOK the operator asking frequently cannot read the records either.
+  It performs no operator action, and *"just do it"* is refused by name. The
+  ceiling is `pdi/gate.py`'s, quoted rather than restated.
+
+- **The helper dock** — `pdi/dock.py`, 5 routes, 13 tests, screen 43. The
+  pinned agent-lights panel, with a lid on it and four more faces. Counts and
+  states only: it cannot read a record either.
+
+### Fixed
+
+- **The README's screen count is now asserted rather than proof-read.** It said
+  40 where there were 41 — and it had already been wrong once, corrected from
+  38 to 40 in 0.3.3. Along with the gallery bindings PDI did not have.
+
+
 ### Added
 
 - **A guided walkthrough of the console, and an assistant that delivers it** —

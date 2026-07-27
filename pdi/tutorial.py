@@ -132,6 +132,24 @@ LESSONS: tuple[dict, ...] = (
               "when it is not.",
          screens=(12, 17),
          click="Open Deployment and read the health checks."),
+    dict(key="hosting", chapter="Running it", title="Where it lives",
+         what="Four places a vault can sit: our facility, leased space in one "
+              "we own, a facility you own and host, or your own phone or "
+              "computer on your own broadband. Colocation is free for holding "
+              "JIM-mini and QRME data, and your own device is free because it "
+              "is your hardware. The encryption, the audit chain and BYOK are "
+              "identical on all four — what differs is uptime and who is "
+              "responsible for backups.",
+         screens=(42,),
+         click="Open Where It Lives and read who holds what up."),
+    dict(key="dock", chapter="Running it", title="The pane in the corner",
+         what="The pinned lights panel, with a lid on it and four more faces: "
+              "the gate agents, whether the audit chain verifies, how much is "
+              "held, how many tenants are live. Counts and states only — it "
+              "cannot read a record, and under a customer-managed key nobody "
+              "at this console can. It shows and it routes; it never acts.",
+         screens=(43,),
+         click="Tap the helper button and cycle the faces."),
     dict(key="all_set", chapter="Running it", title="Ready",
          what="The end of the setup path, and where to go back to. Every "
               "screen carries the guide, so a part of this can be re-read on "

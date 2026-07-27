@@ -122,6 +122,14 @@ TOPICS: dict[str, tuple[tuple[str, ...], str]] = {
         "medical payloads, each as its own tenant with its own token. See the "
         "tandem page for one payload followed end to end.",
     ),
+    "hosting": (
+        ("hosting", "colocation", "colo", "rack", "lease", "facility",
+         "where does it run", "self host", "self-hosted", "own device"),
+        "A vault can live in our facility (free for JIM-mini and QRME data), "
+        "in leased space we own, in a facility you own and host, or on your "
+        "own phone or computer. The encryption, audit chain and BYOK are the "
+        "same on all four — what differs is uptime and who does the backups.",
+    ),
     "compliance": (
         ("hipaa", "baa", "compliance", "transfer", "regulated"),
         "A tenant in a HIPAA programme needs a BAA on file before transfers "
@@ -158,6 +166,11 @@ DIRECTIONS: dict[str, tuple[str, ...]] = {
     "robots": ("robot", "robots", "custody", "custody beacons"),
     "gate": ("the gate", "gate agent", "the door", "a ring"),
     "health": ("deployment", "health", "status", "is it up"),
+    "hosting": ("hosting", "where it lives", "colocation", "colo", "rack",
+                "lease", "on my own device", "self host", "self-hosted",
+                "where does the data live", "facility"),
+    "dock": ("the pane", "the corner", "the lights panel", "the overlay",
+             "the dock", "little box", "close the panel"),
     "all_set": ("all set", "am i done", "finished setup", "the guide"),
 }
 

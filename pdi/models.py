@@ -160,6 +160,24 @@ class FeedbackSubmit(BaseModel):
     rating: int | None = None          # optional 1..5 satisfaction
 
 
+class DockConfig(BaseModel):
+    """Where the console's helper pane sits and what it carries (pdi/dock.py)."""
+    corner: str | None = None
+    state: str | None = None
+    face: str | None = None
+    faces: list[str] | None = None
+
+
+class HostingChoice(BaseModel):
+    """Where a tenant's vault lives (pdi/hosting.py).
+
+    A record of an arrangement rather than an instruction: nothing moves
+    because this changes.
+    """
+    mode: str                           # colocation | leased_space | own_facility | own_device
+    note: str | None = None
+
+
 class GuideMark(BaseModel):
     """A step of the console walkthrough (pdi/tutorial.py).
 

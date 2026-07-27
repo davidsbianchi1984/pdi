@@ -324,6 +324,35 @@ CREATE TABLE IF NOT EXISTS feedback (
     created_at TEXT NOT NULL
 );
 
+-- Where the console's helper dock sits and what it shows (see pdi/dock.py).
+-- Preferences only. The pane shows counts and routes; it cannot read a record,
+-- so there is nothing here to grant.
+CREATE TABLE IF NOT EXISTS dock_prefs (
+    tenant_id  TEXT PRIMARY KEY,
+    corner     TEXT NOT NULL DEFAULT 'bottom_right',
+    state      TEXT NOT NULL DEFAULT 'open',
+    face       TEXT NOT NULL DEFAULT 'agents',
+    faces      TEXT NOT NULL,                        -- JSON array
+    updated_at TEXT NOT NULL
+);
+
+-- Where a tenant's vault physically lives (see pdi/hosting.py). A record of an
+-- arrangement, not a switch: nothing in this product moves data because a row
+-- changed.
+--
+-- One live row per tenant, ended rather than replaced, because "where has this
+-- vault lived" is precisely the question an auditor asks afterwards.
+CREATE TABLE IF NOT EXISTS tenant_hosting (
+    id         TEXT PRIMARY KEY,
+    tenant_id  TEXT NOT NULL,
+    mode       TEXT NOT NULL,   -- colocation | leased_space | own_facility | own_device
+    note       TEXT,
+    started_at TEXT NOT NULL,
+    ended_at   TEXT
+);
+CREATE INDEX IF NOT EXISTS tenant_hosting_live
+    ON tenant_hosting (tenant_id, ended_at);
+
 -- How far an operator has got through the console walkthrough (pdi/tutorial.py).
 -- One row per step rather than a cursor, so somebody who jumped to the audit
 -- chapter and came back is not told they have finished the vault.

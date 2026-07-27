@@ -16,13 +16,16 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse
 
 from . import (app_connectors, assistant, audit, baa, beacons, catalog,
-               compliance, connectors, crypto, db, gate, i18n, intakes,
+               compliance, connectors, crypto, db, dock as dock_mod, gate,
+               hosting, i18n,
+               intakes,
                landing, mobile, notify, positions, retention, robotics, roster,
                terms as terms_mod, transfers, tutorial, vault)
 from .models import (AppCollect, AppConnect, AppInvoke, BAARecordIn,
                      BeaconFound, BeaconPlace, BeaconState,
                      ConnectorCreate, ConnectorIngest, ConnectorPublish,
                      ConsoleAsk, ContributionIn, CustomerKeyAdopt, GuideMark,
+                     DockConfig, HostingChoice,
                      DeploymentCreate, FeedbackSubmit, GateRing, IntakeCreate,
                      IntakeSubmit, LanguageChoice, PositionIntake,
                      TranslateRequest, RecordPut, RetentionSet, RobotBind,
@@ -92,7 +95,7 @@ def _writer(tenant: dict = Depends(_tenant)) -> dict:
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="Private Data Infrastructure", version="0.3.3")
+    app = FastAPI(title="Private Data Infrastructure", version="0.4.0")
 
     @app.middleware("http")
     async def localize_response_notes(request, call_next):
@@ -1144,6 +1147,90 @@ def create_app() -> FastAPI:
                 tally[row["category"]] = row["n"]
         return {"mine": mine, "tally": tally, "total": sum(tally.values()),
                 "categories": list(_IMPROVE_CATEGORIES)}
+
+    # -- the pane in the corner ---------------------------------------------
+
+    @app.get("/dock/faces")
+    def dock_vocabulary() -> dict:
+        """Everything needed to draw the pane. Public — the console's shape,
+        not anybody's data."""
+        return dock_mod.vocabulary()
+
+    @app.get("/dock/where/{face}")
+    def dock_where(face: str) -> dict:
+        try:
+            return dock_mod.route(face)
+        except dock_mod.DockError as exc:
+            raise HTTPException(404, str(exc)) from None
+
+    @app.get("/dock/{tenant_id}")
+    def dock_settings(tenant_id: str, tenant: dict = Depends(_tenant)) -> dict:
+        if tenant["id"] != tenant_id:
+            raise HTTPException(403, "not your tenant")
+        return dock_mod.settings(tenant_id)
+
+    @app.put("/dock/{tenant_id}")
+    def dock_configure(tenant_id: str, body: DockConfig,
+                       tenant: dict = Depends(_tenant)) -> dict:
+        if tenant["id"] != tenant_id:
+            raise HTTPException(403, "not your tenant")
+        try:
+            return dock_mod.configure(tenant_id, body.corner, body.state,
+                                      body.face, body.faces)
+        except dock_mod.DockError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.get("/dock/{tenant_id}/face/{name}")
+    def dock_face(tenant_id: str, name: str,
+                  tenant: dict = Depends(_tenant)) -> dict:
+        if tenant["id"] != tenant_id:
+            raise HTTPException(403, "not your tenant")
+        try:
+            return dock_mod.face(tenant_id, name)
+        except dock_mod.DockError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    # -- where the vault lives ----------------------------------------------
+
+    @app.get("/hosting")
+    def hosting_modes() -> dict:
+        """The four places a vault can live, what each costs, and who holds
+        what up. Public — somebody choosing where to put sensitive data has
+        to be able to read the options before they have a tenant."""
+        return hosting.modes()
+
+    @app.get("/hosting/{tenant_id}")
+    def hosting_for(tenant_id: str, tenant: dict = Depends(_tenant)) -> dict:
+        """This tenant's arrangement."""
+        if tenant["id"] != tenant_id:
+            raise HTTPException(403, "not your tenant")
+        return hosting.arrangement(tenant_id)
+
+    @app.put("/hosting/{tenant_id}")
+    def choose_hosting(tenant_id: str, body: HostingChoice,
+                       tenant: dict = Depends(_tenant)) -> dict:
+        """Record where this tenant's vault lives.
+
+        A record, not a switch. Nothing here moves data: choosing a mode
+        describes an arrangement people make, and an endpoint that silently
+        migrated somebody's vault because a field changed would be the most
+        alarming one in this product.
+        """
+        if tenant["id"] != tenant_id:
+            raise HTTPException(403, "not your tenant")
+        try:
+            return hosting.choose(tenant_id, body.mode, body.note)
+        except hosting.HostingError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.get("/hosting/{tenant_id}/history")
+    def hosting_history(tenant_id: str,
+                        tenant: dict = Depends(_tenant)) -> dict:
+        """Where this vault has lived — the question an auditor asks
+        afterwards."""
+        if tenant["id"] != tenant_id:
+            raise HTTPException(403, "not your tenant")
+        return {"tenant_id": tenant_id, "history": hosting.history(tenant_id)}
 
     # -- the console guide ---------------------------------------------------
     #
