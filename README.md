@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.3.1** ([changelog](CHANGELOG.md) ·
+**Current release: v0.3.2** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -36,6 +36,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.3.2** | **No functional change to PDI.** The round belongs to QRME's starter gallery |
 | **0.3.1** | **No functional change to PDI.** This README, and a known gap recorded rather than left silent: `docs/tandem.md` is still 92 lines shorter here than in the siblings, and the fix lands next round |
 | **0.3.0** | **No functional change to PDI** — but the round's most sensitive new payload lands here. QRME learned to put somebody in front of a real clinician and let that clinician write back; the note is sealed under a `qrme/{profile}/clinical/…` key, content in the vault with only a key reference held next door |
 | **0.2.2** | A documentation release — no code changed in any of the three products |
