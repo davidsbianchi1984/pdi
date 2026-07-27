@@ -166,7 +166,7 @@ The first-run journey runs **23 Welcome → 22 Log In → 24 Key Setup → 25 Gr
   <tr>
     <td align="center" width="33%"><a href="docs/screens/39-gate-agents.svg"><img src="docs/screens/39-gate-agents.svg" width="210" alt="Gate Agents"></a><br><sub><b>39</b> · Gate Agents</sub></td>
     <td align="center" width="33%"><a href="docs/screens/40-audit.svg"><img src="docs/screens/40-audit.svg" width="210" alt="Audit with the agent overlay"></a><br><sub><b>40</b> · Audit · overlay</sub></td>
-    <td align="center" width="33%"></td>
+    <td align="center" width="33%"><a href="docs/screens/41-console-guide.svg"><img src="docs/screens/41-console-guide.svg" width="210" alt="Console Guide"></a><br><sub><b>41</b> · Console Guide</sub></td>
   </tr>
 </table>
 
@@ -314,6 +314,78 @@ Defined once, in [`qrme/agentlight.py`](https://github.com/davidsbianchi1984/qrm
 | **Watch** — *36 Agents* (JIM) | three lights and three counts, and **no agent names** | a wrist is glanced at, not read. Naming the agents was the first cut and was wrong: a name is something you read, and reading is the thing a glance cannot do. Which agent went amber is a question for the console |
 | **Console** — *39 Gate Agents* | the same three lights, each a **tappable group** — working, needs you, stopped | somebody opening this *because* amber appeared should not have to scan a flat list for the one that changed. Here amber means a person is standing at a door |
 | **Overlay** — *40 Audit · overlay*, and every desktop view | a small translucent box in the bottom-right corner — the same three rows as the wrist, each its own way in | an agent that reports only on its own screen is one somebody has to remember to check. On desktop it rides on **every** view, because a console is watched from, not visited |
+
+## The console guide
+
+`pdi/tutorial.py` and `pdi/assistant.py`, 7 routes, 29 tests, screen **41**.
+
+Fourteen steps across six chapters, in the order an operator actually meets the
+product: you have a vault before you have a tenant, a tenant before it has a
+token, and a token before anything is sealed with it. It is the third of three
+guides — QRME's walks a consumer through a product full of synthetic people,
+JIM's walks a patient through their own record — and the audience is what makes
+this one different.
+
+<table>
+  <tr>
+    <td align="center" width="34%"><a href="docs/screens/41-console-guide.svg"><img src="docs/screens/41-console-guide.svg" width="200" alt="Console guide"></a><br><sub><b>41</b> · fourteen steps, no vault access</sub></td>
+    <td width="66%" valign="top">
+
+| route | does |
+| --- | --- |
+| `GET /console/guide` | the whole walkthrough, chaptered |
+| `GET /console/guide/steps/{key}` | one named step |
+| `GET /console/guide/for-screen/{n}` | the lesson covering a screen |
+| `POST /console/guide/start` | begin, or begin again |
+| `GET /console/guide/progress/{id}` | where an operator is, and what is next |
+| `POST /console/guide/done` | mark a step and get the next |
+| `POST /console/ask` | ask about operating PDI |
+
+Public: the operator who most needs this is the one standing a vault up, who
+has no token yet. `mode: "voice"` renders it for listening.
+
+  </td>
+  </tr>
+</table>
+
+**It cannot read the vault.** Not "it is careful with records", not "it reads
+only what you are entitled to" — there is no code path from either module to
+`pdi.vault`, and a test parses both and asserts it. The reason is sharper here
+than in the other two products: under BYOK the customer's key travels per
+request and is never stored, so **the operator asking the question frequently
+cannot read the records either**. That is the product working. An assistant
+offering to look at the data to be helpful would be promising something the
+whole design exists to prevent, and the first person to notice would be the
+customer whose key was supposed to be the point.
+
+**It performs no operator action.** No token issued, no key rotated, no tenant
+created, no retention window set, nothing deleted. The walkthrough writes to
+one table — its own progress — and the assistant writes nothing at all. *"Just
+do it"* is refused by name, because that is the question an operator under time
+pressure genuinely asks, and the only honest answer is where the button is and
+what it will change.
+
+**It inherits the gate agent's ceiling rather than restating it.**
+[`pdi/gate.py`](#the-agent-at-the-gate) established the doctrine for this
+codebase — *the model is the voice, not the decider* — and with it the rule:
+
+> The agent's ceiling is whatever a wrong answer cannot undo.
+
+A walkthrough sits comfortably under that ceiling, because a wrong sentence in
+a tutorial is undone by reading the next one. That is why it is allowed to run
+without a human in the loop, and it is worth saying plainly: this module is safe
+because of what it cannot reach, not because the prose is careful. A test
+asserts the sentence above is quoted from `gate` rather than written out a
+second time, since a second wording of the same rule is the one that goes stale.
+
+**Written prose, no model required.** A self-hosted vault with no API key is the
+*typical* PDI deployment rather than a degraded one — the customers most likely
+to run their own vault are the least likely to let it call out to a provider.
+
+**And it cannot quietly fall behind the console.** Each lesson names the screens
+it covers, and a test asserts every screen in the gallery is claimed by one, in
+both directions. Add a capability, draw its screen, and the walkthrough fails
+until somebody has said what it is for.
 
 ## Your data promise
 

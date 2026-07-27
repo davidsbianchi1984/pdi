@@ -15,14 +15,14 @@ import secrets
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse
 
-from . import (app_connectors, audit, baa, beacons, catalog, compliance,
-               connectors, crypto, db, gate, i18n, intakes, landing, mobile,
-               notify, positions, retention, robotics, roster,
-               terms as terms_mod, transfers, vault)
+from . import (app_connectors, assistant, audit, baa, beacons, catalog,
+               compliance, connectors, crypto, db, gate, i18n, intakes,
+               landing, mobile, notify, positions, retention, robotics, roster,
+               terms as terms_mod, transfers, tutorial, vault)
 from .models import (AppCollect, AppConnect, AppInvoke, BAARecordIn,
                      BeaconFound, BeaconPlace, BeaconState,
                      ConnectorCreate, ConnectorIngest, ConnectorPublish,
-                     ContributionIn, CustomerKeyAdopt,
+                     ConsoleAsk, ContributionIn, CustomerKeyAdopt, GuideMark,
                      DeploymentCreate, FeedbackSubmit, GateRing, IntakeCreate,
                      IntakeSubmit, LanguageChoice, PositionIntake,
                      TranslateRequest, RecordPut, RetentionSet, RobotBind,
@@ -1144,6 +1144,74 @@ def create_app() -> FastAPI:
                 tally[row["category"]] = row["n"]
         return {"mine": mine, "tally": tally, "total": sum(tally.values()),
                 "categories": list(_IMPROVE_CATEGORIES)}
+
+    # -- the console guide ---------------------------------------------------
+    #
+    # Public, deliberately: it describes the console rather than anybody's
+    # data, and the person who most needs it is the operator standing a vault
+    # up who has no token yet. Nothing here reads a record — see pdi/tutorial.py
+    # for why that is structural rather than a promise.
+
+    @app.get("/console/guide")
+    def console_guide(mode: str = "text") -> dict:
+        """The whole walkthrough, chaptered."""
+        try:
+            return tutorial.outline(mode)
+        except tutorial.TutorialError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.get("/console/guide/steps/{key}")
+    def console_guide_step(key: str, mode: str = "text") -> dict:
+        """One named step, for a screen that wants to explain itself."""
+        try:
+            return tutorial.step(key, mode)
+        except tutorial.TutorialError as exc:
+            raise HTTPException(404, str(exc)) from None
+
+    @app.get("/console/guide/for-screen/{number}")
+    def console_guide_for_screen(number: int, mode: str = "text") -> dict:
+        """The lesson covering a given console screen, so a screen's help
+        button opens at the right place rather than at the beginning."""
+        found = tutorial.for_screen(number, mode)
+        if found is None:
+            raise HTTPException(404, "no lesson covers that screen")
+        return found
+
+    @app.post("/console/guide/start")
+    def console_guide_start(body: GuideMark) -> dict:
+        """Begin, or begin again from the top."""
+        try:
+            return tutorial.start(body.learner_id, body.mode)
+        except tutorial.TutorialError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.get("/console/guide/progress/{learner_id}")
+    def console_guide_progress(learner_id: str, mode: str = "text") -> dict:
+        """Where this operator is, and what is next."""
+        try:
+            return tutorial.where(learner_id, mode)
+        except tutorial.TutorialError as exc:
+            raise HTTPException(422, str(exc)) from None
+
+    @app.post("/console/guide/done")
+    def console_guide_done(body: GuideMark) -> dict:
+        """Mark one step done and hand back the next."""
+        try:
+            return tutorial.mark(body.learner_id, body.lesson, body.mode)
+        except tutorial.TutorialError as exc:
+            raise HTTPException(404, str(exc)) from None
+
+    @app.post("/console/ask")
+    def console_ask(body: ConsoleAsk) -> dict:
+        """Ask about operating PDI. Reads no record, changes nothing.
+
+        `mode="voice"` renders the walkthrough for listening rather than
+        reading — one lesson rendered twice, not a second script.
+        """
+        try:
+            return assistant.ask(body.question, body.mode)
+        except tutorial.TutorialError as exc:
+            raise HTTPException(422, str(exc)) from None
 
     # The console itself, served from this API so a phone loads the UI and
     # calls the API on one origin (no CORS, nothing to configure). Mounted

@@ -1391,6 +1391,17 @@ SCREENS = [
         dict(icon="person", color="amber", k="Handed to a person", s="paged · waiting on the roster"),
         dict(icon="eye", color="cyan", k="The lights follow you", s="the work stays where it is"),
     ]),
+    # The console guide. Cards two and three are the whole design: it explains
+    # the console and cannot reach the vault, which under BYOK is not a policy
+    # but a fact about what key the server holds.
+    dict(num=41, title="Console Guide", sub="Fourteen steps, no vault access",
+         accent="cyan", tab=0, cards=[
+        dict(icon="compass", color="cyan", k="Six chapters", s="vault, tenants, audit, gate"),
+        dict(icon="lock", color="green", k="It cannot read a record", s="under BYOK, nor could anyone"),
+        dict(icon="warn", color="amber", k="It performs no action", s="no tokens, no keys, no deletes"),
+        dict(icon="speaker", color="brand", k="Read it or hear it", s="voice drops the numbers"),
+        dict(icon="shieldok", color="cyan", k="Every screen covered", s="a test holds it to the console"),
+    ]),
 ]
 
 

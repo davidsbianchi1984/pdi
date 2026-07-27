@@ -323,6 +323,20 @@ CREATE TABLE IF NOT EXISTS feedback (
     status     TEXT NOT NULL DEFAULT 'received',   -- received | reviewed | planned | shipped
     created_at TEXT NOT NULL
 );
+
+-- How far an operator has got through the console walkthrough (pdi/tutorial.py).
+-- One row per step rather than a cursor, so somebody who jumped to the audit
+-- chapter and came back is not told they have finished the vault.
+--
+-- Outside the per-tenant namespace on purpose: this is about a person learning
+-- the console, not about anybody's records — and it is the only thing the
+-- walkthrough writes anywhere.
+CREATE TABLE IF NOT EXISTS console_tutorial (
+    learner_id TEXT NOT NULL,
+    lesson     TEXT NOT NULL,
+    done_at    TEXT NOT NULL,
+    PRIMARY KEY (learner_id, lesson)
+);
 """
 
 _local = threading.local()

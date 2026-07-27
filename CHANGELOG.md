@@ -6,6 +6,50 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **A guided walkthrough of the console, and an assistant that delivers it** —
+  `pdi/tutorial.py`, `pdi/assistant.py`, 7 routes, 29 tests, screen 41. PDI was
+  the only one of the three products without a guide: QRME's walks a consumer
+  through a platform full of synthetic people, JIM-mini's walks a patient
+  through their own record, and an operator standing up a vault got a README.
+
+  Fourteen steps across six chapters, in the order somebody actually meets the
+  product — you have a vault before a tenant, a tenant before its token, and a
+  token before anything is sealed with it.
+
+  **It cannot read the vault**, and that is the design rather than a promise.
+  There is no code path from either module to `pdi.vault`; a test parses both
+  and asserts it, reading the AST rather than the text so that writing the rule
+  down in a docstring does not trip the guard enforcing it. The reason is
+  sharper here than in the other two products: under BYOK the customer key
+  travels per request and is never stored, so **the operator asking the question
+  frequently cannot read the records either** — that is the product working. An
+  assistant offering to look at the data to be helpful would be promising
+  exactly what the design exists to prevent, and the first person to notice
+  would be the customer whose key was supposed to be the point.
+
+  **It performs no operator action.** No token issued, no key rotated, no
+  tenant created, no retention set, nothing deleted. The walkthrough writes one
+  table — its own progress — and the assistant writes nothing at all. *"Just do
+  it"* is refused by name, because it is the question an operator under time
+  pressure genuinely asks, and the only honest answer is which screen does it
+  and what it will change.
+
+  **The ceiling is `pdi.gate`'s, quoted rather than restated.** That module
+  established the doctrine — *the model is the voice, not the decider* — and
+  with it *the agent's ceiling is whatever a wrong answer cannot undo*. A
+  walkthrough sits comfortably under it, because a wrong sentence in a tutorial
+  is undone by reading the next one. A test asserts the sentence is quoted from
+  `gate` rather than written out a second time, since a second wording of one
+  rule is the copy that goes stale.
+
+  **Written prose, no model required** — a self-hosted vault with no API key is
+  the typical PDI deployment, not a degraded one. **Voice and text are one
+  lesson rendered twice**, so the spoken version cannot drift. And it **cannot
+  quietly fall behind the console**: each lesson names its screens and a test
+  binds the set to the gallery in both directions.
+
 ## [0.3.3] — 2026-07-27
 
 There are no functional changes to the vault in this release — no new routes,
