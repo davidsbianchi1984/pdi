@@ -163,7 +163,7 @@ Defined once, in [`qrme/agentlight.py`](https://github.com/davidsbianchi1984/qrm
 | --- | --- | --- |
 | **Watch** — *36 Agents* (JIM) | three lights and three counts, and **no agent names** | a wrist is glanced at, not read. Naming the agents was the first cut and was wrong: a name is something you read, and reading is the thing a glance cannot do. Which agent went amber is a question for the console |
 | **Console** — *39 Gate Agents* | the same three lights, each a **tappable group** — working, needs you, stopped | somebody opening this *because* amber appeared should not have to scan a flat list for the one that changed. Here amber means a person is standing at a door |
-| **Overlay** — *40 Audit · overlay*, and every desktop view | a pinned strip with the three counts and a way in | an agent that reports only on its own screen is one somebody has to remember to check. On desktop it rides on **every** view, because a console is watched from, not visited |
+| **Overlay** — *40 Audit · overlay*, and every desktop view | a small translucent box in the bottom-right corner — the same three rows as the wrist, each its own way in | an agent that reports only on its own screen is one somebody has to remember to check. On desktop it rides on **every** view, because a console is watched from, not visited |
 
 ## Your data promise
 
