@@ -1472,6 +1472,32 @@ SCREENS = [
 ]
 
 
+# Characters that must not reach a filename, because the filename becomes a URL
+# in the README's <img src>. A "?" starts a query string, a "#" a fragment, and
+# an apostrophe is escaped to %27 by GitHub's raw host — so a README written
+# with the plain character resolves to nothing.
+#
+# Ported from QRME, which was bitten twice (a comma, then a "?"), and from
+# jim-mini, where the apostrophe in "You're on Basic" actually shipped a broken
+# image because that repo had the hand-written slug and no check on it. PDI's
+# titles happen to be clean; that is luck, and luck is not a guard.
+_UNSAFE = str.maketrans({c: None for c in "?#,:!'\"()[]{}<>|\\^`*$&+;@="})
+
+
+def slug(title: str) -> str:
+    """The filename part of a screen's title, safe to put in a URL."""
+    out = (title.lower().replace(" & ", "-").replace(" ", "-")
+                .replace("\u00e9", "e").translate(_UNSAFE))
+    while "--" in out:
+        out = out.replace("--", "-")
+    return out.strip("-")
+
+
+def filename(screen: dict) -> str:
+    """The one place a screen's file is named."""
+    return f'{screen["num"]:02d}-{slug(screen["title"])}.svg'
+
+
 def main():
     global PLATFORM
     total = 0
@@ -1481,8 +1507,7 @@ def main():
         os.makedirs(outdir, exist_ok=True)
         for s in SCREENS:
             n = s["num"]
-            slug = s["title"].lower().replace(" & ", "-").replace(" ", "-").replace("é", "e")
-            fn = f'{n:02d}-{slug}.svg'
+            fn = filename(s)
             with open(os.path.join(outdir, fn), "w") as f:
                 f.write(render(s))
             total += 1
