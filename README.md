@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.3.2** ([changelog](CHANGELOG.md) ·
+**Current release: v0.3.3** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -23,250 +23,6 @@ vaults its medical and context payloads here, and QRME seals its profile
 source material — each as its own tenant with its own token. See
 [docs/tandem.md](docs/tandem.md).
 
-## What's in the current release
-
-The sections below describe every capability in detail. This is the short
-version of how it got here — what each release actually added, newest first.
-Full detail in [CHANGELOG.md](CHANGELOG.md).
-
-Several rounds land here as **no functional change**, and the changelog says so
-in those words rather than padding the entry. PDI is the bottom layer: when the
-products above it learn to handle something new, the vault's correct
-contribution is usually to hold the bytes exactly as it already did.
-
-| Release | What landed |
-|---|---|
-| **0.3.2** | **No functional change to PDI.** The round belongs to QRME's starter gallery |
-| **0.3.1** | **No functional change to PDI.** This README, and a known gap recorded rather than left silent: `docs/tandem.md` is still 92 lines shorter here than in the siblings, and the fix lands next round |
-| **0.3.0** | **No functional change to PDI** — but the round's most sensitive new payload lands here. QRME learned to put somebody in front of a real clinician and let that clinician write back; the note is sealed under a `qrme/{profile}/clinical/…` key, content in the vault with only a key reference held next door |
-| **0.2.2** | A documentation release — no code changed in any of the three products |
-| **0.2.1**–**0.2.0** | **A per-tenant on-call roster**, so an escalation reaches a named person rather than a queue |
-| **0.1.9** | **A hand-off reaches a person now.** Custody beacons designed and built, the agent at the gate, and a phone that scans a custody beacon lands on a page rather than on JSON |
-| **0.1.8**–**0.1.7** | Release-link repairs, and the point at which the three products began being **cut as one release** |
-| **0.1.6**–**0.1.5** | Version aligned across the suite. **BYOK — bring your own key.** Open admin now **fails closed** off-machine, and a published deployment refuses an ephemeral key. Native apps compiled in CI, one-container deploy |
-| **0.1.4**–**0.1.2** | `python -m pdi` launcher, running it on your phone, Terms of Service, **BAA enforcement** and template, macOS notarization |
-| **0.1.1** | Native iOS / Android / Windows apps at parity. First-run onboarding. Enterprise compliance transfer, robots as vault-backed data sources, connected platforms, language & provenance |
-| **0.1.0** | First public release — the **encrypted vault**, envelope encryption & key management, **tamper-evident audit**, tenant registry & RBAC, retention up to forever, and tenant deletion |
-
-## What it provides
-
-- **Private, encrypted data vault** — record values are sealed at rest with
-  AES-256-GCM (`pdi/crypto.py`); only ciphertext touches disk. AAD binds each
-  record to its tenant + key so ciphertext can't be relocated.
-- **Production key management (envelope encryption)** — a key-encryption key
-  (KEK) never touches record data; each **key version** owns a random
-  data-encryption key (DEK) stored only *wrapped* by the KEK. `POST /keys/rotate`
-  mints a new version and re-seals records under it (old versions stay readable
-  until `POST /keys/retire`); `GET /keys` reports versions. The KEK lives in the
-  env (dev) or a **KMS/HSM** in production (`PDI_KEY_PROVIDER=kms`, a loud
-  integration seam — never a silent local fallback).
-- **Retention — from a short window up to forever** — per-tenant record
-  retention (`7d`/`30d`/`90d`/`180d`/`1y`/`forever`, default **forever**) and a
-  global soft-delete recovery window (`PDI_RECOVERY_WINDOW`, default forever);
-  `POST /retention/sweep` expires records/purges tombstoned tenants past their
-  window — `forever` expires nothing. The audit chain is always kept forever
-  (pruning it would break tamper-evidence).
-- **Documented audit event schema** — `GET /audit/schema` returns the field
-  definitions and the full action catalogue (each action's category and
-  meaning); every audit entry carries a derived `category`.
-- **Tenant registry** — each integrating system gets a tenant + bearer token;
-  data is strictly namespaced per tenant (no cross-tenant reads).
-- **Tamper-evident audit log** — every access is recorded in an append-only,
-  SHA-256 hash-chained log; `GET /audit/verify` detects any retroactive edit.
-- **Disaster-recovery snapshot & restore** — `GET /snapshot` exports
-  ciphertext only; `POST /restore` reinserts a snapshot after a loss, with
-  AAD still binding every record to its tenant + key.
-- **Cloud-model contribution intake** — `POST /contributions` seals
-  anonymized model-improvement data from integrating systems under
-  `contributions/{source}/…` keys, encrypted and audit-chained;
-  `GET /contributions` lists the intake ([docs/cloud-model.md](docs/cloud-model.md)).
-- **Position & assistant builder** — `POST /positions` turns a completed
-  AI Integration & Role-Mapping Questionnaire (industry-agnostic) into an
-  assistant *blueprint* — recommended capabilities, an automation-opportunity
-  score, human-in-the-loop guardrails, reskilling paths, and a ready-to-use
-  assistant system-prompt. The raw workforce answers are sealed in the vault
-  under `positions/{id}`; only the derived blueprint is returned. Decision
-  support, never an automated staffing decision
-  ([docs/positions.md](docs/positions.md)).
-- **Custody beacons** — `POST /beacons` prints a code for a physical carrier
-  (a records box, a decommissioned drive, a courier bag) or for the facility
-  door itself, so custody stays visible once a payload has a handle. The seal
-  card at `GET /s/{id}` says a thing is under custody and what governs it, and
-  **never what is in it**. A finder's `POST /s/{id}/found` is a custody
-  receipt, not a message: it lands in the hash-chained audit log, so a gap in
-  a carrier's chain becomes a compliance finding PDI can produce on demand.
-  Plain scans stay off the chain — a barcode gun sweeping a pallet must not
-  fill a tamper-evidence log. Blind by default, because naming the tenant can
-  itself be the disclosure ([docs/beacons.md](docs/beacons.md)).
-- **The agent at the gate** — `POST /s/{id}/ring` triages a facility ring when
-  no human is awake. PDI grows no model: the voice is a QRME profile over HTTP
-  (`PDI_QRME_URL` + `PDI_GATE_PROFILE`), which also means it carries QRME's AI
-  mark, and an unconfigured deployment answers from a written script with no
-  model anywhere near it. **The model is the voice, not the decider** —
-  `gate.decide()` takes no model output, so there is no code path from
-  generated text to a consequential action. The ceiling comes from the
-  `HUMAN_IN_LOOP` set `positions.py` already publishes, and is itself published
-  at `GET /gate/ceiling`: the agent may direct, check, structure a receipt and
-  hand off, and may **never** grant entry, assert identity, override an
-  authorization, or see contents. A hand-off is **delivered**, not merely
-  filed: PDI posts a signed envelope to `PDI_NOTIFY_URL` and, when nobody was
-  reached, says so on the scan page rather than letting *"I've passed this to
-  the on-call contact"* leave somebody waiting in the rain for nobody.
-- **A per-tenant on-call roster** — `POST /gate/roster` sets who answers *this*
-  facility's gate and when, in the tenant's own database rows under the
-  tenant's own token. It replaces one deployment-wide `PDI_GATE_ONCALL` that
-  routed every customer's courier to the same name. Shifts cross midnight
-  correctly (`18:00`–`06:00` belongs to the day it started), the facility's
-  IANA timezone is **refused if unknown** rather than silently read as UTC, and
-  a page that a webhook rejects moves to the next name — with one contact, a
-  failed page was the end of the line.
-- **Role-based access control** — `POST /tenants/{id}/tokens` issues scoped
-  `read`/`write` tokens; read tokens cannot write or delete, and
-  `DELETE /tokens/{token}` revokes instantly.
-- **Tokens hashed at rest** — only the SHA-256 hash of each tenant/scoped
-  token is stored, so a leak of PDI's own database yields no usable
-  credential; the plaintext is shown once at issuance. The admin token is
-  compared in constant time.
-- **Deployment record** — models the on-premises vs. colocation (Tier III+)
-  options from the proposal.
-
-## The agent status light
-
-An agent working on its own raises one question, and it is not *what phase is
-it in* — it is **does this need me right now?** Three colours answer it.
-
-| | | |
-| --- | --- | --- |
-| 🟢 **green** | working · done | in progress, or finished. Nothing wanted from you |
-| 🟡 **amber** | needs you | it has stopped and is waiting on a person |
-| 🔴 **red** | stopped | it hit an error or was cancelled, and will not continue |
-
-**Derived, never stored.** There is no `light` column and nothing sets one — it
-is computed from the status the work already keeps. A second field naming the
-same fact is a second field that can disagree with the first, and the one a
-screen reads would be the one nobody remembers to update.
-
-**The word rides with the colour**, because green alone cannot separate an
-agent that is still going from one that has finished, and those call for
-opposite reactions. On a watch face the word is doing most of the reading
-anyway.
-
-**An unrecognised state raises rather than defaulting.** A default would paint
-an unknown status green, and green is the colour that means *ignore me* — the
-one failure this must not have.
-
-Defined once, in [`qrme/agentlight.py`](https://github.com/davidsbianchi1984/qrme/blob/main/qrme/agentlight.py), for all three products.
-
-**Where you actually see it.** Three surfaces, doing three different jobs.
-
-| Surface | What it shows | Why that shape |
-| --- | --- | --- |
-| **Watch** — *36 Agents* (JIM) | three lights and three counts, and **no agent names** | a wrist is glanced at, not read. Naming the agents was the first cut and was wrong: a name is something you read, and reading is the thing a glance cannot do. Which agent went amber is a question for the console |
-| **Console** — *39 Gate Agents* | the same three lights, each a **tappable group** — working, needs you, stopped | somebody opening this *because* amber appeared should not have to scan a flat list for the one that changed. Here amber means a person is standing at a door |
-| **Overlay** — *40 Audit · overlay*, and every desktop view | a small translucent box in the bottom-right corner — the same three rows as the wrist, each its own way in | an agent that reports only on its own screen is one somebody has to remember to check. On desktop it rides on **every** view, because a console is watched from, not visited |
-
-## Your data promise
-
-**No raw user data ever leaves your vault.** PDI is the vault.
-
-- Everything stored is AES-256-GCM ciphertext, AAD-bound to its tenant and
-  key — one integrating system can never read another's records, and the
-  database on disk holds nothing readable.
-- PDI's own credentials get the same care as your data: bearer tokens are
-  stored only as SHA-256 hashes, shown once at issuance.
-- Every access — store, read, erase — lands in a tamper-evident hash-chained
-  audit log; `GET /audit/verify` proves nothing was retroactively edited, and
-  integrating apps surface a per-user view of it.
-- Deletion is real: the owning app purges its keys, tenant deletion offers a
-  soft recovery window and then a permanent wipe, and no orphaned ciphertext
-  remains. Retention is yours to set — per-tenant, from a short window up to
-  **forever** — while the tamper-evident audit chain is always kept forever.
-- Deployed on-premises or in colocation — your hardware, your keys
-  (`PDI_MASTER_KEY`), your walls.
-
-## Run
-
-```bash
-pip install -e .[dev]
-export PDI_MASTER_KEY=$(python -c "import base64,os;print(base64.b64encode(os.urandom(32)).decode())")
-uvicorn pdi.api:app
-```
-
-`PDI_DB` sets the SQLite path (default `pdi.db`). `PDI_MASTER_KEY` is base64 of
-32 bytes; in production it belongs in the corporation's own KMS/HSM inside the
-private facility (an ephemeral key is generated if unset — dev only).
-
-## Run it on your phone
-
-The operator console is a web app, so a phone on the same Wi-Fi runs it
-straight from this backend — no app store, no second server, nothing to
-configure on the phone.
-
-```bash
-python -m pdi          # the launcher menu: choose your device
-python -m pdi phone    # straight to the phone flow
-```
-
-Bare `python -m pdi` prints the launcher menu — every way to run the
-vault console, one command each, so you pick per device: **phone** (this
-section), **desktop** (`python -m pdi desktop`, the Electron app on this
-PC), **packaged installer** (`.dmg`/`.exe`/`.AppImage` from the releases
-page — no toolchain needed), or **headless API** (`python -m pdi serve`).
-Same backend, same data, same token checks in every form.
-
-`python -m pdi phone` builds the console if it's missing (first run installs the
-npm dependencies too), prints the phone URL **with a QR code right in the
-terminal**, and starts the API on the network — scan, Add to Home Screen,
-done. Flags: `--port`, `--rebuild`, `--no-build`, `--print-only`.
-
-The manual equivalent, if you prefer the steps separately:
-
-```bash
-npm --prefix app install && npm --prefix app run build   # build the console once
-uvicorn pdi.api:app --host 0.0.0.0                       # listen on the network
-curl localhost:8000/pair                                 # what to open on the phone
-```
-
-`GET /pair` answers with the console's URL on your local network (and
-`GET /pair/qr.svg` is the same URL as a QR code — the Settings screen shows
-both, so you can scan it off the laptop). Open that URL on the phone, then
-**Add to Home Screen**: it installs as a standalone app with its own icon,
-runs full-screen, and keeps working through a brief drop in connectivity.
-
-Why it needs no setup: the API serves the console at `/app`, so the UI and
-the API share one origin — the console simply calls the address it was
-loaded from. The phone layout follows: the sidebar becomes a thumb-reachable
-bottom tab bar, inputs stay at 16px so iOS doesn't zoom, and the layout
-respects the notch and home indicator.
-
-The address is local-network only and deliberately not reachable from the
-internet — the vault and its sealed records stay on your own network. Admin
-endpoints still require `PDI_ADMIN_TOKEN` and tenant data still requires the
-tenant's bearer token; a phone on the LAN is exactly as authorized as a
-laptop on the LAN. If `/pair` reports `reachable: false`, it could only find
-loopback (which on a phone means the phone itself): set `PDI_LAN_HOST` to
-this machine's address and restart.
-
-### Hosting a collation facility
-
-A PDI deployment *is* the collation facility. Run your own, or use one
-somebody else runs — the `Dockerfile` packages the console and the API into
-one image either way:
-
-```bash
-docker build -t pdi .
-docker run -p 8100:8100 -v pdi-data:/data \
-  -e PDI_MASTER_KEY="$(openssl rand -base64 32)" \
-  -e PDI_ADMIN_TOKEN="$(openssl rand -base64 24)" \
-  -e PDI_PUBLIC_URL=https://vault.example.com pdi
-```
-
-The choice that matters is not whose rack it sits in — it's **who holds
-`PDI_MASTER_KEY`**. Keep it yourself and a host with root, full disk access,
-and every backup still holds only ciphertext; hand it over and they can read
-the vault. [docs/hosting.md](docs/hosting.md) puts the three postures
-(self-hosted, colocation, managed) side by side and says what each one
-actually means.
 
 ## Console screens
 
@@ -416,70 +172,167 @@ The first-run journey runs **23 Welcome → 22 Log In → 24 Key Setup → 25 Gr
 
 **For enterprises:** PDI offers compliance-grade secure file transfer for corporations (carriers, healthcare, financial, public sector) — files sealed under HIPAA / OSHA / CPNI / PCI-DSS and more, with audited chain of custody and enforced retention, in both directions: outbound transfers and inbound secure intake from subscribers and partners. See [docs/enterprise.md](docs/enterprise.md).
 
+## What's in the current release
 
-## API
+The sections below describe every capability in detail. This is the short
+version of how it got here — what each release actually added, newest first.
+Full detail in [CHANGELOG.md](CHANGELOG.md).
 
-| Endpoint | Auth | Purpose |
-|---|---|---|
-| `GET /health` | — | Liveness |
-| `POST /deployments` | admin | Record a deployment (on-premises / colocation) |
-| `POST /tenants` | admin | Create a tenant (optional `retention`); returns its bearer token once |
-| `POST /seed` | admin | Seed the **starter vault** (`pdi/seed.py`, also `python -m pdi.seed`): a `starter-demo` tenant with sealed sample records covering every provenance origin (direct / `jim/` / `qrme/`), a bound home robot with sealed collection data, and an audit trail with a full custody cycle. Idempotent; the tenant token is returned only by the run that creates it |
-| `PUT /tenants/{id}/retention` | admin | Set record retention (`7d`…`1y`\|`forever`\|days) |
-| `PUT /records` | tenant (write) | Store `{key, value}` — value sealed at rest |
-| `GET /records/{key}` | tenant | Retrieve and decrypt a value (keys may be path-namespaced) |
-| `DELETE /records/{key}` | tenant (write) | Delete a record |
-| `GET /records` | tenant | List this tenant's keys |
-| `POST /contributions` | tenant (write) | Seal an anonymized cloud-model contribution (optional `ref`) |
-| `GET /contributions` | tenant | List contribution keys |
-| `DELETE /contributions/{ref}` | tenant (write) | Revoke a contribution by its anonymous ref |
-| `POST /positions` | tenant (write) | Seal a role-mapping intake and return the assistant blueprint |
-| `GET /positions` | tenant | List saved position ids |
-| `GET /positions/{id}` | tenant | Fetch a saved position's blueprint |
-| `GET /snapshot` | tenant | DR export (ciphertext only) |
-| `POST /keys/rotate` | admin | Rotate the key version (re-seals records; `?reseal=false` to defer) |
-| `GET /keys` | admin | Key versions + provider |
-| `POST /keys/reseal` · `POST /keys/retire` | admin | Re-seal records / retire old versions |
-| `GET /retention` | admin | Retention policy (recovery window + per-tenant) |
-| `POST /retention/sweep` | admin | Enforce retention now (expire/purge past-window; `forever` = no-op) |
-| `GET /audit` | tenant | This tenant's audit entries (each with a `category`) |
-| `GET /audit/verify` | tenant | Verify the hash-chain is intact |
-| `GET /audit/schema` | — | Audit event schema: fields + action catalogue |
-| `POST`/`GET /tenants/{id}/baa`, `DELETE …/baa`, `GET /baa` | admin / tenant | **BAA enforcement**: the operator records each customer's executed Business Associate Agreement ([template](docs/baa-template.md)); HIPAA-program transfers/intakes are refused (403) for tenants without one on file; tenants check their own standing at `GET /baa`; execution/termination land in the audit chain |
-| `POST`/`GET /improve` | — (open) | **Help us improve**: product feedback on PDI itself (idea/improvement/bug/praise + optional 1–5 rating). Not tenant record data — a tenant token, if presented, just lets a submitter find their own words again; a submitter sees only their own plus the public per-category tally |
+Several rounds land here as **no functional change**, and the changelog says so
+in those words rather than padding the entry. PDI is the bottom layer: when the
+products above it learn to handle something new, the vault's correct
+contribution is usually to hold the bytes exactly as it already did.
 
-Tenant endpoints require `Authorization: Bearer pdi_...`.
+| Release | What landed |
+|---|---|
+| **0.3.3** | **No functional change to the vault** — the round belongs to the console. The agent status light lands on screens 39 and 40, with an overlay on every desktop view, because on a gate console amber means somebody is standing at a door. Plus a README that leads with the screens |
+| **0.3.2** | **No functional change to PDI.** The round belongs to QRME's starter gallery |
+| **0.3.1** | **No functional change to PDI.** This README, and a known gap recorded rather than left silent: `docs/tandem.md` is still 92 lines shorter here than in the siblings, and the fix lands next round |
+| **0.3.0** | **No functional change to PDI** — but the round's most sensitive new payload lands here. QRME learned to put somebody in front of a real clinician and let that clinician write back; the note is sealed under a `qrme/{profile}/clinical/…` key, content in the vault with only a key reference held next door |
+| **0.2.2** | A documentation release — no code changed in any of the three products |
+| **0.2.1**–**0.2.0** | **A per-tenant on-call roster**, so an escalation reaches a named person rather than a queue |
+| **0.1.9** | **A hand-off reaches a person now.** Custody beacons designed and built, the agent at the gate, and a phone that scans a custody beacon lands on a page rather than on JSON |
+| **0.1.8**–**0.1.7** | Release-link repairs, and the point at which the three products began being **cut as one release** |
+| **0.1.6**–**0.1.5** | Version aligned across the suite. **BYOK — bring your own key.** Open admin now **fails closed** off-machine, and a published deployment refuses an ephemeral key. Native apps compiled in CI, one-container deploy |
+| **0.1.4**–**0.1.2** | `python -m pdi` launcher, running it on your phone, Terms of Service, **BAA enforcement** and template, macOS notarization |
+| **0.1.1** | Native iOS / Android / Windows apps at parity. First-run onboarding. Enterprise compliance transfer, robots as vault-backed data sources, connected platforms, language & provenance |
+| **0.1.0** | First public release — the **encrypted vault**, envelope encryption & key management, **tamper-evident audit**, tenant registry & RBAC, retention up to forever, and tenant deletion |
 
-## Tandem client
+## What it provides
 
-`pdi/client.py` (`PDIClient`) is the small library an AI system uses to store
-secrets in PDI over HTTP — e.g. JIM-mini keeping a user's emergency contact in
-the encrypted vault instead of its own database. The AI systems never import
-PDI internals.
+- **Private, encrypted data vault** — record values are sealed at rest with
+  AES-256-GCM (`pdi/crypto.py`); only ciphertext touches disk. AAD binds each
+  record to its tenant + key so ciphertext can't be relocated.
+- **Production key management (envelope encryption)** — a key-encryption key
+  (KEK) never touches record data; each **key version** owns a random
+  data-encryption key (DEK) stored only *wrapped* by the KEK. `POST /keys/rotate`
+  mints a new version and re-seals records under it (old versions stay readable
+  until `POST /keys/retire`); `GET /keys` reports versions. The KEK lives in the
+  env (dev) or a **KMS/HSM** in production (`PDI_KEY_PROVIDER=kms`, a loud
+  integration seam — never a silent local fallback).
+- **Retention — from a short window up to forever** — per-tenant record
+  retention (`7d`/`30d`/`90d`/`180d`/`1y`/`forever`, default **forever**) and a
+  global soft-delete recovery window (`PDI_RECOVERY_WINDOW`, default forever);
+  `POST /retention/sweep` expires records/purges tombstoned tenants past their
+  window — `forever` expires nothing. The audit chain is always kept forever
+  (pruning it would break tamper-evidence).
+- **Documented audit event schema** — `GET /audit/schema` returns the field
+  definitions and the full action catalogue (each action's category and
+  meaning); every audit entry carries a derived `category`.
+- **Tenant registry** — each integrating system gets a tenant + bearer token;
+  data is strictly namespaced per tenant (no cross-tenant reads).
+- **Tamper-evident audit log** — every access is recorded in an append-only,
+  SHA-256 hash-chained log; `GET /audit/verify` detects any retroactive edit.
+- **Disaster-recovery snapshot & restore** — `GET /snapshot` exports
+  ciphertext only; `POST /restore` reinserts a snapshot after a loss, with
+  AAD still binding every record to its tenant + key.
+- **Cloud-model contribution intake** — `POST /contributions` seals
+  anonymized model-improvement data from integrating systems under
+  `contributions/{source}/…` keys, encrypted and audit-chained;
+  `GET /contributions` lists the intake ([docs/cloud-model.md](docs/cloud-model.md)).
+- **Position & assistant builder** — `POST /positions` turns a completed
+  AI Integration & Role-Mapping Questionnaire (industry-agnostic) into an
+  assistant *blueprint* — recommended capabilities, an automation-opportunity
+  score, human-in-the-loop guardrails, reskilling paths, and a ready-to-use
+  assistant system-prompt. The raw workforce answers are sealed in the vault
+  under `positions/{id}`; only the derived blueprint is returned. Decision
+  support, never an automated staffing decision
+  ([docs/positions.md](docs/positions.md)).
+- **Custody beacons** — `POST /beacons` prints a code for a physical carrier
+  (a records box, a decommissioned drive, a courier bag) or for the facility
+  door itself, so custody stays visible once a payload has a handle. The seal
+  card at `GET /s/{id}` says a thing is under custody and what governs it, and
+  **never what is in it**. A finder's `POST /s/{id}/found` is a custody
+  receipt, not a message: it lands in the hash-chained audit log, so a gap in
+  a carrier's chain becomes a compliance finding PDI can produce on demand.
+  Plain scans stay off the chain — a barcode gun sweeping a pallet must not
+  fill a tamper-evidence log. Blind by default, because naming the tenant can
+  itself be the disclosure ([docs/beacons.md](docs/beacons.md)).
+- **The agent at the gate** — `POST /s/{id}/ring` triages a facility ring when
+  no human is awake. PDI grows no model: the voice is a QRME profile over HTTP
+  (`PDI_QRME_URL` + `PDI_GATE_PROFILE`), which also means it carries QRME's AI
+  mark, and an unconfigured deployment answers from a written script with no
+  model anywhere near it. **The model is the voice, not the decider** —
+  `gate.decide()` takes no model output, so there is no code path from
+  generated text to a consequential action. The ceiling comes from the
+  `HUMAN_IN_LOOP` set `positions.py` already publishes, and is itself published
+  at `GET /gate/ceiling`: the agent may direct, check, structure a receipt and
+  hand off, and may **never** grant entry, assert identity, override an
+  authorization, or see contents. A hand-off is **delivered**, not merely
+  filed: PDI posts a signed envelope to `PDI_NOTIFY_URL` and, when nobody was
+  reached, says so on the scan page rather than letting *"I've passed this to
+  the on-call contact"* leave somebody waiting in the rain for nobody.
+- **A per-tenant on-call roster** — `POST /gate/roster` sets who answers *this*
+  facility's gate and when, in the tenant's own database rows under the
+  tenant's own token. It replaces one deployment-wide `PDI_GATE_ONCALL` that
+  routed every customer's courier to the same name. Shifts cross midnight
+  correctly (`18:00`–`06:00` belongs to the day it started), the facility's
+  IANA timezone is **refused if unknown** rather than silently read as UTC, and
+  a page that a webhook rejects moves to the next name — with one contact, a
+  failed page was the end of the line.
+- **Role-based access control** — `POST /tenants/{id}/tokens` issues scoped
+  `read`/`write` tokens; read tokens cannot write or delete, and
+  `DELETE /tokens/{token}` revokes instantly.
+- **Tokens hashed at rest** — only the SHA-256 hash of each tenant/scoped
+  token is stored, so a leak of PDI's own database yields no usable
+  credential; the plaintext is shown once at issuance. The admin token is
+  compared in constant time.
+- **Deployment record** — models the on-premises vs. colocation (Tier III+)
+  options from the proposal.
 
-## Configuration
+## The agent status light
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `PDI_DB` | `pdi.db` | SQLite database path (ciphertext only) |
-| `PDI_MASTER_KEY` | — | Key-encryption key (KEK): base64 of 32 bytes. Wraps the per-version DEKs; ephemeral if unset (dev only) |
-| `PDI_KEY_PROVIDER` | `env` | `env` reads `PDI_MASTER_KEY`; `kms` routes the KEK to a KMS/HSM (see `KmsKeyProvider`) |
-| `PDI_KMS_KEY_ID` | — | KMS/HSM key id used by the `kms` provider |
-| `PDI_RECOVERY_WINDOW` | `forever` | Soft-deleted tenants purge after this window on sweep (`7d`…`1y`\|`forever`\|days) |
-| `PDI_ADMIN_TOKEN` | — | Guards admin endpoints; unset = open (dev only) |
-| `PDI_QRME_URL` / `PDI_GATE_PROFILE` | — | The gate agent's voice: a QRME `@handle` over HTTP. Both required, or the gate answers from its written script |
-| `PDI_GATE_ONCALL` | `the site's on-call contact` | Fallback for a tenant with **no roster**. Who a hand-off is routed to is per tenant now (`POST /gate/roster`) — a deployment-wide name sent every customer's courier to the same person ([docs/beacons.md](docs/beacons.md#who-answers-and-when)) |
-| `PDI_NOTIFY_URL` / `PDI_NOTIFY_SECRET` | — | Where a hand-off is actually delivered; signed HMAC-SHA256. Unset = queued, and the caller is told nobody was reached ([docs/beacons.md](docs/beacons.md#telling-somebody)) |
+An agent working on its own raises one question, and it is not *what phase is
+it in* — it is **does this need me right now?** Three colours answer it.
 
-## Test
+| | | |
+| --- | --- | --- |
+| 🟢 **green** | working · done | in progress, or finished. Nothing wanted from you |
+| 🟡 **amber** | needs you | it has stopped and is waiting on a person |
+| 🔴 **red** | stopped | it hit an error or was cancelled, and will not continue |
 
-```bash
-pytest pdi/tests
-```
+**Derived, never stored.** There is no `light` column and nothing sets one — it
+is computed from the status the work already keeps. A second field naming the
+same fact is a second field that can disagree with the first, and the one a
+screen reads would be the one nobody remembers to update.
 
-Covers encryption round-trip, encryption-at-rest (plaintext never on disk),
-tenant isolation, the hash-chained audit log (including tamper detection), and
-a tandem run where a simulated AI system uses `PDIClient`.
+**The word rides with the colour**, because green alone cannot separate an
+agent that is still going from one that has finished, and those call for
+opposite reactions. On a watch face the word is doing most of the reading
+anyway.
+
+**An unrecognised state raises rather than defaulting.** A default would paint
+an unknown status green, and green is the colour that means *ignore me* — the
+one failure this must not have.
+
+Defined once, in [`qrme/agentlight.py`](https://github.com/davidsbianchi1984/qrme/blob/main/qrme/agentlight.py), for all three products.
+
+**Where you actually see it.** Three surfaces, doing three different jobs.
+
+| Surface | What it shows | Why that shape |
+| --- | --- | --- |
+| **Watch** — *36 Agents* (JIM) | three lights and three counts, and **no agent names** | a wrist is glanced at, not read. Naming the agents was the first cut and was wrong: a name is something you read, and reading is the thing a glance cannot do. Which agent went amber is a question for the console |
+| **Console** — *39 Gate Agents* | the same three lights, each a **tappable group** — working, needs you, stopped | somebody opening this *because* amber appeared should not have to scan a flat list for the one that changed. Here amber means a person is standing at a door |
+| **Overlay** — *40 Audit · overlay*, and every desktop view | a small translucent box in the bottom-right corner — the same three rows as the wrist, each its own way in | an agent that reports only on its own screen is one somebody has to remember to check. On desktop it rides on **every** view, because a console is watched from, not visited |
+
+## Your data promise
+
+**No raw user data ever leaves your vault.** PDI is the vault.
+
+- Everything stored is AES-256-GCM ciphertext, AAD-bound to its tenant and
+  key — one integrating system can never read another's records, and the
+  database on disk holds nothing readable.
+- PDI's own credentials get the same care as your data: bearer tokens are
+  stored only as SHA-256 hashes, shown once at issuance.
+- Every access — store, read, erase — lands in a tamper-evident hash-chained
+  audit log; `GET /audit/verify` proves nothing was retroactively edited, and
+  integrating apps surface a per-user view of it.
+- Deletion is real: the owning app purges its keys, tenant deletion offers a
+  soft recovery window and then a permanent wipe, and no orphaned ciphertext
+  remains. Retention is yours to set — per-tenant, from a short window up to
+  **forever** — while the tamper-evident audit chain is always kept forever.
+- Deployed on-premises or in colocation — your hardware, your keys
+  (`PDI_MASTER_KEY`), your walls.
 
 ## Out of scope for v1
 
@@ -491,12 +344,6 @@ export), not as live infrastructure.
 envelope to `PDI_NOTIFY_URL`, and whatever rings a phone behind it is the
 deployment's — and an on-call roster rather than a single contact. See
 [docs/beacons.md](docs/beacons.md).
-
-## Architecture
-
-![PDI architecture — tenants, encrypted vault, tamper-evident audit](assets/architecture.svg)
-
-![PDI encryption flow — seal, store, audit](assets/encryption-flow.svg)
 
 ## Related projects
 
@@ -510,6 +357,168 @@ see [docs/tandem.md](docs/tandem.md) for the full architecture:
   specialist guidance to QRME.
 - [**pdi**](https://github.com/davidsbianchi1984/pdi) — Private Data
   Infrastructure: the encrypted vault both AI systems can run on top of.
+
+## Reference
+
+Everything below is lookup material — how to run it, what to configure, what
+the endpoints are. It is at the bottom on purpose: if you see a command in one
+of the screens above and want to know what it does, this is where to find it.
+
+### Run
+
+```bash
+pip install -e .[dev]
+export PDI_MASTER_KEY=$(python -c "import base64,os;print(base64.b64encode(os.urandom(32)).decode())")
+uvicorn pdi.api:app
+```
+
+`PDI_DB` sets the SQLite path (default `pdi.db`). `PDI_MASTER_KEY` is base64 of
+32 bytes; in production it belongs in the corporation's own KMS/HSM inside the
+private facility (an ephemeral key is generated if unset — dev only).
+
+### Run it on your phone
+
+The operator console is a web app, so a phone on the same Wi-Fi runs it
+straight from this backend — no app store, no second server, nothing to
+configure on the phone.
+
+```bash
+python -m pdi          # the launcher menu: choose your device
+python -m pdi phone    # straight to the phone flow
+```
+
+Bare `python -m pdi` prints the launcher menu — every way to run the
+vault console, one command each, so you pick per device: **phone** (this
+section), **desktop** (`python -m pdi desktop`, the Electron app on this
+PC), **packaged installer** (`.dmg`/`.exe`/`.AppImage` from the releases
+page — no toolchain needed), or **headless API** (`python -m pdi serve`).
+Same backend, same data, same token checks in every form.
+
+`python -m pdi phone` builds the console if it's missing (first run installs the
+npm dependencies too), prints the phone URL **with a QR code right in the
+terminal**, and starts the API on the network — scan, Add to Home Screen,
+done. Flags: `--port`, `--rebuild`, `--no-build`, `--print-only`.
+
+The manual equivalent, if you prefer the steps separately:
+
+```bash
+npm --prefix app install && npm --prefix app run build   # build the console once
+uvicorn pdi.api:app --host 0.0.0.0                       # listen on the network
+curl localhost:8000/pair                                 # what to open on the phone
+```
+
+`GET /pair` answers with the console's URL on your local network (and
+`GET /pair/qr.svg` is the same URL as a QR code — the Settings screen shows
+both, so you can scan it off the laptop). Open that URL on the phone, then
+**Add to Home Screen**: it installs as a standalone app with its own icon,
+runs full-screen, and keeps working through a brief drop in connectivity.
+
+Why it needs no setup: the API serves the console at `/app`, so the UI and
+the API share one origin — the console simply calls the address it was
+loaded from. The phone layout follows: the sidebar becomes a thumb-reachable
+bottom tab bar, inputs stay at 16px so iOS doesn't zoom, and the layout
+respects the notch and home indicator.
+
+The address is local-network only and deliberately not reachable from the
+internet — the vault and its sealed records stay on your own network. Admin
+endpoints still require `PDI_ADMIN_TOKEN` and tenant data still requires the
+tenant's bearer token; a phone on the LAN is exactly as authorized as a
+laptop on the LAN. If `/pair` reports `reachable: false`, it could only find
+loopback (which on a phone means the phone itself): set `PDI_LAN_HOST` to
+this machine's address and restart.
+
+#### Hosting a collation facility
+
+A PDI deployment *is* the collation facility. Run your own, or use one
+somebody else runs — the `Dockerfile` packages the console and the API into
+one image either way:
+
+```bash
+docker build -t pdi .
+docker run -p 8100:8100 -v pdi-data:/data \
+  -e PDI_MASTER_KEY="$(openssl rand -base64 32)" \
+  -e PDI_ADMIN_TOKEN="$(openssl rand -base64 24)" \
+  -e PDI_PUBLIC_URL=https://vault.example.com pdi
+```
+
+The choice that matters is not whose rack it sits in — it's **who holds
+`PDI_MASTER_KEY`**. Keep it yourself and a host with root, full disk access,
+and every backup still holds only ciphertext; hand it over and they can read
+the vault. [docs/hosting.md](docs/hosting.md) puts the three postures
+(self-hosted, colocation, managed) side by side and says what each one
+actually means.
+
+### API
+
+<table>
+<tr><th align="left"><sub>Endpoint</sub></th><th align="left"><sub>Auth</sub></th><th align="left"><sub>Purpose</sub></th></tr>
+<tr><td valign="top"><sub><code>GET /health</code></sub></td><td valign="top"><sub>—</sub></td><td valign="top"><sub>Liveness</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /deployments</code></sub></td><td valign="top"><sub>admin</sub></td><td valign="top"><sub>Record a deployment (on-premises / colocation)</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /tenants</code></sub></td><td valign="top"><sub>admin</sub></td><td valign="top"><sub>Create a tenant (optional <code>retention</code>); returns its bearer token once</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /seed</code></sub></td><td valign="top"><sub>admin</sub></td><td valign="top"><sub>Seed the <b>starter vault</b> (<code>pdi/seed.py</code>, also <code>python -m pdi.seed</code>): a <code>starter-demo</code> tenant with sealed sample records covering every provenance origin (direct / <code>jim/</code> / <code>qrme/</code>), a bound home robot with sealed collection data, and an audit trail with a full custody cycle. Idempotent; the tenant token is returned only by the run that creates it</sub></td></tr>
+<tr><td valign="top"><sub><code>PUT /tenants/{id}/retention</code></sub></td><td valign="top"><sub>admin</sub></td><td valign="top"><sub>Set record retention (<code>7d</code>…<code>1y</code>|<code>forever</code>|days)</sub></td></tr>
+<tr><td valign="top"><sub><code>PUT /records</code></sub></td><td valign="top"><sub>tenant (write)</sub></td><td valign="top"><sub>Store <code>{key, value}</code> — value sealed at rest</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /records/{key}</code></sub></td><td valign="top"><sub>tenant</sub></td><td valign="top"><sub>Retrieve and decrypt a value (keys may be path-namespaced)</sub></td></tr>
+<tr><td valign="top"><sub><code>DELETE /records/{key}</code></sub></td><td valign="top"><sub>tenant (write)</sub></td><td valign="top"><sub>Delete a record</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /records</code></sub></td><td valign="top"><sub>tenant</sub></td><td valign="top"><sub>List this tenant's keys</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /contributions</code></sub></td><td valign="top"><sub>tenant (write)</sub></td><td valign="top"><sub>Seal an anonymized cloud-model contribution (optional <code>ref</code>)</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /contributions</code></sub></td><td valign="top"><sub>tenant</sub></td><td valign="top"><sub>List contribution keys</sub></td></tr>
+<tr><td valign="top"><sub><code>DELETE /contributions/{ref}</code></sub></td><td valign="top"><sub>tenant (write)</sub></td><td valign="top"><sub>Revoke a contribution by its anonymous ref</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /positions</code></sub></td><td valign="top"><sub>tenant (write)</sub></td><td valign="top"><sub>Seal a role-mapping intake and return the assistant blueprint</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /positions</code></sub></td><td valign="top"><sub>tenant</sub></td><td valign="top"><sub>List saved position ids</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /positions/{id}</code></sub></td><td valign="top"><sub>tenant</sub></td><td valign="top"><sub>Fetch a saved position's blueprint</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /snapshot</code></sub></td><td valign="top"><sub>tenant</sub></td><td valign="top"><sub>DR export (ciphertext only)</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /keys/rotate</code></sub></td><td valign="top"><sub>admin</sub></td><td valign="top"><sub>Rotate the key version (re-seals records; <code>?reseal=false</code> to defer)</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /keys</code></sub></td><td valign="top"><sub>admin</sub></td><td valign="top"><sub>Key versions + provider</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /keys/reseal</code> · <code>POST /keys/retire</code></sub></td><td valign="top"><sub>admin</sub></td><td valign="top"><sub>Re-seal records / retire old versions</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /retention</code></sub></td><td valign="top"><sub>admin</sub></td><td valign="top"><sub>Retention policy (recovery window + per-tenant)</sub></td></tr>
+<tr><td valign="top"><sub><code>POST /retention/sweep</code></sub></td><td valign="top"><sub>admin</sub></td><td valign="top"><sub>Enforce retention now (expire/purge past-window; <code>forever</code> = no-op)</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /audit</code></sub></td><td valign="top"><sub>tenant</sub></td><td valign="top"><sub>This tenant's audit entries (each with a <code>category</code>)</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /audit/verify</code></sub></td><td valign="top"><sub>tenant</sub></td><td valign="top"><sub>Verify the hash-chain is intact</sub></td></tr>
+<tr><td valign="top"><sub><code>GET /audit/schema</code></sub></td><td valign="top"><sub>—</sub></td><td valign="top"><sub>Audit event schema: fields + action catalogue</sub></td></tr>
+<tr><td valign="top"><sub><code>POST</code>/<code>GET /tenants/{id}/baa</code>, <code>DELETE …/baa</code>, <code>GET /baa</code></sub></td><td valign="top"><sub>admin / tenant</sub></td><td valign="top"><sub><b>BAA enforcement</b>: the operator records each customer's executed Business Associate Agreement (<a href="docs/baa-template.md">template</a>); HIPAA-program transfers/intakes are refused (403) for tenants without one on file; tenants check their own standing at <code>GET /baa</code>; execution/termination land in the audit chain</sub></td></tr>
+<tr><td valign="top"><sub><code>POST</code>/<code>GET /improve</code></sub></td><td valign="top"><sub>— (open)</sub></td><td valign="top"><sub><b>Help us improve</b>: product feedback on PDI itself (idea/improvement/bug/praise + optional 1–5 rating). Not tenant record data — a tenant token, if presented, just lets a submitter find their own words again; a submitter sees only their own plus the public per-category tally</sub></td></tr>
+</table>
+
+Tenant endpoints require `Authorization: Bearer pdi_...`.
+
+### Tandem client
+
+`pdi/client.py` (`PDIClient`) is the small library an AI system uses to store
+secrets in PDI over HTTP — e.g. JIM-mini keeping a user's emergency contact in
+the encrypted vault instead of its own database. The AI systems never import
+PDI internals.
+
+### Configuration
+
+<table>
+<tr><th align="left"><sub>Variable</sub></th><th align="left"><sub>Default</sub></th><th align="left"><sub>Purpose</sub></th></tr>
+<tr><td valign="top"><sub><code>PDI_DB</code></sub></td><td valign="top"><sub><code>pdi.db</code></sub></td><td valign="top"><sub>SQLite database path (ciphertext only)</sub></td></tr>
+<tr><td valign="top"><sub><code>PDI_MASTER_KEY</code></sub></td><td valign="top"><sub>—</sub></td><td valign="top"><sub>Key-encryption key (KEK): base64 of 32 bytes. Wraps the per-version DEKs; ephemeral if unset (dev only)</sub></td></tr>
+<tr><td valign="top"><sub><code>PDI_KEY_PROVIDER</code></sub></td><td valign="top"><sub><code>env</code></sub></td><td valign="top"><sub><code>env</code> reads <code>PDI_MASTER_KEY</code>; <code>kms</code> routes the KEK to a KMS/HSM (see <code>KmsKeyProvider</code>)</sub></td></tr>
+<tr><td valign="top"><sub><code>PDI_KMS_KEY_ID</code></sub></td><td valign="top"><sub>—</sub></td><td valign="top"><sub>KMS/HSM key id used by the <code>kms</code> provider</sub></td></tr>
+<tr><td valign="top"><sub><code>PDI_RECOVERY_WINDOW</code></sub></td><td valign="top"><sub><code>forever</code></sub></td><td valign="top"><sub>Soft-deleted tenants purge after this window on sweep (<code>7d</code>…<code>1y</code>|<code>forever</code>|days)</sub></td></tr>
+<tr><td valign="top"><sub><code>PDI_ADMIN_TOKEN</code></sub></td><td valign="top"><sub>—</sub></td><td valign="top"><sub>Guards admin endpoints; unset = open (dev only)</sub></td></tr>
+<tr><td valign="top"><sub><code>PDI_QRME_URL</code> / <code>PDI_GATE_PROFILE</code></sub></td><td valign="top"><sub>—</sub></td><td valign="top"><sub>The gate agent's voice: a QRME <code>@handle</code> over HTTP. Both required, or the gate answers from its written script</sub></td></tr>
+<tr><td valign="top"><sub><code>PDI_GATE_ONCALL</code></sub></td><td valign="top"><sub><code>the site's on-call contact</code></sub></td><td valign="top"><sub>Fallback for a tenant with <b>no roster</b>. Who a hand-off is routed to is per tenant now (<code>POST /gate/roster</code>) — a deployment-wide name sent every customer's courier to the same person (<a href="docs/beacons.md#who-answers-and-when">docs/beacons.md</a>)</sub></td></tr>
+<tr><td valign="top"><sub><code>PDI_NOTIFY_URL</code> / <code>PDI_NOTIFY_SECRET</code></sub></td><td valign="top"><sub>—</sub></td><td valign="top"><sub>Where a hand-off is actually delivered; signed HMAC-SHA256. Unset = queued, and the caller is told nobody was reached (<a href="docs/beacons.md#telling-somebody">docs/beacons.md</a>)</sub></td></tr>
+</table>
+
+### Test
+
+```bash
+pytest pdi/tests
+```
+
+Covers encryption round-trip, encryption-at-rest (plaintext never on disk),
+tenant isolation, the hash-chained audit log (including tamper detection), and
+a tandem run where a simulated AI system uses `PDIClient`.
+
+### Architecture
+
+![PDI architecture — tenants, encrypted vault, tamper-evident audit](assets/architecture.svg)
+
+![PDI encryption flow — seal, store, audit](assets/encryption-flow.svg)
 
 ## License
 

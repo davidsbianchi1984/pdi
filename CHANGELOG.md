@@ -6,6 +6,45 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.3] — 2026-07-27
+
+There are no functional changes to the vault in this release — no new routes,
+no schema, no behaviour. What changed is the console, and the page that
+describes it.
+
+### Added
+
+- **The agent status light on the console** — screens 39 and 40. Green
+  *working*, amber *needs you*, red *stopped*. On a gate console amber is not
+  an abstraction: it means somebody is standing at a door, waiting. Screen 38
+  showed one gate agent and nothing showed all of them, which on a site with a
+  dozen entrances is the wrong shape; 39 groups them by light so the amber
+  group is the row a thumb lands on without aiming.
+
+  **The overlay** rides over an ordinary view and over **every** desktop view —
+  a console is watched from, not visited, and leaving an amber gate agent
+  sitting on a screen nobody is looking at is the worst version of the problem
+  this exists to solve. Shaped like the watch face rather than as a bar across
+  the screen: a small translucent box in the corner, three stacked rows, each
+  its own tap target. The mapping lives once, in QRME's `agentlight.py`.
+
+### Changed
+
+- **The README leads with the console screens instead of with prose.**
+  Everything you can look at is now above everything you have to read, and the
+  run / config / API material is gathered under one **Reference** heading at
+  the bottom — so a command spotted in a screenshot has one place to go and
+  look it up. Those tables are set smaller, since they are for looking things
+  up in rather than reading through.
+
+### Fixed
+
+- **Screen 38 said "loading dock facility beacon", which said nothing.** The
+  rows now describe what is actually happening: someone at the door, a delivery
+  directed round to goods-in, somebody who wants to be let in.
+
+- **The README claimed 38 desktop-frame counterparts.** There are 40.
+
 ## [0.3.2] — 2026-07-27
 
 There are no functional changes to PDI in this release — no new routes,
@@ -645,7 +684,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.3.2...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.3.3...HEAD
+[0.3.3]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.3.3
 [0.3.2]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.3.2
 [0.3.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.3.1
 [0.3.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.3.0
