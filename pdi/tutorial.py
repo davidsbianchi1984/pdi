@@ -140,7 +140,7 @@ LESSONS: tuple[dict, ...] = (
               "is your hardware. The encryption, the audit chain and BYOK are "
               "identical on all four — what differs is uptime and who is "
               "responsible for backups.",
-         screens=(42,),
+         screens=(42, 44, 45),
          click="Open Where It Lives and read who holds what up."),
     dict(key="dock", chapter="Running it", title="The pane in the corner",
          what="The pinned lights panel, with a lid on it and four more faces: "

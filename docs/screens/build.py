@@ -1434,6 +1434,41 @@ SCREENS = [
         dict(icon="shield", color="indigo", k="Screenshots go in tickets",
              s="so no tenant names, ever"),
     ], button=("Move it left", "brand")),
+    # ---- setup: choosing where the vault lives ----
+    #
+    # Distinct from 42, which is the reference page reached from settings.
+    # This is the step inside the setup path, between Key Setup and Grant
+    # Access — after the customer holds their own key, because the key is what
+    # makes the choice free of consequence: on any of the four, we cannot read
+    # the data either way.
+    dict(num=44, title="Choose a Home", sub="Step 3 of 5",
+         accent="cyan", tab=0, cards=[
+        dict(icon="shield", color="green", k="Our facility · free",
+             s="the usual answer", pill=("FREE", "good")),
+        dict(icon="building", color="cyan", k="Lease space · quoted",
+             s="hardware you own, our room"),
+        dict(icon="lock", color="indigo", k="Your facility · quoted",
+             s="your building, we tie in"),
+        dict(icon="phone", color="brand", k="Your device · free",
+             s="a phone or a laptop"),
+        dict(icon="shieldok", color="amber", k="Your key either way",
+             s="we cannot read it regardless"),
+    ], button=("Use our facility", "brand")),
+    # The quote request, which is the real flow for the two priced options —
+    # there is no checkout here because floor space is not bought from a form.
+    dict(num=45, title="Request a Quote", sub="Leased space or your facility",
+         accent="brand", tab=0, cards=[
+        dict(icon="building", color="cyan", k="How much space",
+             s="a rack, a cage, a suite"),
+        dict(icon="compass", color="indigo", k="Which region",
+             s="a rack differs by room"),
+        dict(icon="doc", color="green", k="Compliance in force",
+             s="HIPAA, CPNI, PCI-DSS"),
+        dict(icon="person", color="brand", k="Who to reply to",
+             s="a person, not a portal"),
+        dict(icon="shieldok", color="amber", k="Free options stay open",
+             s="no answer commits you"),
+    ], button=("Send the request", "brand")),
 ]
 
 
