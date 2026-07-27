@@ -1391,6 +1391,84 @@ SCREENS = [
         dict(icon="person", color="amber", k="Handed to a person", s="paged · waiting on the roster"),
         dict(icon="eye", color="cyan", k="The lights follow you", s="the work stays where it is"),
     ]),
+    # The console guide. Cards two and three are the whole design: it explains
+    # the console and cannot reach the vault, which under BYOK is not a policy
+    # but a fact about what key the server holds.
+    dict(num=41, title="Console Guide", sub="Fourteen steps, no vault access",
+         accent="cyan", tab=0, cards=[
+        dict(icon="compass", color="cyan", k="Six chapters", s="vault, tenants, audit, gate"),
+        dict(icon="lock", color="green", k="It cannot read a record", s="under BYOK, nor could anyone"),
+        dict(icon="warn", color="amber", k="It performs no action", s="no tokens, no keys, no deletes"),
+        dict(icon="speaker", color="brand", k="Read it or hear it", s="voice drops the numbers"),
+        dict(icon="shieldok", color="cyan", k="Every screen covered", s="a test holds it to the console"),
+    ]),
+    # Where the vault lives. Card five is the one that keeps the page honest:
+    # the guarantees are identical on every option, so the free one is not the
+    # weakened one.
+    dict(num=42, title="Where It Lives", sub="Four places, two of them free",
+         accent="cyan", tab=0, cards=[
+        dict(icon="shield", color="green", k="Our facility · free",
+             s="for JIM-mini and QRME data"),
+        dict(icon="building", color="cyan", k="Leased space · quoted",
+             s="a rack or a cage we own"),
+        dict(icon="lock", color="indigo", k="Your facility · quoted",
+             s="you host it, we tie in"),
+        dict(icon="phone", color="brand", k="Your own device · free",
+             s="a phone or a laptop, your line"),
+        dict(icon="shieldok", color="amber", k="Same encryption everywhere",
+             s="only uptime differs"),
+    ], button=("Choose a home", "brand")),
+    # The pane in the corner, replacing the pinned lights panel. Card four is
+    # the one specific to an operator console: it cannot read a record, and
+    # under BYOK nobody at this console can.
+    dict(num=43, title="The Corner Pane", sub="Counts and states, never records",
+         accent="brand", tab=0, cards=[
+        dict(icon="eye", color="brand", k="The lights, with a lid",
+             s="the panel you could not close"),
+        dict(icon="warn", color="amber", k="It shows, it never acts",
+             s="no keys, no tokens, no wipes"),
+        dict(icon="chart", color="cyan", k="Counts and states",
+             s="how many, and is the chain good"),
+        dict(icon="lock", color="green", k="It cannot read a record",
+             s="under BYOK, nor can anyone here"),
+        dict(icon="shield", color="indigo", k="Screenshots go in tickets",
+             s="so no tenant names, ever"),
+    ], button=("Move it left", "brand")),
+    # ---- setup: choosing where the vault lives ----
+    #
+    # Distinct from 42, which is the reference page reached from settings.
+    # This is the step inside the setup path, between Key Setup and Grant
+    # Access — after the customer holds their own key, because the key is what
+    # makes the choice free of consequence: on any of the four, we cannot read
+    # the data either way.
+    dict(num=44, title="Choose a Home", sub="Step 3 of 5",
+         accent="cyan", tab=0, cards=[
+        dict(icon="shield", color="green", k="Our facility · free",
+             s="the usual answer", pill=("FREE", "good")),
+        dict(icon="building", color="cyan", k="Lease space · quoted",
+             s="hardware you own, our room"),
+        dict(icon="lock", color="indigo", k="Your facility · quoted",
+             s="your building, we tie in"),
+        dict(icon="phone", color="brand", k="Your device · free",
+             s="a phone or a laptop"),
+        dict(icon="shieldok", color="amber", k="Your key either way",
+             s="we cannot read it regardless"),
+    ], button=("Use our facility", "brand")),
+    # The quote request, which is the real flow for the two priced options —
+    # there is no checkout here because floor space is not bought from a form.
+    dict(num=45, title="Request a Quote", sub="Leased space or your facility",
+         accent="brand", tab=0, cards=[
+        dict(icon="building", color="cyan", k="How much space",
+             s="a rack, a cage, a suite"),
+        dict(icon="compass", color="indigo", k="Which region",
+             s="a rack differs by room"),
+        dict(icon="doc", color="green", k="Compliance in force",
+             s="HIPAA, CPNI, PCI-DSS"),
+        dict(icon="person", color="brand", k="Who to reply to",
+             s="a person, not a portal"),
+        dict(icon="shieldok", color="amber", k="Free options stay open",
+             s="no answer commits you"),
+    ], button=("Send the request", "brand")),
 ]
 
 

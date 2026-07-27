@@ -6,6 +6,99 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-07-27
+
+### Added
+
+- **Where the vault lives** — `pdi/hosting.py`, 4 routes, 16 tests, screen 42.
+  Four places a vault can sit: our facility (**free** for holding JIM-mini and
+  QRME user data), leased space in a facility we own, a facility you own and
+  host, or your own phone or computer on your own broadband (**free**, because
+  it is your hardware).
+
+  **Colocation being free is structural, not promotional**: the tandem is the
+  only place those two products may put sensitive material, and a price on the
+  only place it can go would make their data promise conditional on somebody's
+  card.
+
+  **The encouragement to lease must not make the free option worse.** Every
+  mode runs the same code, and `GUARANTEES` is one list shared by all four with
+  no per-mode copy to quietly drop an entry from — which is how that erosion
+  would actually happen, a field at a time. What differs is availability, not
+  security, and every mode states who is responsible for what: a phone in a
+  pocket is not a Tier III facility, the bytes on it are exactly as encrypted
+  as ours, and whether they are there tomorrow is the customer's question.
+
+  Leased options are **quoted rather than listed** — a made-up figure on a page
+  like this is the kind of thing somebody plans a budget around. Choosing a
+  mode records an arrangement and moves nothing.
+
+- **A guided walkthrough of the console, and an assistant that delivers it** —
+  `pdi/tutorial.py`, `pdi/assistant.py`, 7 routes, 29 tests, screen 41. PDI was
+  the only one of the three products without a guide.
+
+  **It cannot read the vault**, and that is the design rather than a promise:
+  no code path from either module to `pdi.vault`, asserted from the AST so that
+  writing the rule down in a docstring does not trip the guard enforcing it.
+  Under BYOK the operator asking frequently cannot read the records either.
+  It performs no operator action, and *"just do it"* is refused by name. The
+  ceiling is `pdi/gate.py`'s, quoted rather than restated.
+
+- **The helper dock** — `pdi/dock.py`, 5 routes, 13 tests, screen 43. The
+  pinned agent-lights panel, with a lid on it and four more faces. Counts and
+  states only: it cannot read a record either.
+
+### Fixed
+
+- **The README's screen count is now asserted rather than proof-read.** It said
+  40 where there were 41 — and it had already been wrong once, corrected from
+  38 to 40 in 0.3.3. Along with the gallery bindings PDI did not have.
+
+
+### Added
+
+- **A guided walkthrough of the console, and an assistant that delivers it** —
+  `pdi/tutorial.py`, `pdi/assistant.py`, 7 routes, 29 tests, screen 41. PDI was
+  the only one of the three products without a guide: QRME's walks a consumer
+  through a platform full of synthetic people, JIM-mini's walks a patient
+  through their own record, and an operator standing up a vault got a README.
+
+  Fourteen steps across six chapters, in the order somebody actually meets the
+  product — you have a vault before a tenant, a tenant before its token, and a
+  token before anything is sealed with it.
+
+  **It cannot read the vault**, and that is the design rather than a promise.
+  There is no code path from either module to `pdi.vault`; a test parses both
+  and asserts it, reading the AST rather than the text so that writing the rule
+  down in a docstring does not trip the guard enforcing it. The reason is
+  sharper here than in the other two products: under BYOK the customer key
+  travels per request and is never stored, so **the operator asking the question
+  frequently cannot read the records either** — that is the product working. An
+  assistant offering to look at the data to be helpful would be promising
+  exactly what the design exists to prevent, and the first person to notice
+  would be the customer whose key was supposed to be the point.
+
+  **It performs no operator action.** No token issued, no key rotated, no
+  tenant created, no retention set, nothing deleted. The walkthrough writes one
+  table — its own progress — and the assistant writes nothing at all. *"Just do
+  it"* is refused by name, because it is the question an operator under time
+  pressure genuinely asks, and the only honest answer is which screen does it
+  and what it will change.
+
+  **The ceiling is `pdi.gate`'s, quoted rather than restated.** That module
+  established the doctrine — *the model is the voice, not the decider* — and
+  with it *the agent's ceiling is whatever a wrong answer cannot undo*. A
+  walkthrough sits comfortably under it, because a wrong sentence in a tutorial
+  is undone by reading the next one. A test asserts the sentence is quoted from
+  `gate` rather than written out a second time, since a second wording of one
+  rule is the copy that goes stale.
+
+  **Written prose, no model required** — a self-hosted vault with no API key is
+  the typical PDI deployment, not a degraded one. **Voice and text are one
+  lesson rendered twice**, so the spoken version cannot drift. And it **cannot
+  quietly fall behind the console**: each lesson names its screens and a test
+  binds the set to the gallery in both directions.
+
 ## [0.3.3] — 2026-07-27
 
 There are no functional changes to the vault in this release — no new routes,
