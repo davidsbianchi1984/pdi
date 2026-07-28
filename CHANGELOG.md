@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **README: the hosting page no longer implies every account has a vault.**
+  QRME and JIM-mini gained a free plan whose storage posture is an **open
+  cloud** — the app's own database, in the clear, with no vault involved at any
+  point. The claim that "the tandem is the only place JIM-mini and QRME may put
+  sensitive material" is true on a paid plan and was written when that was the
+  only kind. It now says which. Nothing PDI holds is affected: a vault has one
+  posture, and the four hosting modes share it.
+
 ## [0.4.0] — 2026-07-27
 
 ### Added

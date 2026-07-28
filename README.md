@@ -374,9 +374,23 @@ both, and what it offers is a **place to put the bytes**.
 | **Your own device** | **free** | a phone or a computer on your own broadband, holding its own vault |
 
 **Colocation is free and that is structural, not promotional.** The tandem is
-the only place JIM-mini and QRME may put sensitive material — that is the whole
-point of both products' data promise — and putting a price on the only place it
-can go would make that promise conditional on somebody's card.
+the only place JIM-mini and QRME may put sensitive material *on a paid plan* —
+that is the whole point of both products' data promise — and putting a price on
+the only place it can go would make that promise conditional on somebody's
+card.
+
+**The free plans in those two products do not touch PDI at all**, and this
+page should say so rather than let a reader infer that every account has a
+vault. `qrme/storage.py` and `jim/storage.py` describe an **open cloud**
+posture: the app's own database, in the clear, with no vault and no key the
+user holds. Both name it in the response body of every surface that states a
+plan, and both refuse a short list of payloads outright rather than store them
+open — source material about a third party and rated content in QRME, a
+photograph of a body and a child's record in JIM-mini. So the free plan does
+not weaken anything on this page; it is a different arrangement, and the two
+products are responsible for saying which one somebody is on. **Nothing PDI
+holds is ever less protected because somebody else is on a free plan** — a
+vault has one posture, and the four hosting modes above share it.
 
 **The encouragement to lease must not become a reason to make the free option
 worse.** Every mode runs the same code: the same AES-256-GCM, the same AAD
@@ -479,7 +493,10 @@ until somebody has said what it is for.
 
 ## Your data promise
 
-**No raw user data ever leaves your vault.** PDI is the vault.
+**No raw user data ever leaves your vault.** PDI is the vault — and it holds
+what the integrating apps *send* it. QRME's and JIM-mini's free plans send
+nothing here at all; see [Where the vault lives](#where-the-vault-lives). Every
+guarantee below is about what is inside.
 
 - Everything stored is AES-256-GCM ciphertext, AAD-bound to its tenant and
   key — one integrating system can never read another's records, and the
