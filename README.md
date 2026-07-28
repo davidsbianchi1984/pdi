@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.4.5** ([changelog](CHANGELOG.md) ·
+**Current release: v0.4.6** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -194,6 +194,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.4.6** | **Cut with the siblings** — no functional change to the vault |
 | **0.4.5** | **The round where the siblings' verification matched the deployment** — cut with them, carrying no part of it. No functional change to the vault |
 | **0.4.4** | **The round where the siblings' Windows signup 500 died** — cut with them, carrying no part of it. No functional change to the vault |
 | **0.4.3** | **The round where the siblings got a front door and a key of your own** — cut with them, carrying no part of it. No functional change to the vault: accounts, model keys and the self-running installers all live in QRME and JIM-mini, and nothing on those paths touches PDI |
