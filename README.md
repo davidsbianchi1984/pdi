@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.4.2** ([changelog](CHANGELOG.md) ·
+**Current release: v0.4.3** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -194,6 +194,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.4.3** | **The round where the siblings got a front door and a key of your own** — cut with them, carrying no part of it. No functional change to the vault: accounts, model keys and the self-running installers all live in QRME and JIM-mini, and nothing on those paths touches PDI |
 | **0.4.2** | **The round where the installer you download actually gets you running** — cut with the siblings, whose first-run fixes it carries no part of. No functional change to the vault: the version moves so one number keeps naming one combination of all three, and the installers stop being labelled 0.3.3 (all five version strings now guarded together) |
 | **0.4.1** | **The round where the vault promise said which plans it covers.** QRME and JIM-mini gained free tiers under platform custody — the apps hold that data themselves, over ordinary HTTPS, and it never reaches PDI at all — so the claim that the tandem is "the only place" sensitive material may go is now scoped to the paid plans it was always about. Documentation only: a vault has one posture, the four hosting modes share it, and nothing PDI holds changed |
 | **0.4.0** | **The round where PDI said what it costs, and got a guide of its own.** Four places a vault can live — our facility and your own device both **free**, leased space and your own facility quoted — with one shared guarantee list so the free option is not the weakened one. Plus the console walkthrough PDI was the only product without, and a corner pane replacing the lights panel that had no lid. Neither can read a record, and under BYOK neither can the operator |
