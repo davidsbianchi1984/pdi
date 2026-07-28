@@ -6,6 +6,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.5] — 2026-07-28
+
+**There are no functional changes to PDI in this release**: no new routes,
+no schema, no behaviour. The three products are cut as one release, and the
+version moves so one number keeps naming one combination of all three.
+
+### What changed in the siblings
+
+- **Verification matches the deployment**: desktop installs (no mail
+  transport) activate accounts directly; SMTP deployments email a clickable
+  verify link (code as fallback) and the apps continue on their own after
+  the click. Crashed signups no longer strand the retry.
+
 ## [0.4.4] — 2026-07-28
 
 **There are no functional changes to PDI in this release**: no new routes,
@@ -855,7 +868,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.4.4...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.4.5...HEAD
+[0.4.5]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.5
 [0.4.4]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.4
 [0.4.3]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.3
 [0.4.2]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.2
