@@ -6,6 +6,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.3] — 2026-07-28
+
+**There are no functional changes to PDI in this release**: no new routes,
+no schema, no behaviour. The three products are cut as one release, and the
+version moves so one number keeps naming one combination of all three.
+
+### What changed in the siblings
+
+- **QRME and JIM-mini gained a front door and a key of your own**: email +
+  password accounts with the address proven by a 6-digit emailed code before
+  sign-in works, password reset that revokes every session, and no endpoint
+  that reveals who has an account; bring-your-own model key riding each
+  request, never stored server-side; and installers that ship the whole
+  Python backend frozen inside them and spawn it at launch —
+  double-click-and-done. Nothing on those paths touches PDI: account
+  passwords and codes are hashed in the siblings' own stores, and the model
+  keys never persist anywhere.
+
 ## [0.4.2] — 2026-07-28
 
 **There are no functional changes to PDI in this release**: no new routes,
@@ -823,7 +841,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.4.2...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.4.3...HEAD
+[0.4.3]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.3
 [0.4.2]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.2
 [0.4.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.1
 [0.4.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.0
