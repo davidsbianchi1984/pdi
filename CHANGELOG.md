@@ -6,15 +6,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.2] — 2026-07-28
+
+**There are no functional changes to PDI in this release**: no new routes,
+no schema, no behaviour. The three products are cut as one release, and the
+version moves so one number keeps naming one combination of all three.
+
 ### Fixed
 
 - **The desktop installers were labelled 0.3.3.** `app/package.json` carries
   its own version and no cut ever bumped it, so the 0.4.0 and 0.4.1 releases
   both attached installers stamped with the stale number — built from the
   right tag, named for the wrong release, and invisible to the auto-updater,
-  which compares package versions and saw nothing newer. Now 0.4.1, with a
-  test asserting it always matches the API version, because a duplicated
-  number with nothing to fail is how the last three of these happened.
+  which compares package versions and saw nothing newer. Bumped, and the
+  guard got wider: **all five version strings must now agree** — pyproject
+  had quietly sat at 0.4.0 through the last cut and the lockfile roots at
+  0.3.3 through two, each a duplicated number with nothing to fail. This
+  release is the first whose installers come out named for it.
+
+### What changed in the siblings
+
+- **QRME and JIM-mini fixed their first run**, driven by one bug report from
+  a real Windows install: identity fields stop pre-filling sample values,
+  *"Failed to fetch"* becomes a screen that names the missing backend,
+  `serve` answers the packaged console by default, JIM's window stops
+  calling itself QRME, and both default their Anthropic provider to
+  `claude-opus-5`. Nothing on that path touches PDI: the free plans those
+  consoles onboard into send nothing here.
 
 ## [0.4.1] — 2026-07-28
 
@@ -805,7 +823,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.4.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.4.2...HEAD
+[0.4.2]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.2
 [0.4.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.1
 [0.4.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.0
 [0.3.3]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.3.3
