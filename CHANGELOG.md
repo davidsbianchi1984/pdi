@@ -6,6 +6,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.4] — 2026-07-28
+
+**There are no functional changes to PDI in this release**: no new routes,
+no schema, no behaviour. The three products are cut as one release, and the
+version moves so one number keeps naming one combination of all three.
+
+### What changed in the siblings
+
+- **The Windows signup 500 died.** QRME and JIM-mini's emailed-code banner
+  used characters the frozen Windows backend's console encoding cannot
+  print, so every signup crashed mid-request; the banner is ASCII now, the
+  frozen entry points replace rather than raise, and the consoles show a
+  server's actual words instead of a JSON-parse exception.
+
 ## [0.4.3] — 2026-07-28
 
 **There are no functional changes to PDI in this release**: no new routes,
@@ -841,7 +855,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.4.3...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.4.4...HEAD
+[0.4.4]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.4
 [0.4.3]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.3
 [0.4.2]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.2
 [0.4.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.1
