@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.1] — 2026-07-28
+
 ### Changed
 
 - **`docs/tandem.md`: sealing is described as plan-dependent.** It was written
@@ -793,7 +795,9 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.3.3...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.4.1...HEAD
+[0.4.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.1
+[0.4.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.0
 [0.3.3]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.3.3
 [0.3.2]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.3.2
 [0.3.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.3.1
