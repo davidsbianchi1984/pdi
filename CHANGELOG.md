@@ -8,6 +8,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **`docs/tandem.md`: sealing is described as plan-dependent.** It was written
+  when a paid plan was the only kind, so it read as though every integrating
+  account's records reach PDI. They do not — the free tiers in QRME and
+  JIM-mini hold their own data and never call here. Byte-identical in all three
+  repositories, as that file always is. Nothing PDI holds is affected.
+
 - **README: the hosting page no longer implies every account has a vault.**
   QRME and JIM-mini gained a free plan whose storage posture is an **open
   cloud** — the app's own database, in the clear, with no vault involved at any
