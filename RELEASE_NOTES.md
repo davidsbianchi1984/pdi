@@ -1,16 +1,14 @@
-# PDI v0.14.4 — release notes
+# PDI v0.14.5 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.14.4` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.14.5` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**PDI v0.14.4** — the console names a version mismatch.
-
-The same guard as the siblings: the console compares its build
-version with /health's on launch and, on mismatch, shows a banner
-naming both versions and the address — with a one-click "use this
-app's own backend" when a stored address is the culprit.
+**PDI v0.14.5** — **no functional change in this release**: cut with
+the siblings. JIM-mini gained the fall path through the watch drip,
+the crash watch on its native shells, and the docs web for the field
+round.
 
 ### Verification
 
