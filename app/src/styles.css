@@ -139,3 +139,18 @@ label.check input { width: auto; margin-top: 0; }
   input, textarea, select { font-size: 16px; }
   button { min-height: 44px; }
 }
+
+/* The version-mismatch banner — visible on every screen until the older
+   backend is out of the way. Red on purpose: nothing else in the app may
+   look like it. */
+.version-guard { position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+  background: #3a1220; border-bottom: 2px solid #e0687a; color: #ffd9e0;
+  font-size: 13px; line-height: 1.4; }
+.version-guard b { color: #ff8fa0; }
+.vg-fix { background: #e0687a; color: #fff; border: 0; border-radius: 8px;
+  padding: 8px 12px; font-weight: 700; font-size: 12px; cursor: pointer;
+  white-space: nowrap; }
+.vg-hint { color: #ffb3c0; }
+.vg-close { margin-left: auto; background: none; border: 0; color: #ffb3c0;
+  font-size: 18px; line-height: 1; cursor: pointer; }
