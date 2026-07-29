@@ -99,6 +99,15 @@ export interface PairInfo {
   reachable: boolean; qr_svg: string; how: string[]; note: string;
 }
 
+export interface OperationsEntry {
+  key: string;
+  updated_at: string;
+  org?: string | null;
+  goal?: string | null;
+  plan?: string | null;
+  departments: string[];
+}
+
 export const api = {
   health: () => req<{ status: string }>("/health"),
 
@@ -135,6 +144,9 @@ export const api = {
     req<{ key: string; value: string; updated_at: string }>(
       `/records/${key}`, { token }),
   listKeys: (token: string) => req<{ keys: string[] }>("/records", { token }),
+  // The operations journal: QRME-sealed coordination records, in place.
+  operations: (token: string) =>
+    req<{ entries: OperationsEntry[]; note: string }>("/operations", { token }),
 
   // positions — assistant builder
   buildPosition: (intake: PositionIntake, token: string) =>
