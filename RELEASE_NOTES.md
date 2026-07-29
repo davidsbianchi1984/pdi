@@ -1,19 +1,20 @@
-# PDI v0.9.1 — release notes
+# PDI v0.10.0 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.9.1` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.10.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**PDI v0.9.1** — **no functional change to the vault in this release**:
+**PDI v0.10.0** — **no functional change to the vault in this release**:
 the three products are cut as one release, and the version moves so one
 number keeps naming one combination of all three.
 
 ### What changed in the siblings
 
-JIM-mini's watch panel became honest about reachability: it says when a
-phone cannot reach the drip address yet, one switch opens Wi-Fi access,
-and the Shortcut recipe names the exact paste spot.
+A real offline model arrived in JIM-mini and QRME: Ollama as a
+first-class Local provider — found on its own, no key, nothing leaving
+the machine — preferred over the canned stub by Automatic, and used by
+offline mode too.
 
 ### Verification
 

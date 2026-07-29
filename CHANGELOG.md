@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.10.0] — 2026-07-29
+
+**There are no functional changes to PDI in this release**: cut with the
+siblings. In JIM-mini and QRME, a real offline model arrived — Ollama as
+a first-class Local provider, found on its own, nothing leaving the
+machine.
+
 ## [0.9.1] — 2026-07-29
 
 **There are no functional changes to PDI in this release**: cut with the
@@ -972,7 +979,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.9.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.10.0...HEAD
+[0.10.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.10.0
 [0.9.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.9.1
 [0.9.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.9.0
 [0.8.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.8.0
