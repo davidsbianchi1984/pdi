@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.14.4] — 2026-07-29
+
 **Two versions answering is no longer a mystery.** Field report: a
 fresh console over a stale backend answers "Not Found" on every newer
 screen while looking otherwise alive — the shell refuses to adopt a
@@ -1081,7 +1083,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.14.3...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.14.4...HEAD
+[0.14.4]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.14.4
 [0.14.3]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.14.3
 [0.14.2]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.14.2
 [0.14.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.14.1
