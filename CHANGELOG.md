@@ -6,6 +6,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.7] — 2026-07-28
+
+**There are no functional changes to PDI in this release**: the three
+products are cut as one release, and the version moves so one number keeps
+naming one combination of all three. In the siblings, an upgraded desktop
+app no longer adopts a leftover backend from an earlier install — the one
+that had been serving its old API to every new console.
+
 ## [0.4.6] — 2026-07-28
 
 **There are no functional changes to PDI in this release**: the three
@@ -876,7 +884,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.4.6...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.4.7...HEAD
+[0.4.7]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.7
 [0.4.6]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.6
 [0.4.5]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.5
 [0.4.4]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.4
