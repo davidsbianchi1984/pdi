@@ -343,3 +343,20 @@ class GateTimezone(BaseModel):
     read as UTC — the silent version looks correct for half the year."""
 
     timezone: str
+
+
+class BequestCreate(BaseModel):
+    """The owner's answer to "what about when you are gone?" — written now,
+    while they are fine. Names the grantee, bounds the shelf."""
+
+    grantee_name: str
+    key_prefixes: list[str]
+    condition: str = "executor"     # executor | attestation
+    note: str | None = None
+
+
+class BequestActivate(BaseModel):
+    """The attestation is not optional: what confirmed the condition — a JIM
+    vigil event id, a QRME succession verification, a certificate number."""
+
+    activation_ref: str

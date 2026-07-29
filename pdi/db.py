@@ -135,6 +135,28 @@ CREATE TABLE IF NOT EXISTS intakes (
     created_at        TEXT NOT NULL
 );
 
+-- Bequests (pdi/bequests.py): a named person may read named scopes of this
+-- tenant's vault — but only after a condition the owner set has been
+-- attested. The grant token does not exist until activation: a bequest at
+-- rest is a promise, not a credential, so a database read before the
+-- activation yields nothing a grantee could use. Only the hash survives
+-- minting.
+CREATE TABLE IF NOT EXISTS bequests (
+    id             TEXT PRIMARY KEY,
+    tenant_id      TEXT NOT NULL REFERENCES tenants(id),
+    grantee_name   TEXT NOT NULL,
+    key_prefixes   TEXT NOT NULL,   -- JSON list, e.g. ["jim/u1/medical/"]
+    condition      TEXT NOT NULL,   -- executor | attestation
+    note           TEXT,            -- the owner's words to the grantee
+    created_at     TEXT NOT NULL,
+    revoked_at     TEXT,
+    activated_at   TEXT,
+    activation_ref TEXT,            -- what attested it: a JIM vigil event id,
+                                    -- a QRME succession verification_ref, a
+                                    -- death-certificate reference
+    grant_hash     TEXT             -- SHA-256 of the minted grant token
+);
+
 -- Chain of custody: every material event on a transfer, for the compliance
 -- record (mirrored into the tamper-evident audit chain).
 CREATE TABLE IF NOT EXISTS transfer_receipts (
