@@ -1,14 +1,16 @@
-# PDI v0.13.1 — release notes
+# PDI v0.14.0 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.13.1` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.14.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**PDI v0.13.1** — **no functional change in this release**: cut with
-the siblings. The shared tandem contract and the invention disclosure
-caught up with the ecosystem round; in QRME, the one-press demo org and
-hardening caps landed.
+**PDI v0.14.0** — operations entries prove themselves.
+
+A "Prove it" button on each operations-journal entry pulls the
+record's provenance and shows the vault's whole pitch one click from
+the plan it protects: origin, the AES-256-GCM seal, the audited-event
+count, and whether the hash-linked chain is intact.
 
 ### Verification
 
