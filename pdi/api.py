@@ -359,6 +359,33 @@ def create_app() -> FastAPI:
     def list_records(tenant: dict = Depends(_tenant)) -> dict:
         return {"keys": vault.list_keys(tenant)}
 
+    @app.get("/operations")
+    def operations_journal(tenant: dict = Depends(_tenant)) -> dict:
+        """The operations journal: coordination records QRME sealed into
+        this tenant's vault (``qrme/coordination/*``), decrypted with the
+        tenant's own token and read through the ordinary audited path. The
+        journal is a view, not a side door — every entry read here lands
+        on the audit chain like any other read."""
+        entries = []
+        for key in vault.list_keys(tenant):
+            if not key.startswith("qrme/coordination/"):
+                continue
+            rec = vault.get(tenant, key)
+            try:
+                body = json.loads(rec["value"])
+            except (ValueError, TypeError):
+                body = {}
+            entries.append({
+                "key": key, "updated_at": rec["updated_at"],
+                "org": body.get("org"), "goal": body.get("goal"),
+                "plan": body.get("plan"),
+                "departments": [c.get("department")
+                                for c in body.get("contributions", [])],
+            })
+        return {"entries": entries,
+                "note": "coordination output QRME sealed here; every read "
+                        "of this journal is on the audit chain"}
+
     # -- social connectors (tenant-scoped) ----------------------------------
     # collect seals the account's content as vault records; publish shares an
     # update on the platform, reachable by a QR beacon.
