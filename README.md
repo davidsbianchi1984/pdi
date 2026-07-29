@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.11.1** ([changelog](CHANGELOG.md) ·
+**Current release: v0.12.0** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -194,6 +194,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.12.0** | **Cut with the siblings** — no functional change; QRME mined its filed patent spec: hybrid profiles, real-time simulation, environmental adaptation |
 | **0.11.1** | **The desktop app finally carries its own vault** — bundled backend, version handshake, a master key generated once and persisted (your keys, your walls), and a release gate that creates a tenant, seals, restarts and reads back on every OS before packaging |
 | **0.11.0** | **Cut with the siblings** — no functional change to the vault |
 | **0.10.0** | **Cut with the siblings** — no functional change to the vault |
