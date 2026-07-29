@@ -1,0 +1,41 @@
+# Invention Disclosure — PDI (Private Data Infrastructure)
+
+*Inventor: David Bianchi. Recorded 2026-07-29. This document, together
+with this repository's commit history and tagged releases, is a dated
+public record of conception and reduction to practice. It is written to
+be handed to a patent attorney as the starting point for provisional
+applications. It is a factual record, not legal advice and not a license
+(see LICENSE).*
+
+## 1. Personal encrypted vault as the custody layer of a product family
+
+**The process:** an individually keyed encrypted vault
+(`PDI_MASTER_KEY` — your hardware, your keys, your walls) serving as the
+seal point for a family of interoperating products: a guardian's
+biometric events, tandem specialist exchanges, and clinical captures are
+sealed at write time, with per-record provenance (origin, seal details,
+audit history) readable back through a custody viewer scoped to the
+record owner.
+
+## 2. Custody posture as a plan property, not a deployment property
+
+**The process:** whether data is vaulted moves from "how the server was
+deployed" to "what the user's plan promises" — a free platform-custody
+tier that holds nothing private and says so at every surface, against
+paid tiers whose writes seal to the vault; the gate lives at the plan
+boundary so a deployment cannot silently change a user's custody
+(shipped v0.4.0–v0.4.1 line).
+
+## 3. Hosting spectrum with identical API surface
+
+**The process:** the same vault API served across free colocation,
+leased space, self-hosting, and the user's own device, so custody can be
+upgraded without the product family changing a call (shipped v0.4.0
+line). Admin key rotation is performed from the product apps themselves.
+
+---
+
+*Attorney notes: repository first became public before this disclosure;
+for jurisdictions with grace periods, the earliest public commit and the
+earliest tagged release containing each mechanism are the operative
+dates.*
