@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.14.2** ([changelog](CHANGELOG.md) ·
+**Current release: v0.14.3** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -194,6 +194,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.14.3** | **Every README ends on the rock** — the Matthew 7:24–25 passage closes every README, test-enforced |
 | **0.14.2** | **Cut with the siblings** — the tandem contract documents suite mode and the shared `suite:qrme-vault` tenant |
 | **0.14.1** | **Cut with the siblings** — suite tandem wiring in QRME; coach awareness in JIM |
 | **0.14.0** | **Operations entries prove themselves** — provenance one click from each journal entry |
