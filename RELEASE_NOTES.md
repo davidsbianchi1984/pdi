@@ -1,33 +1,47 @@
-# PDI v0.6.1 — release notes
+# PDI v0.7.0 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.6.1` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.7.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**PDI v0.6.1** — **no functional change to the vault in this release**: no
-new routes, no schema, no behaviour. One of three interoperating products
-(with [qrme](https://github.com/davidsbianchi1984/qrme) and
-[jim-mini](https://github.com/davidsbianchi1984/jim-mini)), all three cut
-together at this version, so one number names one combination of all three.
+**PDI v0.7.0** — the last version anyone fetches by hand. One of three
+interoperating products, all three cut together at this version.
 
-### What changed in the siblings
+### The app keeps itself current
 
-The model layer became honest about degrades: JIM-mini's coach no longer
-answers chat with crisis-flavored fallback text, every reply names the
-provider that actually produced it (with an amber warning and the reason
-on a degrade), and both consoles' settings say plainly when the built-in
-offline helper is what will answer.
+On launch, the desktop app asks GitHub Releases whether a newer version
+exists.
+
+- **Windows and Linux** download it quietly in the background and then
+  ask once: *Restart now, or later?* One click and the new version is
+  running; your data stays exactly where it was.
+- **macOS** cannot swap an unsigned app under itself, so it does the next
+  honest thing: tells you a new version exists and opens the download
+  page.
+
+Every failure path is silent by design — no network, no release, no
+metadata means the app simply opens as normal. An update check must never
+stand between you and the app.
+
+Because the updater ships *inside* this version, 0.7.0 is the last one
+that has to be downloaded by hand: install it once and every release
+after this arrives on its own.
+
+### And the window says PDI
+
+The desktop window was titled QRME — the sibling's name had sat in the
+title bar since the shell was first copied over. Fixed.
 
 ### Verification
 
-256 tests green, unchanged in behaviour — which is the point.
+256 tests green. Console build clean; all three desktop shells
+syntax-checked, and the release workflow already publishes the update
+metadata (`latest*.yml` + blockmaps) the updater feeds on.
 
 ### Install
 
-Download the installer for your OS from the assets below (built by the
-`desktop-release` workflow from the `app-v0.6.1` tag), or run `python -m pdi`.
-Deployed on-premises or in colocation — your hardware, your keys
-(`PDI_MASTER_KEY`), your walls.
+Download the installer for your OS from the assets below and
+double-click — for the last time.
 
 **Full changelog:** https://github.com/davidsbianchi1984/pdi/blob/main/CHANGELOG.md

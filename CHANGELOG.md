@@ -6,6 +6,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-07-29
+
+### Added
+
+- **The app keeps itself current** (`app/electron/main.cjs`,
+  electron-updater). On launch the desktop shell asks GitHub Releases
+  whether a newer version exists. Windows and Linux download it in the
+  background and offer one restart; macOS — which cannot swap an unsigned
+  app under itself — says a new version exists and opens the download
+  page. Every failure path is silent by design: an update check must
+  never stand between the user and the app. Ships *in* 0.7.0, so this is
+  the last version anyone has to fetch by hand.
+- The desktop window is titled **PDI**, not QRME — the sibling's name had
+  been sitting in the title bar since the shell was first copied over.
+
 ## [0.6.1] — 2026-07-29
 
 **There are no functional changes to PDI in this release**: the three
@@ -919,7 +934,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.6.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.7.0...HEAD
+[0.7.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.7.0
 [0.6.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.6.1
 [0.6.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.6.0
 [0.5.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.5.0

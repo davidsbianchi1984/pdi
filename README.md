@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.6.1** ([changelog](CHANGELOG.md) ·
+**Current release: v0.7.0** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -194,6 +194,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.7.0** | **The last version anyone fetches by hand** — the desktop app checks GitHub Releases on launch; Windows/Linux download the update and offer one restart, macOS is shown the download. The window is finally titled PDI |
 | **0.6.1** | **Cut with the siblings** — no functional change to the vault |
 | **0.6.0** | **Cut with the siblings** — no functional change to the vault |
 | **0.5.0** | **Cut with the siblings** — no functional change to the vault |
