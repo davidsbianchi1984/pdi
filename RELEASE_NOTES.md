@@ -1,17 +1,14 @@
-# PDI v0.13.0 — release notes
+# PDI v0.13.1 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.13.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.13.1` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**PDI v0.13.0** — the operations journal.
-
-Coordination records QRME seals into your vault are readable in place:
-`GET /operations` lists org, goal, joint plan and contributing
-departments, decrypted with your own tenant token. A view, never a
-side door — every journal read lands on the tamper-evident audit chain
-like any other read.
+**PDI v0.13.1** — **no functional change in this release**: cut with
+the siblings. The shared tandem contract and the invention disclosure
+caught up with the ecosystem round; in QRME, the one-press demo org and
+hardening caps landed.
 
 ### Verification
 

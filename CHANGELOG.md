@@ -6,6 +6,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.13.1] — 2026-07-29
+
+**No functional changes here**: cut with the siblings. The shared
+tandem contract and this repository's invention disclosure caught up
+with the ecosystem round; in QRME, the demo org and hardening caps.
+
 ## [0.13.0] — 2026-07-29
 
 **The operations journal.** Coordination records QRME seals into a
@@ -1034,7 +1040,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.13.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.13.1...HEAD
+[0.13.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.13.1
 [0.13.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.13.0
 [0.12.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.12.0
 [0.11.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.11.1
