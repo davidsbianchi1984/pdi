@@ -1,14 +1,14 @@
-# PDI v0.14.5 — release notes
+# PDI v0.15.0 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.14.5` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.15.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**PDI v0.14.5** — **no functional change in this release**: cut with
-the siblings. JIM-mini gained the fall path through the watch drip,
-the crash watch on its native shells, and the docs web for the field
-round.
+**PDI v0.15.0** — **no functional change in this release**: cut with
+the siblings. JIM-mini gained guided wellness (calm protocols,
+workout plans, meal plans, a nutrition Coach area and the Wellness
+tab) and QRME gained the temperament dial group.
 
 ### Verification
 

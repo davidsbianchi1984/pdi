@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.15.0] — 2026-07-29
+
+**No functional changes here**: cut with the siblings. JIM-mini
+gained guided wellness (calm protocols, workout plans, meal plans, a
+nutrition Coach area and the Wellness tab) and QRME gained the
+temperament dial group.
+
 ## [0.14.5] — 2026-07-29
 
 **No functional changes here**: cut with the siblings. JIM-mini
@@ -1089,7 +1096,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.14.5...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.15.0...HEAD
+[0.15.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.15.0
 [0.14.5]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.14.5
 [0.14.4]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.14.4
 [0.14.3]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.14.3
