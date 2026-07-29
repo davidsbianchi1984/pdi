@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.14.5** ([changelog](CHANGELOG.md) ·
+**Current release: v0.15.0** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -194,6 +194,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.15.0** | **Cut with the siblings** — JIM's guided wellness and QRME's temperament dials |
 | **0.14.5** | **Cut with the siblings** — JIM's fall path, native crash watch, and docs web |
 | **0.14.4** | **The console names a version mismatch** — the same guard as the siblings |
 | **0.14.3** | **Every README ends on the rock** — the Matthew 7:24–25 passage closes every README, test-enforced |
