@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, OperationsEntry } from "../api";
+import { api, OperationsEntry, ProvenanceOut } from "../api";
 import { useSession } from "../store";
 
 // The operations journal: coordination records QRME sealed into this
@@ -9,6 +9,7 @@ import { useSession } from "../store";
 export function Operations() {
   const { session } = useSession();
   const [entries, setEntries] = useState<OperationsEntry[]>([]);
+  const [proof, setProof] = useState<Record<string, ProvenanceOut>>({});
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -48,6 +49,20 @@ export function Operations() {
             {e.departments.length > 0 && <> · {e.departments.join(" · ")}</>}</p>}
           {e.plan && <p style={{ whiteSpace: "pre-wrap" }}>{e.plan}</p>}
           <p className="muted small">{e.key} · {new Date(e.updated_at).toLocaleString()}</p>
+          {!proof[e.key] && (
+            <button onClick={() =>
+              api.provenance(e.key, session.tenantToken!)
+                .then((p) => setProof((x) => ({ ...x, [e.key]: p })))
+                .catch((err) => setError((err as Error).message))
+            }>Prove it</button>
+          )}
+          {proof[e.key] && (
+            <p className="muted small">
+              {proof[e.key].origin} · {proof[e.key].sealed.cipher.split(" (")[0]} ·{" "}
+              {proof[e.key].audit.count} audited event(s) · chain{" "}
+              {proof[e.key].chain.intact === false ? "BROKEN" : "intact"}
+            </p>
+          )}
         </div>
       ))}
 

@@ -99,6 +99,17 @@ export interface PairInfo {
   reachable: boolean; qr_svg: string; how: string[]; note: string;
 }
 
+export interface ProvenanceOut {
+  key: string;
+  origin: string;
+  sealed: { cipher: string; bound_to: string; created_at: string;
+            updated_at: string; ciphertext_bytes: number };
+  audit: { events: { action: string; at: string; category: string }[];
+           count: number };
+  chain: { intact?: boolean; entries?: number } & Record<string, unknown>;
+  note: string;
+}
+
 export interface OperationsEntry {
   key: string;
   updated_at: string;
@@ -147,6 +158,9 @@ export const api = {
   // The operations journal: QRME-sealed coordination records, in place.
   operations: (token: string) =>
     req<{ entries: OperationsEntry[]; note: string }>("/operations", { token }),
+  // The derivation trail of one sealed record: origin, seal, audit, chain.
+  provenance: (key: string, token: string) =>
+    req<ProvenanceOut>(`/provenance/${key}`, { token }),
 
   // positions — assistant builder
   buildPosition: (intake: PositionIntake, token: string) =>
