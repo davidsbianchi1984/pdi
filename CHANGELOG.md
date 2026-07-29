@@ -6,6 +6,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.9.0] — 2026-07-29
+
+**There are no functional changes to PDI in this release**: the three
+products are cut as one release, and the version moves so one number keeps
+naming one combination of all three. In JIM-mini, the medicine cabinet
+arrived — medications in the user's own words, a day board with humane
+grace, and a coach that notices without ever alarming.
+
 ## [0.8.0] — 2026-07-29
 
 ### Added
@@ -958,7 +966,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.8.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.9.0...HEAD
+[0.9.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.9.0
 [0.8.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.8.0
 [0.7.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.7.0
 [0.6.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.6.1
