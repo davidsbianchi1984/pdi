@@ -38,6 +38,13 @@ export function getBase(): string {
 export function setBase(url: string) {
   localStorage.setItem("pdi.base", url.replace(/\/+$/, ""));
 }
+export function clearBase() { localStorage.removeItem("pdi.base"); }
+
+// The console's own version, injected at build time (vite.config.ts) and
+// compared against /health's — see VersionGuard.tsx.
+declare const __APP_VERSION__: string;
+export const CONSOLE_VERSION: string =
+  typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "dev";
 
 async function req<T>(
   path: string,
@@ -120,7 +127,7 @@ export interface OperationsEntry {
 }
 
 export const api = {
-  health: () => req<{ status: string }>("/health"),
+  health: () => req<{ status: string; version?: string }>("/health"),
 
   // How to open this console on a phone: its URL on the local network.
   pair: () => req<PairInfo>("/pair"),

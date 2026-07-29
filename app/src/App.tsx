@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSession } from "./store";
+import { VersionGuard } from "./VersionGuard";
 import { Overview } from "./screens/Overview";
 import { Tenants } from "./screens/Tenants";
 import { Records } from "./screens/Records";
@@ -26,6 +27,7 @@ export function App() {
   const [tab, setTab] = useState<Tab>("overview");
   return (
     <div className="app">
+      <VersionGuard />
       <aside className="sidebar">
         <div className="brand">
           <span className="orb" />
