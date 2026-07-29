@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.13.0] — 2026-07-29
+
+**The operations journal.** Coordination records QRME seals into a
+tenant's vault (`qrme/coordination/*`) are readable in place:
+`GET /operations` lists org, goal, joint plan and contributing
+departments, decrypted with the tenant's own token. A view, never a
+side door — every journal read lands on the tamper-evident audit chain
+like any other read. The console's Operations tab shows it. Proved
+end-to-end against live QRME and JIM processes.
+
 ## [0.12.0] — 2026-07-29
 
 **No functional changes here**: cut with the siblings. In QRME, the
@@ -1024,7 +1034,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.12.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.13.0...HEAD
+[0.13.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.13.0
 [0.12.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.12.0
 [0.11.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.11.1
 [0.11.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.11.0
