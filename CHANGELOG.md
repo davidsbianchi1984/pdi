@@ -6,6 +6,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.14.1] — 2026-07-29
+
+**No functional changes here**: cut with the siblings. QRME's suite
+gateway now wires the tandem in-process and bootstraps the ecosystem in
+one call; JIM's coach mentions fresh care plans.
+
 ## [0.14.0] — 2026-07-29
 
 **Operations entries prove themselves.** A "Prove it" button on each
@@ -1047,7 +1053,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.14.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.14.1...HEAD
+[0.14.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.14.1
 [0.14.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.14.0
 [0.13.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.13.1
 [0.13.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.13.0

@@ -1,16 +1,14 @@
-# PDI v0.14.0 — release notes
+# PDI v0.14.1 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.14.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.14.1` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**PDI v0.14.0** — operations entries prove themselves.
-
-A "Prove it" button on each operations-journal entry pulls the
-record's provenance and shows the vault's whole pitch one click from
-the plan it protects: origin, the AES-256-GCM seal, the audited-event
-count, and whether the hash-linked chain is intact.
+**PDI v0.14.1** — **no functional change in this release**: cut with
+the siblings. QRME's suite gateway now wires the tandem in-process and
+bootstraps the ecosystem in one call; JIM's coach mentions fresh care
+plans.
 
 ### Verification
 
