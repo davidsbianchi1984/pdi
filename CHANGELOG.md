@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.14.3] — 2026-07-29
+
 **Every README ends on the rock.** The Matthew 7:24-25 passage that
 closes the root README now closes every README in the repo (app,
 native shells, and the rest), byte-identical, at the very end — and a
@@ -1068,7 +1070,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.14.2...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.14.3...HEAD
+[0.14.3]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.14.3
 [0.14.2]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.14.2
 [0.14.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.14.1
 [0.14.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.14.0

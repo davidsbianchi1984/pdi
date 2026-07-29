@@ -1,16 +1,16 @@
-# PDI v0.14.2 — release notes
+# PDI v0.14.3 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.14.2` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.14.3` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**PDI v0.14.2** — **docs only in this release**: cut with the
-siblings. The tandem contract (docs/tandem.md, byte-identical across
-the three repos) now documents suite mode — the shared
-`suite:qrme-vault` tenant QRME's gateway mints for its seals, and how
-the owner-scoped operations view re-draws per-tenant isolation when
-every suite identity's seals share the one tenant.
+**PDI v0.14.3** — every README ends on the rock.
+
+The Matthew 7:24–25 passage that closes the root README now closes
+every README in the repo (app and the native shells), byte-identical,
+at the very end — enforced by a binding test so the next README added
+cannot forget the rule.
 
 ### Verification
 
