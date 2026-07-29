@@ -97,7 +97,7 @@ def _writer(tenant: dict = Depends(_tenant)) -> dict:
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="Private Data Infrastructure", version="0.11.0")
+    app = FastAPI(title="Private Data Infrastructure", version="0.11.1")
 
     @app.middleware("http")
     async def localize_response_notes(request, call_next):
@@ -171,7 +171,12 @@ def create_app() -> FastAPI:
 
     @app.get("/health")
     def health() -> dict:
-        return {"status": "ok", "console": mobile.console_dir() is not None}
+        # The version is here so a desktop shell can tell whether the
+        # backend answering the port is its own — the sibling products
+        # learned this the hard way (a stale backend from an older install
+        # answers /health perfectly well and then serves an older API).
+        return {"status": "ok", "version": app.version,
+                "console": mobile.console_dir() is not None}
 
     # -- run it from your phone ---------------------------------------------
 

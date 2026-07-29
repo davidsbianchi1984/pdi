@@ -6,6 +6,37 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.11.1] — 2026-07-29
+
+### Fixed
+
+- **The desktop app finally carries its own vault**
+  (`packaging/backend_entry.py`, `packaging/smoke_test.py`,
+  `app/electron/main.cjs`, the release workflow). Reported from the
+  field: creating a tenant met "Failed to fetch" — because PDI's
+  installer shipped only the console window, pointed at a port where
+  nothing listened. The siblings got the bundled-backend treatment in
+  their packaging round; PDI never did.
+  - The installer now ships the whole vault as a PyInstaller one-file
+    binary; the shell probes, spawns it when nothing answers, adopts
+    only a version-matched backend (`/health` now carries the version),
+    takes a free port when a stranger holds the default, and kills the
+    whole process tree on quit — every lesson the siblings paid for,
+    applied at once.
+  - **The master key persists.** An unset `PDI_MASTER_KEY` used to mean
+    an ephemeral key — fatal for a desktop vault, whose contents would
+    become unreadable at every restart. First run generates a 32-byte
+    key and stores it beside the database (`master.key`, owner-only
+    mode): your hardware, your keys, your walls — the file IS the key.
+  - **The release gate proves it**: on every OS runner the exact frozen
+    binary creates a tenant, seals a record, reads it back — then
+    restarts and reads it again, proving the generated key persisted.
+    No installer ships a first run that was not performed.
+
+### Changed
+
+- Version aligned to 0.11.1 — cut together with jim-mini and qrme.
+
 ## [0.11.0] — 2026-07-29
 
 **There are no functional changes to PDI in this release**: cut with the
@@ -984,7 +1015,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.11.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.11.1...HEAD
+[0.11.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.11.1
 [0.11.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.11.0
 [0.10.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.10.0
 [0.9.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.9.1

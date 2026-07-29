@@ -5,6 +5,15 @@
 // the phone needs no configuration at all. Only the Electron desktop shell
 // (file://) and the Vite dev server fall back to the local backend.
 const LOOPBACK = "http://127.0.0.1:8000";
+// The desktop shell starts its own backend and tells us where it is. That
+// address wins over any stored loopback one — the sibling products' lesson:
+// a saved 127.0.0.1:8000 from an earlier install points at a leftover
+// backend of an older version.
+function desktopBackendUrl(): string | null {
+  if (typeof window === "undefined") return null;
+  const bridge = (window as { pdiDesktop?: { backendUrl?: string | null } }).pdiDesktop;
+  return bridge?.backendUrl || null;
+}
 function defaultBase(): string {
   if (typeof window === "undefined") return LOOPBACK;
   const { protocol, origin, pathname } = window.location;
@@ -14,7 +23,17 @@ function defaultBase(): string {
 }
 
 export function getBase(): string {
-  return localStorage.getItem("pdi.base") || defaultBase();
+  const stored = localStorage.getItem("pdi.base");
+  const desktop = desktopBackendUrl();
+  if (desktop) {
+    // Only a remote address survives on the desktop; a loopback one must
+    // match the backend this app actually started.
+    if (stored && !/^https?:\/\/(127\.0\.0\.1|localhost|\[::1\])(:|\/|$)/.test(stored)) {
+      return stored;
+    }
+    return desktop;
+  }
+  return stored || defaultBase();
 }
 export function setBase(url: string) {
   localStorage.setItem("pdi.base", url.replace(/\/+$/, ""));
