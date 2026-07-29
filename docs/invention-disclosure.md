@@ -33,6 +33,30 @@ leased space, self-hosting, and the user's own device, so custody can be
 upgraded without the product family changing a call (shipped v0.4.0
 line). Admin key rotation is performed from the product apps themselves.
 
+## 4. Bequests — vault access that begins at attestation
+
+**The process:** the vault owner names, in advance, a grantee, a bounded
+set of key scopes, and a condition; **no credential exists until the
+condition is attested** — the grant token is minted at activation by the
+deployment operator against a mandatory attestation reference (a
+guardian's silence-vigil event id, an ownership-succession verification,
+a certificate number) recorded in the tamper-evident audit chain. The
+grant is read-only forever, bounded to its scopes, revocable by the owner
+while dormant and by the operator after activation; customer-held keys
+(BYOK) remain part of the estate — the grantee presents the key or reads
+nothing. (`pdi/bequests.py`; shipped v0.8.0.)
+
+## 6. Continuity: reviewer-gated succession joined to guardian and vault
+
+**The process:** profile ownership succession is gated by a reviewer with
+a verification reference rather than the owner token (the owner may be
+unable to authorize); with no named successor the profile sunsets to a
+frozen memorial rather than an orphan. Cross-product, the same
+attestation reference joins the guardian's silence vigil (JIM-mini) and
+the vault's bequest activation (PDI), so one attested event carries a
+person's absence through all three products. (`qrme/routers/profiles.py`
+succession + memorial, shipped v0.3.x line; cross-product join v0.8.0.)
+
 ---
 
 *Attorney notes: repository first became public before this disclosure;

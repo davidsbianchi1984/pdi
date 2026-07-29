@@ -6,6 +6,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.8.0] — 2026-07-29
+
+### Added
+
+- **Bequests — vault access that begins only when a condition is
+  attested** (`pdi/bequests.py`; `POST|GET /bequests`,
+  `DELETE /bequests/{id}`, admin `POST /bequests/{id}/activate` and
+  `DELETE …/grant`, grantee `GET /bequests/grant/keys` and `…/read`).
+  The vault's posture is *nobody but you* — this answers what that
+  leaves open: what about when you are gone?
+  - The owner names, in advance, a grantee, a bounded set of key
+    prefixes, and a condition. **No credential exists until
+    activation**: a bequest at rest is a promise, not a token — nothing
+    a database breach or a curious operator could hand a grantee early.
+  - Activation is the deployment admin's act against a mandatory
+    attestation reference (a JIM vigil event id, a QRME succession
+    verification, a certificate number), mirrored into the
+    tamper-evident audit chain. The grant token is shown once; only its
+    hash survives.
+  - The grant reads its named shelf and nothing else, forever; every
+    read lands in the audit chain. The owner revokes while dormant; the
+    admin revokes after activation. BYOK keys remain part of the
+    estate — the grantee presents the customer key or reads nothing.
+
 ## [0.7.0] — 2026-07-29
 
 ### Added
@@ -934,7 +958,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.7.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.8.0...HEAD
+[0.8.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.8.0
 [0.7.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.7.0
 [0.6.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.6.1
 [0.6.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.6.0

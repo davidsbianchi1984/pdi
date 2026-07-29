@@ -15,7 +15,8 @@ import secrets
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse
 
-from . import (app_connectors, assistant, audit, baa, beacons, catalog,
+from . import (app_connectors, assistant, audit, baa, beacons, bequests,
+               catalog,
                compliance, connectors, crypto, db, dock as dock_mod, gate,
                hosting, i18n,
                intakes,
@@ -23,6 +24,7 @@ from . import (app_connectors, assistant, audit, baa, beacons, catalog,
                terms as terms_mod, transfers, tutorial, vault)
 from .models import (AppCollect, AppConnect, AppInvoke, BAARecordIn,
                      BeaconFound, BeaconPlace, BeaconState,
+                     BequestActivate, BequestCreate,
                      ConnectorCreate, ConnectorIngest, ConnectorPublish,
                      ConsoleAsk, ContributionIn, CustomerKeyAdopt, GuideMark,
                      DockConfig, HostingChoice,
@@ -95,7 +97,7 @@ def _writer(tenant: dict = Depends(_tenant)) -> dict:
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="Private Data Infrastructure", version="0.7.0")
+    app = FastAPI(title="Private Data Infrastructure", version="0.8.0")
 
     @app.middleware("http")
     async def localize_response_notes(request, call_next):
@@ -568,6 +570,55 @@ def create_app() -> FastAPI:
     @app.delete("/transfers/{tid}")
     def revoke_transfer(tid: str, tenant: dict = Depends(_writer)) -> dict:
         return transfers.revoke(_transfer_or_404(tid, tenant))
+
+    # -- bequests (pdi/bequests.py) -----------------------------------------
+    # Vault access that begins only when a condition is attested: the grant
+    # token does not exist until activation, and it only ever reads.
+
+    @app.exception_handler(bequests.BequestError)
+    def _bequest_refusal(request: Request, exc: bequests.BequestError):
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=exc.status,
+                            content={"detail": exc.message})
+
+    @app.post("/bequests", status_code=201)
+    def create_bequest(body: BequestCreate,
+                       tenant: dict = Depends(_writer)) -> dict:
+        return bequests.create(tenant, body.grantee_name, body.key_prefixes,
+                               condition=body.condition, note=body.note)
+
+    @app.get("/bequests")
+    def list_bequests(tenant: dict = Depends(_tenant)) -> list[dict]:
+        return bequests.for_tenant(tenant)
+
+    @app.delete("/bequests/{bid}")
+    def revoke_bequest(bid: str, tenant: dict = Depends(_writer)) -> dict:
+        return bequests.revoke(tenant, bid)
+
+    @app.post("/bequests/{bid}/activate",
+              dependencies=[Depends(_admin)])
+    def activate_bequest(bid: str, body: BequestActivate) -> dict:
+        """The executor's act: attests the condition (the ref is recorded in
+        the audit chain) and mints the grant token — shown once."""
+        return bequests.activate(bid, body.activation_ref)
+
+    @app.delete("/bequests/{bid}/grant", dependencies=[Depends(_admin)])
+    def admin_revoke_bequest(bid: str) -> dict:
+        return bequests.admin_revoke(bid)
+
+    @app.get("/bequests/grant/keys")
+    def bequest_keys(x_grant_token: str = Header(default=""),
+                     x_tenant_key: str = Header(default="")) -> dict:
+        """What the grantee may see. No tenant credential — the grant token
+        is the (auditable) authorization, like a transfer receive token."""
+        return bequests.grant_keys(
+            x_grant_token, customer_key=crypto.parse_key(x_tenant_key))
+
+    @app.get("/bequests/grant/read")
+    def bequest_read(key: str, x_grant_token: str = Header(default=""),
+                     x_tenant_key: str = Header(default="")) -> dict:
+        return bequests.grant_read(
+            x_grant_token, key, customer_key=crypto.parse_key(x_tenant_key))
 
     @app.post("/transfers/{tid}/receive")
     def receive_transfer(tid: str, x_receive_token: str = Header(default="")) -> dict:
