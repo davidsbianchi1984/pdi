@@ -4,7 +4,7 @@ version = "0.6.1"
 description = "Private Data Infrastructure — encrypted vault, tenant isolation, tamper-evident audit"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "Proprietary - All Rights Reserved (see LICENSE)" }
+license = { text = "MIT" }
 authors = [{ name = "David Bianchi" }]
 keywords = ["encryption", "vault", "aes-gcm", "audit", "multi-tenant"]
 classifiers = [
