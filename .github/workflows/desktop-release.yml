@@ -48,6 +48,38 @@ jobs:
           cache: npm
           cache-dependency-path: app/package-lock.json
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # The installer ships the whole vault as a PyInstaller one-file
+      # binary; the Electron main process spawns it at launch when no
+      # backend answers — the siblings have shipped this way since their
+      # packaging round; until now PDI's console shipped alone, and every
+      # desktop install opened onto "Failed to fetch".
+      - name: Bundle the PDI backend (PyInstaller)
+        working-directory: ${{ github.workspace }}
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          pip install . pyinstaller
+          pyinstaller --onefile --name pdi-backend \
+            --collect-submodules pdi \
+            --collect-data pdi \
+            packaging/backend_entry.py
+          mkdir -p app/backend-bin
+          cp dist/pdi-backend* app/backend-bin/
+
+      # No installer ships a first run that was not performed: the exact
+      # frozen binary runs the flow that failed in the field — create a
+      # tenant, seal a record, read it back — plus the vault-specific
+      # guarantee: restart, and the sealed record is still readable,
+      # because the generated master key persisted.
+      - name: Smoke-test the frozen backend (real first run)
+        working-directory: ${{ github.workspace }}
+        shell: bash
+        run: python packaging/smoke_test.py dist/pdi-backend*
+
       - name: Install dependencies
         run: npm ci
 
