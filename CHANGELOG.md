@@ -6,6 +6,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-07-29
+
+**There are no functional changes to PDI in this release**: the three
+products are cut as one release, and the version moves so one number keeps
+naming one combination of all three. In the siblings, JIM-mini learned
+personal drift bands around a learned baseline, gained a voice to speak and
+listen with, and both consoles gained a model picker that shows each
+provider by its own glyph.
+
 ## [0.4.8] — 2026-07-28
 
 **There are no functional changes to PDI in this release**: the three
@@ -892,7 +901,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.4.8...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.5.0...HEAD
+[0.5.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.5.0
 [0.4.8]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.8
 [0.4.7]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.7
 [0.4.6]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.4.6
