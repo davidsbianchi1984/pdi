@@ -1,20 +1,21 @@
-# PDI v0.10.0 — release notes
+# PDI v0.11.0 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.10.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.11.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**PDI v0.10.0** — **no functional change to the vault in this release**:
+**PDI v0.11.0** — **no functional change to the vault in this release**:
 the three products are cut as one release, and the version moves so one
 number keeps naming one combination of all three.
 
 ### What changed in the siblings
 
-A real offline model arrived in JIM-mini and QRME: Ollama as a
-first-class Local provider — found on its own, no key, nothing leaving
-the machine — preferred over the canned stub by Automatic, and used by
-offline mode too.
+QRME's console caught up with its backend: Discover (marketplace + the
+33-profile starter collection), Friends with the founder pinned first,
+Rooms across 2D/AR/VR plus live desks, a memory vault that names names
+and erases one conversation at a time, and a chat fallback that stopped
+performing a character.
 
 ### Verification
 
