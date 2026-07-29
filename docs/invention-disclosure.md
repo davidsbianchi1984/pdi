@@ -57,6 +57,15 @@ the vault's bequest activation (PDI), so one attested event carries a
 person's absence through all three products. (`qrme/routers/profiles.py`
 succession + memorial, shipped v0.3.x line; cross-product join v0.8.0.)
 
+## The operations journal — a view, never a side door
+
+**The process:** third-product records sealed into a tenant's encrypted
+vault (`qrme/coordination/*`) listed back to that tenant as a journal
+whose every entry is read through the ordinary audited decryption path,
+so the journal adds no second door: each journal read lands on the
+tamper-evident hash-chained audit log exactly as a direct read would
+(`GET /operations`; shipped v0.13.0, recorded 2026-07-29).
+
 ---
 
 *Attorney notes: repository first became public before this disclosure;
