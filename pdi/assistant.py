@@ -172,6 +172,11 @@ DIRECTIONS: dict[str, tuple[str, ...]] = {
     "dock": ("the pane", "the corner", "the lights panel", "the overlay",
              "the dock", "little box", "close the panel"),
     "all_set": ("all set", "am i done", "finished setup", "the guide"),
+    # The words somebody uses when something has just broken, and the ones
+    # they use when they have noticed the reporting and want it stopped.
+    "problems": ("what went wrong", "error", "errors", "it failed",
+                 "something broke", "bug", "report a bug", "crash",
+                 "stop sending", "stop reporting", "opt out", "diagnostics"),
 }
 
 

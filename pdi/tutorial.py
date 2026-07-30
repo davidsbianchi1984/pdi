@@ -150,6 +150,16 @@ LESSONS: tuple[dict, ...] = (
               "at this console can. It shows and it routes; it never acts.",
          screens=(43,),
          click="Tap the helper button and cycle the faces."),
+    dict(key="problems", chapter="Running it", title="What went wrong",
+         what="When a request fails, the console writes down the operation and "
+              "the status code and nothing else — GET /records/{id}, 500. Not "
+              "the error message, not the path as it was called, and never the "
+              "query string, which can name a key. Nothing here touches the "
+              "vault: no record, no key and no seal is involved. Before a "
+              "single report is sent the console asks, and shows you the exact "
+              "thing it would send.",
+         screens=(46, 47),
+         click="Open Settings and press 'Show me exactly what would be shared'."),
     dict(key="all_set", chapter="Running it", title="Ready",
          what="The end of the setup path, and where to go back to. Every "
               "screen carries the guide, so a part of this can be re-read on "

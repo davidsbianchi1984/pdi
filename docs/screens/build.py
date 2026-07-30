@@ -1469,6 +1469,31 @@ SCREENS = [
         dict(icon="shieldok", color="amber", k="Free options stay open",
              s="no answer commits you"),
     ], button=("Send the request", "brand")),
+    # 46 and 47 are the error report and the notice before it. Nothing here
+    # touches the vault: the log holds route shapes and status codes, and a
+    # query string that could name a key never survives redaction.
+    dict(num=46, title="What Went Wrong", sub="The operation, not the instance",
+         accent="cyan", tab=0, cards=[
+        dict(icon="warn", color="amber", k="GET /records/{id}",
+             s="500 · twice · 30 Jul"),
+        dict(icon="compass", color="cyan", k="POST /bequests/{id}",
+             s="no answer · once · 30 Jul"),
+        dict(icon="shieldok", color="green", k="No key name kept",
+             s="the query never survives"),
+        dict(icon="doc", color="brand", k="No seal involved",
+             s="route shapes and codes"),
+    ], button=("Show the exact payload", "brand")),
+    dict(num=47, title="Before Anything Is Sent", sub="Asked once, answerable forever",
+         accent="green", tab=0, cards=[
+        dict(icon="doc", color="cyan", k="When it fails",
+             s="we would like to know"),
+        dict(icon="shieldok", color="green", k="Never the message",
+             s="never who you are"),
+        dict(icon="compass", color="brand", k="See the payload",
+             s="the same object we post"),
+        dict(icon="person", color="amber", k="Change it later",
+             s="the switch is in Settings"),
+    ], button=("That's fine", "brand")),
 ]
 
 
