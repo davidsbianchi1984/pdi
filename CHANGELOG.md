@@ -6,8 +6,31 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-**The vault's four client surfaces now get checked against its own route
-table.** This guard comes from a bug in a sibling: QRME's community wall
+**The guard now checks the verb, not just the address.** Matching a path while
+ignoring the method accepts a client that sends POST where only GET is mounted.
+The answer is a 405 rather than a 404, and from the user's side that is the same
+dead button. For a vault the distinction is worth being exact about: a read and
+a write are not interchangeable, and a check that cannot tell them apart is not
+checking the thing that matters. It now requires a full router match, method
+included, reading the verb the way each language writes it — labelled in
+TypeScript and Swift (`method: "PUT"`), positional in Kotlin, encoded in the
+helper's own name in C# (`Post(...)`, `HttpMethod.Get`).
+
+Scoping the check to the enclosing *call* rather than to loose path-shaped
+strings is what made that possible, and it widened the net at the same time:
+double-quoted paths, the ones written without interpolation, had been skipped
+entirely.
+
+Each language's verb reader gets its own liveness test, because they are
+separate code and they fail quietly. If one stops matching, every call from that
+surface silently becomes a GET — and since most routes do serve a GET, the suite
+would stay green while checking almost nothing.
+
+All 119 verb-and-path pairs across PDI's four surfaces are accepted; no field
+bug came out of this.
+
+Earlier in this cycle, the guard arrived at all: **the vault's four client
+surfaces now get checked against its own route table.** This guard comes from a bug in a sibling: QRME's community wall
 shipped its like, comment and share buttons dead, because the console asked
 for a singular path segment the routes only map in the plural. The backend
 tests passed on the reachable form, the console compiled because a template
