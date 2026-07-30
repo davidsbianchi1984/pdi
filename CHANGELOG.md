@@ -1329,7 +1329,8 @@ product of the three-product suite — the storage layer that
 [Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.16.0...HEAD
 [0.19.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.19.0
 [0.18.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.18.0
-[0.16.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.16.0
+[0.17.0]: https://github.com/davidsbianchi1984/pdi/commit/58ce86b
+[0.16.0]: https://github.com/davidsbianchi1984/pdi/commit/5cce587
 [0.15.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.15.0
 [0.14.5]: https://github.com/davidsbianchi1984/pdi/commit/25797755e3e486763964691a22ab73345b761b29
 [0.14.4]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.14.4
