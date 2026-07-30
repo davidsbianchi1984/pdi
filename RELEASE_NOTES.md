@@ -1,29 +1,22 @@
-# PDI v0.16.0 — release notes
+# PDI v0.17.0 — release notes
 
 *Ready-to-paste body for the GitHub Release created when you push the
-`app-v0.16.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
+`app-v0.17.0` tag. Kept in sync with [CHANGELOG.md](CHANGELOG.md).*
 
 ---
 
-**PDI v0.16.0** — **no functional change in this release**: cut with the
-siblings, and the vault is where JIM's new user-specific adaptation
-profile is sealed.
+**PDI v0.17.0** — cut with the siblings.
 
-JIM-mini closed the guidance loop (did the counseling work, and a live
-person when it didn't), gained a user-specific model sealed **in this
-vault**, anonymous enrollment, the CPR pace cue, budgets, stress
-tracking, an offline knowledge pack and the QRME specialist attach
-bracket. QRME gained wall uploads, pasted-link players, Google/Apple
-sign-in, DeepSeek and bring-your-own-algorithm providers, and
-role-specific interaction contexts.
+**No functional changes here**: cut with the siblings so the suite carries
+one version.
 
-### Verification
+JIM-mini's community door — the bridge out to QRME's rooms and local
+events — reaches iOS, Android and Windows, and its adaptation profile and
+anonymity posture gained screens. QRME's voice enrollment reaches the same
+three shells, recording and measuring a sample where the web console could
+only ask; its recoverable watermark, role picker and provenance lookup
+gained doors; and a 404 under every like, comment and share on the
+community wall was found and fixed.
 
-Full suite green.
-
-### Install
-
-If you have 0.7.0 or later, this arrives on its own — one restart when
-prompted.
-
-**Full changelog:** https://github.com/davidsbianchi1984/pdi/blob/main/CHANGELOG.md
+The vault's own contract is unchanged: what JIM seals here stays sealed
+here, and nothing in this release alters what a key opens.
