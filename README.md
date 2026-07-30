@@ -198,7 +198,7 @@ contribution is usually to hold the bytes exactly as it already did.
 | **0.15.0** | **Cut with the siblings** — JIM's guided wellness and QRME's temperament dials |
 | **0.14.5** | **Cut with the siblings** — JIM's fall path, native crash watch, and docs web |
 | **0.14.4** | **The console names a version mismatch** — the same guard as the siblings |
-| **0.14.3** | **Every README ends on the rock** — the Matthew 7:24–25 passage closes every README, test-enforced |
+| **0.14.3** | **Docs binding pass** — every README held to the same closing convention, test-enforced |
 | **0.14.2** | **Cut with the siblings** — the tandem contract documents suite mode and the shared `suite:qrme-vault` tenant |
 | **0.14.1** | **Cut with the siblings** — suite tandem wiring in QRME; coach awareness in JIM |
 | **0.14.0** | **Operations entries prove themselves** — provenance one click from each journal entry |
