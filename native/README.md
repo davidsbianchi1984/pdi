@@ -102,7 +102,11 @@ button on a seal or a key rotation is not a cosmetic failure.
 
 [`pdi/tests/test_client_routes_exist.py`](../pdi/tests/test_client_routes_exist.py)
 extracts every API path literal from `native/` — a couple of dozen per shell —
-and asks the real router about each one. The console is held to the same check.
+with the HTTP method each is sent with, and asks the real router whether that
+*pair* is accepted. For a vault the distinction is worth being exact about: a
+read and a write are not interchangeable, and a check that cannot tell them
+apart is not checking the thing that matters. The console is held to the same
+check.
 
 Two limits worth stating. Routing-level matching cannot see a refusal that
 happens *after* dispatch, inside a handler. And a path assembled from pieces at
