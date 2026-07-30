@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSession } from "./store";
+import { ProblemNotice } from "./ProblemNotice";
 import { VersionGuard } from "./VersionGuard";
 import { Overview } from "./screens/Overview";
 import { Tenants } from "./screens/Tenants";
@@ -61,6 +62,7 @@ export function App() {
         </div>
       </aside>
       <main className="content">
+        <ProblemNotice />
         {tab === "overview" && <Overview go={setTab} />}
         {tab === "tenants" && <Tenants />}
         {tab === "records" && <Records go={setTab} />}
