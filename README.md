@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.15.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.16.0** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -9,8 +9,8 @@ together, so one number names one combination of all three.
 ![PDI — Private Data Infrastructure](assets/cover.svg)
 
 A standalone **secure private data platform** (the "Private Data Infrastructure" enabling seamless support for future AI agent services (**JAN2024 NETWORKED
-RESPONSIVE PERSONAL GUIDANCE SYSTEM FOR KNOWN CONDITIONS United States application or CT international application # 19/038,196 ATTORNEY DOCKET # 526.P001 Patent Pending**) through a centralized AI-driven
-management system (**FEB2024 SYNTHETIC USER PROFILE MANAGEMENT United States application or CT international application # 19/056,418 ATTORNEY DOCKET # 526.P002 Patent Pending**). When elected
+RESPONSIVE PERSONAL GUIDANCE SYSTEM FOR KNOWN CONDITIONS United States application or CT international application # 19/038,196 ATTORNEY DOCKET # 526.P001 Patent Pending — published as US 2025/0246290 A1**) through a centralized AI-driven
+management system (**FEB2024 SYNTHETIC USER PROFILE MANAGEMENT United States application or CT international application # 19/056,418 ATTORNEY DOCKET # 526.P002 Patent Pending — published as US 2025/0265659 A1**). When elected
 to activate these capabilities, the platform will be equipped to deploy intelligent, role-specific AI agents capable of assisting users,
 automating tasks, managing workflows, and enhancing operational decision-making and could potentially run more efficiently, replace
 Mundane Outdated Tasks and or Roles within the company.— all within the same secure, private network environment.
@@ -194,6 +194,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.16.0** | **Cut with the siblings** — JIM's closed guidance loop and anonymity, QRME's uploads and new model doors |
 | **0.15.0** | **Cut with the siblings** — JIM's guided wellness and QRME's temperament dials |
 | **0.14.5** | **Cut with the siblings** — JIM's fall path, native crash watch, and docs web |
 | **0.14.4** | **The console names a version mismatch** — the same guard as the siblings |

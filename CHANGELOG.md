@@ -6,6 +6,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.16.0] — 2026-07-30
+
+**No functional changes here**: cut with the siblings. JIM-mini closed
+its guidance loop (did the counseling work, and a live person when it
+did not), gained a user-specific adaptation profile **sealed in this
+vault**, anonymous enrollment, budgets, stress tracking and an offline
+knowledge pack; QRME gained wall uploads, two new sign-in doors and two
+new model doors.
+
 ## [0.15.0] — 2026-07-29
 
 **No functional changes here**: cut with the siblings. JIM-mini
@@ -1096,7 +1105,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.15.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.16.0...HEAD
+[0.16.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.16.0
 [0.15.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.15.0
 [0.14.5]: https://github.com/davidsbianchi1984/pdi/commit/25797755e3e486763964691a22ab73345b761b29
 [0.14.4]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.14.4
