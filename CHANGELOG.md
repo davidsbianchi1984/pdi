@@ -6,6 +6,27 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**Every option the vault offers, the vault now has to accept.** A catalog
+endpoint is a menu — the console and the three shells render it directly, so
+whatever it lists is what a tenant can pick. If the endpoint that *consumes* the
+choice refuses one of those values, the tenant gets an error for doing exactly
+what they were offered. That is the shape of the bug that left a sibling's
+community wall with dead buttons, and the one the route guard says plainly it
+cannot see: the request routes perfectly and the refusal happens inside the
+handler, after dispatch.
+
+Four checks now send the request rather than read the source — languages in both
+delivery modes, the robots in the catalog, and the connectors.
+
+Two decisions worth stating. A 409 is not counted as a refusal: it means the
+server understood the value and objected to the *state* — already bound, already
+connected — which is a different thing from not recognising it. And an empty
+catalog fails rather than passes, because a menu with nothing on it would
+otherwise be a test that checks nothing and reports success.
+
+**No field bug came out of this** — every advertised value is accepted. The
+vault's own contract is unchanged; nothing here alters what a key opens.
+
 **The guard now checks the verb, not just the address.** Matching a path while
 ignoring the method accepts a client that sends POST where only GET is mounted.
 The answer is a 405 rather than a 404, and from the user's side that is the same
