@@ -6,6 +6,39 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**Continuity finally has a door.** Bequests are the whole of it — what may be
+read, by whom, if a condition is ever attested — and for a vault that is the
+part that matters at exactly the moment the person who set it up is not present
+to help. The backend was complete and no client opened it.
+
+**Three actors touch it, and the screen keeps them apart**, because conflating
+them is how a continuity feature becomes a back door. The **tenant** records a
+bequest and may revoke it while alive. The **operator**, holding an admin token
+rather than the tenant's, activates one against an attested reference — the
+reference goes into the audit chain, and the grant token is shown once. The
+**heir** redeems with a grant token *and*, separately, the customer key: the
+token says the condition was attested, the key decrypts, and holding one
+without the other opens nothing.
+
+A bequest **grants nothing when created**, and the screen says so rather than
+letting "created" imply "in force". Dormant, in force and revoked are three
+different words on the card.
+
+The **suite gateway** came with it: who is on shift and whether anybody is, the
+timezone those hours are read in, and the pages it raised when nobody was
+reachable — each with whether it arrived, since a page that failed to deliver is
+the one worth seeing. The gateway's **ceiling** is rendered key by key from
+`GET /gate/ceiling` rather than paraphrased, because summarising it in the
+console would make the console the authority on a boundary it does not own. Its
+own sentence puts it best: *the agent's ceiling is whatever a wrong answer
+cannot undo.*
+
+Fifteen routes came off the doorless list, 73 → 58 — PDI's first pass.
+
+Nothing here changes what the vault does. A sealed record is sealed exactly as
+it was, and nothing alters what a key opens.
+
+
 **73 of PDI's 129 routes cannot be reached from any client.** The route guard
 asks whether every call reaches a route. This asks the inverse — whether every
 route is reachable from a door a tenant can open — and it is the quieter of the

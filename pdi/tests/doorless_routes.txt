@@ -1,8 +1,5 @@
 DELETE /beacons/{bid}
-DELETE /bequests/{bid}
-DELETE /bequests/{bid}/grant
 DELETE /contributions/{ref}
-DELETE /gate/roster/{rid}
 DELETE /key
 DELETE /robots/{rid}
 DELETE /tenants/{tenant_id}
@@ -12,9 +9,6 @@ GET /baa
 GET /beacons
 GET /beacons/{bid}
 GET /beacons/{bid}/custody
-GET /bequests
-GET /bequests/grant/keys
-GET /bequests/grant/read
 GET /connectors/catalog
 GET /connectors/{cid}/beacon
 GET /connectors/{cid}/qr.svg
@@ -27,10 +21,6 @@ GET /dock/faces
 GET /dock/where/{face}
 GET /dock/{tenant_id}
 GET /dock/{tenant_id}/face/{name}
-GET /gate/ceiling
-GET /gate/channel
-GET /gate/pages
-GET /gate/roster
 GET /hosting
 GET /hosting/{tenant_id}
 GET /hosting/{tenant_id}/history
@@ -47,15 +37,11 @@ GET /tenants/{tenant_id}/baa
 GET /transfers/{tid}
 GET /transfers/{tid}/custody
 POST /beacons
-POST /bequests
-POST /bequests/{bid}/activate
 POST /console/ask
 POST /console/guide/done
 POST /console/guide/start
 POST /contributions
 POST /deployments
-POST /gate/pages/{pid}/retry
-POST /gate/roster
 POST /keys/reseal
 POST /restore
 POST /s/{bid}/found
@@ -68,6 +54,5 @@ POST /transfers/{tid}/receive
 POST /translate
 PUT /beacons/{bid}/state
 PUT /dock/{tenant_id}
-PUT /gate/timezone
 PUT /hosting/{tenant_id}
 PUT /key
