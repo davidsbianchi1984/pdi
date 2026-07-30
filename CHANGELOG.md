@@ -6,6 +6,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**73 of PDI's 129 routes cannot be reached from any client.** The route guard
+asks whether every call reaches a route. This asks the inverse — whether every
+route is reachable from a door a tenant can open — and it is the quieter of the
+two failures. A client calling a route that does not exist produces a 404
+somebody reports. A route no client calls produces nothing at all: the code is
+present, its tests pass, and the capability is simply unreachable.
+
+For a vault, several of these are the parts that matter most when they are
+needed. **Bequests** — create, activate, grant, revoke — is the whole continuity
+path, and no client opens it. The **suite gateway** (`/gate/*`: roster, channel,
+ceiling, pages, timezone) has no door. So do **beacons**, the **BAA** lifecycle
+on a tenant, tenant deletion and restore, and the console's own **guide**.
+
+The count is recorded in `pdi/tests/doorless_routes.txt`. The list is a backlog
+rather than an approval: it cannot grow, because a new route with no door fails
+the test; and it must shrink deliberately, because building a door fails the
+test too, telling you to strike the line.
+
+Nothing here changes what the vault does. A sealed record is sealed exactly as
+it was, and nothing in this entry alters what a key opens — the finding is about
+which of those capabilities a person can actually reach.
+
 **Every option the vault offers, the vault now has to accept.** A catalog
 endpoint is a menu — the console and the three shells render it directly, so
 whatever it lists is what a tenant can pick. If the endpoint that *consumes* the
