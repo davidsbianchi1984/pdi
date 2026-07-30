@@ -6,6 +6,29 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+**The vault's four client surfaces now get checked against its own route
+table.** This guard comes from a bug in a sibling: QRME's community wall
+shipped its like, comment and share buttons dead, because the console asked
+for a singular path segment the routes only map in the plural. The backend
+tests passed on the reachable form, the console compiled because a template
+literal is only a string, and the two halves were never compared.
+
+PDI's console is deliberately thin, but the iOS, Android and Windows shells
+reach a couple of dozen routes each in Swift, Kotlin and C#, where
+`native.yml` proves they *compile* and cannot say whether they *resolve*. For
+a vault that matters more rather than less: a dead button on a seal or a key
+rotation is not a cosmetic failure. All four surfaces are now checked.
+
+Two tests guard the guard — one fails if a language's extraction pattern stops
+matching, since a scan that silently finds nothing reads exactly like a scan
+that finds nothing wrong; the other pins the truncation defect found in the
+siblings' extractor, so the three byte-identical copies cannot drift apart.
+
+No field bug came out of this: every path PDI's four surfaces build resolves.
+Each check was verified by injecting a broken path and watching it fail.
+
+The vault's own contract is unchanged. Nothing here alters what a key opens.
+
 ## [0.18.0] — 2026-07-30
 
 **No functional changes here**: cut with the siblings so the suite carries

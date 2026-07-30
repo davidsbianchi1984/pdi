@@ -92,6 +92,22 @@ been verified by reading and by brace/XML well-formedness checks, which catch
 a typo and nothing else. Treat a green run as the first real evidence, not a
 long-standing guarantee.
 
+## Do the paths resolve?
+
+Compiling is not the same as working. A path is a string in all three
+languages, so a mistyped one compiles perfectly, ships, and 404s in the field —
+which is how a sibling shipped a community wall whose like, comment and share
+buttons had never worked. For a vault that matters more rather than less: a dead
+button on a seal or a key rotation is not a cosmetic failure.
+
+[`pdi/tests/test_client_routes_exist.py`](../pdi/tests/test_client_routes_exist.py)
+extracts every API path literal from `native/` — a couple of dozen per shell —
+and asks the real router about each one. The console is held to the same check.
+
+Two limits worth stating. Routing-level matching cannot see a refusal that
+happens *after* dispatch, inside a handler. And a path assembled from pieces at
+runtime, rather than written as one literal, is invisible to any static scan.
+
 ---
 
 ## Matthew 7:24–25
