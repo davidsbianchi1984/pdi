@@ -1,4 +1,5 @@
 // Thin typed client for the PDI vault API.
+import { recordProblem } from "./errors";
 //
 // Default base: when the console is served *by* the API (the phone case —
 // http://<machine>:8000/app/), the backend is the origin we came from, so
@@ -65,6 +66,9 @@ async function req<T>(
   const text = await res.text();
   const data = text ? JSON.parse(text) : null;
   if (!res.ok) {
+    // The status and the operation, never the detail below: that string
+    // carries whatever the user typed.
+    recordProblem(opts.method || "GET", path, res.status);
     const d = (data && (data.detail || data.message)) || res.statusText;
     throw new Error(typeof d === "string" ? d : JSON.stringify(d));
   }

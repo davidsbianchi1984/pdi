@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, getBase, setBase, type PairInfo } from "../api";
+import { Problems } from "../Problems";
 import { useSession } from "../store";
 
 export function Settings() {
@@ -50,6 +51,7 @@ export function Settings() {
         <div className="muted small">Tenant: {session.tenantName || "none"}</div>
         <button className="danger" onClick={clear}>Sign out</button>
       </div>
+      <Problems />
     </div>
   );
 }
