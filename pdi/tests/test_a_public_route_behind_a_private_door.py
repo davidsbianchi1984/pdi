@@ -83,8 +83,70 @@ def test_the_backend_still_takes_no_tenant_credential():
         "replaced it needs checking against the same question")
 
 
+def test_the_recipient_has_a_door_of_their_own():
+    """The check this file should have had, and did not.
+
+    Its first version asserted that the console reaches `receiveTransfer` and
+    that PDI's console has no sign-in gate, and concluded PDI "got it right".
+    Both facts were true. The conclusion was wrong, and wrong in the way this
+    audit has now named seven times: a call site is not reachability.
+
+    The only caller of that binding is `Exchange.tsx`'s **"Receive it as the
+    recipient"** button. Its own tooltip gives it away — *"Fetch it the way
+    the recipient would"*, disabled unless `receipts[t.id]` is present, which
+    is a token the sender's session captured at creation and which the tooltip
+    admits is usually gone: *"The receive token was shown once, in another
+    session"*. It is the sender rehearsing. The recipient — who holds the
+    token, and who the route's own docstring says is not a tenant — had
+    nowhere in the entire product to use it.
+
+    So the absence of a sign-in gate was never the recipient having access. It
+    was the recipient having nothing to be gated out of.
+    """
+    api = (REPO / "pdi" / "api.py").read_text(encoding="utf-8")
+    assert '@app.get("/r/{tid}"' in api, (
+        "there is no recipient page. The only thing calling the receive route "
+        "is the console's rehearsal button, which needs the sender's own "
+        "session — a person with a receive token in an email has nowhere to "
+        "put it.")
+
+    page = (REPO / "pdi" / "landing.py").read_text(encoding="utf-8")
+    body = page[page.index("def receive_page"):]
+    assert "x-receive-token" in page, (
+        "the recipient page does not send the receive token in its header")
+    assert "location.hash" in page, (
+        "the link does not carry the token in the URL fragment — a query "
+        "string puts a one-shot authorization for compliance-grade material "
+        "into every access log and Referer header on the way")
+    assert "replaceState" in page, (
+        "the fragment is not cleared from the address bar after it is read")
+    assert body  # the function exists, not just the strings
+
+
+def test_the_recipient_page_does_not_confirm_which_ids_exist():
+    """A 404 here would turn the page into an oracle.
+
+    Whether a transfer exists is the token's business to answer. If the URL
+    answered it, anybody could walk ids and learn which sealed transfers are
+    real — which is exactly the kind of thing a compliance-grade transfer
+    exists to avoid leaking.
+    """
+    api = (REPO / "pdi" / "api.py").read_text(encoding="utf-8")
+    route = api[api.index('@app.get("/r/{tid}"'):]
+    route = route[:route.index("\n    @app.")]
+    code = re.sub(r'""".*?"""', "", route, flags=re.S)
+    assert "404" not in code, (
+        "the recipient page 404s on an unknown id, which makes it a way of "
+        "asking whether a transfer id is real")
+
+
 def test_the_console_binding_sends_the_receive_token_not_a_bearer():
-    """What PDI already got right, written down so it stays right."""
+    """What PDI already got right, written down so it stays right.
+
+    Kept, and narrowed: this says the *binding* is shaped correctly. It says
+    nothing about whether anybody the route was written for can reach it —
+    which is precisely the conflation the test above now covers.
+    """
     api = (REPO / "app" / "src" / "api.ts").read_text(encoding="utf-8")
     binding = api[api.index("receiveTransfer:"):]
     binding = binding[:binding.index("\n  intakes:")]

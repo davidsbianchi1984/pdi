@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, CustodyChain, IntakeRow, TransferRow } from "../api";
+import { api, getBase, CustodyChain, IntakeRow, TransferRow } from "../api";
 import { useSession } from "../store";
 
 /**
@@ -97,9 +97,11 @@ export function Exchange() {
                 })}>Seal and send</button>
         <p className="muted small">
           The receive token comes back once, here, and is never served again.
-          Give it to the recipient by whatever channel you would have used for
-          the file itself — it is the thing that opens this transfer and
-          nothing else opens it.
+          Use <strong>Copy the recipient&apos;s link</strong> on the transfer
+          below and send them that — it carries the token in the URL fragment,
+          which browsers never transmit to a server, so the link can pass
+          through mail without leaving the token in anybody&apos;s logs. It is
+          the thing that opens this transfer and nothing else opens it.
         </p>
       </div>
 
@@ -127,6 +129,24 @@ export function Exchange() {
                       onClick={() => run(async () => {
                         setCustody(await api.transferCustody(t.id, token!));
                       })}>Chain of custody</button>
+              {/* The recipient's actual door. Until this existed, `/r/{id}`
+                  was a page nobody could link to and the receive token was
+                  something the sender was told to hand over with nowhere for
+                  it to be used — the same defect one step earlier. */}
+              <button disabled={busy || !receipts[t.id]}
+                      title={receipts[t.id]
+                        ? "The link to send them — token in the fragment"
+                        : "The receive token was shown once, in another session"}
+                      onClick={() => run(async () => {
+                        // Resolve it before handing it over: a misconfigured
+                        // public base would otherwise be discovered by the
+                        // recipient, who has nobody to ask.
+                        await api.recipientPage(t.id);
+                        const link = `${getBase()}/r/${t.id}`
+                          + `#${encodeURIComponent(receipts[t.id])}`;
+                        navigator.clipboard?.writeText(link);
+                        setGot(link);
+                      })}>Copy the recipient&apos;s link</button>
               <button disabled={busy || !receipts[t.id]}
                       title={receipts[t.id]
                         ? "Fetch it the way the recipient would"

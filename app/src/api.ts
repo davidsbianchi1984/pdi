@@ -519,6 +519,11 @@ export const api = {
   // is capped by `disclose`, and what they can do is leave a note in the
   // chain — which the holder reads and they cannot alter.
   scanPage: (bid: string) => reqText(`/s/${bid}`),
+  // The recipient's page. The console fetches it for one reason: the sender
+  // is about to put this URL in an email, and a deployment whose public base
+  // is misconfigured would send a dead link to somebody who cannot ask why.
+  // Checking costs one request and happens before the copy, not after.
+  recipientPage: (tid: string) => reqText(`/r/${tid}`),
   scanCard: (bid: string) => req<ScanCard>(`/s/${bid}/card`),
   scanQr: (bid: string) => reqText(`/s/${bid}/qr.svg`),
   reportFound: (bid: string, body: { where?: string; contact?: string }) =>

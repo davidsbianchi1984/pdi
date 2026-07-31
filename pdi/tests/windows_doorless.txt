@@ -1,3 +1,9 @@
+# GET /r/{tid} — the recipient's page, sat beside GET /s/{bid} above
+# for the same reason: its reader is not a tenant and has no shell.
+# The console reaches it (it resolves the link before the sender
+# emails it); a phone has no business fetching somebody else's
+# collection page, and building it into one would mean telling a
+# person who was sent a single file to install an app.
 DELETE /beacons/{bid}
 DELETE /bequests/{bid}
 DELETE /bequests/{bid}/grant
@@ -44,6 +50,7 @@ GET /pair
 GET /pair/qr.svg
 GET /positions
 GET /positions/{position_id}
+GET /r/{tid}
 GET /retention
 GET /rings
 GET /rings/{rid}/transcript

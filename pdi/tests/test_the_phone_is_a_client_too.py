@@ -70,7 +70,11 @@ SNAPSHOTS = {
 
 #: Where each stood when this guard was written, so the direction of travel is
 #: a fact in the file rather than a claim in a commit message.
-STARTED_AT = {"ios": 86, "android": 86, "windows": 85}
+# Raised by one in the round that added GET /r/{tid}. Deliberately, which is
+# the whole point of a ratchet: the route's door is a browser opening an
+# emailed link, exactly like GET /s/{bid} beside it, and a phone shell is not
+# where somebody who was sent one file should have to go.
+STARTED_AT = {"ios": 87, "android": 87, "windows": 86}
 
 
 def _surface(name: str):

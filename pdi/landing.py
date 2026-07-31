@@ -76,6 +76,15 @@ button{width:100%;margin-top:18px;font:inherit;font-size:16px;font-weight:700;
  color:#04121c;background:linear-gradient(90deg,#38bdf8,#7dd3fc);border:0;
  border-radius:14px;padding:15px;cursor:pointer}
 button:disabled{opacity:.55;cursor:default}
+input[type=text]{width:100%;font:inherit;font-size:16px;color:#f2effc;
+ background:#120e2c;border:1px solid #302a60;border-radius:12px;
+ padding:12px 14px;-webkit-appearance:none;box-sizing:border-box}
+input[type=text]:focus{outline:2px solid #7b5cff;outline-offset:-1px}
+input[type=text]:disabled{opacity:.6}
+a.dl{display:block;margin-top:14px;text-align:center;font-weight:700;
+ color:#fff;background:linear-gradient(90deg,#5b3ce0,#7b5cff);
+ border-radius:13px;padding:15px;text-decoration:none}
+#file h2{font-size:16px;margin:16px 0 4px;color:#f2effc;word-break:break-all}
 .status{min-height:20px;margin-top:12px;font-size:13.5px;color:#7dd3fc;
  text-align:center}
 .foot{color:#6a6399;font-size:12px;text-align:center;margin-top:18px}
@@ -269,3 +278,113 @@ def gate_page(card: dict) -> str:
 def page_for(card: dict) -> str:
     """The right page for whatever the code was placed on."""
     return gate_page(card) if card.get("gate") else seal_card_page(card)
+
+
+# --------------------------------------------------------------------------- #
+# The recipient's page
+# --------------------------------------------------------------------------- #
+#
+# `receive_transfer` says who its caller is: "The recipient retrieves the file
+# with their receive token — no tenant credential; the token itself is the
+# (auditable) authorization." That person is not a tenant. They were sent a
+# file under HIPAA or OSHA or CPNI, they have a one-shot token in an email,
+# and until this page existed they had nowhere to use it: the only caller of
+# the route in the whole product was Exchange.tsx's "Receive it as the
+# recipient" button, which is the *sender* rehearsing, disabled unless their
+# own session still holds the receipt.
+#
+# **The token rides in the URL fragment.** `/r/{tid}#<token>` — browsers never
+# send a fragment to a server, so a link that reaches an access log, a proxy,
+# or a Referer header leaves the credential behind. A query string would put a
+# one-shot authorization for a compliance-grade file into every log between
+# here and the recipient. The field below is the fallback for somebody who has
+# the token but not the link.
+
+_RECEIVE_JS = """
+(function(){
+ var tid=%(tid)s, box=document.getElementById('t'),
+     b=document.getElementById('go'), out=document.getElementById('out'),
+     st=document.getElementById('st');
+ // Fragment first, and cleared from the address bar immediately: the token is
+ // one-shot, but a screenshot or a shoulder is not.
+ var frag=(location.hash||'').replace(/^#/,'');
+ if(frag){box.value=decodeURIComponent(frag);
+  history.replaceState(null,'',location.pathname);}
+ b.addEventListener('click',function(){
+  var tok=box.value.trim(); if(!tok)return;
+  b.disabled=true;st.textContent='Fetching\\u2026';
+  fetch('/transfers/'+encodeURIComponent(tid)+'/receive',
+   {method:'POST',headers:{'x-receive-token':tok}})
+  .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});})
+  .then(function(o){
+   b.disabled=false;
+   if(!o.ok){st.textContent=(o.j&&o.j.detail)||'That did not work.';return;}
+   st.textContent='';
+   var j=o.j, wrap=document.getElementById('file');
+   document.getElementById('fn').textContent=j.filename||'file';
+   if(j.programs&&j.programs.length){
+    document.getElementById('pg').textContent=j.programs.join(' \\u00b7 ');}
+   if(j.custody){document.getElementById('cu').textContent=j.custody;}
+   // A download rather than a render: this is somebody else's compliance
+   // material and the browser is not the right place to display it.
+   //
+   // `content` is whatever the sender sealed. The console base64s on the way
+   // in and atob()s on the way out, but that is a console convention, not an
+   // API contract — `POST /transfers` stores the string it is given. So this
+   // decodes only when the candidate round-trips exactly, and hands over the
+   // raw bytes otherwise. A file whose plaintext is itself valid base64 would
+   // be decoded wrongly; that ambiguity is in the API, not here, and guessing
+   // quietly is how a compliance file arrives corrupted.
+   var raw=j.content||'', bytes=null;
+   try{var dec=atob(raw); if(btoa(dec)===raw){
+    bytes=Uint8Array.from(dec,function(c){return c.charCodeAt(0);});}}
+   catch(e){/* not base64 — deliver it as sent */}
+   var blob=new Blob([bytes||raw]);
+   var a=document.getElementById('dl');
+   a.href=URL.createObjectURL(blob);a.download=j.filename||'file';
+   wrap.style.display='block';box.disabled=true;b.style.display='none';})
+  .catch(function(){b.disabled=false;
+   st.textContent='No connection \\u2014 the link is still good, try again.';});
+ });
+})();
+"""
+
+
+def receive_page(tid: str) -> str:
+    """Where somebody collects a file that was sealed for them.
+
+    They are not a tenant and never will be. Everything here works with the
+    receive token alone, which is what the route was built to accept.
+    """
+    body = (
+        '<div class="seal">'
+        "<h1>A file was sealed for you</h1>"
+        '<p class="note">It was sent through PDI under a compliance program. '
+        "Collecting it is recorded in the sender's chain of custody — that "
+        "record is the point of sending it this way, and it names the "
+        "collection, not you.</p>"
+        '<label for="t">Your receive token</label>'
+        '<input id="t" type="text" autocomplete="off" spellcheck="false" '
+        'placeholder="from the message that sent you here">'
+        '<button id="go" type="button">Collect it</button>'
+        '<div class="status" id="st"></div>'
+        '<div id="file" style="display:none">'
+        '<h2 id="fn"></h2>'
+        '<p class="note" id="pg"></p>'
+        '<p class="note" id="cu"></p>'
+        '<a id="dl" class="dl">Download</a>'
+        # Written after driving it rather than before. The first draft said
+        # "the token was one-shot; this link will not fetch it again". A
+        # second POST returns 200. The route's own docstring calls the token
+        # "the (auditable) authorization" — auditable, not single-use — and
+        # every retrieval lands in the custody chain, which is the property
+        # that actually holds. Shipping the first version would have been this
+        # page repeating the exact mistake the audit that produced it keeps
+        # finding: copy asserting something the system does not do.
+        '<p class="note">Keep the link if you need it again — the token stays '
+        "good, and every collection is written into the sender's chain of "
+        "custody, so a second one is visible rather than silent.</p>"
+        "</div>"
+        "</div>"
+        "<script>" + _RECEIVE_JS % {"tid": _js(tid)} + "</script>")
+    return _page("A file was sealed for you", body)

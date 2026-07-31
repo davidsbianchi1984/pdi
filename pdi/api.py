@@ -972,6 +972,27 @@ def create_app() -> FastAPI:
             return HTMLResponse(landing.gone(), status_code=404)
         return HTMLResponse(landing.page_for(card))
 
+    @app.get("/r/{tid}", response_class=HTMLResponse)
+    def receive_page(tid: str) -> HTMLResponse:
+        """Where the recipient of a sealed transfer collects it.
+
+        `receive_transfer` states its caller: "no tenant credential; the token
+        itself is the (auditable) authorization." That caller had nowhere to
+        go. The only thing in the product calling that route was the console's
+        "Receive it as the recipient" button — the *sender* rehearsing, and
+        disabled unless their own session still held the receipt.
+
+        The link carries the token in its **fragment** (`/r/{id}#<token>`),
+        which browsers never send to a server. A query string would put a
+        one-shot authorization for compliance-grade material into every access
+        log and Referer header between here and the recipient.
+
+        The page renders for any id. Whether the transfer exists is the
+        token's business to answer, not the URL's — a 404 here would turn this
+        route into a way of asking whether a given transfer id is real.
+        """
+        return HTMLResponse(landing.receive_page(tid))
+
     @app.get("/s/{bid}/card")
     def seal_card(bid: str) -> dict:
         """The same scan, as JSON — for an app rather than a phone browser.
