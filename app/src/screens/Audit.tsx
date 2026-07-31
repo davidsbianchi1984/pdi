@@ -11,6 +11,15 @@ export function Audit() {
   const { session } = useSession();
   const [entries, setEntries] = useState<AuditEntry[]>([]);
   const [chain, setChain] = useState<{ intact: boolean; entries: number } | null>(null);
+  // What each `action` string means, and how long entries are kept. The
+  // backend has published this since the audit log existed; the console
+  // listed raw action names beside it and never said what any of them was.
+  // A log whose vocabulary is undocumented in the one place it is read is
+  // a log somebody has to guess at during an incident.
+  const [schema, setSchema] = useState<
+    { actions: { action: string; category: string; description: string }[];
+      retention: string } | null>(null);
+  const [glossary, setGlossary] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function refresh() {
@@ -18,6 +27,7 @@ export function Audit() {
     try {
       setChain(await api.verify(session.tenantToken));
       setEntries((await api.audit(session.tenantToken)).slice().reverse());
+      setSchema(await api.auditSchema());
     } catch (e) {
       setError((e as Error).message);
     }
@@ -35,6 +45,32 @@ export function Audit() {
 
       {!session.tenantToken && <div className="card"><p className="muted">Select a tenant to view its audit entries.</p></div>}
       {error && <div className="error">⚠ {error}</div>}
+
+      {schema && (
+        <div className="card">
+          <div className="row">
+            <span className="muted small" style={{ flex: 1 }}>
+              {schema.actions.length} recorded actions · retention{" "}
+              {schema.retention}
+            </span>
+            <button onClick={() => setGlossary((g) => !g)}>
+              {glossary ? "Hide what they mean" : "What do these mean?"}
+            </button>
+          </div>
+          {glossary && schema.actions.map((a) => (
+            <div key={a.action} className="row"
+                 style={{ padding: "4px 0" }}>
+              <code style={{ width: 220 }}>{a.action}</code>
+              <span className="muted small" style={{ width: 100 }}>
+                {a.category}
+              </span>
+              <span className="muted small" style={{ flex: 1 }}>
+                {a.description}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {chain && (
         <div className={"verify-banner " + (chain.intact ? "ok" : "bad")}>

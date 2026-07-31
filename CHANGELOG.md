@@ -4,6 +4,60 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+**The console backlog reaches zero**, and with it the audit across all three
+products. The 84 routes the desktop console could not reach now all have
+doors, and so do the three `api.ts` bindings nothing called. All three record
+files — `console_doorless.txt`, `doorless_routes.txt`, `unused_bindings.txt`
+— are empty rather than short, and the tests that read them assert emptiness.
+
+### Added
+
+- **Five console screens.** *Carriers* (a sealed thing and the code on the
+  outside of it), *Exchange* (what leaves sealed and what is asked to come
+  in), *Custody* (the key, the hardware, the paperwork), *Bridges* (what
+  reaches into the vault), and *Guiding* (the console's own guide and the
+  words it uses). Screens 48–52, with a walkthrough lesson and assistant
+  phrasing for each.
+- **What an audit action means, on the screen that lists it.** The backend
+  has published the action glossary since the log existed; the console showed
+  raw action names beside it. A log whose vocabulary is undocumented where it
+  is read is a log somebody has to guess at during an incident.
+- **Whether a page could have been delivered at all.** The gateway screen
+  listed pages and whether each arrived, and never said whether a channel was
+  configured — so a deployment with none showed *nothing paged*, which reads
+  as a quiet week and means the opposite.
+- **Revoking a grant token.** Revoking a bequest and killing the token it has
+  already handed to a person are different acts. Only the softer one had a
+  button.
+
+### Fixed
+
+- **`receive` and `submit` were bound as bearer credentials.** Neither takes
+  the tenant's token: `POST /transfers/{id}/receive` takes `x-receive-token`
+  and `POST /intakes/{id}/submit` takes `x-submit-token`, because the party
+  receiving a transfer is a clinic and the party submitting to an intake is a
+  records office, and neither is the tenant. Passing the tenant's token is a
+  403 every time.
+- **Three markup routes went through the JSON helper.** `req` runs
+  `JSON.parse` unguarded, so the sealed carrier's HTML scan page and two SVG
+  `qr.svg` routes did not return the wrong thing — they threw
+  `SyntaxError: Unexpected token <` from inside the client.
+- **Four closed sets were typed as strings.** A key provider is `held` or
+  `kms` — not `customer`, which is what the concept is called everywhere else
+  in this product, including in the field `customer_managed` two lines from
+  the one that rejects it. A beacon's `disclose` is a single value, not a
+  list. `ref_kind` and a ring's `kind` are four values each. A token's role is
+  `read` or `write`.
+- **`clientpaths` read one shape of call.** Adding the text helper made three
+  working doors invisible to the audit — the third extractor false positive
+  after the nested template and the `<img src>`.
+- **Two guards that could only pass while the problem existed.** The union
+  guard asserted its backlog was *strictly* smaller than the console's; the
+  liveness guard asserted the snapshot file was non-empty. Both have been
+  rewritten to check what they were for.
+
 ## [0.21.0] — 2026-07-31
 
 Cut in step with QRME, which ran four door-audit rounds this

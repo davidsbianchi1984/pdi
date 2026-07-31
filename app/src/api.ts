@@ -47,6 +47,33 @@ declare const __APP_VERSION__: string;
 export const CONSOLE_VERSION: string =
   typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "dev";
 
+/** For the routes that answer **markup**, not JSON.
+ *
+ *  `req` parses every body with `JSON.parse` and does not guard it, so a
+ *  route serving HTML or SVG does not come back wrong — it throws a
+ *  `SyntaxError` from inside the client, which surfaces to the operator as
+ *  "Unexpected token <" and names nothing.
+ *
+ *  Three routes do exactly that. `GET /s/{bid}` serves the page a phone
+ *  camera lands on after scanning a sealed carrier's code, and two `qr.svg`
+ *  routes serve the codes themselves. A route's content type is part of its
+ *  shape and appears nowhere in its signature; calling them against a
+ *  running vault is how this was found.
+ */
+async function reqText(
+  path: string, opts: { token?: string } = {},
+): Promise<string> {
+  const headers: Record<string, string> = {};
+  if (opts.token) headers["authorization"] = `Bearer ${opts.token}`;
+  const res = await fetch(getBase() + path, { headers });
+  const text = await res.text();
+  if (!res.ok) {
+    recordProblem("GET", path, res.status);
+    throw new Error(`That didn't work (${res.status}).`);
+  }
+  return text;
+}
+
 async function req<T>(
   path: string,
   // `extra` carries the headers that are not a bearer token. The bequest
@@ -73,6 +100,150 @@ async function req<T>(
     throw new Error(typeof d === "string" ? d : JSON.stringify(d));
   }
   return data as T;
+}
+
+/** A response with more in it than the screen reads. Used only where the
+ *  server returns a large catalogue document — never as a stand-in for a
+ *  shape that was too much trouble to drive. */
+export type Row = Record<string, unknown>;
+
+// --- shapes read off a running vault ---------------------------------------
+// Driven, not inferred. Where the server names a closed set of values in its
+// own 422 body, that set is a union here: a wrong literal fails the build,
+// where a wrong string fails an operator mid-transfer.
+
+/** What a sealed carrier's code is attached to. Four, and no others. */
+export type BeaconRefKind = "transfer" | "intake" | "object" | "facility";
+
+/** Why somebody scanned and rang. Also closed, also enforced. */
+export type RingKind = "delivery" | "access" | "collection" | "other";
+
+export interface BeaconRow {
+  id: string; tenant_id: string; ref_kind: BeaconRefKind;
+  ref_id?: string | null; label: string;
+  /** A single value, not a list. `blind` proves custody and says nothing
+   *  else; `contact` adds a way to reach whoever holds it. */
+  disclose: "blind" | "contact";
+  programs: string[]; state: string; scans: number; active: boolean;
+  created_at: string; scan_url: string; qr_svg: string;
+}
+
+/** What a scanner sees. `contents` is always null and that is the feature:
+ *  the code proves custody, it does not open the thing. */
+export interface ScanCard {
+  reference: string; kind: string; state: string; under_custody: boolean;
+  programs: string[]; controls: ControlSet; badge: string;
+  contents: null; note: string; found_url: string;
+  held_by?: string | null; label?: string | null;
+}
+
+export interface ControlSet {
+  required: string[]; satisfied_by_pdi: string[]; operational: string[];
+}
+
+/** One chain of custody, and whether the hash chain under it still verifies.
+ *  `audit_chain_intact` is the load-bearing field — a custody list nobody
+ *  can check is a list of claims. */
+export interface CustodyChain {
+  controls: ControlSet;
+  chain_of_custody: { event: string; actor: string; at: string }[];
+  audit_chain_intact: boolean;
+  status?: string; state?: string; programs?: string[];
+  retention_days?: number; retained_until?: string | null;
+  [field: string]: unknown;
+}
+
+export interface TransferRow {
+  id: string; tenant_id: string; recipient: string; filename: string;
+  size: number; classification?: string | null; programs: string[];
+  party_type?: string | null; status: string; retention_days: number;
+  expires_at?: string | null; created_at: string;
+  /** Shown once, on creation only — the listing does not carry it. */
+  receive_token?: string; controls?: ControlSet;
+}
+
+export interface IntakeRow {
+  id: string; tenant_id: string; from_party: string;
+  party_type?: string | null; purpose?: string | null; programs: string[];
+  status: string; filename?: string | null;
+  classification?: string | null; retention_days: number;
+  expires_at?: string | null; created_at: string;
+  /** Shown once, as above. */
+  submit_token?: string; controls?: ControlSet;
+}
+
+export interface TenantKey {
+  provider: string; customer_managed: boolean;
+  operator_can_decrypt: boolean; note: string;
+}
+
+export interface CompliancePrograms {
+  key: string; label: string; sector: string; summary: string;
+  controls: string[]; retention_days: number;
+}
+
+export interface BaaStatus {
+  executed: boolean; effective_date?: string | null; note?: string;
+  customer_legal_name?: string; operator_legal_name?: string;
+}
+
+export interface HostingMode {
+  title: string; price: string; means: string;
+  availability?: string; free_because?: string;
+  we_are_responsible_for: string[]; you_are_responsible_for: string[];
+  guarantees: string[]; note?: string; mode?: string;
+}
+
+export interface ConnectorRow {
+  id: string; tenant_id: string; platform: string; direction: string;
+  handle?: string | null; scope: string[]; status: string;
+  collected: number; published: number; beacon: string;
+}
+
+export interface RobotModel {
+  model: string; label: string; maker?: string; kind?: string;
+  capabilities?: string[];
+}
+
+export interface GuideBook {
+  guide: string; ceiling: string;
+  chapters: { chapter: string; steps: Row[] }[];
+}
+
+/** The console assistant. `refused` is not an error path — it is the answer
+ *  when somebody asks it something about the vault's contents, which it
+ *  cannot read and says so. */
+export interface ConsoleAnswer {
+  answer: string; source: string; refused: boolean; disclosure: string;
+  topics: string[];
+  directions?: { lesson: string; title: string; screens: number[];
+                 say: string; walkthrough_step: string } | null;
+}
+
+export interface DockState {
+  tenant_id: string; corner: string; state: string; face: string;
+  faces: string[]; set: boolean;
+}
+
+export interface DockCatalog {
+  faces: Record<string, string>; corners: Record<string, string>;
+  states: Record<string, string>; box: Record<string, number>;
+  never: Record<string, string>;
+}
+
+export interface LanguageOption {
+  code: string; label: string; notes_translated: boolean;
+}
+
+/** PDI does no machine translation. The `note` says so and is printed. */
+export interface TranslateOut {
+  text: string; translation: string; language: string;
+  engine: string; note: string;
+}
+
+export interface ImproveBoard {
+  mine: Row[]; tally: Record<string, number>; total: number;
+  categories: string[];
 }
 
 export interface KeyVersion { version: number; active: boolean; created_at: string; provider: string }
@@ -310,4 +481,248 @@ export const api = {
       + (undeliveredOnly ? "?undelivered_only=true" : ""), { token }),
   retryPage: (pid: string, token: string) =>
     req<GatePage>(`/gate/pages/${pid}/retry`, { method: "POST", token }),
+
+  // =====================================================================
+  // The rest of the vault's API.
+  //
+  // Eighty-four routes the desktop console could not reach on its own. Every
+  // one was present on a phone shell, which is what let the union guard
+  // report a healthy number for as long as it did: it was answering *some
+  // client can reach this*, and a phone could.
+  //
+  // Shapes below were read off a running vault on 8792, not off the route
+  // table. That is the house rule and it earned its keep again — see the
+  // notes on the individual bindings for the six places the two disagreed.
+  // =====================================================================
+
+  // -- sealed carriers, and the code on the outside of one ----------------
+  // `disclose` is a single value, not a list: `blind` shows a scanner that
+  // the thing is under custody and nothing else; `contact` adds a way to
+  // reach the holder. `ref_kind` is one of four and the server names them.
+  beacons: (token: string) => req<BeaconRow[]>("/beacons", { token }),
+  beacon: (bid: string, token: string) =>
+    req<BeaconRow>(`/beacons/${bid}`, { token }),
+  placeBeacon: (body: { ref_kind: BeaconRefKind; ref_id?: string;
+                        label: string; disclose?: "blind" | "contact";
+                        programs?: string[] }, token: string) =>
+    req<BeaconRow>("/beacons", { method: "POST", body, token }),
+  setBeaconState: (bid: string, state: string, token: string) =>
+    req<BeaconRow>(`/beacons/${bid}/state`,
+      { method: "PUT", body: { state }, token }),
+  liftBeacon: (bid: string, token: string) =>
+    req<{ id: string; active: boolean }>(`/beacons/${bid}`,
+      { method: "DELETE", token }),
+  beaconCustody: (bid: string, token: string) =>
+    req<CustodyChain>(`/beacons/${bid}/custody`, { token }),
+  // The scan side. No credential anywhere here, deliberately: a code on a
+  // sealed crate is *for* whoever is holding the crate. What they can learn
+  // is capped by `disclose`, and what they can do is leave a note in the
+  // chain — which the holder reads and they cannot alter.
+  scanPage: (bid: string) => reqText(`/s/${bid}`),
+  scanCard: (bid: string) => req<ScanCard>(`/s/${bid}/card`),
+  scanQr: (bid: string) => reqText(`/s/${bid}/qr.svg`),
+  reportFound: (bid: string, body: { where?: string; contact?: string }) =>
+    req<{ beacon: string; recorded: boolean; note: string }>(
+      `/s/${bid}/found`, { method: "POST", body }),
+  ringHolder: (bid: string, body: { kind: RingKind; note?: string }) =>
+    req<Row>(`/s/${bid}/ring`, { method: "POST", body }),
+  rings: (token: string, openOnly = false) =>
+    req<Row[]>("/rings" + (openOnly ? "?open_only=true" : ""), { token }),
+  ringTranscript: (rid: string, token: string) =>
+    req<Row>(`/rings/${rid}/transcript`, { token }),
+
+  // -- what comes in and what goes out ------------------------------------
+  transfers: (token: string) => req<TransferRow[]>("/transfers", { token }),
+  transfer: (tid: string, token: string) =>
+    req<TransferRow>(`/transfers/${tid}`, { token }),
+  sendTransfer: (body: { recipient: string; filename: string;
+                         content: string; programs?: string[];
+                         classification?: string; party_type?: string },
+                 token: string) =>
+    req<TransferRow>("/transfers", { method: "POST", body, token }),
+  transferCustody: (tid: string, token: string) =>
+    req<CustodyChain>(`/transfers/${tid}/custody`, { token }),
+  withdrawTransfer: (tid: string, token: string) =>
+    req<Row>(`/transfers/${tid}`, { method: "DELETE", token }),
+  // The recipient is not the tenant, so this does not take the tenant's
+  // token — it takes the one-time receive token, in a header of its own.
+  // Binding it as a bearer credential is a 403 every time.
+  receiveTransfer: (tid: string, receiveToken: string) =>
+    req<{ id: string; filename: string; content: string;
+          programs: string[]; custody: string }>(
+      `/transfers/${tid}/receive`,
+      { method: "POST", extra: { "x-receive-token": receiveToken } }),
+
+  intakes: (token: string) => req<IntakeRow[]>("/intakes", { token }),
+  intake: (iid: string, token: string) =>
+    req<IntakeRow>(`/intakes/${iid}`, { token }),
+  requestIntake: (body: { from_party: string; party_type?: string;
+                          purpose?: string; programs?: string[] },
+                  token: string) =>
+    req<IntakeRow>("/intakes", { method: "POST", body, token }),
+  intakeCustody: (iid: string, token: string) =>
+    req<CustodyChain>(`/intakes/${iid}/custody`, { token }),
+  intakeFile: (iid: string, token: string) =>
+    req<{ id: string; filename: string; content: string;
+          programs: string[] }>(`/intakes/${iid}/file`, { token }),
+  cancelIntake: (iid: string, token: string) =>
+    req<Row>(`/intakes/${iid}`, { method: "DELETE", token }),
+  // Same shape as receive, and for the same reason: the party sending the
+  // file in is not the tenant asking for it.
+  submitToIntake: (iid: string, submitToken: string,
+                   body: { filename: string; content: string;
+                           classification?: string }) =>
+    req<{ id: string; status: string; sealed: boolean; filename: string;
+          note: string }>(`/intakes/${iid}/submit`,
+      { method: "POST", body, extra: { "x-submit-token": submitToken } }),
+
+  // -- custody of the key, and of the tenant ------------------------------
+  // `provider` is `held` or `kms`. Not `customer` — which is what the
+  // concept is called everywhere else in this product, and is a 422 here.
+  tenantKey: (token: string) => req<TenantKey>("/key", { token }),
+  setTenantKey: (body: { provider?: "held" | "kms"; key?: string;
+                         config?: Row }, token: string) =>
+    req<TenantKey>("/key", { method: "PUT", body, token }),
+  // Hands the tenant back to deployment custody. A 409 if it never left.
+  surrenderTenantKey: (token: string) =>
+    req<TenantKey>("/key", { method: "DELETE", token }),
+  resealUnderNewKey: (adminToken?: string) =>
+    req<{ active_version: number; resealed: number;
+          customer_managed_skipped: number }>("/keys/reseal",
+      { method: "POST", token: adminToken }),
+  retireOldKeys: (adminToken?: string) =>
+    req<{ retired: number; versions: KeyVersion[] }>("/keys/retire",
+      { method: "POST", token: adminToken }),
+
+  snapshot: (token: string) =>
+    req<{ tenant_id: string; records: Row[] }>("/snapshot", { token }),
+  restoreRecords: (records: Row[], token: string) =>
+    req<Row>("/restore", { method: "POST", body: { records }, token }),
+  restoreTenant: (tenantId: string, adminToken?: string) =>
+    req<Row>(`/tenants/${tenantId}/restore`,
+      { method: "POST", token: adminToken }),
+  deleteRecord: (key: string, token: string) =>
+    req<Row>(`/records/${key}`, { method: "DELETE", token }),
+  // `mode` decides whether the tenant can come back. The audit trail
+  // survives either way — that is the point of a hash chain.
+  deleteTenant: (tenantId: string, mode: string, adminToken?: string) =>
+    req<Row>(`/tenants/${tenantId}?mode=${encodeURIComponent(mode)}`,
+      { method: "DELETE", token: adminToken }),
+  mintToken: (tenantId: string, role: "read" | "write", adminToken?: string) =>
+    req<{ token: string }>(`/tenants/${tenantId}/tokens`,
+      { method: "POST", body: { role }, token: adminToken }),
+  revokeToken: (token: string, adminToken?: string) =>
+    req<Row>(`/tokens/${token}`, { method: "DELETE", token: adminToken }),
+
+  // -- the paperwork a regulated transfer needs ---------------------------
+  compliancePrograms: () =>
+    req<{ programs: CompliancePrograms[] }>("/compliance/programs"),
+  baaStatus: (token: string) => req<BaaStatus>("/baa", { token }),
+  tenantBaa: (tenantId: string, adminToken?: string) =>
+    req<BaaStatus>(`/tenants/${tenantId}/baa`, { token: adminToken }),
+  recordBaa: (tenantId: string, body: { customer_legal_name: string;
+                operator_legal_name: string; effective_date: string;
+                customer_signatory?: string; operator_signatory?: string;
+                document_sha256?: string }, adminToken?: string) =>
+    req<BaaStatus>(`/tenants/${tenantId}/baa`,
+      { method: "POST", body, token: adminToken }),
+  rescindBaa: (tenantId: string, adminToken?: string) =>
+    req<Row>(`/tenants/${tenantId}/baa`,
+      { method: "DELETE", token: adminToken }),
+
+  // -- where the vault physically is --------------------------------------
+  hostingModes: () => req<{ modes: Record<string, HostingMode> }>("/hosting"),
+  hosting: (tenantId: string, token: string) =>
+    req<HostingMode & { tenant_id: string }>(`/hosting/${tenantId}`, { token }),
+  hostingHistory: (tenantId: string, token: string) =>
+    req<Row[]>(`/hosting/${tenantId}/history`, { token }),
+  setHosting: (tenantId: string, body: { mode: string; note?: string },
+               token: string) =>
+    req<Row>(`/hosting/${tenantId}`, { method: "PUT", body, token }),
+  recordDeployment: (body: { name: string; option: string;
+                             facility?: string; tier?: string },
+                     token: string) =>
+    req<Row>("/deployments", { method: "POST", body, token }),
+
+  // -- other systems reaching in ------------------------------------------
+  connectorCatalog: () => req<Row>("/connectors/catalog"),
+  connectors: (token: string) => req<ConnectorRow[]>("/connectors", { token }),
+  addConnector: (body: { platform: string; direction: string;
+                         handle?: string; scope?: string[] }, token: string) =>
+    req<ConnectorRow>("/connectors", { method: "POST", body, token }),
+  removeConnector: (cid: string, token: string) =>
+    req<Row>(`/connectors/${cid}`, { method: "DELETE", token }),
+  connectorBeacon: (cid: string, token: string) =>
+    req<Row>(`/connectors/${cid}/beacon`, { token }),
+  connectorQr: (cid: string, token: string) =>
+    reqText(`/connectors/${cid}/qr.svg`, { token }),
+  ingestToConnector: (cid: string, items: Row[], token: string) =>
+    req<Row>(`/connectors/${cid}/ingest`,
+      { method: "POST", body: { items }, token }),
+  publishFromConnector: (cid: string, body: { content: string;
+                                              topic?: string },
+                         token: string) =>
+    req<Row>(`/connectors/${cid}/publish`, { method: "POST", body, token }),
+
+  roboticsCatalog: () => req<{ robots: RobotModel[] }>("/robotics/catalog"),
+  robots: (token: string) => req<Row[]>("/robots", { token }),
+  bindRobot: (body: { model: string; name?: string }, token: string) =>
+    req<Row>("/robots", { method: "POST", body, token }),
+  unbindRobot: (rid: string, token: string) =>
+    req<Row>(`/robots/${rid}`, { method: "DELETE", token }),
+  robotData: (rid: string, token: string) =>
+    req<Row>(`/robots/${rid}/data`, { token }),
+  robotIngest: (rid: string, body: { kind: string; content: string;
+                                     ref?: string }, token: string) =>
+    req<Row>(`/robots/${rid}/ingest`, { method: "POST", body, token }),
+
+  contributions: (token: string) =>
+    req<{ count: number; keys: string[] }>("/contributions", { token }),
+  contribute: (body: { source: string; kind: string; payload: Row;
+                       ref?: string }, token: string) =>
+    req<{ id: string; key: string; ref?: string | null; sealed: boolean }>(
+      "/contributions", { method: "POST", body, token }),
+  withdrawContribution: (ref: string, token: string) =>
+    req<Row>(`/contributions/${ref}`, { method: "DELETE", token }),
+  seedDemo: (adminToken?: string) =>
+    req<Row>("/seed", { method: "POST", token: adminToken }),
+
+  // -- the guide, the dock, and the words it uses -------------------------
+  guide: () => req<GuideBook>("/console/guide"),
+  guideStep: (key: string) => req<Row>(`/console/guide/steps/${key}`),
+  guideForScreen: (n: number) => req<Row>(`/console/guide/for-screen/${n}`),
+  guideProgress: (learnerId: string) =>
+    req<Row>(`/console/guide/progress/${learnerId}`),
+  startGuide: (body: { learner_id: string; lesson?: string }) =>
+    req<Row>("/console/guide/start", { method: "POST", body }),
+  finishGuideStep: (body: { learner_id: string; lesson?: string }) =>
+    req<Row>("/console/guide/done", { method: "POST", body }),
+  askConsole: (body: { question: string; mode?: string }, token: string) =>
+    req<ConsoleAnswer>("/console/ask", { method: "POST", body, token }),
+
+  dockFaces: () => req<DockCatalog>("/dock/faces"),
+  dockWhere: (face: string) => req<Row>(`/dock/where/${face}`),
+  dock: (tenantId: string, token: string) =>
+    req<DockState>(`/dock/${tenantId}`, { token }),
+  dockFace: (tenantId: string, name: string, token: string) =>
+    req<Row>(`/dock/${tenantId}/face/${name}`, { token }),
+  setDock: (tenantId: string, body: { corner?: string; state?: string;
+                                      face?: string; faces?: string[] },
+            token: string) =>
+    req<DockState>(`/dock/${tenantId}`, { method: "PUT", body, token }),
+
+  languages: () => req<{ languages: LanguageOption[] }>("/languages"),
+  language: (token: string) => req<Row>("/language", { token }),
+  setLanguage: (body: { language: string; mode?: string }, token: string) =>
+    req<Row>("/language", { method: "PUT", body, token }),
+  // PDI performs no machine translation. This translates its **own** note
+  // strings and says so in the response, which is why the screen prints the
+  // note rather than hiding it behind a spinner.
+  translate: (body: { text: string; to?: string }, token: string) =>
+    req<TranslateOut>("/translate", { method: "POST", body, token }),
+
+  improvements: (token: string) => req<ImproveBoard>("/improve", { token }),
+  suggestImprovement: (body: { category?: string; message: string;
+                               rating?: string }, token: string) =>
+    req<Row>("/improve", { method: "POST", body, token }),
 };

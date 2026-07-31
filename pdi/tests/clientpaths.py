@@ -94,7 +94,22 @@ CONSOLE = Language(
     "console", REPO / "app" / "src", (".ts", ".tsx"),
     re.compile(r"\$\{[^{}]*\}"),
     re.compile(_TS_TEMPLATE + r"|\"(/[^\"\n]*)\""),
-    (CallForm(re.compile(r"\breq\s*(?:<.*?>)?\s*\(", re.S),
+    # `req` and its sibling `reqText`, matched as one form. The sibling
+    # exists because `req` runs `JSON.parse` on every body without guarding
+    # it, so a route serving markup does not come back wrong — it throws a
+    # SyntaxError from inside the client and surfaces as "Unexpected token
+    # <", which names nothing. Three routes serve markup: the sealed
+    # carrier's scan page is HTML and two `qr.svg` routes are SVG.
+    #
+    # Adding the helper made those three doors **invisible to this audit**,
+    # which reported them as newly doorless while the console had just
+    # gained working buttons for all three. Same lesson as the nested
+    # template and the `<img src>` before it: the audit reads one shape of
+    # call, so a new shape of call reads as no call.
+    #
+    # The alternation is spelled out rather than written `req\w*` — that
+    # would also swallow any `requestSomething(` a console grows later.
+    (CallForm(re.compile(r"\breq(?:Text)?\s*(?:<.*?>)?\s*\(", re.S),
               verb_in_body=re.compile(r'method:\s*"([A-Z]+)"')),
      # `req()` serialises JSON, so anything that cannot — a raw-bytes upload
      # — reaches for `fetch` directly. Without this form the audit is blind

@@ -166,6 +166,68 @@ LESSONS: tuple[dict, ...] = (
               "its own.",
          screens=(27, 41),
          click="Ask the guide about anything you are looking at."),
+
+    # The five that closed the console backlog. Eighty-four routes the
+    # desktop app could not reach — for an operator at a desk, a capability
+    # that did not exist.
+    dict(key="carriers", chapter="Running it", title="Carriers",
+         what="A code on the outside of a sealed thing, and the chain of "
+              "custody underneath it. The scan side takes no credential at "
+              "all, deliberately: a code on a crate is for whoever is "
+              "holding the crate. What they learn is capped by `disclose` — "
+              "`blind` proves custody and says nothing else — and what they "
+              "can do is leave a timestamped note in the chain, which the "
+              "holder reads and they cannot alter. `contents` is null on "
+              "every card and no setting changes that. The card says it in "
+              "its own words: this code proves custody, not contents.",
+         screens=(48,),
+         click="Place a code, then press 'What a scanner sees'."),
+    dict(key="exchange", chapter="Running it", title="Exchange",
+         what="What leaves sealed, and what is asked to come in. Neither the "
+              "receive nor the submit path takes the tenant's token — they "
+              "take a one-time token of their own, in a header of its own, "
+              "because the party receiving a transfer is a clinic and the "
+              "party submitting to an intake is a records office, and "
+              "neither is the tenant. Both tokens are shown exactly once, in "
+              "the response that creates the thing, and never served again.",
+         screens=(49,),
+         click="Seal something out, then receive it the way the recipient "
+               "would."),
+    dict(key="custody", chapter="Running it", title="Custody",
+         what="Who holds the key, who holds the hardware, and what paperwork "
+              "the law wants before either matters. The question at the top "
+              "is the only one this product really answers — can the "
+              "operator decrypt this — and everything below it is downstream "
+              "of the answer. A reseal reports how many records it *skipped* "
+              "because the customer holds the key: that number is the honest "
+              "measure of bring-your-own-key, because it is how much of the "
+              "vault the operator could not touch even when asked to.",
+         screens=(50,),
+         click="Read the first line, then press Reseal and read what it "
+               "skipped."),
+    dict(key="bridges", chapter="Running it", title="Bridges",
+         what="The other systems that reach in — a connected account, a "
+              "robot on a floor, another product contributing what it "
+              "learned. Everything they send arrives sealed under this "
+              "tenant's key like anything else. The contributions listing is "
+              "a count and a set of keys and never contents: a vault holding "
+              "a thing is not the same as a vault showing it to whoever asks "
+              "for the list.",
+         screens=(51,),
+         click="Seed a demo tenant, then look at what its robot sent in."),
+    dict(key="guiding", chapter="Running it", title="Guiding",
+         what="The console's own guide, the pane in its corner, and the "
+              "words it uses — the part of PDI whose job is explaining the "
+              "rest of PDI, which had no door of its own. Two things it "
+              "insists on: it has no name and no face, because an assistant "
+              "with a persona standing beside other people's sealed material "
+              "would be the least trustworthy object in the product; and it "
+              "performs no machine translation, returning `engine: none` "
+              "with a note saying so rather than implying a capability the "
+              "vault does not have.",
+         screens=(52,),
+         click="Ask it where the audit log is, then ask it what is in a "
+               "record."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(lesson["chapter"] for lesson in LESSONS))

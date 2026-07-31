@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  api, type Bequest, type GateCeiling, type GatePage, type GateRoster,
+  api, type Bequest, type GateCeiling, type GateChannel,
+  type GatePage, type GateRoster,
 } from "../api";
 import { useSession } from "../store";
 
@@ -33,6 +34,7 @@ export function Continuity() {
   const [ceiling, setCeiling] = useState<GateCeiling | null>(null);
   const [roster, setRoster] = useState<GateRoster | null>(null);
   const [pages, setPages] = useState<GatePage[]>([]);
+  const [channel, setChannel] = useState<GateChannel | null>(null);
 
   const [grantee, setGrantee] = useState("");
   const [prefixes, setPrefixes] = useState("");
@@ -60,6 +62,11 @@ export function Continuity() {
     api.gateCeiling(token).then(setCeiling).catch(() => setCeiling(null));
     api.gateRoster(token).then(setRoster).catch(() => setRoster(null));
     api.gatePages(token).then(setPages).catch(() => setPages([]));
+    // Whether a page can be delivered at all. The screen listed pages and
+    // whether each one arrived, and never said whether a channel was
+    // configured — so a deployment with none showed "nothing paged", which
+    // reads as *nothing needed paging* and means *nothing could have been*.
+    api.gateChannel(token).then(setChannel).catch(() => setChannel(null));
   }, [token]);
   useEffect(load, [load]);
 
@@ -171,6 +178,32 @@ export function Continuity() {
           <code>{minted.token}</code>
           <button onClick={() => setMinted(null)}>I have copied it</button>
         </div>
+      )}
+
+      {bequests.filter((b) => b.activated && !b.revoked).length > 0 && (
+        <>
+          <h3>Taking a grant back</h3>
+          <p className="muted">
+            Activation mints a token and hands it to a person. Revoking the
+            bequest is not the same act — this kills the token itself, which
+            is what you want when a grant went to the wrong hands or the
+            condition turned out not to hold. The backend has always had it;
+            the console offered only the softer button beside it, so an
+            operator who needed this one had no way to press it.
+          </p>
+          {bequests.filter((b) => b.activated && !b.revoked).map((b) => (
+            <div key={b.id} className="row">
+              <span>{b.grantee_name}</span>
+              <button className="danger"
+                      disabled={busy || !adminToken.trim()}
+                      onClick={() => run(
+                        () => api.revokeBequestGrant(b.id, adminToken.trim()),
+                        "The grant token no longer opens anything.")}>
+                Revoke the grant token
+              </button>
+            </div>
+          ))}
+        </>
       )}
 
       <h3>Redeeming — the heir's side</h3>
@@ -289,7 +322,23 @@ export function Continuity() {
         Pages the gateway raised when nobody was reachable, and whether they
         arrived. A page that failed to deliver is the one worth seeing.
       </p>
-      {pages.length === 0 && <p className="muted">Nothing paged.</p>}
+      {channel && (
+        <p className="muted">
+          Channel{" "}
+          <strong>
+            {channel.configured ? "configured" : "not configured"}
+          </strong>
+          {channel.signed ? ", signed" : ""}
+          {channel.note ? ` — ${channel.note}` : ""}
+        </p>
+      )}
+      {pages.length === 0 && (
+        <p className="muted">
+          {channel && !channel.configured
+            ? "Nothing paged — and nothing could have been, because no channel is configured. That is a different fact from a quiet week."
+            : "Nothing paged."}
+        </p>
+      )}
       {pages.map((p, i) => (
         <div key={String(p.id ?? i)} className="card">
           <div className="row">

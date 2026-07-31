@@ -153,6 +153,24 @@ _WALKTHROUGH: dict[str, tuple[tuple[str, ...], str]] = {
 # lesson to an entry here.
 DIRECTIONS: dict[str, tuple[str, ...]] = {
     "what_pdi_is": ("overview", "the dashboard", "home", "live tiles"),
+    # The five doors the desktop console gained in 0.22.0. Somebody
+    # looking for one of these before then was told, correctly, that it
+    # was outside the console — which it was.
+    "carriers": ("a carrier", "sealed carrier", "a crate", "beacon",
+                 "chain of custody", "somebody scanned", "a label",
+                 "qr code"),
+    "exchange": ("send a file", "a transfer", "an intake", "receive",
+                 "receive token", "submit token", "sealed file",
+                 "secure transfer"),
+    # Deliberately not "byok" or "bring your own key" — those belong to the
+    # existing `byok` lesson, which explains the mechanism. This one is the
+    # screen where an operator changes it.
+    "custody": ("who holds the key", "can you decrypt", "reseal", "baa",
+                "hosting", "where is it hosted", "delete a tenant"),
+    "bridges": ("a connector", "a robot", "contributions",
+                "connected account", "seed a demo", "ingest"),
+    "guiding": ("the guide", "the corner", "the dock", "translate",
+                "what language", "suggest something"),
     "sign_in": ("sign in", "log in", "sign out", "logout"),
     "vault": ("store a record", "the vault", "put data in", "a record"),
     "encryption": ("encryption", "keys", "rotate", "aes", "cipher"),

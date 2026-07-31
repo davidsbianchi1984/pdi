@@ -11,17 +11,27 @@ import { Positions } from "./screens/Positions";
 import { Keys } from "./screens/Keys";
 import { Audit } from "./screens/Audit";
 import { Settings } from "./screens/Settings";
+import { Carriers } from "./screens/Carriers";
+import { Exchange } from "./screens/Exchange";
+import { Custody } from "./screens/Custody";
+import { Bridges } from "./screens/Bridges";
+import { Guiding } from "./screens/Guiding";
 
-type Tab = "overview" | "tenants" | "records" | "operations" | "continuity" | "positions" | "keys" | "audit" | "settings";
+type Tab = "overview" | "tenants" | "records" | "exchange" | "carriers" | "bridges" | "operations" | "continuity" | "positions" | "keys" | "custody" | "audit" | "guiding" | "settings";
 const NAV: { id: Tab; label: string; icon: string }[] = [
   { id: "overview", label: "Overview", icon: "▦" },
   { id: "tenants", label: "Tenants", icon: "👥" },
   { id: "records", label: "Vault", icon: "🔒" },
+  { id: "exchange", label: "Exchange", icon: "📦" },
+  { id: "carriers", label: "Carriers", icon: "🏷" },
+  { id: "bridges", label: "Bridges", icon: "🔌" },
   { id: "operations", label: "Operations", icon: "📓" },
   { id: "continuity", label: "Continuity", icon: "🕯" },
   { id: "positions", label: "Positions", icon: "🧭" },
   { id: "keys", label: "Keys & Retention", icon: "🗝" },
+  { id: "custody", label: "Custody", icon: "⚖" },
   { id: "audit", label: "Audit", icon: "✓" },
+  { id: "guiding", label: "Guiding", icon: "🧑‍🏫" },
   { id: "settings", label: "Settings", icon: "⚙" },
 ];
 
@@ -71,6 +81,11 @@ export function App() {
         {tab === "positions" && <Positions go={setTab} />}
         {tab === "keys" && <Keys />}
         {tab === "audit" && <Audit />}
+        {tab === "carriers" && <Carriers />}
+        {tab === "exchange" && <Exchange />}
+        {tab === "custody" && <Custody />}
+        {tab === "bridges" && <Bridges />}
+        {tab === "guiding" && <Guiding />}
         {tab === "settings" && <Settings />}
       </main>
     </div>
