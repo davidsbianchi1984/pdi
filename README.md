@@ -204,6 +204,13 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.23.0** | **The recipient had nowhere to put their token** — a file sealed under HIPAA or OSHA or CPNI arrives with a one-shot receive token, and the only thing calling that route was the sender's own *Receive it as the recipient* rehearsal button. There is now a page at `/r/{id}`, with the token in the URL fragment so the link survives mail and proxies without leaving an authorization in anybody's log, and a **Copy the recipient's link** control that resolves it before the sender sends it. Android and Windows can also read back the keys a bound robot sealed |
+| **0.22.0** | **Cut with the siblings** — the console backlog run to zero, and the fixes the audit turned up on the way |
+| **0.21.0** | **Cut with the siblings** — four door-audit rounds across the three products |
+| **0.20.1** | **The union hid a surface** — *some* client reaching a route was being counted as *this* client reaching it, so the console's own gaps were invisible. A guard per client, and the doors that answered it |
+| **0.20.0** | **Failures from the phone and the desktop shell** — error capture reaches the native shells, and a guard that invented work is corrected: it demanded doors for routes that already had them |
+| **0.19.1** | **Cut with the siblings** — the drawings and lessons the error-reporting surface shipped without |
+| **0.19.0** | **It can tell you it broke without telling anybody what you said** — content-free error capture in the console and on every native shell, sent to a collector that never receives a word of your content |
 | **0.18.0** | **Cut with the siblings** — JIM and QRME finish native parity and catch their drawings up |
 | **0.17.0** | **Cut with the siblings** — JIM's community door and QRME's voice enrollment reach all three native shells |
 | **0.16.0** | **Cut with the siblings** — JIM's closed guidance loop and anonymity, QRME's uploads and new model doors |
