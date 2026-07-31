@@ -49,6 +49,8 @@
                                             Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
                                     <Button Content="Sensor log" Tag="{Binding Id}" Click="OnSealSensor"
                                             Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
+                                    <Button Content="Sealed keys" Tag="{Binding Id}" Click="OnShowKeys"
+                                            Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
                                 </StackPanel>
                             </StackPanel>
                         </Border>
@@ -65,6 +67,28 @@
                     <TextBlock x:Name="KeyText" FontFamily="Consolas" FontSize="12"
                                Foreground="{StaticResource PdiT2Brush}" TextWrapping="Wrap" />
                     <TextBlock Text="Read it (audited) via Vault → the key above."
+                               Foreground="{StaticResource PdiT2Brush}" FontSize="12" />
+                </StackPanel>
+            </Border>
+
+            <Border x:Name="KeysCard" Background="{StaticResource PdiCardBrush}"
+                    BorderBrush="{StaticResource PdiLineBrush}" BorderThickness="1" CornerRadius="16"
+                    Padding="16" Visibility="Collapsed">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Sealed keys" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource PdiTxtBrush}" />
+                    <TextBlock x:Name="KeysEmpty" Text="Nothing sealed yet."
+                               Foreground="{StaticResource PdiT2Brush}" FontSize="12"
+                               Visibility="Collapsed" />
+                    <ItemsControl x:Name="KeysList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" FontFamily="Consolas" FontSize="12"
+                                           Foreground="{StaticResource PdiT2Brush}" TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="Read one (audited) via Vault → the key above."
                                Foreground="{StaticResource PdiT2Brush}" FontSize="12" />
                 </StackPanel>
             </Border>

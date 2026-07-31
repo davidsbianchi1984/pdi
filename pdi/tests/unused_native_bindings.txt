@@ -1,0 +1,12 @@
+# Bindings written in native/ios/Sources/ApiClient.swift,
+# native/android/.../ApiClient.kt or native/windows/ApiClient.cs that no screen
+# in that shell calls. Checked by test_a_native_binding_is_not_a_door_either.py.
+#
+# A line here is not a bug — it is a decision recorded. What it must never be
+# is an accident: `clientpaths.doorless` counts a written binding as a door,
+# so an uncalled one takes its route off the backlog while nobody can reach it.
+#
+# PDI started at 2 (android.robotKeys, windows.RobotKeys — GET
+# /robots/{rid}/data, the read-back half of sealing a robot's intake) and both
+# were wired to a **Sealed keys** button rather than recorded. The file is
+# empty on purpose.

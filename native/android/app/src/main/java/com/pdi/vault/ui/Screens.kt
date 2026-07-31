@@ -522,6 +522,7 @@ fun RobotsScreen(vm: VaultViewModel) {
     var chosen by remember { mutableStateOf("saros_20") }
     var robots by remember { mutableStateOf<List<Robot>>(emptyList()) }
     var lastKey by remember { mutableStateOf<String?>(null) }
+    var keys by remember { mutableStateOf<Map<String, List<String>>>(emptyMap()) }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
@@ -536,6 +537,17 @@ fun RobotsScreen(vm: VaultViewModel) {
         vm.call({ ApiClient.ingest(vm.token!!, rob.id, kind, content) }) { r ->
             r.onSuccess { lastKey = it.key }.onFailure { error = it.message }
             reload()
+        }
+    }
+
+    // Sealing hands back one key, once. Close the app and the only record of
+    // what this robot has put in the vault is on the server — so a screen that
+    // can seal has to be able to read the list back, or the keys are gone.
+    fun showKeys(rob: Robot) {
+        error = null
+        vm.call({ ApiClient.robotKeys(vm.token!!, rob.id) }) { r ->
+            r.onSuccess { keys = keys + (rob.id to it) }
+                .onFailure { error = it.message }
         }
     }
 
@@ -584,6 +596,17 @@ fun RobotsScreen(vm: VaultViewModel) {
                         Text("Snapshot", color = Pdi.BrandA, fontSize = 12.sp) }
                     TextButton(onClick = { seal(rob, "sensor_log", "steps & doors") }) {
                         Text("Sensor log", color = Pdi.BrandA, fontSize = 12.sp) }
+                }
+                TextButton(onClick = { showKeys(rob) }) {
+                    Text("Sealed keys", color = Pdi.BrandA, fontSize = 12.sp) }
+                keys[rob.id]?.let { ks ->
+                    if (ks.isEmpty()) {
+                        Text("Nothing sealed yet.", color = Pdi.T3, fontSize = 11.sp)
+                    } else {
+                        ks.forEach { Text(it, color = Pdi.T2, fontSize = 11.sp) }
+                        Text("Read one (audited) via Vault → the key above.",
+                            color = Pdi.T3, fontSize = 11.sp)
+                    }
                 }
             }
         }

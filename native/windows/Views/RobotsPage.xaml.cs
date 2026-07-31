@@ -66,6 +66,25 @@ public sealed partial class RobotsPage : Page
     private void OnSealSensor(object sender, RoutedEventArgs e) =>
         Seal(sender, "sensor_log", "steps & doors");
 
+    // Sealing hands back one key, once. Close the app and the only record of
+    // what this robot has put in the vault is on the server — so a page that
+    // can seal has to be able to read the list back, or the keys are gone.
+    private async void OnShowKeys(object sender, RoutedEventArgs e)
+    {
+        if ((sender as Button)?.Tag is not string rid) return;
+        var s = AppState.Current;
+        ErrorText.Visibility = Visibility.Collapsed;
+        try
+        {
+            var d = await ApiClient.Shared.RobotKeys(s.Token!, rid);
+            KeysList.ItemsSource = d.Keys;
+            KeysEmpty.Visibility = d.Keys.Length == 0
+                ? Visibility.Visible : Visibility.Collapsed;
+            KeysCard.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowError(ex.Message); }
+    }
+
     private async void Seal(object sender, string kind, string content)
     {
         if ((sender as Button)?.Tag is not string rid) return;
