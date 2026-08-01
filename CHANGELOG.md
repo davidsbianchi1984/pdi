@@ -4,6 +4,31 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.2] — 2026-08-01
+
+### The synthetic self enters the tandem contract
+
+`docs/tandem.md` gains the boundary before the code that obeys it, and this
+release carries the amendment that names the one exception to it. The
+implementation is JIM-mini's and the profile is QRME's; the contract is shared,
+byte-identical in all three repositories, which is why it lands here too.
+
+PDI's stake in it is the destination. The brief the guardian composes arrives
+through QRME's owner-gated `POST /profiles/{id}/sources`, and QRME seals source
+material into its PDI vault when one is configured — so a person's medication
+names, if they consent to that category, come to rest encrypted here rather
+than beside the profile.
+
+    asked     does JIM reference synthetic profiles
+    mattered  does JIM reference this person's own
+
+The rule the vault inherits: an enumerated allowlist, consented per category,
+empty by default, with the composer building the brief *from* the allowlist
+rather than filtering a payload down to it. Journal entries, check-in notes and
+transcripts never cross under any consent. Medication is the one category made
+of the person's own words, named in the contract rather than left to an
+implementation, because a drug name somebody typed can be a diagnosis.
+
 ## [0.30.1] — 2026-08-01
 
 ### Isolation held, and nothing was checking it
