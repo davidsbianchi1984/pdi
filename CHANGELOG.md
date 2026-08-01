@@ -4,6 +4,73 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.1] — 2026-08-01
+
+### Isolation held, and nothing was checking it
+
+Driven rather than read: the whole GET surface, seventy routes, as a second
+tenant against a first tenant's seeded records, transfers, bequests, beacons
+and positions. **No cross-tenant read.** The mutating routes driven the same
+way, including the compliance record. **No cross-tenant write.**
+
+So this release does not close a hole. It closes what was missing: there was no
+test of any of it. Isolation is the one property this product exists to
+provide, and it was true by the care of whoever wrote each route, with nothing
+to say so the day one of them is written differently.
+
+**Why nobody would have noticed.** `_LOCAL_CALLERS` contains `"testclient"`,
+and `_admin` treats a local caller as authorised when `PDI_ADMIN_TOKEN` is
+unset. Every other test in this suite runs with the admin surface wide open.
+
+    asked     is the admin surface refused
+    mattered  is it refused to somebody the harness is not
+
+Run that way, a tenant appears to file a Business Associate Agreement on
+another tenant's account and get `201` — the harness authorising itself as the
+operator, not a cross-tenant write. Configured, and driven from an address that
+is not this machine, it is `403`; an unconfigured deployment answers `503` to
+the network rather than opening. Both are asserted.
+
+The sweep collects **crashes as well as leaks**. Record ciphertext is sealed
+with associated data of `f"{tenant_id}:{key}"`, so a query that forgets its
+tenant scope does not return another tenant's value — it fails to decrypt and
+raises `InvalidTag`. Real defence in depth, and exactly why a leak-only check
+is not enough: it would call a crashing route *isolated*.
+
+    asked     did another tenant's data come back
+    mattered  did the query ask for another tenant's data at all
+
+
+### The refusal that handed the body back
+
+`RequestValidationError` is neither an `HTTPException` nor a domain error, so a
+422 went out past all three handlers — carrying pydantic's `input` key, which
+on a missing field is the entire submitted body. A real drive against
+`PUT /records`:
+
+    {"type": "missing", "loc": ["body", "key"], "msg": "Field required",
+     "input": {"k": "patient-1", "v": "HIV positive, disclosed 2019"}}
+
+A record value in plaintext, on the one path in an encrypted vault that never
+touches the encryption layer.
+
+**What this is not:** disclosure between people — a 422 returns to whoever sent
+it, and here it could not happen unauthenticated at all, because the tenant
+dependency refuses before the body is validated. **What it is:** content on an
+error path, in a product whose whole design exists so that it does not travel.
+
+`type`, `loc` and `msg` are returned; `input` and `ctx` are not. The guard
+sweeps with a real tenant token on purpose: without one, twelve routes reach
+validation and forty answer 401, and the sweep would report a spotless vault it
+never asked.
+
+
+### The synthetic self enters the tandem contract
+
+`docs/tandem.md` gains the boundary before the code that will obey it — an
+enumerated allowlist, consented per category, empty by default, with no free
+text from the user crossing at all. Byte-identical in all three repositories.
+
 ## [0.30.0] — 2026-08-01
 
 ### The stranger's page was already right; the tenant's was not
