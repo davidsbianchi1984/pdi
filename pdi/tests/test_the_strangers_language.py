@@ -127,6 +127,58 @@ def _blobs(page: str) -> list[dict]:
             re.findall(r"var S=(\{.*?\}),", page, flags=re.S)]
 
 
+def _what_a_recipient_is_told(client, language: str) -> list[str]:
+    """Everything the recipient route says back, driven rather than listed.
+
+    Three of this vault's stranger-facing sentences never appear on a page:
+    they arrive in the response after the button is pressed — the refusal,
+    the revocation, and the custody line on success. That is the moment a
+    person is most invested and least able to guess, and the moment the page
+    around them stops being the thing they are reading.
+
+    Nothing will ever localize them by any other route. The response
+    middleware keys on the calling tenant's language and this caller has no
+    tenant — which is the same gap, one layer in, that left these four pages
+    English in the first place.
+    """
+    # The fixture's client, not a fresh `create_app()`: the vault's master
+    # key and database come from the fixture's environment, and an app built
+    # outside it decrypts a previous run's ciphertext with a new key and
+    # fails on the tag rather than on anything this test is about.
+    head = {"Accept-Language": language}
+    said = []
+    token = new_tenant(client)
+    made = client.post(
+        "/transfers", headers={"Authorization": f"Bearer {token}"},
+        json={"recipient": "dana@example.com", "filename": "labs.pdf",
+              "content": "x", "programs": []})
+    assert made.status_code == 201, made.text
+    transfer = made.json()
+
+    wrong = client.post(f"/transfers/{transfer['id']}/receive",
+                        headers={**head, "x-receive-token": "nope"})
+    said.append(wrong.json()["detail"])
+
+    got = client.post(
+        f"/transfers/{transfer['id']}/receive",
+        headers={**head, "x-receive-token": transfer["receive_token"]})
+    assert got.status_code == 200, got.text
+    said.append(got.json()["custody"])
+
+    second = client.post(
+        "/transfers", headers={"Authorization": f"Bearer {token}"},
+        json={"recipient": "d", "filename": "f", "content": "x",
+              "programs": []}).json()
+    client.delete(f"/transfers/{second['id']}",
+                  headers={"Authorization": f"Bearer {token}"})
+    revoked = client.post(
+        f"/transfers/{second['id']}/receive",
+        headers={**head, "x-receive-token": second["receive_token"]})
+    assert revoked.status_code == 410
+    said.append(revoked.json()["detail"])
+    return said
+
+
 def test_the_table_is_complete_in_every_language():
     """Ten languages or none.
 
@@ -162,7 +214,7 @@ def test_no_page_string_key_carries_an_escape_sequence():
         + "\n    ".join(repr(k[:60]) for k in escaped))
 
 
-def test_every_page_string_is_asked_for_by_a_page():
+def test_every_page_string_is_asked_for_by_a_page(client):
     """A table entry nobody looks up is a translation nobody reads.
 
     The mirror of the check below, and the reason both exist: that one finds
@@ -172,6 +224,9 @@ def test_every_page_string_is_asked_for_by_a_page():
     english = "".join(_ours(p) for p in _pages("en").values())
     english += "".join(json.dumps(b, ensure_ascii=False)
                        for p in _pages("en").values() for b in _blobs(p))
+    # The route's own sentences count as reachable too — they are read by the
+    # same person, a second after the page is.
+    english += "".join(_what_a_recipient_is_told(client, "en"))
     orphans = sorted(
         text for text in i18n._PAGE_STRINGS
         # The holder line is a template; its English never appears whole.
@@ -350,3 +405,101 @@ def test_the_scanned_sticker_answers_in_the_readers_language(client):
         "the page for a code that resolves to nothing is served on the same "
         "route and was the easiest of the four to leave in English")
     assert i18n.tr_page("Nothing here", "de") in missing.text
+
+
+# --- what the route says, not what the page says ----------------------------
+
+
+def test_the_recipient_route_is_not_an_oracle(client):
+    """The guard beside this one reads the wrong file.
+
+    `test_the_recipient_page_does_not_confirm_which_ids_exist` asserts that
+    `GET /r/{tid}` never 404s, so the page cannot be used to ask whether a
+    transfer id is real. That is true and worth keeping. It is also not where
+    an id gets probed.
+
+    `POST /transfers/{tid}/receive` takes **no credential of any kind** — that
+    is the whole design, the token in the header is the authorization — and
+    until this round it answered 404 "transfer not found" for an id that did
+    not exist and 403 "invalid receive token" for one that did. Anybody with
+    a shell could walk ids and learn which sealed transfers are real. For
+    compliance-grade material that is a disclosure before anything is opened.
+
+    The audit's recurring shape, on a route rather than a screen this time:
+
+        asked     does the *page* confirm which ids exist
+        mattered  does the *route* — the one anybody can call directly
+    """
+    token = new_tenant(client)
+    made = client.post(
+        "/transfers", headers={"Authorization": f"Bearer {token}"},
+        json={"recipient": "dana@example.com", "filename": "labs.pdf",
+              "content": "x", "programs": []})
+    assert made.status_code == 201, made.text
+    real = made.json()["id"]
+
+    exists = client.post(f"/transfers/{real}/receive",
+                         headers={"x-receive-token": "wrong"})
+    absent = client.post("/transfers/xfer_nothinghere/receive",
+                         headers={"x-receive-token": "wrong"})
+    assert exists.status_code == absent.status_code, (
+        f"a real transfer answers {exists.status_code} and an invented id "
+        f"answers {absent.status_code}, so this route tells anybody with a "
+        "shell which transfer ids exist")
+    assert exists.json() == absent.json(), (
+        "the two answers differ in their body, which is the same oracle one "
+        f"layer down:\n    real:   {exists.json()}\n    "
+        f"invented: {absent.json()}")
+
+
+def test_revocation_still_reaches_the_person_holding_the_token(client):
+    """The other half, and why collapsing the two above is safe.
+
+    A revoked transfer must still say so — to the recipient. `transfers.
+    receive` matches the token hash *before* it looks at status, so 410 is
+    unreachable without the real token and discloses nothing to anybody
+    walking ids. Somebody who was sent a file and finds it withdrawn should
+    be told that, not left with a refusal that reads like their own mistake.
+    """
+    token = new_tenant(client)
+    made = client.post(
+        "/transfers", headers={"Authorization": f"Bearer {token}"},
+        json={"recipient": "d", "filename": "f", "content": "x",
+              "programs": []}).json()
+    client.delete(f"/transfers/{made['id']}",
+                  headers={"Authorization": f"Bearer {token}"})
+
+    with_token = client.post(
+        f"/transfers/{made['id']}/receive",
+        headers={"x-receive-token": made["receive_token"]})
+    assert with_token.status_code == 410, (
+        "the recipient is no longer told the transfer was revoked")
+
+    without = client.post(f"/transfers/{made['id']}/receive",
+                          headers={"x-receive-token": "wrong"})
+    assert without.status_code != 410, (
+        "410 is reachable without the receive token, so 'revoked' has become "
+        "a way of confirming an id exists")
+
+
+def test_what_the_recipient_is_told_arrives_in_their_language(client):
+    """The refusal, the revocation and the custody line.
+
+    None of them is on the page, so the four checks above cannot see them,
+    and nothing else will ever translate them: the response middleware keys
+    on the calling tenant's language and this caller has no tenant. That is
+    the same gap that left these pages English, one layer in — and it lands
+    at the moment somebody has just pressed the button and something has
+    either gone wrong or been recorded about them.
+    """
+    english = _what_a_recipient_is_told(client, "en")
+    assert all(s in i18n._PAGE_STRINGS for s in english), (
+        f"the route says something the table does not have: {english}")
+
+    for language in ("es", "ja", "ar"):
+        said = _what_a_recipient_is_told(client, language)
+        assert len(said) == len(english)
+        for source, got in zip(english, said):
+            assert got == i18n.tr_page(source, language), (
+                f"the recipient route still answers in English for a "
+                f"{language} reader: {source[:44]!r}")

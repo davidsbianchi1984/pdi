@@ -96,6 +96,19 @@ def _writer(tenant: dict = Depends(_tenant)) -> dict:
     return tenant
 
 
+
+#: What a recipient is told when their token opens nothing.
+#:
+#: One sentence for two situations — no such transfer, and a real one with the
+#: wrong token — because telling them apart is what made this public route an
+#: oracle for transfer ids. It is true either way and reveals neither.
+RECEIVE_NO = "that token does not open anything here"
+
+#: Reachable only with the correct token, so it discloses nothing to anybody
+#: who is not the intended recipient — and it is the one thing that recipient
+#: most needs said plainly rather than left to guess at.
+RECEIVE_REVOKED = "this transfer has been revoked"
+
 def create_app() -> FastAPI:
     app = FastAPI(title="Private Data Infrastructure", version="0.23.0")
 
@@ -653,17 +666,47 @@ def create_app() -> FastAPI:
             x_grant_token, key, customer_key=crypto.parse_key(x_tenant_key))
 
     @app.post("/transfers/{tid}/receive")
-    def receive_transfer(tid: str, x_receive_token: str = Header(default="")) -> dict:
+    def receive_transfer(
+        tid: str,
+        x_receive_token: str = Header(default=""),
+        accept_language: str = Header(default=""),
+    ) -> dict:
         """The recipient retrieves the file with their receive token — no tenant
-        credential; the token itself is the (auditable) authorization."""
+        credential; the token itself is the (auditable) authorization.
+
+        **An unknown id and a wrong token answer identically.** They did not
+        until this round: a missing transfer was a 404 and a real one with a
+        bad token was a 403, so anybody — with no credential of any kind, this
+        route takes none — could walk ids and learn which sealed transfers
+        exist. For compliance-grade material that is a disclosure on its own,
+        before anything is opened.
+
+        `/r/{tid}` was written carefully not to be that oracle, and there is a
+        test named for it. The test reads the *page*. The page is not where an
+        id gets probed; this is, because this is the one anybody can call
+        directly with a shell.
+
+        Revoked stays distinguishable, because reaching it requires the real
+        token: `transfers.receive` matches the hash before it looks at status,
+        so only the intended recipient learns access was cut — which is the
+        one thing they most need to be told rather than left guessing about.
+
+        The reader here is not a tenant, so the response middleware — which
+        keys on the calling tenant's language — will never translate anything
+        for them. The details are therefore translated on the way out, from
+        the same header the page they are standing on was rendered from.
+        """
+        language = i18n.negotiate(accept_language)
         row = transfers.get(tid)
-        if row is None:
-            raise HTTPException(404, "transfer not found")
-        result = transfers.receive(row, x_receive_token)
+        result = None if row is None else transfers.receive(row,
+                                                            x_receive_token)
         if result is None:
-            raise HTTPException(403, "invalid receive token")
+            raise HTTPException(
+                403, i18n.tr_page(RECEIVE_NO, language))
         if result == "revoked":
-            raise HTTPException(410, "this transfer has been revoked")
+            raise HTTPException(
+                410, i18n.tr_page(RECEIVE_REVOKED, language))
+        result["custody"] = i18n.tr_page(result["custody"], language)
         return result
 
     # -- inbound intake: a subscriber or partner sends a file IN ------------
