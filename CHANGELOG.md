@@ -4,6 +4,25 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.6] — 2026-08-01
+
+### The plan gate speaks the reader's language
+
+`refusals_untranslated.txt` carried this as an exception for four releases, in
+its own words: a template whose slots were English prose, where translating the
+frame alone would produce *"a sentence half in each language, at the one moment
+in this product that stands between somebody and a decision to pay"*.
+
+    asked     can the frame be translated
+    mattered  can the slots be
+
+They can — where the sentence exists.
+
+PDI has no plan gate, so there is no sentence of this shape to translate here.
+The release carries the version alignment and the sibling audit; the mechanism
+that would catch it — the `Term` exemption paid for by a vocabulary check — is
+already in place from the previous release.
+
 ## [0.30.5] — 2026-08-01
 
 ### The plan gate said HTTP 402
