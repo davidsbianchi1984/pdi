@@ -202,11 +202,13 @@ def _rows(card: dict, language: str = "en") -> str:
     return "".join(out)
 
 
-# `o.j.note` and `o.j.detail` win over the local strings when the server
-# sends them: those come back through the response middleware, which is the
-# tenant's language rather than the reader's. Whether a courier in Lisbon
-# should see the tenant's Portuguese note or the reader's is a real question
-# and the server's text is the more specific answer, so it stays first.
+# `o.j.note` and `o.j.detail` win over the local strings when the server sends
+# them, and now that is safe. The earlier note here said they arrive "through
+# the response middleware, which is the tenant's language rather than the
+# reader's", and treated that as a considered trade-off. It was not one: the
+# middleware keys on the *calling* tenant and these calls have none, so the
+# server's sentences were never localized into anything at all. They are now
+# translated from the reader's own header, so preferring them costs nothing.
 _FOUND_JS = """
 (function(){
  var S=%(strings)s,

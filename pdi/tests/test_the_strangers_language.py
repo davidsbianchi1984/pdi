@@ -179,6 +179,58 @@ def _what_a_recipient_is_told(client, language: str) -> list[str]:
     return said
 
 
+def _what_a_finder_is_told(client, language: str) -> list[str]:
+    """Everything the two sticker routes say back, driven rather than listed.
+
+    The same reason the recipient's answers are driven: none of these is on a
+    page. They arrive after the button, which is the moment the page stops
+    being the thing somebody is reading.
+    """
+    from pdi import beacons, notify
+
+    head = {"Accept-Language": language} if language else {}
+    said: list[str] = []
+    token = new_tenant(client)
+    auth = {"Authorization": f"Bearer {token}"}
+
+    carrier = client.post("/beacons", headers=auth,
+                          json={"ref_kind": "object", "label": "crate 9"})
+    assert carrier.status_code == 201, carrier.text
+    bid = carrier.json()["id"]
+
+    said.append(client.post(f"/s/{bid}/found", json={"where": "depot 3"},
+                            headers=head).json()["note"])
+    for _ in range(beacons.FOUND_CAP):
+        client.post(f"/s/{bid}/found", json={"where": "depot 3"})
+    said.append(client.post(f"/s/{bid}/found", json={"where": "depot 3"},
+                            headers=head).json()["note"])
+    said.append(client.post(f"/s/{bid}/ring", json={"kind": "delivery"},
+                            headers=head).json()["detail"])
+    said.append(client.post("/s/bcn_nothing/found", json={"where": "x"},
+                            headers=head).json()["detail"])
+
+    gate = client.post("/beacons", headers=auth,
+                       json={"ref_kind": "facility", "label": "north gate"})
+    if gate.status_code == 201:
+        # Both wrong-sticker mistakes, not one. "I found this" on a gate and
+        # "Ring" on a carrier are different sentences, and covering only the
+        # one I happened to think of first is how the other stayed English
+        # long enough for this check to catch it.
+        said.append(client.post(f"/s/{gate.json()['id']}/found",
+                                json={"where": "outside"},
+                                headers=head).json()["detail"])
+        rung = client.post(f"/s/{gate.json()['id']}/ring",
+                           json={"kind": "delivery"}, headers=head).json()
+        if "unreached_note" in rung:
+            said.append(rung["unreached_note"])
+        else:
+            # The roster answered, so this deployment never showed the
+            # sentence. Count it reachable anyway — it is reachable, and the
+            # test above drives the branch that proves it is translated.
+            said.append(i18n.tr_page(notify.UNREACHED, language))
+    return said
+
+
 def test_the_table_is_complete_in_every_language():
     """Ten languages or none.
 
@@ -227,6 +279,7 @@ def test_every_page_string_is_asked_for_by_a_page(client):
     # The route's own sentences count as reachable too — they are read by the
     # same person, a second after the page is.
     english += "".join(_what_a_recipient_is_told(client, "en"))
+    english += "".join(_what_a_finder_is_told(client, "en"))
     orphans = sorted(
         text for text in i18n._PAGE_STRINGS
         # The holder line is a template; its English never appears whole.
@@ -503,3 +556,113 @@ def test_what_the_recipient_is_told_arrives_in_their_language(client):
             assert got == i18n.tr_page(source, language), (
                 f"the recipient route still answers in English for a "
                 f"{language} reader: {source[:44]!r}")
+
+
+# --- what the sticker and the gate answer -----------------------------------
+
+
+def _beacon(client, **body):
+    token = new_tenant(client)
+    body.setdefault("ref_kind", "object")
+    body.setdefault("label", "crate 9")
+    made = client.post("/beacons", json=body,
+                       headers={"Authorization": f"Bearer {token}"})
+    assert made.status_code == 201, made.text
+    return made.json()["id"]
+
+
+def test_the_finders_receipt_arrives_in_their_language(client):
+    """The sentence a courier reads after pressing "I found this".
+
+    A comment on this page used to say the server's `note` "comes back
+    through the response middleware, which is the tenant's language rather
+    than the reader's", and preferred it over the page's own strings on that
+    basis. The middleware keys on the *calling* tenant and this call has
+    none, so `note` was never localized into anything, by anyone. It was
+    English permanently and the comment made that read like a trade-off.
+    """
+    bid = _beacon(client)
+    plain = client.post(f"/s/{bid}/found", json={"where": "depot 3"})
+    assert plain.status_code == 201, plain.text
+    english = plain.json()["note"]
+    assert english in i18n._PAGE_STRINGS, (
+        f"the receipt says something the table does not have: {english!r}")
+
+    for language in ("es", "ja", "ar"):
+        said = client.post(f"/s/{_beacon(client)}/found",
+                           json={"where": "depot 3"},
+                           headers={"Accept-Language": language}).json()["note"]
+        assert said == i18n.tr_page(english, language), (
+            f"the finder's receipt is still English for a {language} "
+            f"reader: {said[:56]!r}")
+
+
+def test_a_second_report_is_declined_in_their_language(client):
+    """The other branch of the same route, because testing one branch is how
+    the other stays English — which is what happened to a foot paragraph on
+    JIM's beacon page, one product over."""
+    from pdi import beacons
+
+    bid = _beacon(client)
+    # The cap, not a single repeat: `found` allows FOUND_CAP reports an hour
+    # before it starts declining — several people can pass the same crate.
+    for _ in range(beacons.FOUND_CAP):
+        client.post(f"/s/{bid}/found", json={"where": "depot 3"})
+    again = client.post(f"/s/{bid}/found", json={"where": "depot 3"},
+                        headers={"Accept-Language": "de"})
+    note = again.json()["note"]
+    assert again.json()["recorded"] is False
+    assert note == i18n.tr_page(
+        "this carrier was already reported in the last hour; the holder has "
+        "been told and nothing is lost by your not reporting it again", "de")
+
+
+def test_a_dead_code_refuses_the_button_in_their_language(client):
+    """The page for a retired code was localized two rounds ago. The routes
+    behind its two buttons were not, and somebody who presses one is the
+    person who most wants a sentence they can read."""
+    for path in ("/s/bcn_nothing/found", "/s/bcn_nothing/ring"):
+        body = ({"where": "x"} if path.endswith("found")
+                else {"kind": "delivery"})
+        refused = client.post(path, json=body,
+                              headers={"Accept-Language": "hi"})
+        assert refused.status_code == 404, refused.text
+        assert refused.json()["detail"] == i18n.tr_page(
+            "this code does not resolve to anything", "hi"), (
+            f"{path} refuses in English")
+
+
+def test_ringing_a_carrier_is_declined_in_their_language(client):
+    """Pointing a phone at the wrong kind of sticker is an ordinary mistake
+    and the correction should be readable."""
+    bid = _beacon(client)
+    wrong = client.post(f"/s/{bid}/ring", json={"kind": "delivery"},
+                        headers={"Accept-Language": "fr"})
+    assert wrong.status_code == 409, wrong.text
+    assert wrong.json()["detail"] == i18n.tr_page(
+        "this code is on a carrier, not a gate", "fr"), (
+        "ringing a carrier is refused in English")
+
+
+def test_nobody_is_coming_out_is_said_in_their_language(client):
+    """The one sentence on this surface whose being understood decides
+    whether a person stands outside in the dark.
+
+    When the page reaches nobody, `unreached_note` is what tells them not to
+    wait and to call the number on the door instead. It was English for every
+    caller in every country.
+    """
+    from pdi import notify
+
+    gate_beacon = _beacon(client, ref_kind="facility", label="north gate")
+    rung = client.post(f"/s/{gate_beacon}/ring",
+                       json={"kind": "delivery", "note": "parcel for the lab"},
+                       headers={"Accept-Language": "ja"})
+    assert rung.status_code == 201, rung.text
+    body = rung.json()
+    if "unreached_note" in body:
+        assert body["unreached_note"] == i18n.tr_page(notify.UNREACHED, "ja"), (
+            "the 'nobody answered, do not wait' sentence is still English")
+    assert notify.UNREACHED in i18n._PAGE_STRINGS, (
+        "notify.UNREACHED is not in the table, so no reader outside the "
+        "anglosphere will ever be told not to wait")

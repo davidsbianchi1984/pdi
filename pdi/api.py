@@ -1073,33 +1073,70 @@ def create_app() -> FastAPI:
         return Response(content=buf.getvalue(), media_type="image/svg+xml")
 
     @app.post("/s/{bid}/found", status_code=201)
-    def report_found(bid: str, body: BeaconFound) -> dict:
+    def report_found(bid: str, body: BeaconFound,
+                     accept_language: str = Header(default="")) -> dict:
         """A finder's custody receipt — the one thing a stranger can do with a
-        carrier, and it is an instrument rather than a message."""
+        carrier, and it is an instrument rather than a message.
+
+        **In the finder's language.** A comment two rounds ago said the reply
+        here "comes back through the response middleware, which is the
+        tenant's language rather than the reader's", and used that to justify
+        preferring it over the page's own strings. That was wrong in a way
+        worth writing down: the middleware keys on the *calling* tenant, and
+        this call has none. So `note` was never localized into anything, by
+        anyone, in any deployment — not the tenant's language and not the
+        reader's. It was English permanently, and the comment made that read
+        like a considered trade-off.
+        """
+        language = i18n.negotiate(accept_language)
         try:
             out = beacons.found(bid, body.where, body.contact)
         except beacons.BeaconError as exc:
-            raise HTTPException(409, str(exc))
+            raise HTTPException(409, i18n.tr_page(str(exc), language))
         if out is None:
-            raise HTTPException(404, "this code does not resolve to anything")
+            raise HTTPException(404, i18n.tr_page(
+                "this code does not resolve to anything", language))
+        if isinstance(out.get("note"), str):
+            out["note"] = i18n.tr_page(out["note"], language)
         return out
 
     @app.post("/s/{bid}/ring", status_code=201)
-    def ring_gate(bid: str, body: GateRing) -> dict:
+    def ring_gate(bid: str, body: GateRing,
+                  accept_language: str = Header(default="")) -> dict:
         """Ring a facility gate. The agent answers within its ceiling and hands
-        off everything else — it can never grant entry, whatever it says."""
+        off everything else — it can never grant entry, whatever it says.
+
+        `unreached_note` is the reason this route is in this round. When
+        nobody answered the page, it is the sentence telling somebody standing
+        at a door not to wait for anyone to come out and to call the number on
+        the door instead. It was English for every caller in every country,
+        and it is the one sentence here whose being understood decides whether
+        a person stands outside in the dark.
+
+        The agent's own `words` are left alone: they are what the facility
+        chose to say, generated in the voice its operator configured, and
+        putting them through a lookup table would either miss entirely or
+        replace a facility's answer with ours.
+        """
+        language = i18n.negotiate(accept_language)
         row = beacons.get(bid)
         if row is None or not row["active"]:
-            raise HTTPException(404, "this code does not resolve to anything")
+            raise HTTPException(404, i18n.tr_page(
+                "this code does not resolve to anything", language))
         try:
             opened = beacons.ring(row, body.kind, body.note)
         except beacons.BeaconError as exc:
-            raise HTTPException(409, str(exc))
+            raise HTTPException(409, i18n.tr_page(str(exc), language))
         tenant = vault.tenant_by_id(row["tenant_id"])
         if tenant is None:                       # tenant deleted under a live code
-            raise HTTPException(404, "this code does not resolve to anything")
+            raise HTTPException(404, i18n.tr_page(
+                "this code does not resolve to anything", language))
         answered = gate.answer(beacons.ring_row(opened["id"]), tenant)
-        return {**opened, **answered}
+        reply = {**opened, **answered}
+        if isinstance(reply.get("unreached_note"), str):
+            reply["unreached_note"] = i18n.tr_page(
+                reply["unreached_note"], language)
+        return reply
 
     @app.get("/gate/ceiling")
     def gate_ceiling() -> dict:
