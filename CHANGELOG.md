@@ -4,6 +4,53 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.23.0] — 2026-08-01
+
+### The recipient had nowhere to put their token
+
+`receive_transfer` names its caller: *"The recipient retrieves the file with
+their receive token — no tenant credential; the token itself is the (auditable)
+authorization."* That person is not a tenant. They were sent a file under HIPAA
+or OSHA or CPNI, they hold a one-shot token in an email, and they had nowhere
+in the product to use it.
+
+The only caller of that route was the console's **"Receive it as the
+recipient"** button — the *sender* rehearsing, disabled unless their own
+session still held the receipt, which the tooltip admits is usually gone.
+
+There is now a page at `GET /r/{tid}`, in the shape this product already uses
+for `GET /s/{bid}`. The token rides in the **URL fragment**, which browsers
+never send to a server, so the link survives mail, proxies and Referer headers
+without leaving a one-shot authorization for compliance-grade material in
+anybody's access log; it is cleared from the address bar the moment it is read.
+The page renders for any id, because whether a transfer exists is the token's
+business to answer and a 404 would make the route a way of asking which ids are
+real.
+
+The door guards then caught the thing that mattered most: the page had no way
+to be linked to. The sender could not produce `/r/{id}#<token>` at all — the
+same defect one step earlier in the same flow. The console now has **Copy the
+recipient's link**, which resolves the page before handing the URL over,
+because a deployment with a misconfigured public base would otherwise have that
+discovered by the recipient, who has nobody to ask.
+
+### Fixed
+
+- Android and Windows can read back the vault keys a bound robot has sealed.
+  Sealing hands one key back, once; close the app and the server was the only
+  thing that still knew it.
+- A correction to this repository's own guard. It previously asserted that the
+  console reaches the receive route and that PDI's console has no sign-in gate,
+  and concluded PDI had got it right. Both facts were true and the conclusion
+  was wrong: the absence of a gate was never the recipient having access, it
+  was the recipient having nothing to be gated out of.
+
+### Known gap
+
+The six releases from 0.19.0 to 0.22.0 had shipped without rows in the README
+release table. They are written in now, from the CHANGELOG sections that
+already described them.
+
 ## [0.22.0] — 2026-07-31
 
 **The console backlog reaches zero**, and with it the audit across all three
