@@ -16,6 +16,7 @@ one of them:
 import base64
 import hashlib
 import hmac
+import html
 import json
 
 from pdi import beacons, gate, notify
@@ -485,7 +486,11 @@ def test_a_dead_code_renders_a_page_too(client):
     r = client.get("/s/bcn_neverexisted")
     assert r.status_code == 404
     assert r.headers["content-type"].startswith("text/html")
-    assert "doesn't resolve" in r.text
+    # Unescaped: the round that localized these pages routed every sentence
+    # of ours through the same `html.escape` the card's data always used, so
+    # the apostrophe is an entity in the markup. A browser shows the same
+    # character either way — only a test reading the source can tell.
+    assert "doesn't resolve" in html.unescape(r.text)
 
 
 def test_the_page_does_not_depend_on_an_animation_to_be_visible(client):
