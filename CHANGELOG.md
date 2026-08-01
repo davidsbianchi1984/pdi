@@ -4,6 +4,19 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.29.0] — 2026-08-01
+
+Aligned with QRME and JIM-mini 0.29.0. The three products carry one version,
+so a release that only moves in two of them still moves in all three.
+
+Nothing in PDI's own code changed this cut. QRME gained the cloudgw deploy
+runbook and a guard for translated strings nothing looks up; JIM localized its
+console navigation and put a number on the six hundred and seventy-seven
+English strings its gated screens carry. PDI has neither a console
+localization layer nor an unmeasured pre-session surface — its stranger-facing
+pages are server-rendered and already localized, under nineteen tests that
+have been passing since 0.24.0.
+
 ## [0.28.0] — 2026-08-01
 
 Aligned with JIM-mini 0.28.0. The three products carry one version, so a
