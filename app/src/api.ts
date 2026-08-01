@@ -96,7 +96,14 @@ async function req<T>(
     // The status and the operation, never the detail below: that string
     // carries whatever the user typed.
     recordProblem(opts.method || "GET", path, res.status);
-    const d = (data && (data.detail || data.message)) || res.statusText;
+    const body = data as { detail?: unknown; message?: unknown } | null;
+    // The sentence first. A 422's `detail` is pydantic's list of rows, and
+    // `JSON.stringify` on a list is exactly what the person used to read:
+    // `[{"type":"missing","loc":["body","display_name"],...}]`. Every other
+    // refusal carries a string `detail` and still comes through below.
+    const said = body && typeof body.message === "string" && body.message
+      ? body.message : null;
+    const d = said ?? ((data && (data.detail || data.message)) || res.statusText);
     throw new Error(typeof d === "string" ? d : JSON.stringify(d));
   }
   return data as T;
