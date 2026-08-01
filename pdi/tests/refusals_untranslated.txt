@@ -1,0 +1,95 @@
+# English refusals — the sentences the vault says when it says no.
+# Checked by test_the_vault_refuses_in_one_language.py, both directions, and
+# ratcheted.
+#
+# A tenant picks a language. `_STRINGS` honours it in the console's chrome,
+# `_PAGE_STRINGS` honours a stranger's browser on the recipient's page, and
+# the recipient's own two refusals are localized at their route — `tr_page` on
+# RECEIVE_NO and RECEIVE_REVOKED, from the round that gave the recipient a
+# door at all.
+#
+# The tenant's refusals were English. All sixty, on an account where the
+# language picker had been answered and every other surface honoured it.
+#
+#     asked     is the stranger answered in their language
+#     mattered  is the tenant
+#
+# The direction is the reverse of the usual one and worth naming for that
+# reason. Three rounds across these repositories found a stranger being served
+# the language of somebody who had an account. Here the stranger's page was
+# already right and the account-holder's was not — because the stranger's page
+# was built as a localization problem from the start, and the vault's own
+# refusals were never looked at as text a person reads.
+#
+# Eleven are translated now: every credential and key check, which is what any
+# route can raise. These 49 are not, and pass through as English, which is a
+# visible gap rather than a confident error.
+#
+# ## What this file does not cover
+#
+# **30 f-string refusals.** Sentences built by interpolation cannot be keyed
+# on their English source, because their English source is not a constant.
+# They need a template with named slots. Named here rather than counted in, so
+# 49 cannot be read as the whole number.
+#
+# ## What stays English by decision
+#
+#     this deployment is reachable beyond localhost but has no PDI_ADMIN_TOKEN
+#     set — admin endpoints stay closed until one is configured (see
+#     docs/operations.md)
+#
+# The person who can act on it is the operator reading a log, the fix is the
+# name of an environment variable and a path into this repository, and nobody
+# reading a translated version could do anything a reader of this one could
+# not.
+#
+# ceiling: 49
+a beacon needs a label so its owner can tell their codes apart once several are printed and stuck to different things
+a bequest names at least one key prefix — an unbounded grant is not a bequest
+a bequest names its grantee
+a message is required
+a pane with no faces is the helper button on its own — set the state to 'handle' instead
+a roster entry needs a name
+a shift needs at least one day
+activation requires a reference — what attested the condition (a vigil event id, a succession verification, a certificate number)
+already activated — an activated grant is revoked by the deployment admin, not the tenant token, which may be in an estate's hands by now
+already activated — the grant token was shown once, at activation
+app connector not found
+beacon not found
+beacons are for publish connectors
+connector has been revoked
+connector not found
+intake not found
+invalid submit token
+mode must be 'soft' or 'wipe'
+no active grant for this token
+no contribution with that ref
+no executed BAA on file for this tenant
+no lesson covers that screen
+no notification channel is configured
+no record at that key
+no such bequest
+no transcript for this ring
+not your tenant
+nothing has been submitted to this intake yet
+page not found
+position not found
+rating must be 1–5
+record not found
+ring not found
+robot has been unbound
+robot not found
+roster entry not found
+tenant not found
+that is not the key this tenant's records are sealed under — refusing before use, so a wrong key cannot write records that nothing can open later
+that key is outside this bequest's scope
+this bequest was revoked by its owner
+this connector is for collecting, not publishing
+this connector is for publishing, not collecting
+this deployment is reachable beyond localhost but has no PDI_ADMIN_TOKEN set — admin endpoints stay closed until one is configured (see docs/operations.md)
+this intake is no longer open
+this page was already delivered
+this ring has already been answered
+this tenant's records are sealed under a customer-managed key; present it in the x-tenant-key header (base64 of 32 bytes)
+token not found
+transfer not found

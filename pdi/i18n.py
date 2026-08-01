@@ -880,3 +880,200 @@ def localize(obj, language: str):
     if isinstance(obj, str):
         return tr(obj, language)
     return obj
+
+
+# --------------------------------------------------------------------------- #
+# The vault's own refusals
+# --------------------------------------------------------------------------- #
+#
+# A tenant picks a language. `_STRINGS` honours it in the console's chrome,
+# `_PAGE_STRINGS` honours a stranger's browser on the recipient's page, and the
+# recipient's own two refusals are localized at their route — `tr_page` on
+# `RECEIVE_NO` and `RECEIVE_REVOKED`, from the round that gave the recipient a
+# door at all.
+#
+# The tenant's refusals were English. All sixty of them, on an account where
+# the language picker had been answered and every other surface honoured it.
+#
+#     asked     is the stranger answered in their language
+#     mattered  is the tenant
+#
+# The direction is worth naming because it is the reverse of the usual one.
+# Three rounds in these repositories found a stranger being served the
+# language of somebody who had an account. Here the stranger's page was
+# already right and the account-holder's was not — because the stranger's page
+# was *built* as a localization problem and the vault's refusals were never
+# looked at as text a person reads.
+#
+# ## Whose language, and which stored value
+#
+# The bearer token names the tenant, and the tenant's stored setting is the
+# answer. No token — a recipient, an unauthenticated caller — means the
+# browser header, which is all they carry.
+#
+# `get_language`, not `effective_language`: the latter answers English whenever
+# the mode is `on_demand`, and that mode is a statement about how *stored
+# records* come back ("keep the original wording, I will translate what I
+# choose"). A record is not a refusal.
+
+
+def tr_refusal(text: str, language: str) -> str:
+    """Translate one of the sentences this vault refuses with.
+
+    All three tables, one lookup. `RECEIVE_NO` already lives in
+    `_PAGE_STRINGS`; a second copy here would be two translations of one
+    sentence, free to drift, with nothing to say which reader got which.
+    """
+    if language == DEFAULT:
+        return text
+    return (_REFUSALS.get(text) or _STRINGS.get(text)
+            or _PAGE_STRINGS.get(text, {})).get(language, text)
+
+
+def localize_detail(detail, language: str):
+    """A refusal payload, translated in whichever shape it arrives.
+
+    Only the sentence. Everything beside it is the API's own vocabulary and
+    the console branches on it: what a person reads is translated, what a
+    client compares is not.
+    """
+    if language == DEFAULT:
+        return detail
+    if isinstance(detail, str):
+        return tr_refusal(detail, language)
+    if isinstance(detail, dict) and isinstance(detail.get("detail"), str):
+        return {**detail, "detail": tr_refusal(detail["detail"], language)}
+    return detail
+
+
+def refusal_language(request) -> str:
+    """The language the person receiving this refusal reads.
+
+    Never raises. This runs inside exception handlers, and a diagnostic that
+    can fail turns a refusal into a 500 — telling somebody the vault broke
+    when it was really telling them no.
+    """
+    try:
+        header = request.headers.get("authorization", "")
+        if header.startswith("Bearer "):
+            from . import vault
+            tenant = vault.tenant_by_token(header[len("Bearer "):])
+            if tenant:
+                return get_language(tenant["id"])
+    except Exception:
+        pass
+    try:
+        return negotiate(request.headers.get("accept-language"))
+    except Exception:
+        return DEFAULT
+
+
+def refuse(request, status: int, content, headers: dict | None = None):
+    """The one place a refusal becomes a response.
+
+    Every exception handler in `pdi/api.py` returns through here. Before this
+    there were three, and they built their responses three different ways —
+    two hand-rolled `Response`s with `json.dumps`, one `JSONResponse` — which
+    is how a fourth would have arrived with a fourth shape and no translation.
+    """
+    from fastapi.responses import JSONResponse
+    return JSONResponse(
+        status_code=status,
+        content=localize_detail(content, refusal_language(request)),
+        headers=headers)
+
+
+#: Keyed on the English source, so editing the English falls back loudly to
+#: the new English rather than quietly serving the old sentence in nine
+#: languages. What is not here is recorded in
+#: `pdi/tests/refusals_untranslated.txt` and ratcheted.
+_REFUSALS: dict[str, dict[str, str]] = {
+    'missing tenant bearer token': {
+        'es': 'falta el token bearer del inquilino',
+        'fr': 'jeton bearer du locataire manquant',
+        'de': 'Bearer-Token des Mandanten fehlt',
+        'pt': 'falta o token bearer do inquilino',
+        'it': 'manca il token bearer del tenant',
+        'ja': 'テナントのベアラートークンがありません',
+        'zh': '缺少租户 bearer 令牌',
+        'hi': 'टेनेंट का bearer टोकन गायब है',
+        'ar': 'رمز bearer الخاص بالمستأجر مفقود',
+    },
+    'invalid tenant token': {
+        'es': 'token de inquilino no válido',
+        'fr': 'jeton de locataire invalide',
+        'de': 'ungültiges Mandanten-Token',
+        'pt': 'token de inquilino inválido',
+        'it': 'token del tenant non valido',
+        'ja': 'テナントトークンが無効です',
+        'zh': '租户令牌无效',
+        'hi': 'टेनेंट टोकन अमान्य है',
+        'ar': 'رمز المستأجر غير صالح',
+    },
+    'this token is read-only': {
+        'es': 'este token es de solo lectura',
+        'fr': 'ce jeton est en lecture seule',
+        'de': 'dieses Token ist schreibgeschützt',
+        'pt': 'este token é apenas de leitura',
+        'it': 'questo token è di sola lettura',
+        'ja': 'このトークンは読み取り専用です',
+        'zh': '此令牌为只读',
+        'hi': 'यह टोकन केवल पढ़ने के लिए है',
+        'ar': 'هذا الرمز للقراءة فقط',
+    },
+    'admin bearer token required': {
+        'es': 'se requiere un token bearer de administración',
+        'fr': "jeton bearer d'administration requis",
+        'de': 'Admin-Bearer-Token erforderlich',
+        'pt': 'é necessário um token bearer de administração',
+        'it': 'è richiesto un token bearer di amministrazione',
+        'ja': '管理用のベアラートークンが必要です',
+        'zh': '需要管理员 bearer 令牌',
+        'hi': 'व्यवस्थापक bearer टोकन आवश्यक है',
+        'ar': 'رمز bearer الإداري مطلوب',
+    },
+    'invalid admin token': {
+        'es': 'token de administración no válido',
+        'fr': "jeton d'administration invalide",
+        'de': 'ungültiges Admin-Token',
+        'pt': 'token de administração inválido',
+        'it': 'token di amministrazione non valido',
+        'ja': '管理トークンが無効です',
+        'zh': '管理员令牌无效',
+        'hi': 'व्यवस्थापक टोकन अमान्य है',
+        'ar': 'رمز الإدارة غير صالح',
+    },
+    'grant token required': {
+        'es': 'se requiere el token de concesión',
+        'fr': "jeton d'accès requis",
+        'de': 'Zugriffstoken erforderlich',
+        'pt': 'é necessário o token de concessão',
+        'it': 'è richiesto il token di concessione',
+        'ja': '付与トークンが必要です',
+        'zh': '需要授权令牌',
+        'hi': 'अनुदान टोकन आवश्यक है',
+        'ar': 'رمز المنح مطلوب',
+    },
+    'customer key must be base64': {
+        'es': 'la clave del cliente debe estar en base64',
+        'fr': 'la clé client doit être en base64',
+        'de': 'der Kundenschlüssel muss base64 sein',
+        'pt': 'a chave do cliente tem de estar em base64',
+        'it': 'la chiave del cliente deve essere in base64',
+        'ja': '顧客キーは base64 で指定してください',
+        'zh': '客户密钥必须是 base64',
+        'hi': 'ग्राहक कुंजी base64 में होनी चाहिए',
+        'ar': 'يجب أن يكون مفتاح العميل بترميز base64',
+    },
+    'customer key must be base64 of 32 bytes': {
+        'es': 'la clave del cliente debe ser base64 de 32 bytes',
+        'fr': 'la clé client doit être du base64 de 32 octets',
+        'de': 'der Kundenschlüssel muss base64 von 32 Bytes sein',
+        'pt': 'a chave do cliente tem de ser base64 de 32 bytes',
+        'it': 'la chiave del cliente deve essere base64 di 32 byte',
+        'ja': '顧客キーは 32 バイトを base64 にしたものにしてください',
+        'zh': '客户密钥必须是 32 字节的 base64',
+        'hi': 'ग्राहक कुंजी 32 बाइट का base64 होनी चाहिए',
+        'ar': 'يجب أن يكون مفتاح العميل base64 لـ 32 بايت',
+    },
+}

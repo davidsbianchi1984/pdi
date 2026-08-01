@@ -170,17 +170,31 @@ def create_app() -> FastAPI:
     # so every path that touches a sealed record reports them the same way,
     # rather than each route remembering to.
 
+    # Every refusal in this vault, in the language of whoever is reading it.
+    #
+    # `i18n.refuse` is the one place a refusal becomes a response. Before it
+    # there were three handlers building responses three different ways — two
+    # hand-rolled `Response`s with `json.dumps`, one `JSONResponse` — which is
+    # how a fourth would have arrived with a fourth shape and no translation.
+    # `pdi/i18n.py` carries the argument about whose language it is.
+    #
+    # test_the_vault_refuses_in_one_language.py fails the next handler added
+    # that does not return through here.
+    @app.exception_handler(HTTPException)
+    async def _refusal_in_the_readers_language(request: Request,
+                                               exc: HTTPException):
+        return i18n.refuse(request, exc.status_code,
+                           {"detail": exc.detail}, exc.headers)
+
     @app.exception_handler(crypto.CustomerKeyRequired)
     async def _key_required(request: Request, exc: crypto.CustomerKeyRequired):
         # 428 Precondition Required: the request is fine, it is missing a
         # precondition the caller can supply and retry with.
-        return Response(status_code=428, media_type="application/json",
-                        content=json.dumps({"detail": str(exc)}))
+        return i18n.refuse(request, 428, {"detail": str(exc)})
 
     @app.exception_handler(crypto.CustomerKeyMismatch)
     async def _key_mismatch(request: Request, exc: crypto.CustomerKeyMismatch):
-        return Response(status_code=403, media_type="application/json",
-                        content=json.dumps({"detail": str(exc)}))
+        return i18n.refuse(request, 403, {"detail": str(exc)})
 
     @app.get("/health")
     def health() -> dict:
@@ -622,9 +636,7 @@ def create_app() -> FastAPI:
 
     @app.exception_handler(bequests.BequestError)
     def _bequest_refusal(request: Request, exc: bequests.BequestError):
-        from fastapi.responses import JSONResponse
-        return JSONResponse(status_code=exc.status,
-                            content={"detail": exc.message})
+        return i18n.refuse(request, exc.status, {"detail": exc.message})
 
     @app.post("/bequests", status_code=201)
     def create_bequest(body: BequestCreate,
