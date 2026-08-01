@@ -959,21 +959,33 @@ def create_app() -> FastAPI:
     # exactly the caller this exists for.
 
     @app.get("/s/{bid}", response_class=HTMLResponse)
-    def seal_card_page(bid: str) -> HTMLResponse:
+    def seal_card_page(
+        bid: str,
+        accept_language: str = Header(default=""),
+    ) -> HTMLResponse:
         """What a phone's camera app opens when somebody scans the sticker.
 
         HTML, because a QR is pointed at by a human holding a phone — this
         used to answer JSON and show a courier a wall of braces. The JSON is
         still served at ``/s/{id}/card`` for anything reading it
         programmatically.
+
+        The language comes from the header rather than from a tenant: the
+        person scanning is a courier or a clerk who has never had an account
+        here, so there is no stored preference to look up and their browser
+        has been saying which language they read all along.
         """
+        language = i18n.negotiate(accept_language)
         card = beacons.seal_card(bid)
         if card is None:
-            return HTMLResponse(landing.gone(), status_code=404)
-        return HTMLResponse(landing.page_for(card))
+            return HTMLResponse(landing.gone(language), status_code=404)
+        return HTMLResponse(landing.page_for(card, language))
 
     @app.get("/r/{tid}", response_class=HTMLResponse)
-    def receive_page(tid: str) -> HTMLResponse:
+    def receive_page(
+        tid: str,
+        accept_language: str = Header(default=""),
+    ) -> HTMLResponse:
         """Where the recipient of a sealed transfer collects it.
 
         `receive_transfer` states its caller: "no tenant credential; the token
@@ -991,7 +1003,8 @@ def create_app() -> FastAPI:
         token's business to answer, not the URL's — a 404 here would turn this
         route into a way of asking whether a given transfer id is real.
         """
-        return HTMLResponse(landing.receive_page(tid))
+        return HTMLResponse(
+            landing.receive_page(tid, i18n.negotiate(accept_language)))
 
     @app.get("/s/{bid}/card")
     def seal_card(bid: str) -> dict:

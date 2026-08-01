@@ -15,6 +15,12 @@ console:
   found a drive on a train. No token, no session, no idea what PDI is. The
   page has about a second to say what the thing in their hands is and what to
   do with it.
+* **And a stranger in their own language.** Every other localization path in
+  this vault takes a ``tenant_id`` — right for the API, whose callers are all
+  tenants, and useless here, where nobody has one. These four pages therefore
+  key on the reader's ``Accept-Language`` header, which their browser has been
+  sending all along. Text is looked up through :func:`pdi.i18n.tr_page` at the
+  point it is written, so the English stays legible in the source.
 * **It must not become a disclosure.** Everything :mod:`pdi.beacons` withholds,
   this withholds — the card renders what `seal_card` returns and nothing more,
   so there is no second place for the contents to leak from.
@@ -28,6 +34,8 @@ from __future__ import annotations
 
 import html
 import json
+
+from . import i18n
 
 # Night indigo and vault cyan — the console's palette, and the dark ink the
 # printed QR is rendered in.
@@ -91,9 +99,16 @@ a.dl{display:block;margin-top:14px;text-align:center;font-weight:700;
 """
 
 
-def _page(title: str, body: str) -> str:
+def _page(title: str, body: str, language: str = "en") -> str:
+    # `lang` is not decoration: a screen reader picks its voice from it, and
+    # some of these pages are read by somebody with a parcel in both hands.
+    # `dir` because Arabic is one of the ten languages this vault supports and
+    # a right-to-left page laid out left-to-right is unreadable, not merely
+    # untranslated.
+    direction = "rtl" if language == "ar" else "ltr"
     return (
-        '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+        f'<!doctype html><html lang="{language}" dir="{direction}">'
+        '<head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1,'
         'viewport-fit=cover"><meta name="theme-color" content="#0c0920">'
         f"<title>{html.escape(title)}</title><style>{_CSS}</style></head>"
@@ -106,66 +121,121 @@ def _js(value: str) -> str:
     return json.dumps(value)
 
 
-def gone() -> str:
+def _strings(language: str, **english: str) -> str:
+    """The script's own words, translated, as a JSON object literal.
+
+    `ensure_ascii=False` because the page already declares UTF-8 and the
+    escaped form triples the size of every non-Latin blob — on a page whose
+    whole premise is one cold request in a loading bay with one bar.
+    """
+    return json.dumps({name: i18n.tr_page(text, language)
+                       for name, text in english.items()},
+                      ensure_ascii=False)
+
+def _t(language: str):
+    """A lookup bound to one reader's language.
+
+    The English literal stays at the call site rather than moving to a table
+    of keys, so this file still reads as the page it renders. `tr_page` falls
+    back to English for anything it does not have, and the test beside it is
+    what notices a sentence that arrived without translations.
+    """
+    return lambda text: i18n.tr_page(text, language)
+
+
+# The long sentences, named where a call site would otherwise wrap four times.
+GONE_NOTE = ("It may have been retired, or it may never have been one of "
+             "ours. Either way there is nothing here to see, and nothing you "
+             "need to do.")
+NO_HOLDER = ("Report it here and the holder will be told \u2014 you won't "
+             "learn whose it is, and you don't need to.")
+CANNOT_OPEN = ("This code cannot open it, and neither can whoever is holding "
+               "it. It says the thing is sealed \u2014 never what is inside.")
+FOUND_FOOT = ("Your report is timestamped and hash-chained into this "
+              "carrier's chain of custody. It cannot be altered afterwards "
+              "\u2014 including by us.")
+GATE_FOOT = ("Whoever answers cannot let anyone in \u2014 that decision "
+             "always belongs to a person. This exchange is recorded in the "
+             "facility's audit chain.")
+RECEIVE_NOTE = ("It was sent through PDI under a compliance program. "
+                "Collecting it is recorded in the sender's chain of custody "
+                "\u2014 that record is the point of sending it this way, and "
+                "it names the collection, not you.")
+RECEIVE_AGAIN = ("Keep the link if you need it again \u2014 the token stays "
+                 "good, and every collection is written into the sender's "
+                 "chain of custody, so a second one is visible rather than "
+                 "silent.")
+
+def gone(language: str = "en") -> str:
     """A code that never existed, or has been retired.
 
     One page for both, deliberately: somebody holding a phone at a dead
     sticker should not be able to tell which, or a retired code becomes a way
     of confirming that a particular reference once existed.
     """
-    return _page("Nothing here", (
+    t = _t(language)
+    headline = t("This code doesn't resolve to anything")
+    return _page(t("Nothing here"), (
         '<div class="seal">'
-        "<h1>This code doesn't resolve to anything</h1>"
-        '<p class="note">It may have been retired, or it may never have been '
-        "one of ours. Either way there is nothing here to see, and nothing "
-        "you need to do.</p></div>"))
+        f"<h1>{html.escape(headline)}</h1>"
+        f'<p class="note">{html.escape(t(GONE_NOTE))}</p></div>'), language)
 
 
-def _rows(card: dict) -> str:
+def _rows(card: dict, language: str = "en") -> str:
+    # The labels translate; the values do not. `state`, the program names and
+    # the holder are the card's own data — translating a tenant's holder name
+    # or a statute's short name would be inventing, not localizing.
+    t = _t(language)
     progs = card.get("programs") or []
     out = [
-        f'<div class="row"><span>State</span>'
+        f'<div class="row"><span>{html.escape(t("State"))}</span>'
         f'<span>{html.escape(card.get("state") or "—")}</span></div>',
     ]
     if progs:
         chips = "".join(f'<span class="prog">{html.escape(p.upper())}</span>'
                         for p in progs)
-        out.append(f'<div class="row"><span>Governed by</span>'
-                   f'<span class="progs">{chips}</span></div>')
+        out.append(f'<div class="row"><span>{html.escape(t("Governed by"))}'
+                   f'</span><span class="progs">{chips}</span></div>')
     if card.get("held_by"):
-        out.append(f'<div class="row"><span>Held by</span>'
+        out.append(f'<div class="row"><span>{html.escape(t("Held by"))}</span>'
                    f'<span>{html.escape(card["held_by"])}</span></div>')
     return "".join(out)
 
 
+# `o.j.note` and `o.j.detail` win over the local strings when the server
+# sends them: those come back through the response middleware, which is the
+# tenant's language rather than the reader's. Whether a courier in Lisbon
+# should see the tenant's Portuguese note or the reader's is a real question
+# and the server's text is the more specific answer, so it stays first.
 _FOUND_JS = """
 (function(){
- var f=document.getElementById('f'),b=document.getElementById('go'),
+ var S=%(strings)s,
+     f=document.getElementById('f'),b=document.getElementById('go'),
      s=document.getElementById('st');
  if(!f)return;
  f.addEventListener('submit',function(e){
-  e.preventDefault();b.disabled=true;s.textContent='Recording\\u2026';
+  e.preventDefault();b.disabled=true;s.textContent=S.working;
   fetch(%(endpoint)s,{method:'POST',
    headers:{'content-type':'application/json'},
    body:JSON.stringify({where:document.getElementById('w').value||null,
                         contact:document.getElementById('c').value||null})})
   .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});})
   .then(function(o){
-   if(o.ok){b.remove();s.textContent=o.j.note||'Recorded. Thank you.';}
-   else{b.disabled=false;s.textContent=(o.j&&o.j.detail)||'That did not go through.';}
-  }).catch(function(){b.disabled=false;
-   s.textContent='No connection \\u2014 try again in a moment.';});
+   if(o.ok){b.remove();s.textContent=o.j.note||S.done;}
+   else{b.disabled=false;s.textContent=(o.j&&o.j.detail)||S.failed;}
+  }).catch(function(){b.disabled=false;s.textContent=S.offline;});
  });
 })();
 """
 
 _RING_JS = """
 (function(){
- var f=document.getElementById('f'),b=document.getElementById('go'),
+ var S=%(strings)s,
+     f=document.getElementById('f'),b=document.getElementById('go'),
      s=document.getElementById('st');
  if(!f)return;
  f.addEventListener('submit',function(e){
-  e.preventDefault();b.disabled=true;s.textContent='Ringing\\u2026';
+  e.preventDefault();b.disabled=true;s.textContent=S.working;
   fetch(%(endpoint)s,{method:'POST',
    headers:{'content-type':'application/json'},
    body:JSON.stringify({kind:document.getElementById('k').value,
@@ -174,7 +244,7 @@ _RING_JS = """
   .then(function(o){
    if(o.ok){f.innerHTML='';
     var w=document.createElement('div');w.className='seal';
-    w.innerHTML='<div class="badge">'+(o.j.ai_generated?'AI REPLY':'AUTOMATED')
+    w.innerHTML='<div class="badge">'+(o.j.ai_generated?S.ai:S.automated)
      +'</div><h1>'+esc(o.j.words||'')+'</h1>'
      +'<p class="note">'+esc(o.j.disclosure||'')+'</p>'
      /* Loud, and above the "Passed to" row rather than below it: the reply
@@ -183,12 +253,11 @@ _RING_JS = """
         for. */
      +(o.j.unreached_note?'<div class="never">'+esc(o.j.unreached_note)
        +'</div>':'')
-     +(o.j.handed_to?'<div class="row"><span>Passed to</span><span>'
+     +(o.j.handed_to?'<div class="row"><span>'+S.passedto+'</span><span>'
        +esc(o.j.handed_to)+'</span></div>':'');
     f.parentNode.appendChild(w);s.textContent='';}
-   else{b.disabled=false;s.textContent=(o.j&&o.j.detail)||'That did not go through.';}
-  }).catch(function(){b.disabled=false;
-   s.textContent='No connection \\u2014 try again in a moment.';});
+   else{b.disabled=false;s.textContent=(o.j&&o.j.detail)||S.failed;}
+  }).catch(function(){b.disabled=false;s.textContent=S.offline;});
  });
  function esc(t){var d=document.createElement('div');d.textContent=t;
   return d.innerHTML;}
@@ -196,88 +265,110 @@ _RING_JS = """
 """
 
 
-def seal_card_page(card: dict) -> str:
+def seal_card_page(card: dict, language: str = "en") -> str:
     """A carrier: what it is, what governs it, and how to hand it in.
 
     Renders only what ``beacons.seal_card`` returned. There is no second
     lookup here and nothing is fetched to decorate it, so this page cannot
     disclose something the card itself withheld.
     """
+    t = _t(language)
     ref = html.escape(card["reference"])
     held = card.get("held_by")
-    who = (f"This belongs to {html.escape(held)}." if held else
-           "Report it here and the holder will be told — you won't learn "
-           "whose it is, and you don't need to.")
+    # Translated whole and then filled, never a translated half joined to a
+    # name: word order around a possessive differs across these ten
+    # languages, and a sentence stitched from fragments reads as broken in
+    # most of them. The same lesson the console learned when half its
+    # untranslated backlog turned out to be sentence fragments.
+    who = (t("This belongs to {holder}.").format(holder=html.escape(held))
+           if held else html.escape(t(NO_HOLDER)))
     body = (
         '<div class="seal">'
         f'<div class="badge">{html.escape(card["badge"])}</div>'
-        "<h1>This is under custody</h1>"
+        f"<h1>{html.escape(t('This is under custody'))}</h1>"
         f'<p class="ref">{ref}</p>'
-        f"{_rows(card)}"
+        f"{_rows(card, language)}"
         f'<p class="note">{who}</p>'
-        '<div class="never">This code cannot open it, and neither can '
-        "whoever is holding it. It says the thing is sealed — never what is "
-        "inside.</div>"
+        f'<div class="never">{html.escape(t(CANNOT_OPEN))}</div>'
         '<form id="f">'
-        '<label for="w">Where is it?</label>'
+        f'<label for="w">{html.escape(t("Where is it?"))}</label>'
         '<input id="w" name="w" autocomplete="off" '
-        'placeholder="depot 3, Oakland">'
-        '<label for="c">How can you be reached? (optional)</label>'
-        '<input id="c" name="c" autocomplete="off" placeholder="name, phone">'
-        '<button id="go" type="submit">I found this</button>'
+        f'placeholder="{html.escape(t("depot 3, Oakland"), quote=True)}">'
+        '<label for="c">'
+        f'{html.escape(t("How can you be reached? (optional)"))}</label>'
+        '<input id="c" name="c" autocomplete="off" '
+        f'placeholder="{html.escape(t("name, phone"), quote=True)}">'
+        '<button id="go" type="submit">'
+        f'{html.escape(t("I found this"))}</button>'
         "</form>"
         '<div class="status" id="st"></div>'
         "</div>"
-        '<p class="foot">Your report is timestamped and hash-chained into '
-        "this carrier's chain of custody. It cannot be altered afterwards — "
-        "including by us.</p>"
+        f'<p class="foot">{html.escape(t(FOUND_FOOT))}</p>'
         "<script>"
-        + _FOUND_JS % {"endpoint": _js(f"/s/{card['reference']}/found")}
+        + _FOUND_JS % {"endpoint": _js(f"/s/{card['reference']}/found"),
+                       "strings": _strings(language, working="Recording…",
+                                           done="Recorded. Thank you.",
+                                           failed="That did not go through.",
+                                           offline="No connection — try "
+                                                   "again in a moment.")}
         + "</script>")
-    return _page("Sealed carrier", body)
+    return _page(t("Sealed carrier"), body, language)
 
 
-def gate_page(card: dict) -> str:
+def gate_page(card: dict, language: str = "en") -> str:
     """A facility gate: ring it, and see what answers.
 
     The reply renders in place rather than as a new page, because somebody
     standing at a door in the rain should not have to watch a navigation.
     """
+    t = _t(language)
     ref = html.escape(card["reference"])
+    # The option *values* stay English: they are the API's vocabulary and
+    # `ring` matches on them. Only what a person reads is translated.
+    kinds = (("delivery", "A delivery"), ("collection", "A collection"),
+             ("access", "Access to the site"), ("other", "Something else"))
+    options = "".join(
+        f'<option value="{value}">{html.escape(t(label))}</option>'
+        for value, label in kinds)
     body = (
         '<div class="seal">'
         f'<div class="badge">{html.escape(card["badge"])}</div>'
-        "<h1>Controlled facility</h1>"
+        f"<h1>{html.escape(t('Controlled facility'))}</h1>"
         f'<p class="ref">{ref}</p>'
-        f"{_rows(card)}"
+        f"{_rows(card, language)}"
         f'<p class="note">{html.escape(card.get("note") or "")}</p>'
         '<form id="f">'
-        '<label for="k">What are you here for?</label>'
+        f'<label for="k">{html.escape(t("What are you here for?"))}</label>'
         '<select id="k" name="k">'
-        '<option value="delivery">A delivery</option>'
-        '<option value="collection">A collection</option>'
-        '<option value="access">Access to the site</option>'
-        '<option value="other">Something else</option>'
+        f"{options}"
         "</select>"
-        '<label for="n">Anything else we should know?</label>'
-        '<textarea id="n" name="n" rows="3" '
-        'placeholder="who you are, who you were expecting to meet"></textarea>'
-        '<button id="go" type="submit">Ring</button>'
+        '<label for="n">'
+        f'{html.escape(t("Anything else we should know?"))}</label>'
+        '<textarea id="n" name="n" rows="3" placeholder="'
+        f'{html.escape(t("who you are, who you were expecting to meet"), quote=True)}'
+        '"></textarea>'
+        f'<button id="go" type="submit">{html.escape(t("Ring"))}</button>'
         "</form>"
         '<div class="status" id="st"></div>'
         "</div>"
-        '<p class="foot">Whoever answers cannot let anyone in — that decision '
-        "always belongs to a person. This exchange is recorded in the "
-        "facility's audit chain.</p>"
+        f'<p class="foot">{html.escape(t(GATE_FOOT))}</p>'
         "<script>"
-        + _RING_JS % {"endpoint": _js(f"/s/{card['reference']}/ring")}
+        + _RING_JS % {"endpoint": _js(f"/s/{card['reference']}/ring"),
+                      "strings": _strings(language, working="Ringing…",
+                                          ai="AI REPLY",
+                                          automated="AUTOMATED",
+                                          passedto="Passed to",
+                                          failed="That did not go through.",
+                                          offline="No connection — try again "
+                                                  "in a moment.")}
         + "</script>")
-    return _page("Controlled facility", body)
+    return _page(t("Controlled facility"), body, language)
 
 
-def page_for(card: dict) -> str:
+def page_for(card: dict, language: str = "en") -> str:
     """The right page for whatever the code was placed on."""
-    return gate_page(card) if card.get("gate") else seal_card_page(card)
+    return (gate_page(card, language) if card.get("gate")
+            else seal_card_page(card, language))
 
 
 # --------------------------------------------------------------------------- #
@@ -302,23 +393,26 @@ def page_for(card: dict) -> str:
 
 _RECEIVE_JS = """
 (function(){
- var tid=%(tid)s, box=document.getElementById('t'),
+ var S=%(strings)s, tid=%(tid)s, box=document.getElementById('t'),
      b=document.getElementById('go'), out=document.getElementById('out'),
      st=document.getElementById('st');
- // Fragment first, and cleared from the address bar immediately: the token is
- // one-shot, but a screenshot or a shoulder is not.
+ // Fragment first, and cleared from the address bar immediately. Not because
+ // the token is one-shot — it is not, and the copy below was corrected once
+ // already for saying so — but because a link that stays in the address bar
+ // is a link over a shoulder, in a screenshot, and in the next person's
+ // browser history.
  var frag=(location.hash||'').replace(/^#/,'');
  if(frag){box.value=decodeURIComponent(frag);
   history.replaceState(null,'',location.pathname);}
  b.addEventListener('click',function(){
   var tok=box.value.trim(); if(!tok)return;
-  b.disabled=true;st.textContent='Fetching\\u2026';
+  b.disabled=true;st.textContent=S.fetching;
   fetch('/transfers/'+encodeURIComponent(tid)+'/receive',
    {method:'POST',headers:{'x-receive-token':tok}})
   .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});})
   .then(function(o){
    b.disabled=false;
-   if(!o.ok){st.textContent=(o.j&&o.j.detail)||'That did not work.';return;}
+   if(!o.ok){st.textContent=(o.j&&o.j.detail)||S.failed;return;}
    st.textContent='';
    var j=o.j, wrap=document.getElementById('file');
    document.getElementById('fn').textContent=j.filename||'file';
@@ -344,35 +438,36 @@ _RECEIVE_JS = """
    a.href=URL.createObjectURL(blob);a.download=j.filename||'file';
    wrap.style.display='block';box.disabled=true;b.style.display='none';})
   .catch(function(){b.disabled=false;
-   st.textContent='No connection \\u2014 the link is still good, try again.';});
+   st.textContent=S.offline;});
  });
 })();
 """
 
 
-def receive_page(tid: str) -> str:
+def receive_page(tid: str, language: str = "en") -> str:
     """Where somebody collects a file that was sealed for them.
 
     They are not a tenant and never will be. Everything here works with the
-    receive token alone, which is what the route was built to accept.
+    receive token alone, which is what the route was built to accept — and,
+    because there is no tenant, the language comes from the reader's browser
+    rather than from a stored preference nobody here has ever set.
     """
+    t = _t(language)
     body = (
         '<div class="seal">'
-        "<h1>A file was sealed for you</h1>"
-        '<p class="note">It was sent through PDI under a compliance program. '
-        "Collecting it is recorded in the sender's chain of custody — that "
-        "record is the point of sending it this way, and it names the "
-        "collection, not you.</p>"
-        '<label for="t">Your receive token</label>'
+        f"<h1>{html.escape(t('A file was sealed for you'))}</h1>"
+        f'<p class="note">{html.escape(t(RECEIVE_NOTE))}</p>'
+        f'<label for="t">{html.escape(t("Your receive token"))}</label>'
         '<input id="t" type="text" autocomplete="off" spellcheck="false" '
-        'placeholder="from the message that sent you here">'
-        '<button id="go" type="button">Collect it</button>'
+        'placeholder="'
+        f'{html.escape(t("from the message that sent you here"), quote=True)}">'
+        f'<button id="go" type="button">{html.escape(t("Collect it"))}</button>'
         '<div class="status" id="st"></div>'
         '<div id="file" style="display:none">'
         '<h2 id="fn"></h2>'
         '<p class="note" id="pg"></p>'
         '<p class="note" id="cu"></p>'
-        '<a id="dl" class="dl">Download</a>'
+        f'<a id="dl" class="dl">{html.escape(t("Download"))}</a>'
         # Written after driving it rather than before. The first draft said
         # "the token was one-shot; this link will not fetch it again". A
         # second POST returns 200. The route's own docstring calls the token
@@ -381,10 +476,15 @@ def receive_page(tid: str) -> str:
         # that actually holds. Shipping the first version would have been this
         # page repeating the exact mistake the audit that produced it keeps
         # finding: copy asserting something the system does not do.
-        '<p class="note">Keep the link if you need it again — the token stays '
-        "good, and every collection is written into the sender's chain of "
-        "custody, so a second one is visible rather than silent.</p>"
+        f'<p class="note">{html.escape(t(RECEIVE_AGAIN))}</p>'
         "</div>"
         "</div>"
-        "<script>" + _RECEIVE_JS % {"tid": _js(tid)} + "</script>")
-    return _page("A file was sealed for you", body)
+        "<script>"
+        + _RECEIVE_JS % {
+            "tid": _js(tid),
+            "strings": _strings(language, fetching="Fetching…",
+                                failed="That did not work.",
+                                offline="No connection — the link is "
+                                        "still good, try again.")}
+        + "</script>")
+    return _page(t("A file was sealed for you"), body, language)
