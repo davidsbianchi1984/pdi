@@ -4,6 +4,17 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.28.0] — 2026-08-01
+
+Aligned with JIM-mini 0.28.0. The three products carry one version, so a
+release that only moves in one of them still moves in all three.
+
+Nothing in this product's own code changed this cut. JIM's console gained the
+localization layer whose absence was measured last release, and two of its
+guards broke on the way — both asking whether a sentence was in a screen's
+*file* when what mattered was whether the screen *says* it. Neither surface
+exists here in that form.
+
 ## [0.27.0] — 2026-08-01
 
 ### Kotlin's other interpolation
