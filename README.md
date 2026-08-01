@@ -204,6 +204,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.24.0** | **The page was not an oracle; the route it fronts was** — `POST /transfers/{tid}/receive` takes no credential and answered 404 for a fake id and 403 for a real one, so anybody could enumerate sealed transfers. Both now answer alike, and revoked still reaches the person holding the token. The four pages built for people who are not tenants speak ten languages, as do the six sentences a courier reads after pressing a button — including the one telling somebody at a gate not to wait for anyone to come out |
 | **0.23.0** | **The recipient had nowhere to put their token** — a file sealed under HIPAA or OSHA or CPNI arrives with a one-shot receive token, and the only thing calling that route was the sender's own *Receive it as the recipient* rehearsal button. There is now a page at `/r/{id}`, with the token in the URL fragment so the link survives mail and proxies without leaving an authorization in anybody's log, and a **Copy the recipient's link** control that resolves it before the sender sends it. Android and Windows can also read back the keys a bound robot sealed |
 | **0.22.0** | **Cut with the siblings** — the console backlog run to zero, and the fixes the audit turned up on the way |
 | **0.21.0** | **Cut with the siblings** — four door-audit rounds across the three products |

@@ -4,6 +4,82 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.24.0] — 2026-08-01
+
+Three rounds, one question: **when a stranger does reach the page built for
+them, can they read what it says — and does the route behind it keep the
+promise the page makes?**
+
+### The page was not an oracle; the route it fronts was
+
+`test_the_recipient_page_does_not_confirm_which_ids_exist` asserts that
+`GET /r/{tid}` never 404s, so the page cannot be used to ask whether a
+transfer id is real. True, worth keeping, and not where an id gets probed.
+
+`POST /transfers/{tid}/receive` takes **no credential of any kind** — that is
+the design, the token in the header is the authorization — and it answered
+404 `transfer not found` for an id that does not exist and 403 `invalid
+receive token` for one that does. Driven with no credential: a real id
+answers 403, an invented one answers 404. Anybody could walk ids and learn
+which sealed transfers exist, which for compliance-grade material is a
+disclosure before anything is opened.
+
+Both now answer identically, with one sentence true either way. Revoked stays
+distinguishable because `transfers.receive` matches the token hash before it
+looks at status, so 410 is unreachable without the real token — and somebody
+whose file was withdrawn should be told that rather than left with a refusal
+that reads like their own mistake.
+
+### Four pages for people who are not tenants, in one language
+
+Every localization path in this vault takes a `tenant_id`. PDI serves four
+pages to people who never will be one: a courier at a sealed carrier,
+somebody at a facility gate, whoever scans a code that resolves to nothing,
+and the recipient of a sealed transfer — whom `receive_transfer` itself
+describes as holding "no tenant credential". All four were English, whatever
+the reader's browser said.
+
+`negotiate()`, forty-five page strings in ten languages in a table of their
+own, and `lang`/`dir` on every page. Separate from `_STRINGS` because
+`localize` walks whole JSON responses swapping any string it recognises —
+safe for a long compliance note, not safe for the short words a page is made
+of. The holder line is a whole-sentence template filled after translation.
+Card values stay verbatim: on a custody card an invented fact is the whole
+problem.
+
+### A comment that was wrong about its own gap
+
+A note left on the found/ring script said the server's `note` and `detail`
+"come back through the response middleware, which is the tenant's language
+rather than the reader's", and used that to justify preferring them.
+
+It was not a decision. The middleware keys on the *calling* tenant and these
+calls have none, so those sentences were never localized into anything, by
+anyone, in any deployment. Six of them, all read after a button rather than
+on the page: the custody receipt, the decline on a repeat report, both
+wrong-sticker mistakes, the dead code, and `unreached_note` — the sentence
+that decides whether somebody stands outside a facility in the dark waiting
+for nobody. The agent's own words are left alone; that is what the facility
+chose to say.
+
+The recipient's three sentences went the same way — the refusal, the
+revocation and the custody line — and none of them is on a page, so the page
+checks could not see them.
+
+### One header, three products
+
+QRME, JIM and PDI each grew a `negotiate()` in a different round. Compared
+side by side for the first time, two rows disagreed. A conformance table now
+lives byte-identically in all three repositories, written as decisions rather
+than observations.
+
+### Fixed
+
+- `test_a_dead_code_renders_a_page_too` read the markup for `doesn't
+  resolve`; every sentence now goes through the same escaping the card's
+  tenant data always did, so the apostrophe ships as an entity. The assertion
+  asks what a person reads instead.
+
 ## [0.23.0] — 2026-08-01
 
 ### The recipient had nowhere to put their token
