@@ -337,10 +337,12 @@ def create_app() -> FastAPI:
         "on_demand" keeps English and POST /translate serves lookups."""
         if body.language not in i18n.SUPPORTED:
             raise HTTPException(
-                422, f"language must be one of {', '.join(i18n.SUPPORTED)}")
+                422, i18n.fill(i18n.MUST_BE_ONE_OF, field="language",
+                              choices=", ".join(i18n.SUPPORTED)))
         if body.mode not in i18n.MODES:
             raise HTTPException(
-                422, f"mode must be one of {', '.join(i18n.MODES)}")
+                422, i18n.fill(i18n.MUST_BE_ONE_OF, field="mode",
+                              choices=", ".join(i18n.MODES)))
         i18n.set_language(tenant["id"], body.language, body.mode)
         audit.record("language.set", tenant_id=tenant["id"], ref=body.language)
         return {"tenant_id": tenant["id"], "language": body.language,
@@ -600,7 +602,8 @@ def create_app() -> FastAPI:
             raise HTTPException(409, "robot has been unbound")
         if body.kind not in robotics.DATA_KINDS:
             raise HTTPException(
-                422, f"kind must be one of {', '.join(robotics.DATA_KINDS)}")
+                422, i18n.fill(i18n.MUST_BE_ONE_OF, field="kind",
+                              choices=", ".join(robotics.DATA_KINDS)))
         return robotics.ingest(tenant, row, body.kind, body.content, body.ref)
 
     @app.get("/robots/{rid}/data")
@@ -1350,7 +1353,8 @@ def create_app() -> FastAPI:
         or praise, with an optional 1–5 rating. Open to anyone."""
         if body.category not in _IMPROVE_CATEGORIES:
             raise HTTPException(
-                422, f"category must be one of {', '.join(_IMPROVE_CATEGORIES)}")
+                422, i18n.fill(i18n.MUST_BE_ONE_OF, field="category",
+                              choices=", ".join(_IMPROVE_CATEGORIES)))
         message = body.message.strip()
         if not message:
             raise HTTPException(422, "a message is required")
