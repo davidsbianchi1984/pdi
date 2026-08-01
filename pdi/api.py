@@ -13,6 +13,7 @@ import os
 import secrets
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, Response
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse
 
 from . import (app_connectors, assistant, audit, baa, beacons, bequests,
@@ -185,6 +186,23 @@ def create_app() -> FastAPI:
                                                exc: HTTPException):
         return i18n.refuse(request, exc.status_code,
                            {"detail": exc.detail}, exc.headers)
+
+    # The refusal FastAPI renders itself, which is the one a person meets most
+    # often: a mistyped form is a 422. `RequestValidationError` is neither an
+    # `HTTPException` nor a domain error, so it went out past all three
+    # handlers here — in English, and carrying pydantic's `input` key, which
+    # on a missing field is the entire submitted body handed straight back. In
+    # a vault that means a record value in plaintext, on the one path that
+    # never touches the encryption layer. See `pdi/i18n.py`.
+    #
+    # Routed through `i18n.refuse` like everything else, so the structural
+    # guard covers it. The rows are already translated by `validation_detail`;
+    # `localize_detail` leaves a list alone, so nothing is done twice.
+    @app.exception_handler(RequestValidationError)
+    async def _rejected_input_stays_with_its_sender(
+            request: Request, invalid: RequestValidationError):
+        return i18n.refuse(request, 422, {"detail": i18n.validation_detail(
+            invalid.errors(), i18n.refusal_language(request))})
 
     @app.exception_handler(crypto.CustomerKeyRequired)
     async def _key_required(request: Request, exc: crypto.CustomerKeyRequired):
