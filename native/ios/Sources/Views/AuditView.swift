@@ -11,6 +11,7 @@ struct AuditView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 Text("Audit").font(.title2.bold()).foregroundStyle(Theme.txt)
+                ProblemReportingCard()
                 Text("Every vault action is hash-chained. Verify recomputes the whole chain.")
                     .font(.footnote).foregroundStyle(Theme.t2)
 
