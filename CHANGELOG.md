@@ -4,6 +4,49 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.0] — 2026-08-01
+
+### The stranger's page was already right; the tenant's was not
+
+A tenant picks a language and PDI honours it: `_STRINGS` translates the
+console's chrome, `_PAGE_STRINGS` translates the recipient's server-rendered
+page against their browser's header, and the recipient's own two refusals —
+`RECEIVE_NO`, `RECEIVE_REVOKED` — are localized at the route that raises them,
+from the round that gave the recipient a door at all.
+
+The tenant's refusals were English. All sixty, on an account where the language
+picker had been answered and every other surface honoured it.
+
+    asked     is the stranger answered in their language
+    mattered  is the tenant
+
+The direction is the reverse of the usual one, and worth naming for that
+reason. Three rounds across these repositories found a stranger being served
+the language of somebody who *had* an account — the accountless screen, the
+care beacon, the objection form. Here the stranger's page was already correct
+and the account-holder's was not, because the stranger's page was built as a
+localization problem from its first line and the vault's own refusals were
+never looked at as text a person reads.
+
+**Three handlers, three shapes.** `create_app` built its responses three
+different ways: two hand-rolled `Response`s with `json.dumps`, one
+`JSONResponse`. None of that was wrong on its own, and it is exactly how a
+fourth arrives with a fourth shape and no translation — the sibling repository
+found the same drift at eight. All of them now return through `i18n.refuse`,
+and `test_every_handler_returns_through_the_one_place` reads `api.py`'s AST and
+fails the next one that does not.
+
+**Eleven** sentences translated into all nine languages: every credential and
+key check, which is what any route can raise. **49** more recorded in
+`pdi/tests/refusals_untranslated.txt` and ratcheted, with the 30 f-string
+refusals named in the header as a class the file does not cover, and the
+`PDI_ADMIN_TOKEN` message named as one that stays English by decision — its
+reader is an operator and its fix is the name of an environment variable.
+
+`tr_refusal` consults all three tables so `RECEIVE_NO` is not translated twice,
+and a test asserts it is not: two copies of one sentence are free to drift, and
+the reader who got the stale one would have no way to tell.
+
 ## [0.29.0] — 2026-08-01
 
 Aligned with QRME and JIM-mini 0.29.0. The three products carry one version,
