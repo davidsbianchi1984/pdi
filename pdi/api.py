@@ -21,7 +21,8 @@ from . import (app_connectors, assistant, audit, baa, beacons, bequests,
                compliance, connectors, crypto, db, dock as dock_mod, gate,
                hosting, i18n,
                intakes,
-               landing, mobile, notify, positions, retention, robotics, roster,
+               landing, mobile, notify, offline, positions, retention,
+               robotics, roster,
                terms as terms_mod, transfers, tutorial, vault)
 from .models import (AppCollect, AppConnect, AppInvoke, BAARecordIn,
                      BeaconFound, BeaconPlace, BeaconState,
@@ -111,7 +112,7 @@ RECEIVE_NO = "that token does not open anything here"
 RECEIVE_REVOKED = "this transfer has been revoked"
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="Private Data Infrastructure", version="0.30.6")
+    app = FastAPI(title="Private Data Infrastructure", version="0.30.7")
 
     @app.middleware("http")
     async def localize_response_notes(request, call_next):
@@ -226,6 +227,20 @@ def create_app() -> FastAPI:
     @app.exception_handler(crypto.CustomerKeyMismatch)
     async def _key_mismatch(request: Request, exc: crypto.CustomerKeyMismatch):
         return i18n.refuse(request, 403, {"detail": str(exc)})
+
+    @app.get("/offline/status")
+    def offline_status() -> dict:
+        """What this deployment can and cannot reach.
+
+        A vault whose whole promise is that data stays where it is put should
+        be able to say so out loud. The flag exists now; this is where an
+        operator, or an auditor standing behind them, reads the answer.
+
+        Open, like `/health`: the posture has to be confirmable before there
+        is a tenant token to confirm it with, and the answer names no tenant,
+        no record and no key.
+        """
+        return offline.status()
 
     @app.get("/health")
     def health() -> dict:

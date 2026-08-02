@@ -56,6 +56,19 @@ object ApiClient {
             if (trimmed.isNotBlank()) field = trimmed
         }
 
+
+    /** What the deployment can and cannot reach. Read-only: the posture is
+     *  set in the deployment's environment, not by somebody signed in. */
+    suspend fun offlineStatus(): OfflinePosture = withContext(Dispatchers.IO) {
+        val o = org.json.JSONObject(request("GET", "/offline/status", null, null))
+        val gs = o.optJSONArray("guarantees")
+        OfflinePosture(
+            o.optBoolean("offline"),
+            o.optBoolean("external_transmission_possible"),
+            o.optString("local_destinations_allowed"),
+            (0 until (gs?.length() ?: 0)).map { gs!!.getString(it) })
+    }
+
     private suspend fun request(
         path: String, method: String = "GET",
         body: JSONObject? = null, token: String,
@@ -382,3 +395,9 @@ object ApiClient {
         }
     }
 }
+
+/** What the deployment can and cannot reach. */
+data class OfflinePosture(val offline: Boolean,
+                          val externalTransmissionPossible: Boolean,
+                          val localDestinationsAllowed: String,
+                          val guarantees: List<String>)

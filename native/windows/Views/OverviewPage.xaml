@@ -19,6 +19,24 @@
                     Background="Transparent" FontSize="12"
                     Foreground="{StaticResource PdiBrandABrush}" />
 
+            <!-- What this deployment can and cannot reach. Read-only: the
+                 posture is set in the deployment's environment, not by
+                 somebody signed into the app. -->
+            <Border x:Name="OfflineCard" Background="{StaticResource PdiCardBrush}"
+                    BorderBrush="{StaticResource PdiLineBrush}" BorderThickness="1"
+                    CornerRadius="16" Padding="16" Visibility="Collapsed">
+                <StackPanel Spacing="6">
+                    <TextBlock x:Name="OfflineTitle" FontWeight="Bold" FontSize="14"
+                               Foreground="{StaticResource PdiTxtBrush}" TextWrapping="Wrap" />
+                    <TextBlock x:Name="OfflineState" FontWeight="Bold" FontSize="12"
+                               Foreground="{StaticResource PdiGreenBrush}" TextWrapping="Wrap" />
+                    <TextBlock x:Name="OfflineLocal" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource PdiT2Brush}" />
+                    <TextBlock x:Name="OfflineGuarantees" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource PdiT2Brush}" />
+                </StackPanel>
+            </Border>
+
             <StackPanel Orientation="Horizontal" Spacing="12">
                 <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
                         BorderThickness="1" CornerRadius="16" Padding="16" MinWidth="150">

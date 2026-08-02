@@ -158,6 +158,13 @@ public sealed class ApiClient
         if (!string.IsNullOrWhiteSpace(t)) _http.BaseAddress = new Uri(t);
     }
 
+
+    /// <summary>What the deployment can and cannot reach. Read-only: the
+    /// posture is set in the deployment's environment, not in the app.</summary>
+    public async Task<OfflinePosture> OfflineStatus() =>
+        await Send<OfflinePosture>(new HttpRequestMessage(HttpMethod.Get,
+            _base + "/offline/status"));
+
     private async Task<T> Send<T>(HttpRequestMessage req, string token)
     {
         req.Headers.Add("authorization", $"Bearer {token}");
@@ -466,3 +473,9 @@ public sealed class ApiClient
         }
     }
 }
+
+public record OfflinePosture(
+    [property: JsonPropertyName("offline")] bool Offline,
+    [property: JsonPropertyName("external_transmission_possible")] bool ExternalTransmissionPossible,
+    [property: JsonPropertyName("local_destinations_allowed")] string LocalDestinationsAllowed,
+    [property: JsonPropertyName("guarantees")] string[] Guarantees);

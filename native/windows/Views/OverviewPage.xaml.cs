@@ -34,8 +34,30 @@ public sealed partial class OverviewPage : Page
     private async void OnRefresh(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) =>
         await Load();
 
+    /// The posture the deployment can show an auditor. Its own try/catch:
+    /// a vault that cannot answer must not blank the offline card, which is
+    /// about a different question entirely.
+    private async System.Threading.Tasks.Task LoadOfflinePosture()
+    {
+        try
+        {
+            var p = await ApiClient.Shared.OfflineStatus();
+            OfflineTitle.Text = L10n.T("offline.title");
+            OfflineState.Text = p.Offline ? L10n.T("offline.on") : L10n.T("offline.off");
+            OfflineLocal.Text = p.LocalDestinationsAllowed;
+            OfflineGuarantees.Text = string.Join("\n", Array.ConvertAll(
+                p.Guarantees ?? Array.Empty<string>(), g => "\u2022 " + g));
+            OfflineCard.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+        }
+        catch (Exception)
+        {
+            OfflineCard.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+        }
+    }
+
     private async System.Threading.Tasks.Task Load()
     {
+        await LoadOfflinePosture();
         var s = AppState.Current;
         ApiClient.Shared.SetBase(s.BaseUrl);
         TokenText.Text = Masked(s.Token ?? "");

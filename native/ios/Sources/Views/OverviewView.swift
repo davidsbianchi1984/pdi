@@ -15,6 +15,7 @@ struct OverviewView: View {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 8) {
                     Circle().fill(Theme.green).frame(width: 8, height: 8)
+                    OfflinePostureCard()
                     Text("Vault unlocked").font(.caption.bold()).foregroundStyle(Theme.green)
                 }
                 Text("Your vault").font(.title.bold()).foregroundStyle(Theme.txt)

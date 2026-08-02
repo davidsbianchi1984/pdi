@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.pdi.vault.ApiClient
 import com.pdi.vault.ImproveState
 import com.pdi.vault.KeysInfo
+import com.pdi.vault.OfflinePosture
 import com.pdi.vault.L10n
 import com.pdi.vault.LanguageInfo
 import com.pdi.vault.RecordProvenance
@@ -234,6 +235,7 @@ fun OverviewScreen(vm: VaultViewModel) {
                 )
             }
         }
+        OfflinePostureCard(vm)
         ImproveCard(vm)
         AdminCard(vm)
         OutlinedButton(onClick = { vm.signOut() }, modifier = Modifier.fillMaxWidth(),
@@ -245,6 +247,43 @@ fun OverviewScreen(vm: VaultViewModel) {
 }
 
 // ---- Admin: key management (PDI_ADMIN_TOKEN, never the tenant token) ----
+
+/**
+ * What this deployment can and cannot reach.
+ *
+ * Offline mode was settable and unreadable: the flag existed, the guarantee
+ * was written in a docstring, and there was nowhere on a phone to see the
+ * answer.
+ *
+ *     asked     can the guarantee be turned on
+ *     mattered  can it be checked
+ *
+ * Read-only on purpose. The posture is set in the deployment's environment,
+ * not by somebody signed into the app — a switch here would imply otherwise.
+ */
+@Composable
+fun OfflinePostureCard(vm: VaultViewModel) {
+    var posture by remember { mutableStateOf<OfflinePosture?>(null) }
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.offlineStatus() }) { r -> posture = r.getOrNull() }
+    }
+    posture?.let { p ->
+        Card(colors = CardDefaults.cardColors(containerColor = Pdi.Card)) {
+            Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(L10n.t("offline.title", vm.language),
+                     style = MaterialTheme.typography.titleSmall)
+                Text(if (p.offline) L10n.t("offline.on", vm.language)
+                     else L10n.t("offline.off", vm.language),
+                     color = if (p.offline) Pdi.Green else Pdi.T2, fontSize = 12.sp,
+                     fontWeight = FontWeight.Bold)
+                Text(p.localDestinationsAllowed, color = Pdi.T2, fontSize = 11.sp)
+                p.guarantees.forEach { line ->
+                    Text("\u2022 " + line, color = Pdi.T2, fontSize = 11.sp)
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun AdminCard(vm: VaultViewModel) {

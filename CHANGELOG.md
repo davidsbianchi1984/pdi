@@ -4,6 +4,43 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.7] — 2026-08-02
+
+### Offline mode became readable
+
+`PDI_OFFLINE` refuses anything bound for another machine, and until this
+release a deployment could set it and had no way to show anyone the result.
+`GET /offline/status` now reports the posture — whether external transmission
+is possible, what counts as a local destination, what is guaranteed while the
+flag is on — and it is on screen: a panel in the console's Settings, and a card
+at the top of Overview in the iOS, Android and Windows shells.
+
+Read-only on purpose. The posture is set in the deployment's environment, not
+by somebody signed into the vault, and a switch there would imply otherwise.
+
+### A guard ported before this repo needed it
+
+`test_a_screen_nothing_opens.py` holds every screen a shell declares to being
+reachable from somewhere in that shell, and every call to that shell's
+localizer to the number of arguments the localizer actually declares.
+
+The finding is the sibling product's: a screen shipped into three shells with
+its wording in ten languages, unreachable in all three, and on two of them
+written against a signature it did not have.
+
+    asked     does the screen have its wording
+    mattered  does anything open the screen
+
+This repo's shells are clean of both. That is the point of porting it now —
+the four rounds before this one each found a guard covering one surface of
+four, and the surfaces here are the same three shells written the same way.
+
+What the port did surface here is smaller and left standing rather than fixed
+under cover of a round about something else: this product's Windows shell makes
+exactly two localizer calls, where its iOS and Android shells make more, and
+the reason is recorded on the guard rather than papered over by raising its
+floor.
+
 ## [0.30.6] — 2026-08-01
 
 ### The plan gate speaks the reader's language

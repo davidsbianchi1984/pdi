@@ -158,6 +158,13 @@ actor ApiClient {
     // token is optional because GET /languages is genuinely public — it is
     // the catalog a client reads before it has a tenant token at all. Sending
     // an empty "Bearer " there would be a malformed header, not a no-op.
+
+    /// Read-only on purpose: the posture is set in the deployment's
+    /// environment, not by somebody signed into the app.
+    func offlineStatus() async throws -> OfflinePosture {
+        try await request("/offline/status")
+    }
+
     private func request<T: Decodable>(_ path: String, method: String = "GET",
                                        body: [String: Any]? = nil,
                                        token: String? = nil) async throws -> T {
@@ -403,4 +410,16 @@ actor ApiClient {
             throw ApiError.http(said ?? "submit failed")
         }
     }
+}
+
+/// What the deployment can and cannot reach.
+///
+/// Offline mode was settable and unreadable: the flag existed, the guarantee
+/// was written in a docstring, and there was nowhere on a phone to see the
+/// answer. A guarantee nobody can check is a guarantee.
+struct OfflinePosture: Decodable {
+    let offline: Bool
+    let external_transmission_possible: Bool
+    let local_destinations_allowed: String
+    let guarantees: [String]
 }
