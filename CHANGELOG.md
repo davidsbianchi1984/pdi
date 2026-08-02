@@ -4,6 +4,18 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.3] — 2026-08-02
+
+### Cut alongside qrme and jim-mini
+
+No change in this product. The round is about what a model-backed product says
+when the model it was asked for does not answer, and PDI has no inference path
+of its own — it stores what the other two seal.
+
+Recorded rather than left silent: a release where all three move together and
+one of them is untouched should say which one and why, or the next reader has
+to diff three repositories to find out.
+
 ## [0.40.2] — 2026-08-02
 
 ### The refusals, finished
