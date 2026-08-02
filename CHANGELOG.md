@@ -4,6 +4,22 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.6] — 2026-08-02
+
+### Cut alongside qrme and jim-mini
+
+No change in this product. The round finishes localizing QRME's **accountless
+screen** — the one built for somebody who has found a synthetic profile of
+themselves and has no account, and therefore no profile language to take a
+setting from.
+
+This product's accountless readers — a bequest grantee, an intake recipient — meet it through the console rather than a native shell, and `test_the_vault_refuses_in_one_language.py` already holds that surface to the reader's language. No native screen here is built for somebody without a tenant.
+
+The shells here already resolve a device language and already send it as
+`accept-language`; what they do not have is a screen whose reader provably has
+no profile. Recorded rather than left silent: a version where all three move
+together and one is untouched should say which one and why.
+
 ## [0.40.5] — 2026-08-02
 
 ### Every door of theirs answered 401; the grantee's answered with the record
