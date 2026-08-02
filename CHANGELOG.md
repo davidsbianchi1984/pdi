@@ -4,6 +4,52 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.9] — 2026-08-02
+
+### An HTTP verb where a path goes
+
+This product's Android client declares its shared helper
+`request(path, method, body, token)`. The `offlineStatus` call added in
+0.30.7 passed them the other way round — `request("GET", "/offline/status", …)`
+— so the vault was asked for `base + "GET"` with the method set to a path.
+
+Both arguments are `String`. Nothing complained, there is no Kotlin toolchain
+in this build environment, and the offline posture card on Android has been
+reading a 404 since it shipped.
+
+    asked     does the call have the right number of arguments
+    mattered  does it have them in the right order
+
+Fixed, and guarded: `test_a_screen_nothing_opens.py` now reads the helper's own
+declared signature and refuses an HTTP verb in the path slot. It was found by
+the route-door guard rather than by anything looking for it, and only because a
+DELETE went missing from a backlog in the sibling repo.
+
+### Last release's untranslated counts were overstated
+
+0.30.8 measured how much of each native shell is English behind a translated
+tab bar. The extractor counted **any string literal containing a letter**,
+which counted format fragments like `"${dim}: ${n}%"` — whose only letters are
+variable names nobody reads — as English prose.
+
+    asked     does this literal contain letters
+    mattered  does this literal contain words a reader reads
+
+The ratchet caught it by firing on a card in the sibling product that had just
+been fully localized. Corrected figures, now in
+`native_screens_untranslated.txt`:
+
+| shell | was recorded | actually |
+|---|---|---|
+| iOS | 92 | **88** |
+| Android | 79 | **75** |
+| Windows | 138 | **119** |
+
+Restated percentages for this product: 9.3% / 10.7% / 4.0%. The finding is
+unchanged — the vault's tab bar reads *Bóveda*, *Auditoría*, *Transferencias*
+and the screens behind them are English — and the transfers surface is still
+the one that should come off these numbers first.
+
 ## [0.30.8] — 2026-08-02
 
 ### The tab bar answers in your language. Everything behind it does not.

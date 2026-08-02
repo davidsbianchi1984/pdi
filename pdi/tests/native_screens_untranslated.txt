@@ -23,6 +23,18 @@
 # The Windows count is the largest because that shell puts its wording in XAML
 # attributes, which cannot be re-read when the language changes.
 
-ios: 92
-android: 79
-windows: 138
+# **Corrected in 0.30.9.** The numbers first recorded here counted any string
+# literal containing a letter, which counted format fragments like
+# `"\(dim): \(n)%"` — whose only letters are variable names nobody reads — as
+# English prose. Roughly seventy-five of them across the nine shells.
+#
+#     asked     does this literal contain letters
+#     mattered  does this literal contain words a reader reads
+#
+# The ratchet caught it by firing on a card that had just been fully
+# localized, which is a measurement saying the opposite of the truth. The
+# counts below are what is actually unreadable.
+
+ios: 88
+android: 75
+windows: 119
