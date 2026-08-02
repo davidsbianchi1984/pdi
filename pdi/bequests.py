@@ -47,6 +47,23 @@ class BequestError(Exception):
 
 CONDITIONS = ("executor", "attestation")
 
+#: What a grantee is told when the vault behind their grant is gone.
+#:
+#: `vault.tenant_by_id` has carried ``AND deleted_at IS NULL`` since it was
+#: written, and its docstring says plainly that *"tenants (deleted_at set)
+#: resolve to None — their data is unreachable"*. This module resolved the
+#: tenant with its own `SELECT * FROM tenants WHERE id=?`, twice, without that
+#: clause — so when a tenant deleted their vault, every door of *theirs*
+#: answered 401 and an activated grant went on returning record bodies.
+#:
+#:     asked     can the tenant still reach their vault
+#:     mattered  can anyone still reach it
+#:
+#: On a wipe it was worse than open: the tenant row is deleted outright, so
+#: `dict(None)` raised and the grantee met a 500 instead of an answer.
+VAULT_CLOSED = ("this vault has been closed by its owner; the bequest cannot "
+                "be read")
+
 
 def _hash(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
@@ -178,13 +195,21 @@ def _in_scope(key: str, prefixes: list[str]) -> bool:
     return any(key.startswith(p) for p in prefixes)
 
 
+def _living_tenant(tenant_id: str) -> dict:
+    """The tenant behind a grant, through the same resolver every other door
+    uses. See `VAULT_CLOSED`."""
+    tenant = vault.tenant_by_id(tenant_id)
+    if tenant is None:
+        raise BequestError(410, VAULT_CLOSED)
+    return tenant
+
+
 def grant_keys(token: str, customer_key=None) -> dict:
     """What the grantee may see: keys within scope, and the owner's note."""
     row = _grant(token)
-    tenant = db.connect().execute(
-        "SELECT * FROM tenants WHERE id=?", (row["tenant_id"],)).fetchone()
+    tenant = _living_tenant(row["tenant_id"])
     prefixes = json.loads(row["key_prefixes"])
-    keys = [k for k in vault.list_keys(dict(tenant))
+    keys = [k for k in vault.list_keys(tenant)
             if _in_scope(k, prefixes)]
     audit.record("bequest_list", tenant_id=row["tenant_id"], ref=row["id"])
     return {"grantee_name": row["grantee_name"], "note": row["note"],
@@ -196,8 +221,7 @@ def grant_read(token: str, key: str, customer_key=None) -> dict:
     prefixes = json.loads(row["key_prefixes"])
     if not _in_scope(key, prefixes):
         raise BequestError(403, "that key is outside this bequest's scope")
-    tenant = dict(db.connect().execute(
-        "SELECT * FROM tenants WHERE id=?", (row["tenant_id"],)).fetchone())
+    tenant = _living_tenant(row["tenant_id"])
     # BYOK: "your keys, your walls" survives the owner. A customer-held key
     # is part of the estate — the grantee presents it or reads nothing.
     tenant["customer_key"] = customer_key

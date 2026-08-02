@@ -4,6 +4,63 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.5] — 2026-08-02
+
+### Every door of theirs answered 401; the grantee's answered with the record
+
+`vault.tenant_by_id` has carried its qualifier since it was written, and says
+so in its own docstring:
+
+```sql
+SELECT * FROM tenants WHERE id=? AND deleted_at IS NULL
+```
+
+> tenants (deleted_at set) resolve to None — their data is unreachable
+
+`bequests.py` did not use it. It resolved the tenant twice with its own
+`SELECT * FROM tenants WHERE id=?` — no qualifier, no `_scrub`. Driven end to
+end against a tenant who deleted their vault:
+
+    DELETE /tenants/{id}?mode=soft            200
+    GET /records/{key}      (owner's token)   401  access cut
+    GET /bequests/grant/keys                  200  ["jim/u1/medical/note"]
+    GET /bequests/grant/read?key=...          200  {"value": "a private note"}
+
+    asked     can the tenant still reach their vault
+    mattered  can anyone still reach it
+
+Soft-delete is the *recoverable* one — a tombstone with a window — which is
+exactly why nothing about it looks like an emergency, and why the door it left
+open stayed open quietly. A grantee holding an activated bequest read the
+plaintext of a vault whose owner had closed it.
+
+On `mode=wipe` it was worse than open: the tenant row is deleted outright, so
+the same line evaluated `dict(None)` and the grantee met a **500** rather than a
+refusal. The wipe also retired `tenant_tokens` while leaving the `bequests` rows
+themselves — a live grant hash against a tenant that no longer existed.
+`delete_tenant` says it removes "the tenant's records, scoped tokens, and the
+tenant row"; the bequest grant is a scoped token that lives in a different
+table.
+
+### Changed
+
+- Both tenant lookups in `bequests.py` go through `vault.tenant_by_id`, so the
+  path that answers a stranger asks the same question every other door asks.
+  A closed vault answers 410 with a sentence in the reader's language; a
+  restored one opens again.
+- `vault.delete_tenant` revokes the tenant's bequests and clears their grant
+  hashes on a wipe.
+- `pdi/tests/test_the_grant_outlived_the_vault.py` — nine tests, including a
+  structural one that fails any tenant lookup in the bequest path that ignores
+  the tombstone, wherever in the file it sits: the two that were wrong were in
+  two different functions, and naming them would have been the same mistake a
+  second time.
+
+The sibling products had the same class in their own idiom, and the same round
+landed in all three: in QRME a terminated profile was still being licensed and
+cloned through the buyer's token, and in JIM-mini an erased account's watch
+channel was still depositing readings.
+
 ## [0.40.4] — 2026-08-02
 
 ### Cut alongside qrme and jim-mini

@@ -1601,6 +1601,17 @@ _REFUSALS: dict[str, dict[str, str]] = {
         'hi': 'वह कुंजी इस विरासत के दायरे से बाहर है',
         'ar': 'ذلك المفتاح خارج نطاق هذه الوصية',
     },
+    'this vault has been closed by its owner; the bequest cannot be read': {
+        'es': 'esta bóveda ha sido cerrada por su propietario; el legado no se puede leer',
+        'fr': 'ce coffre a été fermé par son propriétaire ; le legs ne peut pas être lu',
+        'de': 'dieser Tresor wurde von seiner Inhaberin oder seinem Inhaber geschlossen; das Vermächtnis kann nicht gelesen werden',
+        'pt': 'este cofre foi encerrado pelo seu proprietário; o legado não pode ser lido',
+        'it': 'questo caveau è stato chiuso dal suo proprietario; il lascito non può essere letto',
+        'ja': 'この保管庫は所有者によって閉じられました。遺贈を読み取ることはできません',
+        'zh': '此保管库已被其所有者关闭，无法读取该遗赠',
+        'hi': 'यह तिजोरी इसके स्वामी द्वारा बंद कर दी गई है; यह विरासत पढ़ी नहीं जा सकती',
+        'ar': 'أُغلقت هذه الخزنة من مالكها؛ لا يمكن قراءة هذه الوصية',
+    },
     'this bequest was revoked by its owner': {
         'es': 'este legado fue revocado por su propietario',
         'fr': 'ce legs a été révoqué par son propriétaire',

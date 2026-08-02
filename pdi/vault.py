@@ -154,6 +154,15 @@ def delete_tenant(tenant_id: str, mode: str) -> dict | None:
         records = conn.execute(
             "DELETE FROM records WHERE tenant_id=?", (tenant_id,)).rowcount
         conn.execute("DELETE FROM tenant_tokens WHERE tenant_id=?", (tenant_id,))
+        # The scoped tokens went; the *bequest* grants did not. A wipe left
+        # rows naming a grantee, a shelf and a live grant hash against a
+        # tenant that no longer existed — a credential outliving both the data
+        # it opened and the account it was cut from. The docstring below said
+        # "scoped tokens" and meant the ones in `tenant_tokens`.
+        conn.execute(
+            "UPDATE bequests SET revoked_at=?, grant_hash=NULL"
+            " WHERE tenant_id=? AND revoked_at IS NULL",
+            (db.utcnow(), tenant_id))
         conn.execute("DELETE FROM tenants WHERE id=?", (tenant_id,))
         conn.commit()
         audit.record("tenant.wipe", tenant_id=tenant_id, ref=str(records))
