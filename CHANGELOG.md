@@ -4,6 +4,36 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.10] — 2026-08-02
+
+### The workflow round-trips and nothing walked the whole arc
+
+### The finding
+
+The cross-product smoke check boots QRME, JIM-mini and PDI together, seeds all
+three, and proves an exchange is sealed in the vault with its provenance
+readable back through JIM's custody window. It stopped there. The multi-phase
+arc that sits on top of that exchange — a goal handed to a synthetic
+specialist, worked over several phases, paused for a human at `confirm` — was
+never walked, so the vault's part in it was never driven either.
+
+    asked     does the workflow round-trip
+    mattered  does anything walk the whole arc
+
+### What driving it found
+
+The arc now runs to `confirm` in the same process as a live PDI tenant, with
+the specialist's `research` phase scoped by a grant rather than reading
+whatever it likes. That is the property this product exists for, and it is now
+exercised by a run rather than only by PDI's own unit tests: a delegated phase
+reads what a grant permits, and a revoked grant halts the workflow.
+
+### This release
+
+Version alignment: the three products are cut together, so one number names one
+combination of all three. No PDI code changed in this round; the check that
+drives it did.
+
 ## [0.40.9] — 2026-08-02
 
 ### The README said v0.18.0
