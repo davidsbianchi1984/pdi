@@ -4,6 +4,28 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.10] — 2026-08-02
+
+### Version alignment
+
+The three products are cut together at one version, and this release's work is
+in the siblings.
+
+**JIM-mini**: a QRME specialist could be reached from the monitoring path and
+not from the coach — the person whose watch noticed something got the better
+answer than the person who sat down and typed the problem out. That is now
+bridged, as an *offer* rather than an automatic route, because what would cross
+the tandem is what the person wrote rather than a sensor finding.
+
+**QRME**: its console language record was overstating itself by 117 rows of
+punctuation, kept under a stated rule — *"a separator somebody reads"* — that
+conflated *rendered* with *unreadable to a non-English speaker*. Corrected, and
+the reversal is written down rather than made quietly.
+
+This repo's own language record was corrected the same way one release ago, and
+its transfers surface remains the subset that should come off those numbers
+first.
+
 ## [0.30.9] — 2026-08-02
 
 ### An HTTP verb where a path goes
