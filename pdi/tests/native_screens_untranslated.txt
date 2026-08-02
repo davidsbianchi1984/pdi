@@ -1,0 +1,28 @@
+# English strings on the screens behind a translated tab bar, per shell.
+# Checked by test_the_tabs_are_translated_and_the_screens_are_not.py, and
+# ratcheted in both directions: the count may not rise, and the record may not
+# sit more than 20 above the real number.
+#
+# This is a measurement, not a claim. The console guard in the QRME repo
+# (test_the_nav_is_translated_and_nothing_behind_it_is.py) found forty-six
+# translated sidebar labels in front of 1577 English screens and made the same
+# choice: record it honestly rather than pretend.
+#
+#     asked     is the chrome localized
+#     mattered  is anything behind the chrome localized
+#
+# The smallest of the three products and the same defect. The vault's tab bar
+# reads *Bóveda*, *Auditoría*, *Transferencias*; the screens behind them are
+# English.
+#
+# Nothing has been carved out by name here yet. The candidate is the transfers
+# surface — the screens that move sealed records to another party — for the
+# reason the sibling used to pick its alarm strings: those are the ones where
+# not understanding changes what happens rather than merely what is known.
+#
+# The Windows count is the largest because that shell puts its wording in XAML
+# attributes, which cannot be re-read when the language changes.
+
+ios: 92
+android: 79
+windows: 138

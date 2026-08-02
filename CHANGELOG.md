@@ -4,6 +4,57 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.8] — 2026-08-02
+
+### The tab bar answers in your language. Everything behind it does not.
+
+The QRME repo has carried a console guard since those rounds —
+`test_the_nav_is_translated_and_nothing_behind_it_is.py` — which found
+forty-six translated sidebar labels in front of 1577 English screens, and said
+why that is worse than shipping no translations at all: a uniformly English app
+tells a Spanish reader the truth on the first screen; a translated nav in front
+of English screens tells them the opposite and then hands them English anyway.
+
+Three products ship three native shells each. All nine have a translated tab
+bar. Nobody had ever counted what is behind them.
+
+| product | iOS | Android | Windows |
+|---|---|---|---|
+| QRME | 2.4% | 3.8% | 0.6% |
+| JIM-mini | 13.0% | 14.2% | 9.7% |
+| **PDI** | **8.9%** | **10.2%** | **3.5%** |
+
+    asked     is the console's nav-vs-behind gap measured
+    mattered  is the phones' too
+
+The vault's tab bar reads *Bóveda*, *Auditoría*, *Transferencias*. The screens
+behind them are English. `native_screens_untranslated.txt` now records 92 iOS,
+79 Android and 138 Windows strings, ratcheted in both directions — the count
+may not rise, and the record may not sit more than twenty above the real
+number, so the ceiling cannot quietly become somewhere to drift back up into.
+
+### Nothing is carved out here yet, and the record says which surface should be
+
+The sibling product took its **alarm surface** off these numbers this release —
+fourteen strings on all three of its shells, by name rather than by count,
+chosen because that is where English is a hazard rather than a discourtesy.
+
+This repo has no equivalent subset yet. The record names the candidate rather
+than leaving the absence implicit: the **transfers** screens, which move sealed
+records to another party. Those are the ones where not understanding changes
+what happens rather than merely what is known.
+
+### Every slot is now checked to survive its translation
+
+A row whose English says `{name} was contacted` and whose German forgot the
+hole renders a sentence with the person's name missing from the middle of it.
+The string is present, the language is right, and the sentence is wrong.
+
+Where a shell's table holds no slotted row — which is all three here today —
+the check **skips loudly** rather than passing on an empty set. A check over
+nothing is the failure mode this audit is named after, and a skip says so in
+the run output where a green dot would not.
+
 ## [0.30.7] — 2026-08-02
 
 ### Offline mode became readable
