@@ -31,6 +31,8 @@ class _UrllibClient:
         h = {"content-type": "application/json"}
         if headers:
             h.update(headers)
+        from . import offline
+        offline.allow(self._base + path, "the vault API")
         req = urllib.request.Request(self._base + path, data=data, method=method, headers=h)
         try:
             with urllib.request.urlopen(req) as r:

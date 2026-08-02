@@ -49,6 +49,8 @@ class _UrllibClient:
 
     def _request(self, method: str, path: str, body=None) -> _Response:
         data = json.dumps(body).encode() if body is not None else None
+        from . import offline
+        offline.allow(self._base + path, "the QRME tandem")
         req = urllib.request.Request(
             self._base + path, data=data, method=method,
             headers={"content-type": "application/json"})
