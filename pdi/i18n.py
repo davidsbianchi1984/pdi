@@ -1915,6 +1915,49 @@ def validation_detail(errors, language: str) -> list[dict]:
 _WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
 
 
+#: The label the form shows, for the fields a person types into one.
+#:
+#: `validation_message` used to render pydantic's own field name, so a mistyped
+#: form said `display_name — Field required` while the form beside it said
+#: something a person could read, in ten languages.
+#:
+#:     asked     is the refusal a sentence in the reader's language
+#:     mattered  does it name the field the reader can see
+#:
+#: Server-side, where the sentence is composed, for the reason it is composed
+#: here at all: nine clients rendering it is nine chances to render it
+#: differently.
+#:
+#: The rows shared with the sibling products carry the sibling products'
+#: wording, byte for byte. One vocabulary across three products is one thing to
+#: keep right; three is three, and the drift shows up first in the language
+#: nobody here reads.
+#:
+#: A field with no row keeps its identifier — an identifier a reader can match
+#: to the form beats a word invented for them — and is recorded in
+#: `pdi/tests/field_labels_unmapped.txt`.
+_FIELD_LABELS: dict[str, dict[str, str]] = {
+    'content': {'en': 'Content', 'es': 'Contenido', 'fr': 'Contenu', 'de': 'Inhalt', 'pt': 'Conteúdo', 'it': 'Contenuto', 'ja': '内容', 'zh': '内容', 'hi': 'सामग्री', 'ar': 'المحتوى'},
+    'grantee_name': {'en': 'Grantee', 'es': 'Beneficiario', 'fr': 'Bénéficiaire', 'de': 'Begünstigte Person', 'pt': 'Beneficiário', 'it': 'Beneficiario', 'ja': '受贈者', 'zh': '受赠人', 'hi': 'अनुदानग्राही', 'ar': 'المستفيد'},
+    'handle': {'en': 'Handle', 'es': 'Identificador', 'fr': 'Identifiant', 'de': 'Kürzel', 'pt': 'Identificador', 'it': 'Handle', 'ja': 'ハンドル名', 'zh': '账号名', 'hi': 'हैंडल', 'ar': 'المعرّف'},
+    'key': {'en': 'Key', 'es': 'Clave', 'fr': 'Clé', 'de': 'Schlüssel', 'pt': 'Chave', 'it': 'Chiave', 'ja': 'キー', 'zh': '键', 'hi': 'कुंजी', 'ar': 'المفتاح'},
+    'key_prefixes': {'en': 'Key prefixes', 'es': 'Prefijos de clave', 'fr': 'Préfixes de clé', 'de': 'Schlüsselpräfixe', 'pt': 'Prefixos de chave', 'it': 'Prefissi di chiave', 'ja': 'キーの接頭辞', 'zh': '键前缀', 'hi': 'कुंजी उपसर्ग', 'ar': 'بادئات المفاتيح'},
+    'message': {'en': 'Message', 'es': 'Mensaje', 'fr': 'Message', 'de': 'Nachricht', 'pt': 'Mensagem', 'it': 'Messaggio', 'ja': 'メッセージ', 'zh': '消息', 'hi': 'संदेश', 'ar': 'الرسالة'},
+    'name': {'en': 'Name', 'es': 'Nombre', 'fr': 'Nom', 'de': 'Name', 'pt': 'Nome', 'it': 'Nome', 'ja': '名前', 'zh': '名称', 'hi': 'नाम', 'ar': 'الاسم'},
+    'note': {'en': 'Note', 'es': 'Nota', 'fr': 'Note', 'de': 'Notiz', 'pt': 'Nota', 'it': 'Nota', 'ja': 'メモ', 'zh': '备注', 'hi': 'टिप्पणी', 'ar': 'ملاحظة'},
+    'purpose': {'en': 'Purpose', 'es': 'Propósito', 'fr': 'Objectif', 'de': 'Zweck', 'pt': 'Finalidade', 'it': 'Scopo', 'ja': '目的', 'zh': '用途', 'hi': 'उद्देश्य', 'ar': 'الغرض'},
+    'topic': {'en': 'Topic', 'es': 'Tema', 'fr': 'Sujet', 'de': 'Thema', 'pt': 'Tema', 'it': 'Argomento', 'ja': 'トピック', 'zh': '主题', 'hi': 'विषय', 'ar': 'الموضوع'},
+}
+
+
+def field_label(name: str, language: str) -> str:
+    """The label a person sees beside this field, or its identifier."""
+    row = _FIELD_LABELS.get(name)
+    if not row:
+        return name
+    return row.get(language) or row.get(DEFAULT) or name
+
+
 def validation_message(rows: list[dict], language: str) -> str:
     """One sentence, from rows a person was never going to read.
 
@@ -1956,7 +1999,7 @@ def validation_message(rows: list[dict], language: str) -> str:
         if where and where[0] in _WHERE_MARKERS:
             where = where[1:]
         name = ".".join(tr_refusal(p, language) if p == UNRECOGNISED_FIELD
-                        else p for p in where)
+                        else field_label(p, language) for p in where)
         said = str(row.get("msg", ""))
         parts.append(f"{name} — {said}" if name else said)
     return "; ".join(p for p in parts if p)

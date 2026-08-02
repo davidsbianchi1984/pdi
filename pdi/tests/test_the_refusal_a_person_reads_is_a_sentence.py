@@ -54,6 +54,7 @@ guessed at.
 from __future__ import annotations
 
 import json
+import pathlib
 import re
 from pathlib import Path
 
@@ -92,7 +93,11 @@ def test_a_mistyped_form_answers_with_a_sentence(client):
         f"`detail` list: {refused.text[:200]}")
     assert not said.lstrip().startswith(("[", "{")), (
         f"the sentence is still a serialised structure: {said[:120]}")
-    assert "name" in said and "Field required" in said
+    # `Name`, not `name`: 0.40.8 gave the sentence the label the form shows.
+    # Matched case-insensitively so this asserts the *shape* — a field and a
+    # message, in prose — rather than pinning the wording, which is the label
+    # table's to decide and is checked there.
+    assert "name" in said.lower() and "Field required" in said
 
 
 def test_the_rows_are_still_there(client):
@@ -130,6 +135,21 @@ def test_the_sentence_says_no_more_than_the_rows(client):
     for row in body["detail"]:
         accounted.update(str(p) for p in row["loc"])
         accounted.add(row["msg"])
+    # ...and the field labels, which are constants in `i18n._FIELD_LABELS`.
+    #
+    # 0.40.8 gave the sentence a third source: the label the form shows, so a
+    # person reads "Nome do perfil" where the API says `display_name`. That is
+    # a real weakening of the rule this test enforces, and this test is what
+    # caught it — the rule is mechanical on purpose, so that nothing has to
+    # reason about whether a given source happens to be safe.
+    #
+    # Widened by *naming* the new source rather than by relaxing the match:
+    # a constant table cannot carry a submitted value, and
+    # `test_no_label_is_built_from_anything_but_a_constant` holds it to that.
+    # The rule still forbids the thing it was written for — composing the
+    # sentence from the body.
+    accounted.update(v for row in i18n._FIELD_LABELS.values()
+                     for v in row.values())
     for piece in re.split(r" — |; ", body["message"]):
         assert piece in accounted or piece.split(".")[-1] in accounted, (
             f"{piece!r} is in the sentence and in none of the rows, so the "
@@ -146,18 +166,35 @@ def test_the_sentence_arrives_in_the_readers_language(client, language):
     assert i18n.tr_refusal("Field required", language) in said
 
 
-def test_the_field_name_is_not_translated_and_that_is_deliberate(client):
+def test_the_sentence_is_wholly_in_one_language(client):
     """Half in one language and half in another is the failure
     `refusals_untranslated.txt` will not record its way out of.
 
-    `name` is the API's name for the field and is the same string in
-    every language. It is joined with an em dash rather than declined into the
-    sentence, so it reads as an identifier rather than as a word somebody
-    forgot to translate.
+    This used to be `test_the_field_name_is_not_translated_and_that_is_
+    deliberate`, and it was right at the time: the field name was the API's
+    identifier, the same string everywhere, joined with an em dash rather than
+    declined into the sentence, so it read as an identifier rather than as a
+    word somebody forgot to translate.
+
+    0.40.8 gave the fields a person types into a form the label the form shows,
+    in all ten languages — so the Portuguese sentence is now Portuguese on both
+    sides of the dash, which is what the rule was protecting. The half of the
+    decision that still stands is below: a field with **no** label keeps its
+    identifier, on purpose.
     """
     said = client.post("/deployments", json={"zzz": 1},
                        headers={"accept-language": "pt"}).json()["message"]
-    assert "name — " in said
+    assert " — " in said, said
+    assert "name" not in said.split(" — ")[0], (
+        f"the identifier is still in the sentence: {said!r}")
+
+
+def test_an_unlabelled_field_still_keeps_its_identifier(client):
+    """The half of the old decision that survives. An identifier a reader can
+    match to the form beats a word invented for them."""
+    said = i18n.validation_message(
+        [{"loc": ["body", "retention_days"], "msg": "x"}], "pt")
+    assert "retention_days" in said
 
 
 def test_a_body_that_is_not_an_object_still_says_something(client):
@@ -318,3 +355,30 @@ def test_the_client_list_is_the_whole_set():
     shells = {p.name for p in (REPO / "native").iterdir() if p.is_dir()}
     assert shells == set(SHELLS), (
         f"native/ holds {sorted(shells)}; SHELLS above covers {sorted(SHELLS)}")
+
+
+def test_no_label_is_built_from_anything_but_a_constant():
+    """What makes widening the rule above safe.
+
+    `test_the_sentence_says_no_more_than_the_rows` now accepts pieces that came
+    from `_FIELD_LABELS`. That is only sound while every value in it is a
+    literal — a table that interpolated anything could put a submitted value
+    into the sentence through the one door the leak check was just told to
+    trust.
+
+        asked     is the sentence composed only from the rows
+        mattered  is every source of it incapable of carrying the body
+    """
+    import ast as _ast
+    src = pathlib.Path(i18n.__file__).read_text(encoding="utf-8")
+    table = next(
+        (n for n in _ast.walk(_ast.parse(src))
+         if isinstance(n, _ast.AnnAssign)
+         and getattr(n.target, "id", "") == "_FIELD_LABELS"), None)
+    assert table is not None, "the label table is no longer a module constant"
+    bad = [_ast.dump(v)[:60] for v in _ast.walk(table.value)
+           if isinstance(v, (_ast.JoinedStr, _ast.Call, _ast.Name,
+                             _ast.Attribute, _ast.BinOp))]
+    assert not bad, (
+        "the label table is not all literals, so a value could reach the "
+        "sentence through it:\n    " + "\n    ".join(bad))
