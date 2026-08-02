@@ -9,6 +9,27 @@ enum L10n {
         table[key]?[lang] ?? table[key]?["en"] ?? key
     }
 
+    /// The language of somebody who has no account to take one from.
+    ///
+    /// `AppState.language` is read from the stored setting and defaults to
+    /// `"en"` until an account exists. Every sentence the backend composes on
+    /// a public route is chosen from `Accept-Language`, and this shell was
+    /// sending no such header — the phone had been carrying the answer in
+    /// `Locale.preferredLanguages` the whole time and nothing read it.
+    ///
+    /// Region dropped (`es-419` and `es-ES` are both `es`); anything the app
+    /// does not carry falls back to English rather than guessing.
+    static var deviceLanguage: String {
+        for tag in Locale.preferredLanguages {
+            let base = String(tag.split(separator: "-")[0]).lowercased()
+            if supported.contains(base) { return base }
+        }
+        return "en"
+    }
+
+    static let supported = ["en", "es", "fr", "de", "pt", "it", "ja", "zh",
+                            "hi", "ar"]
+
     private static let table: [String: [String: String]] = [
         "offline.title": ["en": "What this deployment can reach", "es": "Qué puede alcanzar esta instalación", "fr": "Ce que ce déploiement peut atteindre", "de": "Was diese Installation erreichen kann", "pt": "O que esta instalação pode alcançar", "it": "Cosa può raggiungere questa installazione", "ja": "この環境が接続できる範囲", "zh": "此部署可以连接到什么", "hi": "यह परिनियोजन किस तक पहुँच सकता है", "ar": "ما يمكن أن يصل إليه هذا النشر"],
         "offline.on": ["en": "Offline — nothing leaves this machine", "es": "Sin conexión — nada sale de esta máquina", "fr": "Hors ligne — rien ne quitte cette machine", "de": "Offline — nichts verlässt diesen Rechner", "pt": "Offline — nada sai desta máquina", "it": "Offline — nulla esce da questa macchina", "ja": "オフライン — このマシンから何も出ません", "zh": "离线 — 任何内容都不会离开这台机器", "hi": "ऑफ़लाइन — इस मशीन से कुछ भी बाहर नहीं जाता", "ar": "دون اتصال — لا شيء يغادر هذا الجهاز"],

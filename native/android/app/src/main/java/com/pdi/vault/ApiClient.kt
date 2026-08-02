@@ -76,6 +76,10 @@ object ApiClient {
         val conn = (URL(base + path).openConnection() as HttpURLConnection).apply {
             requestMethod = method
             setRequestProperty("content-type", "application/json")
+            // The language the reader actually speaks. Every sentence the
+            // backend composes on a public route is chosen from this
+            // header, and no native shell was sending it.
+            setRequestProperty("accept-language", L10n.deviceLanguage())
             setRequestProperty("authorization", "Bearer $token")
             connectTimeout = 8000; readTimeout = 8000
             if (body != null) {
@@ -368,6 +372,10 @@ object ApiClient {
         val conn = (URL("$base/intakes/$iid/submit").openConnection() as HttpURLConnection).apply {
             requestMethod = "POST"
             setRequestProperty("content-type", "application/json")
+            // The language the reader actually speaks. Every sentence the
+            // backend composes on a public route is chosen from this
+            // header, and no native shell was sending it.
+            setRequestProperty("accept-language", L10n.deviceLanguage())
             setRequestProperty("X-Submit-Token", submitToken)
             connectTimeout = 8000; readTimeout = 8000
             doOutput = true

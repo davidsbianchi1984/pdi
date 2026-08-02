@@ -1,5 +1,7 @@
 package com.pdi.vault
 
+import android.content.res.Resources
+
 /**
  * App-chrome localization: tab names and the most common actions, in every
  * language the backend supports. PDI's explanatory notes are localized
@@ -9,6 +11,30 @@ package com.pdi.vault
 object L10n {
     fun t(key: String, lang: String): String =
         table[key]?.let { it[lang] ?: it["en"] } ?: key
+
+    val supported = listOf("en", "es", "fr", "de", "pt", "it", "ja", "zh",
+                           "hi", "ar")
+
+    /**
+     * The language of somebody who has no account to take one from.
+     *
+     * `AppState.language` comes from the stored setting and is "en" until an
+     * account exists. Every sentence the backend composes on a public route is
+     * chosen from `Accept-Language`, and this shell was sending no such header
+     * — the phone has been carrying the answer in the system configuration all
+     * along.
+     *
+     * Region dropped; anything this app does not carry falls back to English
+     * rather than guessing.
+     */
+    fun deviceLanguage(): String {
+        val locales = Resources.getSystem().configuration.locales
+        for (i in 0 until locales.size()) {
+            val base = locales[i].language.lowercase()
+            if (supported.contains(base)) return base
+        }
+        return "en"
+    }
 
     private val table: Map<String, Map<String, String>> = mapOf(
         "offline.title" to mapOf("en" to "What this deployment can reach", "es" to "Qué puede alcanzar esta instalación", "fr" to "Ce que ce déploiement peut atteindre", "de" to "Was diese Installation erreichen kann", "pt" to "O que esta instalação pode alcançar", "it" to "Cosa può raggiungere questa installazione", "ja" to "この環境が接続できる範囲", "zh" to "此部署可以连接到什么", "hi" to "यह परिनियोजन किस तक पहुँच सकता है", "ar" to "ما يمكن أن يصل إليه هذا النشر"),

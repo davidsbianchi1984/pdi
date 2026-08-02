@@ -4,6 +4,49 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.41.0] — 2026-08-02
+
+### The language no client was sending
+
+PDI's most exposed reader has no account by design: the person on the other end
+of a handoff, opening an intake with a submit token and nothing else. The pages
+and refusals they meet are composed by the backend, sentence by sentence, and
+every one of those sentences is chosen from `Accept-Language`.
+
+**No native shell was sending that header.** The browser sends it without being
+asked, which is why the console looked correct and the recipient on a phone —
+the person this product exists to hand something to — was the one being
+answered in English.
+
+    asked     can the shell say it in the reader's language
+    mattered  does the reader's language ever reach the server
+
+Two things were missing. There was **no language to send**: each shell's
+`language` comes from the stored tenant setting and is `"en"` until a tenant
+exists. `L10n.deviceLanguage` (iOS), `L10n.deviceLanguage()` (Android) and
+`L10n.DeviceLanguage()` (Windows) now read `Locale.preferredLanguages`, the
+system configuration's locale list and `CurrentUICulture`, drop the region, and
+fall back to English rather than guessing. Then there was **somewhere to send
+it** — and in this product that is two places per client, not one: the shared
+request helper *and* the intake submit, which builds its own request because it
+carries a submit token instead of a bearer.
+
+That second path is the recipient's. A fix that had only covered the shared
+helper would have localized everything except the surface this round is about.
+
+### The guard reads every request path, not one of them
+
+`test_the_language_nobody_was_sending.py` first asked whether *any* header line
+carried the device resolver. Hardcoding `"en"` on the intake path passed it,
+because the shared helper was still right — the union hiding a surface inside
+the guard written to stop exactly that. It checks every line now.
+
+### Windows' localizer takes a language now
+
+`L10n.T(key)` read `AppState.Current.Language` and had no way to be told
+otherwise. A `T(key, lang)` overload closes the gap; iOS and Android already
+required the language as an argument.
+
 ## [0.40.0] — 2026-08-02
 
 > Staged as 0.30.10 and cut as **0.40.0**. The work below is unchanged; only
