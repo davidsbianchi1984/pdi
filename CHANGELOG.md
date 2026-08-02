@@ -4,6 +4,14 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.4] — 2026-08-02
+
+### Cut alongside qrme and jim-mini
+
+No change in this product. The round is about which surfaces may put words in a
+synthetic profile's mouth, and PDI generates nothing — it seals what the other
+two produce.
+
 ## [0.40.3] — 2026-08-02
 
 ### Cut alongside qrme and jim-mini
