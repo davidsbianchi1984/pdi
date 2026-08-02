@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.18.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.40.9** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -204,6 +204,24 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.40.9** | **The README said v0.18.0** — the first bold line of every README named a release twenty-two cuts old, on the line directly above one promising the three products are versioned and cut together; the history table underneath stopped at 0.30.6, leaving seventeen shipped releases in the changelog and off the page anybody reads. Both are now checked against `pyproject.toml` and the changelog |
+| **0.40.8** | **The refusal named the field the API calls it** — An earlier round took the 422 from `[{"type":"missing",...}]` to one sentence a person can read, in their own language. |
+| **0.40.7** | **The record that outlived the code** — `public_untranslated.txt` opened with a paragraph explaining that `Onboarding.tsx` — the screen every person in the world meets first — carried forty-odd English strings, that translating them was "its own round", and that a half-translated sign-up form would be worse than an English one. |
+| **0.40.6** | **Cut alongside qrme and jim-mini** — No change in this product. The round finishes localizing QRME's **accountless screen** — the one built for somebody who has found a synthetic profile of themselves and has no account, and therefore no profile language to take a setting from. |
+| **0.40.5** | **Every door of theirs answered 401; the grantee's answered with the record** — `vault.tenant_by_id` has carried its qualifier since it was written, and says so in its own docstring: `bequests.py` did not use it. |
+| **0.40.4** | **Cut alongside qrme and jim-mini** — No change in this product. The round is about which surfaces may put words in a synthetic profile's mouth, and PDI generates nothing — it seals what the other two produce. |
+| **0.40.3** | **Cut alongside qrme and jim-mini** — No change in this product. The round is about what a model-backed product says when the model it was asked for does not answer, and PDI has no inference path of its own — it stores what the other two seal. |
+| **0.40.2** | **The refusals, finished** — 0.24.0 translated the eleven refusals any route can raise and **wrote the rest down**. |
+| **0.40.1** | **The language no client was sending** — PDI's most exposed reader has no account by design: the person on the other end of a handoff, opening an intake with a submit token and nothing else. |
+| **0.40.0** | **Version alignment** — The three products are cut together at one version, and this release's work is in the siblings. |
+| **0.30.9** | **An HTTP verb where a path goes** — This product's Android client declares its shared helper `request(path, method, body, token)`. |
+| **0.30.8** | **The tab bar answers in your language. Everything behind it does not.** — The QRME repo has carried a console guard since those rounds — `test_the_nav_is_translated_and_nothing_behind_it_is.py` — which found forty-six translated sidebar labels in front of 1577 English screens, and said why that is worse than ship |
+| **0.30.7** | **Offline mode became readable** — `PDI_OFFLINE` refuses anything bound for another machine, and until this release a deployment could set it and had no way to show anyone the result. |
+| **0.29.0** | **0.29.0** — Aligned with QRME and JIM-mini 0.29.0. The three products carry one version, so a release that only moves in two of them still moves in all three. |
+| **0.28.0** | **0.28.0** — Aligned with JIM-mini 0.28.0. The three products carry one version, so a release that only moves in one of them still moves in all three. |
+| **0.27.0** | **Kotlin's other interpolation** — `_spans` routes every `${`-carrying pattern to a brace counter, which is right for the nested-template problem it was written for and blind to the *other* form the same language uses. |
+| **0.26.0** | **Three copies of one guard, three different blind spots** — `clientpaths.py` says of itself, in its own docstring, that it is *byte- identical in qrme, jim-mini and pdi*. |
+| **0.25.0** | **0.25.0** — Aligned with QRME 0.25.0. The three products carry one version, so a release that only moves in one of them still moves in all three — otherwise a support question about "0.25" has three different answers depending on which app is being asked about. |
 | **0.30.6** | **The plan gate speaks the reader's language** — carried from the sibling audit. PDI has no plan gate, so there is no sentence of this shape here; the mechanism that keeps a translated frame from closing around an untranslated slot is already in place, and this release aligns the version with the two products where the sentence exists |
 | **0.30.5** | **The plan gate said HTTP 402** — carried from the sibling audit: `detail` is a string for most refusals, a dict for a structured one and a list for a 422, and only the list had been given a top-level `message`. Every refusal now carries the sentence in one place whatever shape the structure has, and `localize_detail` reaches the level the handler actually wraps to — so PDI's first structured refusal cannot ship untranslated the way the sibling's did |
 | **0.30.4** | **A refusal whose English is not a constant** — f-string refusals had been named as uncovered for three releases, because a sentence built by interpolation has no English source to key on at the moment it is raised. `i18n.Templated` carries the template and its slots beside the finished English text; 4 converted. The slot is the whole design: whitespace means prose, and a prose slot keeps the entire refusal English rather than producing a sentence half in each language |
