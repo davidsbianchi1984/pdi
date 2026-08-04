@@ -4,6 +4,16 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.42.5] — 2026-08-04
+
+### Version alignment
+
+The three products are cut together, so one number names one combination
+of all three. No PDI code changed — QRME grew standalone shops and JIM
+grew the buyer's side in this round; the purchase histories those buyers
+keep live in JIM's own tables, exactly as this vault's custody rules
+would have demanded had anyone asked.
+
 ## [0.42.4] — 2026-08-04
 
 ### Version alignment
