@@ -4,6 +4,14 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.42.4] — 2026-08-04
+
+### Version alignment
+
+The three products are cut together, so one number names one combination
+of all three. No PDI code changed — JIM's money guardian gained its
+native doors on iOS, Android and Windows in this round, and the account numbers those phones register still land here, sealed, or nowhere.
+
 ## [0.42.3] — 2026-08-04
 
 ### The last thirteen unaudited screens

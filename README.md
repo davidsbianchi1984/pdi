@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.42.3** ([changelog](CHANGELOG.md) ·
+**Current release: v0.42.4** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -214,6 +214,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.42.4** | **Version alignment** — JIM's money guardian gained its native doors; the account numbers those phones register still land here, sealed, or nowhere |
 | **0.42.3** | **The last thirteen unaudited screens** — five PDI components sat `unaudited` since the manifest was seeded. `Records` was only unlabelled (it heads itself "Vault", screens 2+3); Continuity, Operations, Positions and Settings had never been drawn. Screens **53-56** are the drawings, ceilings at zero, `undrawn=0` true at last |
 | **0.42.2** | **Version alignment** — the round the vault was built for: JIM's money guardian seals account, routing and exchange credentials here and refuses to store them anywhere else |
 | **0.42.1** | **Version alignment** — cut with QRME's starter dossiers; no PDI code changed |
