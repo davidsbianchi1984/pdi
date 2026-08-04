@@ -4,6 +4,16 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.42.0] — 2026-08-04
+
+### Version alignment
+
+The three products are cut together, so one number names one combination of
+all three. No PDI code changed in this round: QRME gained desk service
+connections (sessions, consent-first access offers, tokens that die with
+the link), and JIM-mini's monitor door now carries the device's own
+signal-quality report to the grader.
+
 ## [0.41.0] — 2026-08-02
 
 ### The workflow round-trips and nothing walked the whole arc
