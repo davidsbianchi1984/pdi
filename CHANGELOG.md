@@ -4,6 +4,15 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.42.2] — 2026-08-04
+
+### Version alignment
+
+The three products are cut together, so one number names one combination
+of all three. No PDI code changed — but this is the round the vault was
+built for: JIM's new money guardian seals account numbers, routing numbers
+and exchange keys here, and refuses to store them anywhere else.
+
 ## [0.42.1] — 2026-08-04
 
 ### Version alignment

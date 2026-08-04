@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.42.1** ([changelog](CHANGELOG.md) ·
+**Current release: v0.42.2** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -204,6 +204,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.42.2** | **Version alignment** — the round the vault was built for: JIM's money guardian seals account, routing and exchange credentials here and refuses to store them anywhere else |
 | **0.42.1** | **Version alignment** — cut with QRME's starter dossiers; no PDI code changed |
 | **0.42.0** | **Version alignment** — cut with QRME's desk service connections and JIM's signal-quality door fix; no PDI code changed |
 | **0.41.0** | **The workflow round-trips and nothing walked the whole arc** — `workflows.py` names three properties a delegated multi-phase goal has to keep, each unit-tested on its own side of the wire; the one check that boots all three products drove a single exchange and stopped, never calling `start_workflow`, `advance` or `specialist_tasks` across the boundary. Driving it surfaced the Pro gate and the owner's opt-in as steps rather than surprises, and the arc now walks research → draft → send and pauses at `confirm` |
