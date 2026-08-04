@@ -4,6 +4,30 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.43.0] — 2026-08-04
+
+### Version alignment
+
+The three products are cut together, so one number names one combination
+of all three. QRME's phones learned to staff a desk, trade in the market
+and sign an exchange. Nothing new crosses into the vault.
+
+### The guard learns to read a Swift verb
+
+QRME's round exposed a rule this repo shares: the iOS route audit read
+only the `request(` helper, so a URL built with `appendingPathComponent`
+and sent through a raw `URLRequest` was invisible to it. This shell has
+exactly one such call — `submitIntake`, the door an invited sender walks
+through — and the audit had it listed as work to do.
+
+    asked     does the shell call the transport helper for this route
+    mattered  does the shell fetch this route at all
+
+The rule arrives with its premise: the verb is read from `httpMethod`,
+never assumed, because QRME's first draft assumed GET and its own suite
+falsified that within the hour. `POST /intakes/{iid}/submit` comes off
+the ios doorless record — a row that was never work at all.
+
 ## [0.42.9] — 2026-08-04
 
 ### Version alignment

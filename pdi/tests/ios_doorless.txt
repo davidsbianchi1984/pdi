@@ -71,7 +71,6 @@ POST /contributions
 POST /deployments
 POST /gate/pages/{pid}/retry
 POST /gate/roster
-POST /intakes/{iid}/submit
 POST /keys/reseal
 POST /positions
 POST /restore
