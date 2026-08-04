@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSession } from "./store";
 import { ProblemNotice } from "./ProblemNotice";
 import { VersionGuard } from "./VersionGuard";
+import { VaultLight } from "./VaultLight";
 import { Overview } from "./screens/Overview";
 import { Tenants } from "./screens/Tenants";
 import { Records } from "./screens/Records";
@@ -88,6 +89,9 @@ export function App() {
         {tab === "guiding" && <Guiding />}
         {tab === "settings" && <Settings />}
       </main>
+      {/* Part of the shell, on every screen — the vault's one light,
+          minimizable, and never silently absent. */}
+      <VaultLight />
     </div>
   );
 }

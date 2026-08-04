@@ -4,6 +4,25 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.42.8] — 2026-08-04
+
+### Version alignment
+
+The three products are cut together, so one number names one
+combination of all three. No PDI code changed — QRME and JIM audited
+their field-label records against their consoles' actual forms and
+labelled the 161 fields the forms had started asking for.
+
+### The vault gets its light
+
+The sibling consoles' always-on lights widget, sized down to what this
+product honestly has to glance at: one lamp, bottom-left, green while
+the vault answers — with its version beside it, so a stale backend is
+visible at a glance. Reads `/health`, the open route the version guard
+already reads, so nothing new owes a door. Minimizable to a dot, and
+unreachable is a state it shows: an unlit dot that retries on press,
+never a silent absence.
+
 ## [0.42.7] — 2026-08-04
 
 ### Version alignment

@@ -166,3 +166,21 @@ label.check input { width: auto; margin-top: 0; }
 .problem-notice pre { margin-top: 10px; max-height: 260px; overflow: auto;
   background: #0d1729; padding: 10px; border-radius: 8px; }
 .pn-yes { font-weight: 700; }
+
+
+/* The vault's light — one lamp, bottom-left, minimizable to a dot.
+   Unreachable is the unlit gray state, never a silent absence. */
+.vault-light { position: fixed; left: 22px; bottom: 22px; z-index: 40;
+  display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+  border-radius: 24px; border: 2px solid var(--line);
+  background: #10182a; box-shadow: 0 10px 28px rgba(0,0,0,.5); }
+.vl-lamp { width: 12px; height: 12px; border-radius: 50%; flex: none;
+  box-shadow: 0 0 8px currentColor; }
+.vl-text { font-size: 12px; color: var(--muted, #93a3c0); }
+.vl-min { background: none; border: 0; color: var(--muted, #93a3c0);
+  font-size: 16px; line-height: 1; cursor: pointer; padding: 0 2px; }
+.vl-dot { position: fixed; left: 22px; bottom: 22px; width: 40px;
+  height: 40px; border-radius: 50%; z-index: 40; cursor: pointer;
+  border: 2px solid rgba(255,255,255,0.25);
+  box-shadow: 0 8px 24px rgba(0,0,0,.45); }
+.vl-dot-off { background: #2c3a52; border-color: rgba(255,255,255,0.35); }
