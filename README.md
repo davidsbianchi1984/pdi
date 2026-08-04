@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.43.1** ([changelog](CHANGELOG.md) ·
+**Current release: v0.43.2** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -214,6 +214,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.43.2** | Version alignment with QRME's crowd/couch/loan round |
 | **0.43.1** | Version alignment with the QRME inbox round — nothing new crosses into the vault |
 | **0.43.0** | **Version alignment** — QRME's phones learned to do business; nothing new crosses into the vault |
 | **0.42.9** | **Version alignment** — QRME's social surface reached its phones; nothing new crosses into the vault |
