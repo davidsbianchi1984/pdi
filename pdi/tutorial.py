@@ -228,6 +228,35 @@ LESSONS: tuple[dict, ...] = (
          screens=(52,),
          click="Ask it where the audit log is, then ask it what is in a "
                "record."),
+    dict(key="continuity", chapter="Running it", title="Continuity",
+         what="A bequest written down: an heir, a scope, a waiting period. "
+              "Activation is the operator's own act and it waits out the "
+              "delay; redeeming is the heir's, with their own token. The "
+              "suite gateway sits beside it with a ceiling — who is on "
+              "shift, and a record of everything it sent.",
+         screens=(53,),
+         click="Write a bequest, then read what activation will not skip."),
+    dict(key="operations", chapter="Running it", title="Operations",
+         what="The coordination journal: plans QRME sealed into this "
+              "tenant's vault, readable in place and never exported to be "
+              "read. Every read here goes through the ordinary audited "
+              "path, so the chain carries these like any others.",
+         screens=(54,),
+         click="Open an entry and find its read in the audit log."),
+    dict(key="positions", chapter="Running it", title="Positions",
+         what="The role questionnaire — industry typed in your own words, "
+              "daily workflow, what a decision needs and who oversees it. "
+              "The assistant blueprint is built from those answers rather "
+              "than from a template picked by industry.",
+         screens=(55,),
+         click="Fill one in and read the blueprint it produces."),
+    dict(key="settings", chapter="Running it", title="Settings",
+         what="The console's own plumbing: which backend it faces, an admin "
+              "token held for this session only, a QR that carries the "
+              "session to a phone, and the way out — tokens dropped, "
+              "nothing kept.",
+         screens=(56,),
+         click="Scan the QR and watch the same session open on a phone."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(lesson["chapter"] for lesson in LESSONS))

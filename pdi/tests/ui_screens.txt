@@ -1,4 +1,4 @@
-# status: backlog — 16 rows
+# status: floor — 16 rows
 #
 # Which console surface each screen drawing depicts.
 #
@@ -22,26 +22,28 @@
 # `undrawn` is a ratchet: the count may fall and must never rise. Adding a
 # surface without a drawing therefore fails, which is the whole point.
 #
-# ceiling: undrawn=0 unaudited=5
+# ceiling: undrawn=0 unaudited=0
 #
-# `unaudited` is the honest seed. These components predate the file and their
-# screens were not confirmed one by one — matching a component name against a
-# screen title resolved only ten of twenty-four, because titles are written for
-# the person using the app ("How Should They Work?") and component names are
-# written for the person editing it ("Delegate"). Guessing the rest would have
-# produced a mapping that looked complete and was not. `unaudited` is also
-# ratcheted downward, and is not a status a new component may use.
+# `unaudited` was the honest seed — components that predated the file, their
+# screens never confirmed one by one. 0.42.3 audited the last five by reading
+# each component's own heading against the gallery's titles: `Records` heads
+# itself "Vault" and was only unlabelled (screens 2 and 3 draw it), and the
+# other four — Continuity, Operations, Positions and Settings — had never
+# been drawn at all, four surfaces iterated on for versions with nothing in
+# the gallery. 53-56 are those drawings, and `undrawn=0` is true for the
+# first time since the column was seeded. `unaudited` is not a status a new
+# component may use.
 
 Audit           8,40
 Keys            24
 Overview        1
 Tenants         5
 
-Continuity      unaudited
-Operations      unaudited
-Positions       unaudited
-Records         unaudited
-Settings        unaudited
+Continuity      53
+Operations      54
+Positions       55
+Records         2,3
+Settings        56
 
 Problems        46
 ProblemNotice   47

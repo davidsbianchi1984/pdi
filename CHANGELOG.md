@@ -4,6 +4,25 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.42.3] — 2026-08-04
+
+### The last thirteen unaudited screens
+
+Five components had sat `unaudited` in `ui_screens.txt` since the manifest
+was seeded. `Records` heads itself "Vault" and was only unlabelled —
+screens **2** and **3** draw it — and the other four had never been drawn
+at all: Continuity, Operations, Positions and Settings, each iterated on
+for versions with nothing in the gallery.
+
+    asked     is every component accounted for in the manifest
+    mattered  does every component have a drawing
+
+Screens **53 Continuity** (bequests and the gateway's ceiling), **54
+Operations** (the sealed coordination journal, readable in place), **55
+Positions** (the role questionnaire and its assistant blueprint) and **56
+Settings** close the column. Both ceilings now read zero and the slack
+test keeps them there.
+
 ## [0.42.2] — 2026-08-04
 
 ### Version alignment

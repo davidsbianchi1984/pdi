@@ -1552,6 +1552,61 @@ SCREENS = [
         dict(icon="person", color="green", k="The corner pane",
              s="counts only, never contents"),
     ]),
+    # 53-56 close the manifest's `unaudited` column. All four surfaces had
+    # shipped and been iterated on with nothing in the gallery — `unaudited`
+    # was covering for `undrawn=0` being false. Each drawing leads with the
+    # rule its component leads with, so the audit that matches headings to
+    # titles resolves them by reading.
+    dict(num=53, title="Continuity", sub="Bequests, and the gateway",
+         accent="amber", tab=0, cards=[
+        dict(icon="gift", color="amber", k="A bequest is written",
+             s="heir, scope, waiting period", pill=("HELD", "warn")),
+        dict(icon="clock", color="cyan", k="Activation is an act",
+             s="the operator's, and it waits"),
+        dict(icon="shieldok", color="green", k="Redeeming is the heir's",
+             s="their own token, their half"),
+        dict(icon="eye", color="brand", k="The gateway's ceiling",
+             s="who is on shift, what it sent"),
+    ]),
+    # 54: a view, never a side door — the journal's one rule.
+    dict(num=54, title="Operations", sub="Coordination, sealed here",
+         accent="brand", tab=0, cards=[
+        dict(icon="doc", color="brand", k="QRME seals plans in",
+             s="org, departments, the goal", pill=("SEALED", "good")),
+        dict(icon="eye", color="cyan", k="Readable in place",
+             s="never exported to be read"),
+        dict(icon="list", color="amber", k="Every read audited",
+             s="the chain carries these too"),
+        dict(icon="lock", color="green", k="The tenant's own key",
+             s="like everything else here"),
+    ]),
+    # 55: the questionnaire is the product — the blueprint is built from
+    # the operator's own answers, not a template picked by industry.
+    dict(num=55, title="Positions", sub="Your role, mapped to an AI",
+         accent="cyan", tab=0, cards=[
+        dict(icon="pen", color="cyan", k="Role and industry",
+             s="you type it, no picklist"),
+        dict(icon="list", color="brand", k="Daily workflow",
+             s="tracking, drafting, reports"),
+        dict(icon="sliders", color="amber", k="Decisions and oversight",
+             s="what it may suggest, to whom"),
+        dict(icon="doc", color="green", k="Assistant blueprint",
+             s="built from your answers",
+             pill=("SAVED", "good")),
+    ]),
+    # 56: the console's own plumbing, drawn honestly — a backend URL, an
+    # admin token, a QR to carry the session to a phone, and the way out.
+    dict(num=56, title="Settings", sub="Connection, phone, session",
+         accent="silver", tab=0, cards=[
+        dict(icon="link", color="cyan", k="Backend base URL",
+             s="which vault this console faces"),
+        dict(icon="lock", color="amber", k="Admin token",
+             s="held for this session only"),
+        dict(icon="grid", color="brand", k="Open on your phone",
+             s="a QR, the same session"),
+        dict(icon="person", color="green", k="Sign out",
+             s="tokens dropped, nothing kept"),
+    ]),
 ]
 
 
