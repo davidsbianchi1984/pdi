@@ -125,8 +125,10 @@ export function Guiding() {
       <div className="card">
         <h3>Ask it</h3>
         <div className="row">
-          <input value={question} placeholder="Where is the audit log?"
-                 onChange={(e) => setQuestion(e.target.value)} />
+          <label>Question
+            <input value={question} placeholder="Where is the audit log?"
+                   onChange={(e) => setQuestion(e.target.value)} />
+          </label>
           <button className="primary" disabled={busy || !question.trim()}
                   onClick={() => run(async () => {
                     setAnswer(await api.askConsole(
@@ -203,15 +205,17 @@ export function Guiding() {
       <div className="card">
         <h3>Words</h3>
         <div className="row">
-          <select value={language}
-                  onChange={(e) => setLanguage(e.target.value)}>
-            {languages.map((l) => (
-              <option key={l.code} value={l.code}>
-                {l.label}
-                {l.notes_translated ? "" : " (notes stay in English)"}
-              </option>
-            ))}
-          </select>
+          <label>Language
+            <select value={language}
+                    onChange={(e) => setLanguage(e.target.value)}>
+              {languages.map((l) => (
+                <option key={l.code} value={l.code}>
+                  {l.label}
+                  {l.notes_translated ? "" : " (notes stay in English)"}
+                </option>
+              ))}
+            </select>
+          </label>
           <button className="primary" disabled={busy || !token}
                   onClick={() => run(() => api.setLanguage(
                     { language }, token!))}>Use this</button>
@@ -220,8 +224,10 @@ export function Guiding() {
           </span>
         </div>
         <div className="row">
-          <input value={text} placeholder="A note to translate"
-                 onChange={(e) => setText(e.target.value)} />
+          <label>Text
+            <input value={text} placeholder="A note to translate"
+                   onChange={(e) => setText(e.target.value)} />
+          </label>
           <button disabled={busy || !text.trim() || !token}
                   onClick={() => run(async () => {
                     setTranslated(await api.translate(

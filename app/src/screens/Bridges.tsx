@@ -79,15 +79,24 @@ export function Bridges() {
       <div className="card">
         <h3>Connected accounts</h3>
         <div className="row">
-          <input value={platform} placeholder="mastodon"
-                 onChange={(e) => setPlatform(e.target.value)} />
-          <input value={handle} placeholder="@ops"
-                 onChange={(e) => setHandle(e.target.value)} />
-          <select value={direction}
-                  onChange={(e) => setDirection(e.target.value)}>
-            <option value="publish">publish — out</option>
-            <option value="collect">collect — in</option>
-          </select>
+          <label>Platform
+            <input value={platform} placeholder="mastodon"
+                   onChange={(e) => setPlatform(e.target.value)} />
+          </label>
+          <label>Handle
+            <input value={handle} placeholder="@ops"
+                   onChange={(e) => setHandle(e.target.value)} />
+          </label>
+          {/* Labelled because a refusal has to name the field the way the
+              form does, and the field-label record declines to invent a
+              word for a control nobody has labelled. */}
+          <label>Direction
+            <select value={direction}
+                    onChange={(e) => setDirection(e.target.value)}>
+              <option value="publish">publish — out</option>
+              <option value="collect">collect — in</option>
+            </select>
+          </label>
           <button className="primary" disabled={busy || !platform.trim()}
                   onClick={() => run(async () => {
                     await api.addConnector({ platform: platform.trim(),
@@ -151,14 +160,16 @@ export function Bridges() {
       <div className="card">
         <h3>Robots</h3>
         <div className="row">
-          <select value={model} onChange={(e) => setModel(e.target.value)}>
-            <option value="">Pick a model…</option>
-            {models.map((m) => (
-              <option key={m.model} value={m.model}>
-                {m.label}{m.maker ? ` — ${m.maker}` : ""}
-              </option>
-            ))}
-          </select>
+          <label>Model
+            <select value={model} onChange={(e) => setModel(e.target.value)}>
+              <option value="">Pick a model…</option>
+              {models.map((m) => (
+                <option key={m.model} value={m.model}>
+                  {m.label}{m.maker ? ` — ${m.maker}` : ""}
+                </option>
+              ))}
+            </select>
+          </label>
           <input value={robotName} placeholder="Hall NEO"
                  onChange={(e) => setRobotName(e.target.value)} />
           <button className="primary" disabled={busy || !model}
@@ -201,10 +212,14 @@ export function Bridges() {
       <div className="card">
         <h3>What the other products contributed</h3>
         <div className="row">
-          <input value={source} placeholder="jim-mini"
-                 onChange={(e) => setSource(e.target.value)} />
-          <input value={ref} placeholder="a reference to withdraw by"
-                 onChange={(e) => setRef(e.target.value)} />
+          <label>Source
+            <input value={source} placeholder="jim-mini"
+                   onChange={(e) => setSource(e.target.value)} />
+          </label>
+          <label>Reference
+            <input value={ref} placeholder="a reference to withdraw by"
+                   onChange={(e) => setRef(e.target.value)} />
+          </label>
           <button className="primary" disabled={busy || !source.trim()}
                   onClick={() => run(async () => {
                     const c = await api.contribute({ source: source.trim(),

@@ -76,13 +76,23 @@ export function Exchange() {
       <div className="card">
         <h3>Send something out</h3>
         <div className="row">
-          <input value={recipient} placeholder="clinic-a"
-                 onChange={(e) => setRecipient(e.target.value)} />
-          <input value={filename} placeholder="report.pdf"
-                 onChange={(e) => setFilename(e.target.value)} />
+          {/* The placeholders stay what they were — an example, not a name.
+              A 422 that says `filename` can now say Filename instead. */}
+          <label>Recipient
+            <input value={recipient} placeholder="clinic-a"
+                   onChange={(e) => setRecipient(e.target.value)} />
+          </label>
+          <label>Filename
+            <input value={filename} placeholder="report.pdf"
+                   onChange={(e) => setFilename(e.target.value)} />
+          </label>
         </div>
-        <textarea rows={3} value={text} placeholder="The contents"
-                  onChange={(e) => setText(e.target.value)} />
+        {/* `content` on the wire, and the table has said Content in ten
+            languages since the first round of this work. */}
+        <label>Content
+          <textarea rows={3} value={text} placeholder="The contents"
+                    onChange={(e) => setText(e.target.value)} />
+        </label>
         <button className="primary"
                 disabled={busy || !recipient.trim() || !text.trim()}
                 onClick={() => run(async () => {
@@ -172,10 +182,14 @@ export function Exchange() {
       <div className="card">
         <h3>Ask for something in</h3>
         <div className="row">
-          <input value={party} placeholder="Dr Osei's office"
-                 onChange={(e) => setParty(e.target.value)} />
-          <input value={purpose} placeholder="records request"
-                 onChange={(e) => setPurpose(e.target.value)} />
+          <label>Requesting party
+            <input value={party} placeholder="Dr Osei's office"
+                   onChange={(e) => setParty(e.target.value)} />
+          </label>
+          <label>Purpose
+            <input value={purpose} placeholder="records request"
+                   onChange={(e) => setPurpose(e.target.value)} />
+          </label>
           <button className="primary" disabled={busy || !party.trim()}
                   onClick={() => run(async () => {
                     const i = await api.requestIntake({

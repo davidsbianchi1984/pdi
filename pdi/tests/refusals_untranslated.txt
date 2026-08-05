@@ -1,4 +1,4 @@
-# status: floor — 1 rows
+# status: floor — 1 row
 #
 # English refusals — the sentences the vault says when it says no.
 # Checked by test_the_vault_refuses_in_one_language.py, both directions, and

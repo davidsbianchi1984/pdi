@@ -82,18 +82,24 @@ export function Carriers() {
       <div className="card">
         <h3>Place a code</h3>
         <div className="row">
-          <input value={label} placeholder="Server rack A"
-                 onChange={(e) => setLabel(e.target.value)} />
-          <select value={kind}
-                  onChange={(e) => setKind(e.target.value as BeaconRefKind)}>
-            {KINDS.map((k) => <option key={k} value={k}>{k}</option>)}
-          </select>
-          <select value={disclose}
-                  onChange={(e) =>
-                    setDisclose(e.target.value as "blind" | "contact")}>
-            <option value="blind">blind — custody only</option>
-            <option value="contact">contact — and a way to reach us</option>
-          </select>
+          <label>Label
+            <input value={label} placeholder="Server rack A"
+                   onChange={(e) => setLabel(e.target.value)} />
+          </label>
+          <label>What the code stands for
+            <select value={kind}
+                    onChange={(e) => setKind(e.target.value as BeaconRefKind)}>
+              {KINDS.map((k) => <option key={k} value={k}>{k}</option>)}
+            </select>
+          </label>
+          <label>What a scan discloses
+            <select value={disclose}
+                    onChange={(e) =>
+                      setDisclose(e.target.value as "blind" | "contact")}>
+              <option value="blind">blind — custody only</option>
+              <option value="contact">contact — and a way to reach us</option>
+            </select>
+          </label>
           <button className="primary" disabled={busy || !label.trim()}
                   onClick={() => run(async () => {
                     await api.placeBeacon({ ref_kind: kind,
@@ -157,11 +163,13 @@ export function Carriers() {
             </div>
             <div className="row">
               <span className="muted small">Act as a scanner:</span>
-              <select value={ringKind}
-                      onChange={(e) =>
-                        setRingKind(e.target.value as RingKind)}>
-                {RINGS.map((r) => <option key={r} value={r}>{r}</option>)}
-              </select>
+              <label>Kind
+                <select value={ringKind}
+                        onChange={(e) =>
+                          setRingKind(e.target.value as RingKind)}>
+                  {RINGS.map((r) => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </label>
               <button disabled={busy}
                       onClick={() => run(() => api.ringHolder(b.id,
                         { kind: ringKind }))}>Ring the holder</button>

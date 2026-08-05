@@ -4,6 +4,43 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.46.4] — 2026-08-05
+
+### Forty fields a person fills in, and nothing on the form said what they were
+
+The field-label record explains why an unmapped field keeps its API name:
+inventing a word for a field nobody labels is worse than an identifier the
+reader can match to the form. True, and it had become a reason not to look
+at the forms.
+
+Forty of the 91 rows had a control a person operates:
+
+- **five bare `<select>`s** with no label at all — the connector direction,
+  the robot model, the beacon's kind, what a scan discloses, the language
+  picker
+- **eight boxes carrying only a placeholder**, which is an example rather
+  than a name: filename, recipient, platform, source, reference, label,
+  question, the note to translate
+- **a date input** with neither, next to two that at least said theirs in
+  grey until somebody typed over them
+- **the whole Positions questionnaire** — nineteen labelled fields, from
+  *Oversight level* to *Interested in reskilling / repositioning*
+
+The labels went onto the forms first and were then ported into the table, in
+that order. The record's rule is that the sentence agrees with the form, and
+a form that says nothing leaves nothing to agree with.
+
+Fourteen of the rows are ported verbatim from QRME rather than written
+again — `kind`, `label`, `language`, `model`, `direction`, `platform`,
+`source`, `ref`, `question`, `text`, `tone`, `industry`, `scope`, `role` —
+which the cross-product check in the suite enforces. It earned its keep this
+round: a first draft had *Clase* where QRME says *Tipo*.
+
+**91 → 51.** What is left is what the record always claimed it was: groups,
+ids a client fills in from the row it is looking at, enum members and flags.
+
+Cut together with QRME and JIM-mini at app-v0.46.4.
+
 ## [0.46.3] — 2026-08-05
 
 ### Version alignment

@@ -1,4 +1,4 @@
-# status: backlog — 91 rows
+# status: backlog — 51 rows
 #
 # Request-model fields with no row in `i18n._FIELD_LABELS`, so a 422 that
 # names one shows the API's identifier rather than the label on the form.
@@ -13,7 +13,21 @@
 # nobody labels would be worse than the identifier a reader can at least
 # match to the form in front of them.
 #
-# ceiling: 91
+# ## 0.46.4 — that last paragraph was doing two jobs
+#
+# "Nobody labels it" was the reason not to invent a word, and it quietly
+# became the reason not to look. Forty of these rows had a control on a form
+# and no label beside it: five bare selects, eight boxes carrying only a
+# placeholder, and a date input with nothing at all. The label was added to
+# the form and then ported into the table, in that order — the record's rule
+# is that the sentence agrees with the form, and a form that says nothing
+# leaves nothing to agree with.
+#
+# What is left is what the paragraph above always claimed: groups
+# (`admin`, `preferences`, `workflow`), ids a client fills in from the row it
+# is looking at, enum members, and flags.
+#
+# ceiling: 51
 activation_ref
 admin
 app
@@ -24,84 +38,44 @@ capability
 category
 ciphertext
 classification
-comfortable_automation
-compliance_accountable
 condition
 config
 contact
 corner
-customer_legal_name
 customer_signatory
 days
 decisions
-department
-direction
-disclose
 document_sha256
-documents_incidents
-effective_date
 face
 faces
 facility
-filename
-from_party
 from_time
 future
-industry
 input
-interaction
 items
-job_title
-kind
-label
-language
-learn_decision_style
 learner_id
 lesson
-manages
-manages_staff
-manual_tasks
 mode
-model
-operator_legal_name
 operator_signatory
 option
-outdated_tasks
 party_type
 payload
-platform
 preferences
 programs
 provider
-question
 rating
-recipient
 records
 recurring_meetings
-redundant_tasks
-ref
 ref_id
-ref_kind
-reskilling_interest
-retention
-role
-role_type
 roles_obsolete_3_5yr
-scope
 slots
-source
 state
-summarize_logs
 template
-text
 tier
 timezone
 to
 to_time
-tone
 translatable
 updated_at
-value
-wants
 where
 workflow

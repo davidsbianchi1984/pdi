@@ -291,12 +291,16 @@ export function Continuity() {
         </div>
       ))}
       <div className="row">
-        <input value={rosterName} placeholder="Name"
-          onChange={(e) => setRosterName(e.target.value)} />
-        <select value={rosterRole} onChange={(e) => setRosterRole(e.target.value)}>
-          {["on-call", "supervisor", "reception", "security", "site lead"]
-            .map((r) => <option key={r} value={r}>{r}</option>)}
-        </select>
+        <label>Name
+          <input value={rosterName} placeholder="Name"
+            onChange={(e) => setRosterName(e.target.value)} />
+        </label>
+        <label>Role
+          <select value={rosterRole} onChange={(e) => setRosterRole(e.target.value)}>
+            {["on-call", "supervisor", "reception", "security", "site lead"]
+              .map((r) => <option key={r} value={r}>{r}</option>)}
+          </select>
+        </label>
         <button disabled={busy || !rosterName.trim()}
           onClick={() => run(async () => {
             await api.addToRoster({ name: rosterName.trim(), role: rosterRole }, token);

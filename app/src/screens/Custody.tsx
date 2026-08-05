@@ -242,12 +242,20 @@ export function Custody() {
           </p>
         )}
         <div className="row">
-          <input value={legalName} placeholder="Customer legal name"
-                 onChange={(e) => setLegalName(e.target.value)} />
-          <input value={operatorName} placeholder="Operator legal name"
-                 onChange={(e) => setOperatorName(e.target.value)} />
-          <input value={effective} type="date"
-                 onChange={(e) => setEffective(e.target.value)} />
+          <label>Customer legal name
+            <input value={legalName} placeholder="Customer legal name"
+                   onChange={(e) => setLegalName(e.target.value)} />
+          </label>
+          <label>Operator legal name
+            <input value={operatorName} placeholder="Operator legal name"
+                   onChange={(e) => setOperatorName(e.target.value)} />
+          </label>
+          {/* The date box carried no name at all — the other two at least
+              said theirs in grey until somebody typed over it. */}
+          <label>Effective date
+            <input value={effective} type="date"
+                   onChange={(e) => setEffective(e.target.value)} />
+          </label>
           <button className="primary"
                   disabled={busy || !tenantId || !legalName.trim() || !effective}
                   onClick={() => run(() => api.recordBaa(tenantId!, {
