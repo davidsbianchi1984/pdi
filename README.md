@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.46.4** ([changelog](CHANGELOG.md) ·
+**Current release: v0.46.5** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -214,6 +214,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.46.5** | Version alignment with QRME's native round |
 | **0.46.4** | **Forty fields a person fills in and nothing named them** — five bare selects, eight placeholder-only boxes, a nameless date input and the whole Positions questionnaire get labels, then the field-label table gets them: 91 → 51 |
 | **0.46.3** | Version alignment with QRME's console round |
 | **0.46.2** | Version alignment with QRME's console round |
