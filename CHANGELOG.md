@@ -4,6 +4,15 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.45.4] — 2026-08-05
+
+### Version alignment
+
+The three products are cut together, so one number names one
+combination of all three. No PDI code changed — QRME localized its
+watch-party, delegation and beacon screens, 724 → 616. Nothing new
+crosses into the vault.
+
 ## [0.45.3] — 2026-08-05
 
 ### Version alignment
