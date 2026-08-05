@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.44.2** ([changelog](CHANGELOG.md) ·
+**Current release: v0.44.3** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -214,6 +214,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.44.3** | Version alignment with QRME's and JIM's localization-ratchet round |
 | **0.44.2** | Version alignment with QRME's last-doors round (the doorless records run to zero on all three shells) |
 | **0.44.1** | Version alignment with QRME's sticker/queue/stamp round (beacons, moderation, reviews, watermarks, media, wearables on the phones) |
 | **0.44.0** | Version alignment with QRME's keys/till/lifeline round (accounts, money, status+help on the phones) |
