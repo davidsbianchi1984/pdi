@@ -4,6 +4,38 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.47.7] — 2026-08-06
+
+### The console's own posture statement was English
+
+0.47.6 derived the label rule for Kotlin. This round covers the other two
+syntaxes, and on this shell the Windows half is what mattered: `_XAML` reads
+attributes, and the settled idiom here is `x:Name` plus
+`Foo.Text = L10n.T("key")` in a `Localize()`, so a label nobody localized sits
+in the code-behind as an assignment `Text="` cannot match.
+
+    asked     is this an attribute on an element
+    mattered  does this end up as the words on an element
+
+What it hid is the paragraph this console uses to state what it does about
+failures — *This app can send a count of what failed … Not what you typed, not
+who you are, not which profile.* — and its two-step reveal, *Show what would be
+sent* / *Hide what would be sent*. A promise about privacy that only English
+readers can read is a promise made to some of the people it is about.
+
+Beside it, **Rotated — every record re-sealed under the new version.**, which
+is the sentence an operator reads after rotating the key the whole vault is
+sealed under.
+
+The Swift derivation finds one wrapper here, `stat`, naming the two counters on
+the front screen. It is derived rather than named anyway: the point of the rule
+is that a wrapper added tomorrow is found without anybody remembering to add it.
+
+**10 call sites wired, 8 rows added, 1 copied.** Records unchanged at iOS 90,
+Android 73, Windows 101.
+
+Cut together with QRME and JIM-mini at app-v0.47.7.
+
 ## [0.47.6] — 2026-08-06
 
 ### The buttons that write to the vault were English

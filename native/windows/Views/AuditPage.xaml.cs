@@ -61,23 +61,19 @@ public sealed partial class AuditPage : Page
         {
             // Not a failure and not a thing to hide: this build has no address
             // compiled in, so there is nothing to consent to.
-            ProblemsExplain.Text = "This build reports nowhere. Failures are " +
-                "counted on this machine and never leave it.";
+            ProblemsExplain.Text = L10n.T("prb.nowhere");
             ProblemsAsk.Visibility = Visibility.Collapsed;
             ProblemsSwitch.Visibility = Visibility.Collapsed;
             return;
         }
         if (!answered)
         {
-            ProblemsExplain.Text = "This app can send a count of what failed " +
-                "— the operation and the HTTP status, the day, and how many " +
-                "times. Not what you typed, not who you are, not which " +
-                "profile. Nothing that identifies you or anyone else.";
+            ProblemsExplain.Text = L10n.T("prb.can");
             ProblemsAsk.Visibility = Visibility.Visible;
             ProblemsSwitch.Visibility = Visibility.Collapsed;
             return;
         }
-        ProblemsExplain.Text = "Counts of what failed. Never what you typed.";
+        ProblemsExplain.Text = L10n.T("prb.never");
         ProblemsAsk.Visibility = Visibility.Collapsed;
         ProblemsSwitch.Visibility = Visibility.Visible;
         ProblemsSwitch.IsOn = Problems.SendingEnabled();
@@ -107,7 +103,7 @@ public sealed partial class AuditPage : Page
         if (ProblemsPreview.Visibility == Visibility.Visible)
         {
             ProblemsPreview.Visibility = Visibility.Collapsed;
-            ProblemsPreviewButton.Content = "Show what would be sent";
+            ProblemsPreviewButton.Content = L10n.T("prb.show");
             return;
         }
         var owed = Problems.Report()["problems"]
@@ -118,6 +114,6 @@ public sealed partial class AuditPage : Page
             : string.Join("\n", owed.Select(r =>
                 $"{r["op"]} → {r["status"]}  ×{r["count"]}  {r["day"]}"));
         ProblemsPreview.Visibility = Visibility.Visible;
-        ProblemsPreviewButton.Content = "Hide what would be sent";
+        ProblemsPreviewButton.Content = L10n.T("prb.hide");
     }
 }

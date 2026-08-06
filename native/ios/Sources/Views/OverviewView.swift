@@ -23,8 +23,8 @@ struct OverviewView: View {
                     .font(.subheadline).foregroundStyle(Theme.t2)
 
                 HStack(spacing: 12) {
-                    stat("Records", loading ? "—" : "\(count ?? 0)", Theme.brandA)
-                    stat("Audit", loading ? "—" : (intact == true ? "Intact" : "Broken"),
+                    stat(L10n.t("nrec.t.records", state.language), loading ? "—" : "\(count ?? 0)", Theme.brandA)
+                    stat(L10n.t("tab.audit", state.language), loading ? "—" : (intact == true ? "Intact" : "Broken"),
                          intact == false ? Theme.red : Theme.green)
                 }
 

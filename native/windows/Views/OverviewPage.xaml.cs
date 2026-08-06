@@ -106,7 +106,7 @@ public sealed partial class OverviewPage : Page
                 var parts = ImproveCategories
                     .Where(c => st.Tally.TryGetValue(c, out var n) && n > 0)
                     .Select(c => $"{st.Tally[c]} {c}");
-                ImproveTally.Text = "So far: " + string.Join(" · ", parts);
+                ImproveTally.Text = L10n.T("fb.sofar").Replace("{list}", string.Join(" · ", parts));
                 ImproveTally.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
             }
             else ImproveTally.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
@@ -132,7 +132,7 @@ public sealed partial class OverviewPage : Page
             await ApiClient.Shared.SubmitImprovement(AppState.Current.Token!, cat, message, rating);
             ImproveMessage.Text = "";
             ImproveRating.SelectedIndex = 0;
-            ImproveThanks.Text = "Thank you — sent.";
+            ImproveThanks.Text = L10n.T("fb.thanks");
             ImproveThanks.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
             await LoadImprovements();
         }
@@ -207,7 +207,7 @@ public sealed partial class OverviewPage : Page
         try
         {
             ShowKeys(await ApiClient.Shared.RotateKey(AdminTokenBox.Password));
-            AdminStatus.Text = "Rotated — every record re-sealed under the new version.";
+            AdminStatus.Text = L10n.T("nadm.rotated");
             AdminStatus.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
         }
         catch (System.Exception ex) { ShowAdminError(ex.Message); }
