@@ -4,6 +4,19 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.47.4] — 2026-08-06
+
+### Version alignment
+
+No PDI code changed this round. The work was JIM-mini's Overview screen and
+the tab strips on Care, Life and Safety, where the English sat in an enum's
+raw values — 229 → 150 across its three shells.
+
+PDI's own native record stands at 294, and the enum-as-label shape is worth
+looking for here when that record is next worked.
+
+Cut together with QRME and JIM-mini at app-v0.47.4.
+
 ## [0.47.3] — 2026-08-06
 
 ### The guard-on-guard, ported
