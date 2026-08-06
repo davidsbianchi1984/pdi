@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.48.3** ([changelog](CHANGELOG.md) ·
+**Current release: v0.49.0** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -214,6 +214,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.49.0** | Cut together at one version; the round's work is QRME's public stream and JIM-mini's GET-only door onto it — the rule about what plays asserted on the wire rather than in four clients, the same shape as this repo's posture blocks |
 | **0.48.3** | Custody and Continuity read in the tenant's language — *can the operator decrypt this?* and what happens to a sealed file after a death, 229 → 177 |
 | **0.48.2** | The console gets its first localization table, and the language picker is the first screen wired — 250 → 229 English strings |
 | **0.48.1** | This console has no localization table at all — 250 English strings behind a language picker, counted and ratcheted for the first time |

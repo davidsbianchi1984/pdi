@@ -4,6 +4,33 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.49.0] — 2026-08-06
+
+### Cut together at one version
+
+The three products are cut at one version, so this release exists here to keep
+that true. **No code changes in this repo this round.**
+
+The round's work is QRME's and JIM-mini's: a public stream a person swipes —
+recorded video, live rooms and staffed desks in one surface — and a GET-only
+door onto it from the health guardian.
+
+One decision there is this repo's kind of decision, and is worth recording
+where the vault's arguments live. The stream had to reconcile an endlessly
+autoplaying feed with a promise QRME's `post_videos` has carried since long
+before a feed existed: *the link and the id, never the file and never a
+thumbnail*. It was resolved by putting the rule on **who holds the file** and
+asserting it **on the wire** rather than in each of four clients — the same
+shape as this repo's own posture blocks, which state what the operator can and
+cannot decrypt in the response rather than in a comment a client may not read.
+
+The other is the one this repo has been on the receiving end of twice: JIM
+passes QRME's `plays` flag through whole rather than recomputing it. Two
+implementations of one promise is one implementation and one bug waiting for
+the day the first changes its mind.
+
+Cut together with QRME and JIM-mini at **app-v0.49.0**.
+
 ## [0.48.3] — 2026-08-06
 
 ### Custody and Continuity read in the tenant's language
