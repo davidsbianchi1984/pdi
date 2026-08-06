@@ -1,0 +1,55 @@
+# status: backlog — 1 row
+#
+# English on PDI's desktop console. Checked by
+# test_the_desktop_and_the_phone_say_different_things.py, and ratcheted in both
+# directions: the count may not rise, and a fall of more than sixty is treated
+# as an extractor that stopped matching rather than a round of work.
+#
+# ## What this is
+#
+# The sibling products each audited their console's language rounds ago.
+# QRME's `console_untranslated.txt` opens by describing forty-six translated
+# sidebar labels in front of 1,577 English screens, and calls that worse than a
+# console uniformly in English, because it tells a Spanish reader the product
+# answers in their language and then hands them English the moment they click.
+# Both siblings drove that number to a floor.
+#
+# **Nothing had ever counted this one.** There is no `app/src/l10n.ts` in this
+# repo, no `console_untranslated.txt` until now, and no guard. Fourteen
+# screens, 250 strings, all English, while all three of this product's native
+# shells carry a ten-language table and its backend answers a tenant in the
+# language they chose.
+#
+# ## The picker
+#
+# `Guiding.tsx` renders a language picker — `GET /languages`, `PUT /language`.
+# A tenant opens the vault's console, selects Spanish, and the backend begins
+# answering in Spanish inside a frame that stays entirely English. The
+# sentences that come back translated sit under **Sealed**, **Recipient**,
+# **Custody**, **Carriers**, **Positions** and **Continuity**, none of which do.
+#
+#     asked     does the backend answer in the tenant's language
+#     mattered  can the tenant read the screen it answers on
+#
+# This is the opening finding of this whole arc — the chrome answers and
+# nothing behind it does — in the one place where the chrome does not answer
+# either.
+#
+# ## Why it is a count and not a fix
+#
+# 250 strings across fourteen screens is a round of its own, and this repo's
+# rule against machine-mangled text applies: PDI's console is where somebody
+# reads who has custody of a sealed file and on what terms. The number is
+# recorded honestly now, with a guard that will not let it rise, and the
+# screens come next.
+#
+# Worst first, by the count in each file:
+#
+#     Positions.tsx    35        Carriers.tsx     24
+#     Continuity.tsx   32        Guiding.tsx      22
+#     Custody.tsx      30        Records.tsx      11
+#     Bridges.tsx      29
+#     Exchange.tsx     27
+#
+# ceiling: 250
+console: 250

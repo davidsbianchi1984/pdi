@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.48.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.48.1** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -214,6 +214,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.48.1** | This console has no localization table at all — 250 English strings behind a language picker, counted and ratcheted for the first time |
 | **0.48.0** | The split-wording guard arrives with nothing to record — an empty floor, in place before the rows are |
 | **0.47.9** | Cut together at one version; the shared guard gains `_ARRAY`, the Swift twin of the `listOf` shape |
 | **0.47.8** | **The sentence that says how to get the file back** — Transfers localized on all three shells, including the two out-of-band instructions that sit under a token shown once and name the only way the file can be retrieved (iOS 90→65, Android 73→59, Windows 101→69) |

@@ -4,6 +4,49 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.48.1] — 2026-08-06
+
+### This console has no table, and nothing had ever said so
+
+The shared guard this round compares the desktop console's table with the three
+shells'. QRME found 102 disagreements, JIM-mini 25.
+
+**This repo cannot have that defect, because `app/src/l10n.ts` does not
+exist.** The console is fourteen screens of English — 250 strings — while all
+three native shells carry a ten-language table and the backend answers a tenant
+in the language they chose.
+
+The sharp part is not that it is English. `Guiding.tsx` renders a **language
+picker**, backed by `GET /languages` and `PUT /language`. A tenant opens the
+vault's console, selects Spanish, and the backend begins answering in Spanish
+inside a frame that stays entirely English — under headings reading **Sealed**,
+**Recipient**, **Custody**, **Carriers**, **Positions** and **Continuity**.
+
+    asked     do this product's two tables agree
+    mattered  does this product have two tables
+
+That is the opening finding of this whole arc — the chrome answers in your
+language and nothing behind it does — in the one place where the chrome does
+not answer either. Both sibling products audited their consoles rounds ago and
+drove the number to a floor. This one had no record, no guard, and no count.
+
+### Added
+
+- `pdi/tests/console_untranslated.txt` — 250 strings, worst screens named,
+  ratcheted in both directions: it may not rise, and a fall of more than sixty
+  is treated as an extractor that stopped matching rather than a round of work.
+- `pdi/tests/console_native_split.txt` — an empty floor that says **no console
+  table** in its own text, and a check that fires if that phrase is ever
+  removed while the table is still absent. A zero meaning *nothing to compare*
+  must never be read as *nothing wrong*.
+- `pdi/tests/test_the_desktop_and_the_phone_say_different_things.py`, holding
+  both.
+
+The screens themselves are a round of their own. This one makes the number
+true, visible and unable to rise.
+
+Cut together with QRME and JIM-mini at app-v0.48.1.
+
 ## [0.48.0] — 2026-08-06
 
 ### The guard arrives before the rows do

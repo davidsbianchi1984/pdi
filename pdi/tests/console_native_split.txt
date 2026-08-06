@@ -1,0 +1,32 @@
+# status: floor — 0 rows
+#
+# English strings held by both the desktop console's table and a shell's, on
+# which no console row and no native row share a wording. Checked by
+# test_the_desktop_and_the_phone_say_different_things.py.
+#
+# ## There is no console table
+#
+# This file is empty for a reason that is worse than the defect it was written
+# to catch. `app/src/l10n.ts` does not exist in this repo. The sibling products
+# each have one — 1,882 rows in QRME's, 628 in JIM-mini's — and each disagreed
+# with its own phones in roughly a hundred and twenty-five places between them.
+# This console cannot disagree with anything, because it has nothing to
+# disagree with.
+#
+#     asked     do this product's two tables agree
+#     mattered  does this product have two tables
+#
+# The zero above is *nothing to compare*, not *nothing wrong*, and
+# `test_the_absent_console_table_is_recorded_not_assumed` fires if this line
+# ever loses the words **no console table** while the file is still absent —
+# because a zero that reads as agreement is the failure this whole audit is
+# named after.
+#
+# What is wrong is recorded next door, in `console_untranslated.txt`: fourteen
+# screens of English behind a language picker that changes what the backend
+# says and nothing that the console says.
+#
+# When a table is added here, this record becomes a real one, and the checks in
+# that file start comparing instead of abstaining.
+#
+# ceiling: 0
