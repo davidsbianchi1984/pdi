@@ -4,6 +4,26 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.48.0] — 2026-08-06
+
+### The guard arrives before the rows do
+
+The shared guard this round is
+`test_the_same_sentence_translated_twice.py`: per shell, the English strings
+carried by two or more keys whose ten translations disagree. QRME found 54 such
+strings on iOS with 43 already drifted; JIM-mini found six with six drifted.
+
+**This repo has none**, and that is a measurement rather than an achievement.
+These three tables hold 51, 64 and 58 rows because most of this product's
+screens are still English — `native_screens_untranslated.txt` records 65, 59
+and 69 — and a table holding few sentences cannot hold one twice. The record
+here is an empty floor: the *before* picture, with the guard in place so that
+the rows still owed arrive checked rather than audited two releases later,
+which is exactly what happened in the sibling repo.
+
+
+Cut together with QRME and JIM-mini at app-v0.48.0.
+
 ## [0.47.9] — 2026-08-06
 
 ### Cut together at one version

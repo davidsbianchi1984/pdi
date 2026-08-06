@@ -1,0 +1,27 @@
+# status: floor — 0 rows
+#
+# One English string carried by two or more keys whose ten translations do not
+# agree. Checked by test_the_same_sentence_translated_twice.py, matched exactly
+# in both directions — a new one fails, and a reconciled one must be struck
+# from here rather than left to rot.
+#
+# ## Nothing to record, and that is a measurement rather than an achievement
+#
+# This repo's three tables hold 51, 64 and 58 rows and no English string
+# appears under two keys in any of them. The sibling products carry 54 and 6
+# duplicate sets respectively; this one carries none.
+#
+# The reason is not discipline. It is that this shell's tables are small
+# because most of its screens are still English — `native_screens_untranslated`
+# records 65, 59 and 69 — and a table that holds few sentences cannot hold the
+# same sentence twice. The empty file is the *before* picture: every row this
+# vault's shells still owe is a chance to add a duplicate, and this guard is
+# here first so that the rows arrive checked.
+#
+#     asked     does this product duplicate its wordings
+#     mattered  will it, as its tables grow to the size of the others'
+#
+# That is why this is a floor rather than a backlog. There is no work here. The
+# guard is what has to be in place before there is.
+#
+# ceiling: 0
