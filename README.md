@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.47.5** ([changelog](CHANGELOG.md) ·
+**Current release: v0.47.6** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -214,6 +214,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.47.6** | **The buttons that write to the vault were English** — *Seal record*, *Rotate key*, *Request file* and the admin-token field went through wrapper composables the untranslated rule could not read (75 → 73) |
 | **0.47.5** | **The welcome screen greeted everyone in English** — the accountless screen never passed `DeviceLanguage()` on any shell; plus the PaneFooter sign-out fix in its third product, and the dead-key guard ported (294 → 266) |
 | **0.47.4** | Version alignment — the round's work was JIM's Overview and its enum-backed tab strips |
 | **0.47.3** | The route audit's new guard-on-guard, ported — nothing unattributed here beyond two recorded non-calls |

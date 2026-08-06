@@ -72,5 +72,5 @@
 #     mattered  is this literal something a translator should touch
 
 ios: 90
-android: 75
+android: 73
 windows: 101

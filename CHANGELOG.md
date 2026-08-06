@@ -4,6 +4,30 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.47.6] — 2026-08-06
+
+### The buttons that write to the vault were English
+
+The untranslated-screens rule arrives here widened, in the round the sibling
+repo widened it, because these three files are one guard copied twice. Compose
+has no `Button(text)`: a button on this shell is a `Box` with a `Text` inside
+it, called by name — `BrandButton("Seal record")`, `SmallAction("Rotate
+key")`, `labeledField("Admin token", tok, "…")`. The Kotlin pattern list was
+`Text(` and nothing else, so this record has been ground down for a dozen
+rounds with every button on the shell in English underneath it.
+
+    asked     does the string start a `Text(`
+    mattered  does the string end up inside one
+
+What that hid here is the write path: *Seal & create*, *Seal record*, *Rotate
+key*, *Retire old*, *Request file*, *Submit into the newest open intake* — and
+beside them the field where an operator types an admin token. A person who
+cannot read the button is a person sealing a record they did not understand.
+
+**37 call sites wired, 33 rows added.** Android 75 → 73.
+
+Cut together with QRME and JIM-mini at app-v0.47.6.
+
 ## [0.47.5] — 2026-08-06
 
 ### The welcome screen greeted everyone in English

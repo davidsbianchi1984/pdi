@@ -115,7 +115,7 @@ fun WelcomeScreen(vm: VaultViewModel) {
                 color = Pdi.T2, fontSize = 13.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
 
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                labeledField(L10n.t("wel.token", lang), token, "pdi_…") { token = it }
+                labeledField(L10n.t("wel.token", lang), token, L10n.t("nacc.id.ph", vm.language)) { token = it }
                 labeledField(L10n.t("wel.server", lang), base,
                     "http://10.0.2.2:8000") { base = it }
                 Text(L10n.t("wel.language", lang), color = Pdi.T2, fontSize = 12.sp)
@@ -189,8 +189,8 @@ fun OverviewScreen(vm: VaultViewModel) {
             color = Pdi.T2, fontSize = 14.sp)
 
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            statCard(Modifier.weight(1f), "Records", if (!loaded) "—" else (count ?: 0).toString(), Pdi.BrandA)
-            statCard(Modifier.weight(1f), "Audit",
+            statCard(Modifier.weight(1f), L10n.t("nrec.t.records", vm.language), if (!loaded) "—" else (count ?: 0).toString(), Pdi.BrandA)
+            statCard(Modifier.weight(1f), L10n.t("tab.audit", vm.language),
                 if (!loaded) "—" else if (intact == false) "Broken" else "Intact",
                 if (intact == false) Pdi.Red else Pdi.Green)
         }
@@ -306,15 +306,15 @@ fun AdminCard(vm: VaultViewModel) {
              "token. Kept in memory only, never stored. Rotation re-seals every record; " +
              "retire deletes non-active versions (safe only after a reseal).",
             color = Pdi.T2, fontSize = 12.sp)
-        labeledField("Admin token", adminToken, "…") { adminToken = it }
+        labeledField(L10n.t("nadm.token", vm.language), adminToken, "…") { adminToken = it }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            SmallAction("Load versions") {
+            SmallAction(L10n.t("nadm.versions", vm.language)) {
                 error = null; status = null
                 vm.call({ ApiClient.adminKeys(adminToken) }) { r ->
                     r.onSuccess { info = it }.onFailure { error = it.message }
                 }
             }
-            SmallAction("Rotate key") {
+            SmallAction(L10n.t("nadm.rotate", vm.language)) {
                 if (info != null) {
                     error = null; status = null
                     vm.call({ ApiClient.rotateKey(adminToken) }) { r ->
@@ -324,7 +324,7 @@ fun AdminCard(vm: VaultViewModel) {
                     }
                 }
             }
-            SmallAction("Retire old") {
+            SmallAction(L10n.t("nadm.retire", vm.language)) {
                 if (info != null) {
                     error = null; status = null
                     vm.call({ ApiClient.retireKeys(adminToken) }) { r ->
@@ -392,7 +392,7 @@ fun ImproveCard(vm: VaultViewModel) {
                 }
             }
         }
-        labeledField("", message, "What's on your mind?") { message = it }
+        labeledField("", message, L10n.t("nfb.msg.ph", vm.language)) { message = it }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             Text("Rating", color = Pdi.T2, fontSize = 12.sp)
             (1..5).forEach { n ->
@@ -401,7 +401,7 @@ fun ImproveCard(vm: VaultViewModel) {
                     modifier = Modifier.clickable { rating = if (rating == n) 0 else n })
             }
         }
-        BrandButton("Send feedback", enabled = message.isNotBlank()) {
+        BrandButton(L10n.t("nfb.send", vm.language), enabled = message.isNotBlank()) {
             vm.call({
                 ApiClient.submitImprovement(vm.token!!, category, message.trim(),
                     if (rating == 0) null else rating)
@@ -456,9 +456,9 @@ fun VaultScreen(vm: VaultViewModel) {
         Text("Vault", color = Pdi.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
         Text("Store a value — it is sealed at rest with AES-256-GCM.", color = Pdi.T2, fontSize = 13.sp)
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            labeledField("Key", newKey, "e.g. ssn") { newKey = it }
-            labeledField("Value", newValue, "plaintext to seal") { newValue = it }
-            BrandButton("Seal record", enabled = newKey.isNotBlank() && newValue.isNotBlank(), busy = busy) {
+            labeledField(L10n.t("nrec.key", vm.language), newKey, L10n.t("nrec.key.ph", vm.language)) { newKey = it }
+            labeledField(L10n.t("nrec.value", vm.language), newValue, L10n.t("nrec.value.ph", vm.language)) { newValue = it }
+            BrandButton(L10n.t("nrec.seal", vm.language), enabled = newKey.isNotBlank() && newValue.isNotBlank(), busy = busy) {
                 busy = true; error = null
                 vm.call({ ApiClient.putRecord(vm.token!!, newKey, newValue) }) { r ->
                     busy = false
@@ -534,7 +534,7 @@ fun AuditScreen(vm: VaultViewModel) {
         vm.call({ ApiClient.auditEntries(vm.token!!) }) { r -> entries = r.getOrDefault(emptyList()) }
     }
     screenScroll {
-        Text("Audit", color = Pdi.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("tab.audit", vm.language), color = Pdi.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
         ProblemReportingCard()
         Text("Every vault action is hash-chained. Verify recomputes the whole chain.",
             color = Pdi.T2, fontSize = 13.sp)
@@ -619,7 +619,7 @@ fun RobotsScreen(vm: VaultViewModel) {
                     }
                 }
             }
-            BrandButton("Bind", enabled = catalog.isNotEmpty(), busy = busy) {
+            BrandButton(L10n.t("nrob.bind.go", vm.language), enabled = catalog.isNotEmpty(), busy = busy) {
                 busy = true; error = null
                 vm.call({ ApiClient.bindRobot(vm.token!!, chosen) }) { r ->
                     busy = false
@@ -709,9 +709,9 @@ private fun OutboundPanel(vm: VaultViewModel) {
             color = Pdi.T2, fontSize = 13.sp)
 
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            labeledField("Recipient", recipient, "who it's for") { recipient = it }
-            labeledField("Filename", filename, "e.g. results.pdf") { filename = it }
-            labeledField("Content", content, "the file body to seal") { content = it }
+            labeledField(L10n.t("nfil.recipient", vm.language), recipient, L10n.t("nfil.recipient.ph", vm.language)) { recipient = it }
+            labeledField(L10n.t("nfil.filename", vm.language), filename, L10n.t("nfil.filename.ph", vm.language)) { filename = it }
+            labeledField(L10n.t("nfil.content", vm.language), content, L10n.t("nfil.content.ph", vm.language)) { content = it }
             Text("Programs", color = Pdi.T2, fontSize = 12.sp)
             programs.chunked(4).forEach { row ->
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -731,7 +731,7 @@ private fun OutboundPanel(vm: VaultViewModel) {
                     }
                 }
             }
-            BrandButton("Seal & create",
+            BrandButton(L10n.t("nfil.seal", vm.language),
                 enabled = recipient.isNotBlank() && filename.isNotBlank()
                           && content.isNotBlank() && selected.isNotEmpty(),
                 busy = busy) {
@@ -807,8 +807,8 @@ private fun IntakePanel(vm: VaultViewModel) {
             color = Pdi.T2, fontSize = 13.sp)
 
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            labeledField("From", fromParty, "who should send it") { fromParty = it }
-            labeledField("Purpose (optional)", purpose, "why you need it") { purpose = it }
+            labeledField(L10n.t("nreq.from", vm.language), fromParty, L10n.t("nreq.from.ph", vm.language)) { fromParty = it }
+            labeledField(L10n.t("nreq.purpose", vm.language), purpose, L10n.t("nreq.purpose.ph", vm.language)) { purpose = it }
             Text("Programs", color = Pdi.T2, fontSize = 12.sp)
             programs.chunked(4).forEach { row ->
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -828,7 +828,7 @@ private fun IntakePanel(vm: VaultViewModel) {
                     }
                 }
             }
-            BrandButton("Request file",
+            BrandButton(L10n.t("nreq.go", vm.language),
                 enabled = fromParty.isNotBlank() && selected.isNotEmpty(), busy = busy) {
                 busy = true; error = null
                 vm.call({ ApiClient.createIntake(vm.token!!, fromParty, purpose,
@@ -887,10 +887,10 @@ private fun IntakePanel(vm: VaultViewModel) {
             Text("Act as the sender", color = Pdi.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             Text("Paste an intake's submit token to answer it — this is what the counterparty does, no vault account involved.",
                 color = Pdi.T2, fontSize = 12.sp)
-            labeledField("Submit token", senderToken, "intk token") { senderToken = it }
-            labeledField("Filename", senderFile, "e.g. w2.pdf") { senderFile = it }
-            labeledField("Content", senderContent, "the file body") { senderContent = it }
-            BrandButton("Submit into the newest open intake",
+            labeledField(L10n.t("nint.token", vm.language), senderToken, L10n.t("nint.token.ph", vm.language)) { senderToken = it }
+            labeledField(L10n.t("nfil.filename", vm.language), senderFile, L10n.t("nint.filename.ph", vm.language)) { senderFile = it }
+            labeledField(L10n.t("nfil.content", vm.language), senderContent, L10n.t("nint.content.ph", vm.language)) { senderContent = it }
+            BrandButton(L10n.t("nint.go", vm.language),
                 enabled = senderToken.isNotBlank() && senderFile.isNotBlank()
                           && senderContent.isNotBlank()) {
                 val target = intakes.lastOrNull { it.status == "open" }
@@ -970,7 +970,7 @@ private fun ConnectorsPanel(vm: VaultViewModel) {
                     }
                 }
             }
-            labeledField("Handle (optional)", handle, "@account") { handle = it }
+            labeledField(L10n.t("nacc.handle", vm.language), handle, L10n.t("nacc.handle.ph", vm.language)) { handle = it }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextButton(onClick = { connect("collect") }) {
                     Text("Connect to collect", color = Pdi.BrandA, fontSize = 13.sp) }
