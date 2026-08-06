@@ -4,6 +4,25 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.47.3] — 2026-08-06
+
+### The guard-on-guard, ported
+
+`clientpaths.py` is byte-identical in all three repos, so PDI gains the same
+check: every path-shaped literal is either inside a call shape the route audit
+knows, or recorded with the reason it is not a request.
+
+It found nothing new here — this shell's two unattributed literals are the
+console's `/app` prefix test and a regular expression in the iOS problem
+reporter that begins with a slash. Both are recorded with their reason, and
+the record is ratcheted in both directions so it cannot become a place where a
+real blind spot hides.
+
+Finding nothing is the result, not the absence of one: the same check found
+six false doorless entries in JIM-mini and two invisible calls in QRME.
+
+Cut together with QRME and JIM-mini at app-v0.47.3.
+
 ## [0.47.2] — 2026-08-06
 
 ### Version alignment
