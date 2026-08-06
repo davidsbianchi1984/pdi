@@ -98,6 +98,10 @@ fun WelcomeScreen(vm: VaultViewModel) {
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
+    // Nobody reading this screen has a tenant, so there is no stored
+    // language to take. The device has been carrying the answer all along.
+    val lang = L10n.deviceLanguage()
+
     Box(Modifier.fillMaxSize().background(Pdi.Bg)) {
         screenScroll {
             Spacer(Modifier.height(28.dp))
@@ -105,15 +109,16 @@ fun WelcomeScreen(vm: VaultViewModel) {
                 contentAlignment = Alignment.Center) {
                 Text("🔒", fontSize = 34.sp)
             }
-            Text("Sign in to your vault", color = Pdi.Txt, fontSize = 22.sp,
+            Text(L10n.t("wel.title", lang), color = Pdi.Txt, fontSize = 22.sp,
                 fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.CenterHorizontally))
-            Text("Paste the tenant token you were issued. It authorizes every call.",
+            Text(L10n.t("wel.sub", lang),
                 color = Pdi.T2, fontSize = 13.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
 
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                labeledField("Vault token", token, "pdi_…") { token = it }
-                labeledField("Server", base, "http://10.0.2.2:8000") { base = it }
-                Text("Language", color = Pdi.T2, fontSize = 12.sp)
+                labeledField(L10n.t("wel.token", lang), token, "pdi_…") { token = it }
+                labeledField(L10n.t("wel.server", lang), base,
+                    "http://10.0.2.2:8000") { base = it }
+                Text(L10n.t("wel.language", lang), color = Pdi.T2, fontSize = 12.sp)
                 LANGUAGE_CHOICES.chunked(3).forEach { row ->
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         row.forEach { (code, label) ->
@@ -131,12 +136,14 @@ fun WelcomeScreen(vm: VaultViewModel) {
                 }
             }
             error?.let { Text(it, color = Pdi.Red, fontSize = 13.sp) }
-            BrandButton("Unlock", enabled = token.isNotBlank(), busy = busy) {
+            BrandButton(L10n.t("wel.unlock", lang), enabled = token.isNotBlank(),
+                busy = busy) {
                 error = null
                 vm.signIn(token, base, language,
                     onError = { error = it }, onBusy = { busy = it })
             }
-            Text("Start the backend:  PDI_CORS_ORIGINS=* uvicorn pdi.api:app",
+            Text(L10n.t("wel.backend", lang)
+                 + "  PDI_CORS_ORIGINS=* uvicorn pdi.api:app",
                 color = Pdi.T3, fontSize = 10.sp)
         }
     }

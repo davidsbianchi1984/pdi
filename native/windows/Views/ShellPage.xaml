@@ -9,27 +9,27 @@
                     PaneDisplayMode="Left" SelectionChanged="OnSelectionChanged"
                     Background="{StaticResource PdiScrBotBrush}">
         <NavigationView.MenuItems>
-            <NavigationViewItem Content="Overview" Tag="overview" IsSelected="True">
+            <NavigationViewItem Tag="overview" IsSelected="True">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Home" /></NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Content="Vault" Tag="vault">
+            <NavigationViewItem Tag="vault">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="ProtectedDocument" /></NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Content="Audit" Tag="audit">
+            <NavigationViewItem Tag="audit">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Accept" /></NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Content="Robots" Tag="robots">
+            <NavigationViewItem Tag="robots">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Contact" /></NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Content="Connectors" Tag="connectors">
+            <NavigationViewItem Tag="connectors">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Link" /></NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem Content="Transfers" Tag="transfers">
+            <NavigationViewItem Tag="transfers">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Send" /></NavigationViewItem.Icon>
             </NavigationViewItem>
         </NavigationView.MenuItems>
         <NavigationView.PaneFooter>
-            <Button Content="Sign out" Margin="12" Click="OnSignOut"
+            <Button x:Name="SignOutButton" Margin="12" Click="OnSignOut"
                     Foreground="{StaticResource PdiT2Brush}" Background="Transparent" />
         </NavigationView.PaneFooter>
         <Frame x:Name="ContentFrame" />

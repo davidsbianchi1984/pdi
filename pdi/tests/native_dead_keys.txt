@@ -1,0 +1,23 @@
+# status: floor — 0 rows
+#
+# Rows in a shell's L10n table that nothing in that shell asks for. Checked by
+# test_a_shell_asks_for_a_key_it_has.py, and ratcheted in two directions: no
+# shell may hold more than `ceiling`, and the shells together may not hold more
+# than `total`.
+#
+# **Empty from the day the guard arrived, 0.47.5.** It found five: `action.save`
+# on all three shells and `action.refresh` on the two phones. Generic action
+# verbs, added in advance because a screen would obviously need a Save button,
+# translated into ten languages, and asked for by no screen in any shell.
+#
+# JIM-mini reached exactly this list at 0.40.7 and its file's own instruction
+# was "wire one or delete one". `action.refresh` was wired — the desktop's only
+# Refresh button had been hardcoded English the whole time, beside a translated
+# row nothing used. The rest were deleted. A screen that needs one adds the row
+# it needs, in the wording it needs.
+#
+#     asked     is any one shell's dead-key count above the line
+#     mattered  is the number of dead rows going up
+#
+# ceiling: 2
+# total: 0

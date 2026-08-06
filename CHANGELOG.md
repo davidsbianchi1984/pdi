@@ -4,6 +4,53 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.47.5] — 2026-08-06
+
+### The welcome screen greeted everyone in English
+
+Welcome is the accountless screen: whoever reads it has no tenant yet, so the
+language cannot come from a stored setting. This repo's own `L10n` docstring
+has said since it was written that an accountless surface must pass
+`DeviceLanguage()`. This screen was never given it — on all three shells — so
+`AppState.Language` answered "en" for every reader on earth.
+
+Now localized on iOS, Android and the desktop, from the device's own setting.
+
+### The sign-out fix, in the third product
+
+The desktop's **Sign out** sits in `NavigationView.PaneFooter`, and the loop
+that localizes the nav walks `Nav.MenuItems` — which the footer is not one of.
+QRME found this in its own copy of the file at 0.46.9. JIM-mini found it at
+0.47.2. This is the third product with the same nav, and here the table did
+not even hold `action.sign_out`.
+
+Beside it: the desktop's only **Refresh** button was hardcoded English, next
+to an `action.refresh` row translated into ten languages that nothing asked
+for.
+
+### The dead-key guard, ported
+
+JIM-mini's guard arrives here too, and its backlog file is empty from day one.
+It found five dead rows — `action.save` on all three shells, `action.refresh`
+on the two phones. Generic verbs added in advance for a Save button no screen
+ever grew. JIM reached exactly this list at 0.40.7; its instruction was "wire
+one or delete one". One was wired, the rest deleted.
+
+One thing did not port cleanly, and that is worth writing down. The guard's
+own liveness check asserts a table has at least twenty rows, a number chosen
+against a table of roughly a thousand. PDI's chrome table is small on purpose
+— this product localizes its explanatory prose server-side by the tenant's
+language, and the table covers only the frame around it. A threshold carried
+across without its premise fails on a table that is exactly the size it should
+be.
+
+**294 → 266.** iOS 94 → 90, Android 78 → 75, Windows 122 → 101. Ten of the
+Windows drop were never English prose: the language picker's items are
+endonyms — each language named in its own language — and they moved out of
+XAML attributes into a table in the code-behind, where they read as data.
+
+Cut together with QRME and JIM-mini at app-v0.47.5.
+
 ## [0.47.4] — 2026-08-06
 
 ### Version alignment

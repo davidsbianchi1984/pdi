@@ -20,6 +20,12 @@ public sealed partial class ShellPage : Page
         foreach (var entry in Nav.MenuItems)
             if (entry is NavigationViewItem nvi && nvi.Tag is string tag)
                 nvi.Content = L10n.T($"tab.{tag}");
+        // Not a menu item: this one sits in the pane footer, which the
+        // loop above does not walk. It said "Sign out" in every language,
+        // and the table did not even hold the row. QRME found this in its
+        // own copy of this file at 0.46.9 and JIM-mini at 0.47.2; this is
+        // the third product with the same nav, and nobody had looked.
+        SignOutButton.Content = L10n.T("action.sign_out");
     }
 
     private void OnSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)

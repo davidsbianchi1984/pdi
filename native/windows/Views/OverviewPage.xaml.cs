@@ -18,6 +18,10 @@ public sealed partial class OverviewPage : Page
     public OverviewPage()
     {
         InitializeComponent();
+        // `action.refresh` has been in the table, translated into ten
+        // languages, since chrome localization landed — and the only
+        // Refresh button in this shell was hardcoded English.
+        RefreshButton.Content = L10n.T("action.refresh");
         ImproveCategory.ItemsSource = ImproveCategories
             .Select(c => char.ToUpper(c[0]) + c[1..]).ToList();
         ImproveCategory.SelectedIndex = 0;

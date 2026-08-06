@@ -14,6 +14,11 @@ struct WelcomeView: View {
     @State private var busy = false
     @State private var error: String?
 
+    /// Nobody reading this screen has an account, so there is no stored
+    /// language to take. `AppState.language` would be "en" for every
+    /// reader on earth; the device knows better and always did.
+    private let lang = L10n.deviceLanguage
+
     var body: some View {
         ScrollView {
             VStack(spacing: 22) {
@@ -25,22 +30,22 @@ struct WelcomeView: View {
                     .padding(.top, 40)
 
                 VStack(spacing: 6) {
-                    Text("Sign in to your vault").font(.title2.bold()).foregroundStyle(Theme.txt)
-                    Text("Paste the tenant token you were issued. It authorizes every call and never leaves this device unencrypted in transit.")
+                    Text(L10n.t("wel.title", lang)).font(.title2.bold()).foregroundStyle(Theme.txt)
+                    Text(L10n.t("wel.sub", lang))
                         .font(.footnote).foregroundStyle(Theme.t2)
                         .multilineTextAlignment(.center)
                 }
 
                 VStack(alignment: .leading, spacing: 14) {
-                    field("Vault token") {
+                    field(L10n.t("wel.token", lang)) {
                         SecureField("pdi_…", text: $token).textFieldStyle(.plain).foregroundStyle(Theme.txt)
                             .textInputAutocapitalization(.never).autocorrectionDisabled()
                     }
-                    field("Server") {
+                    field(L10n.t("wel.server", lang)) {
                         TextField("http://127.0.0.1:8000", text: $base).textFieldStyle(.plain).foregroundStyle(Theme.txt)
                             .textInputAutocapitalization(.never).autocorrectionDisabled()
                     }
-                    field("Language") {
+                    field(L10n.t("wel.language", lang)) {
                         Picker("", selection: $language) {
                             ForEach(languageChoices, id: \.0) { code, label in
                                 Text(label).tag(code)
@@ -52,7 +57,7 @@ struct WelcomeView: View {
                 if let error { Text(error).font(.footnote).foregroundStyle(Theme.red) }
 
                 Button(action: signIn) {
-                    HStack { if busy { ProgressView().tint(.white) }; Text("Unlock").bold() }
+                    HStack { if busy { ProgressView().tint(.white) }; Text(L10n.t("wel.unlock", lang)).bold() }
                         .frame(maxWidth: .infinity).padding(.vertical, 14)
                         .background(Theme.brand).foregroundStyle(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 13))
@@ -60,7 +65,8 @@ struct WelcomeView: View {
                 .disabled(token.isEmpty || busy)
                 .opacity(token.isEmpty ? 0.5 : 1)
 
-                Text("Start the backend:  PDI_CORS_ORIGINS=* uvicorn pdi.api:app")
+                Text(L10n.t("wel.backend", lang)
+                    + "  PDI_CORS_ORIGINS=* uvicorn pdi.api:app")
                     .font(.system(size: 10, design: .monospaced)).foregroundStyle(Theme.t3)
             }.padding(20)
         }

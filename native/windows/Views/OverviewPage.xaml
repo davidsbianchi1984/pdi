@@ -15,7 +15,7 @@
             <TextBlock Text="Your vault" FontSize="28" FontWeight="Bold" Foreground="{StaticResource PdiTxtBrush}" />
             <TextBlock Text="Records are sealed at rest; every access is hash-chained in the audit log."
                        Foreground="{StaticResource PdiT2Brush}" FontSize="14" TextWrapping="Wrap" />
-            <Button x:Name="RefreshButton" Content="Refresh" Click="OnRefresh"
+            <Button x:Name="RefreshButton" Click="OnRefresh"
                     Background="Transparent" FontSize="12"
                     Foreground="{StaticResource PdiBrandABrush}" />
 

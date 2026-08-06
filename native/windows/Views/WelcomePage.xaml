@@ -15,29 +15,19 @@
                     </LinearGradientBrush>
                 </Ellipse.Fill>
             </Ellipse>
-            <TextBlock Text="Sign in to your vault" FontSize="22" FontWeight="Bold"
+            <TextBlock x:Name="Title" FontSize="22" FontWeight="Bold"
                        Foreground="{StaticResource PdiTxtBrush}" HorizontalAlignment="Center" TextWrapping="Wrap" />
-            <TextBlock Text="Paste the tenant token you were issued. It authorizes every call."
+            <TextBlock x:Name="Sub"
                        FontSize="13" Foreground="{StaticResource PdiT2Brush}" HorizontalAlignment="Center"
                        TextAlignment="Center" TextWrapping="Wrap" />
 
             <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="12">
-                    <PasswordBox x:Name="TokenBox" Header="Vault token" PlaceholderText="pdi_…" />
-                    <TextBox x:Name="BaseBox" Header="Server" Text="http://127.0.0.1:8000" />
-                    <ComboBox x:Name="LanguageBox" Header="Language" SelectedIndex="0"
+                    <PasswordBox x:Name="TokenBox" PlaceholderText="pdi_…" />
+                    <TextBox x:Name="BaseBox" Text="http://127.0.0.1:8000" />
+                    <ComboBox x:Name="LanguageBox" SelectedIndex="0"
                               HorizontalAlignment="Stretch">
-                        <ComboBoxItem Content="English" Tag="en" />
-                        <ComboBoxItem Content="Español" Tag="es" />
-                        <ComboBoxItem Content="Français" Tag="fr" />
-                        <ComboBoxItem Content="Deutsch" Tag="de" />
-                        <ComboBoxItem Content="Português" Tag="pt" />
-                        <ComboBoxItem Content="Italiano" Tag="it" />
-                        <ComboBoxItem Content="日本語" Tag="ja" />
-                        <ComboBoxItem Content="中文" Tag="zh" />
-                        <ComboBoxItem Content="हिन्दी" Tag="hi" />
-                        <ComboBoxItem Content="العربية" Tag="ar" />
                     </ComboBox>
                 </StackPanel>
             </Border>
@@ -45,7 +35,7 @@
             <TextBlock x:Name="ErrorText" Foreground="{StaticResource PdiRed}" FontSize="13"
                        TextWrapping="Wrap" Visibility="Collapsed" />
 
-            <Button x:Name="StartButton" Content="Unlock" HorizontalAlignment="Stretch"
+            <Button x:Name="StartButton" HorizontalAlignment="Stretch"
                     Height="46" Foreground="White" Click="OnStart">
                 <Button.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
@@ -55,7 +45,7 @@
                 </Button.Background>
             </Button>
 
-            <TextBlock Text="Start the backend:  PDI_CORS_ORIGINS=* uvicorn pdi.api:app"
+            <TextBlock x:Name="BackendHint"
                        FontFamily="Consolas" FontSize="11" Foreground="{StaticResource PdiT2Brush}"
                        HorizontalAlignment="Center" />
         </StackPanel>

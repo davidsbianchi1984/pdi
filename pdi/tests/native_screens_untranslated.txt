@@ -44,6 +44,33 @@
 # The counts below rise by twelve. Nothing regressed; twelve strings were
 # always there and could not be seen.
 
-ios: 94
-android: 78
-windows: 122
+# **0.47.5 — the welcome screen, and the sign-out this shell never localized.**
+#
+# Welcome is the accountless screen: whoever reads it has no tenant yet, so the
+# language cannot come from a stored setting. `L10n`'s own docstring in this
+# repo has said since it was written that `DeviceLanguage()` is what an
+# accountless surface must pass; this screen was never given it, and every
+# reader on earth was greeted in English.
+#
+# Two more came off with it, both the shape the siblings already fixed:
+#
+# * the desktop's **Sign out** sits in `NavigationView.PaneFooter`, and the
+#   loop that localizes the nav walks `Nav.MenuItems` — which the footer is
+#   not one of. QRME found this in its own copy of the file at 0.46.9 and
+#   JIM-mini at 0.47.2; this is the third product with the same nav, and the
+#   table did not even hold the row.
+# * the desktop's only **Refresh** button was hardcoded English, beside an
+#   `action.refresh` row that had been translated into ten languages and asked
+#   for by nobody.
+#
+# The Windows count also drops by ten that were never English prose: the
+# language picker's ten items are endonyms — each language named in its own
+# language — and they moved out of XAML attributes into a table in the
+# code-behind, where they read as the data they are.
+#
+#     asked     is this literal English
+#     mattered  is this literal something a translator should touch
+
+ios: 90
+android: 75
+windows: 101
