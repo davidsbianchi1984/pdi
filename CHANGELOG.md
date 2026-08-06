@@ -4,6 +4,27 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.50.0] — 2026-08-06
+
+### Cut together at one version
+
+The three products are cut at one version, so this release exists here to keep
+that true. **No code changes in this repo this round.**
+
+The round's work is JIM-mini's presence: a coach that speaks first, deciding
+what to say from six areas of somebody's own history with no network and no
+model, and letting a model only reword the result.
+
+Two decisions there are this repo's kind of decision. **The refusals are on
+the wire** — what the presence will not be is a field a client renders, not a
+line in a docstring, which is the same reason this repo's posture blocks state
+what an operator can and cannot decrypt in the response rather than in a
+comment. And **the offline path is the floor rather than the fallback**: the
+useful version of "works without the network" is the one where the network
+adds wording and never capability, which is what a vault has to be too.
+
+Cut together with QRME and JIM-mini at **app-v0.50.0**.
+
 ## [0.49.0] — 2026-08-06
 
 ### Cut together at one version
