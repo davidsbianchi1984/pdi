@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.47.1** ([changelog](CHANGELOG.md) ·
+**Current release: v0.47.2** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -214,6 +214,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.47.2** | Version alignment — the round's work was JIM's Family and Connect screens; PDI's native record stands at 294 |
 | **0.47.1** | Ternary blind spot ported and corrected — 282 → 294, nothing regressed |
 | **0.47.0** | Version alignment with QRME's native round |
 | **0.46.9** | Version alignment with QRME's native round |

@@ -4,6 +4,20 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.47.2] — 2026-08-06
+
+### Version alignment
+
+No PDI code changed this round. The work was in JIM-mini: the sign-out control
+QRME fixed two releases ago and nobody carried across, then the Family and
+Connect screens on all three of its native shells.
+
+The habit that found it applies here too — this repo's guards are the
+sibling's guards, copied, so a fix in one of them is owed to all three. PDI's
+native record stands at 294.
+
+Cut together with QRME and JIM-mini at app-v0.47.2.
+
 ## [0.47.1] — 2026-08-06
 
 ### The ternary blind spot, ported and corrected
