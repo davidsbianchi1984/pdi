@@ -4,6 +4,51 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.47.8] — 2026-08-06
+
+### The sentence that says how to get the file back
+
+Transfers is the largest single concentration of English left anywhere in the
+three products — 28 strings on the iPhone, 32 on the desktop, 17 on Android —
+and it is the screen this vault exists for: seal a file for a recipient, or ask
+a counterparty to send one in.
+
+Two of its sentences are a hazard rather than a discourtesy, and they are the
+reason it was worked next:
+
+> Hand this to the recipient out of band; it is the only way to retrieve the file.
+
+> Send this to the counterparty out of band; it is their only way in.
+
+Each sits directly under a token the same screen says is **shown once**. A
+reader who cannot read the sentence does not lose a nicety; they lose the file.
+
+**Fifteen new rows, seventeen carried across from the table that already held
+them, and the screen wired on all three shells** — 50 literals on iOS and
+Android, 34 on the desktop.
+
+### Three shapes this arc already settled, applied rather than rediscovered
+
+* the **direction picker** keeps its raw values (`Outbound`, `Intake`) as the
+  thing the screen switches on and looks a key up for the label — a localized
+  raw value is a control that quietly stops matching, which is the 0.47.4 rule;
+* the Android strip resolves keys out of its `listOf`, the 0.47.6 idiom;
+* the desktop's labels move out of XAML attributes into a `Localize()` the
+  constructor calls, the 0.47.7 idiom — and the three buttons **inside**
+  `DataTemplate`s take their words from the row, because a template is stamped
+  once per row and `x:Name` addresses only the last one.
+
+### One row that was dead for an honest reason
+
+`nfil.programs` sat in the desktop's table asked for by nothing, because that
+page had no Programs label at all while the phones both did. Wired rather than
+deleted: the rule this record has carried since 0.47.6 is that a row which
+looks dead is evidence about the screen before it is evidence about the row.
+
+**iOS 90 → 65, Android 73 → 59, Windows 101 → 69.** Dead rows to zero.
+
+Cut together with QRME and JIM-mini at app-v0.47.8.
+
 ## [0.47.7] — 2026-08-06
 
 ### The console's own posture statement was English

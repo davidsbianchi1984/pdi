@@ -16,11 +16,60 @@ public sealed partial class TransfersPage : Page
     }
 
     public record TransferRow(string Id, string Filename, string Status,
-                              string Meta, Visibility RevokeVisibility);
+                              string Meta, Visibility RevokeVisibility)
+    {
+        // A DataTemplate is stamped once per row, so `x:Name` addresses only
+        // the last one. The label rides on the row instead.
+        public string RevokeLabel => L10n.T("ntr.revoke");
+    }
 
     private List<ProgramChip> _chips = new();
 
-    public TransfersPage() => InitializeComponent();
+    public TransfersPage()
+    {
+        InitializeComponent();
+        Localize();
+    }
+
+    /// Every word on this page, from the table rather than the markup.
+    /// The two token sentences are the reason the screen was worked: each
+    /// sits under a token shown once and names the only way the file can be
+    /// retrieved, so a reader who cannot read it loses the file.
+    private void Localize()
+    {
+        NtrTOutbound.Header = L10n.T("ntr.t.outbound");
+        TabTransfers.Text = L10n.T("tab.transfers");
+        NfilSub.Text = L10n.T("nfil.sub");
+        ProgramsLabel.Text = L10n.T("nfil.programs");
+        RecipientBox.Header = L10n.T("nfil.recipient");
+        RecipientBox.PlaceholderText = L10n.T("nfil.recipient.ph");
+        FilenameBox.Header = L10n.T("nfil.filename");
+        FilenameBox.PlaceholderText = L10n.T("nfil.filename.ph");
+        ContentBox.Header = L10n.T("nfil.content");
+        ContentBox.PlaceholderText = L10n.T("nfil.content.ph");
+        CreateButton.Content = L10n.T("nfil.seal");
+        NfilTokenOnce.Text = L10n.T("nfil.token.once");
+        NfilTokenHand.Text = L10n.T("nfil.token.hand");
+        NtrTIntake.Header = L10n.T("ntr.t.intake");
+        NtrIntake.Text = L10n.T("ntr.intake");
+        NtrIntakeSub.Text = L10n.T("ntr.intake.sub");
+        FromBox.Header = L10n.T("nreq.from");
+        FromBox.PlaceholderText = L10n.T("nreq.from.ph");
+        PurposeBox.Header = L10n.T("nreq.purpose");
+        PurposeBox.PlaceholderText = L10n.T("nreq.purpose.ph");
+        RequestButton.Content = L10n.T("nreq.go");
+        NintTokenOnce.Text = L10n.T("nint.token.once");
+        NintTokenSend.Text = L10n.T("nint.token.send");
+        NtrAsSender.Text = L10n.T("ntr.as.sender");
+        NtrAnswerSub.Text = L10n.T("ntr.answer.sub");
+        SenderTokenBox.Header = L10n.T("nint.token");
+        SenderTokenBox.PlaceholderText = L10n.T("nint.token.ph");
+        SenderFileBox.Header = L10n.T("nfil.filename");
+        SenderFileBox.PlaceholderText = L10n.T("nint.filename.ph");
+        SenderContentBox.Header = L10n.T("nfil.content");
+        SenderContentBox.PlaceholderText = L10n.T("nint.content.ph");
+        NintGo.Content = L10n.T("nint.go");
+    }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
@@ -121,6 +170,11 @@ public sealed partial class TransfersPage : Page
             Open ? Visibility.Visible : Visibility.Collapsed;
         public Visibility FileVisibility =>
             FileText.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+        // Same reason as TransferRow.RevokeLabel: the template is stamped
+        // per row, so the words come with the row.
+        public string ReadLabel => L10n.T("ntr.read");
+        public string CloseLabel => L10n.T("nreq.close");
     }
 
     private List<ProgramChip> _intakeChips = new();

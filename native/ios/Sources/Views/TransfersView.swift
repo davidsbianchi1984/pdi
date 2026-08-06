@@ -5,14 +5,27 @@ import SwiftUI
 /// in from a counterparty (one-shot submit token), with an "act as sender"
 /// form to exercise the loop end to end.
 struct TransfersView: View {
-    enum Direction: String, CaseIterable { case outbound = "Outbound", intake = "Intake" }
+    enum Direction: String, CaseIterable {
+        case outbound = "Outbound", intake = "Intake"
+
+        /// The raw value is what the screen switches on; this is what a
+        /// person reads. Keeping the two apart is the rule the picker
+        /// round settled — a localized raw value is a control that
+        /// quietly stops matching.
+        var key: String {
+            switch self {
+            case .outbound: return "ntr.t.outbound"
+            case .intake:   return "ntr.t.intake"
+            }
+        }
+    }
     @State private var direction: Direction = .outbound
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 Picker("", selection: $direction) {
-                    ForEach(Direction.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                    ForEach(Direction.allCases, id: \.self) { Text(L10n.t($0.key, state.language)).tag($0) }
                 }.pickerStyle(.segmented)
 
                 switch direction {
@@ -38,21 +51,21 @@ private struct OutboundSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-                Text("Transfers").font(.title2.bold()).foregroundStyle(Theme.txt)
-                Text("Seal a file for a recipient under compliance controls. Retention follows the strictest program you pick.")
+                Text(L10n.t("tab.transfers", state.language)).font(.title2.bold()).foregroundStyle(Theme.txt)
+                Text(L10n.t("nfil.sub", state.language))
                     .font(.footnote).foregroundStyle(Theme.t2)
 
                 VStack(alignment: .leading, spacing: 10) {
-                    field("Recipient") { TextField("who it's for", text: $recipient)
+                    field(L10n.t("nfil.recipient", state.language)) { TextField(L10n.t("nfil.recipient.ph", state.language), text: $recipient)
                         .foregroundStyle(Theme.txt).textInputAutocapitalization(.never) }
-                    field("Filename") { TextField("e.g. results.pdf", text: $filename)
+                    field(L10n.t("nfil.filename", state.language)) { TextField(L10n.t("nfil.filename.ph", state.language), text: $filename)
                         .foregroundStyle(Theme.txt).textInputAutocapitalization(.never) }
-                    field("Content") { TextField("the file body to seal", text: $content, axis: .vertical)
+                    field(L10n.t("nfil.content", state.language)) { TextField(L10n.t("nfil.content.ph", state.language), text: $content, axis: .vertical)
                         .lineLimit(1...3).foregroundStyle(Theme.txt) }
-                    Text("Programs").font(.caption).foregroundStyle(Theme.t2)
+                    Text(L10n.t("nfil.programs", state.language)).font(.caption).foregroundStyle(Theme.t2)
                     FlowChips(programs: programs, selected: $selected)
                     Button(action: create) {
-                        HStack { if busy { ProgressView().tint(.white) }; Text("Seal & create").bold() }
+                        HStack { if busy { ProgressView().tint(.white) }; Text(L10n.t("nfil.seal", state.language)).bold() }
                             .frame(maxWidth: .infinity).padding(.vertical, 12)
                             .background(Theme.brand).foregroundStyle(.white)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -64,10 +77,10 @@ private struct OutboundSection: View {
 
                 if let mintedToken {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Receive token — shown once").font(.headline).foregroundStyle(Theme.amber)
+                        Text(L10n.t("nfil.token.once", state.language)).font(.headline).foregroundStyle(Theme.amber)
                         Text(mintedToken).font(.system(.caption, design: .monospaced))
                             .foregroundStyle(Theme.txt)
-                        Text("Hand this to the recipient out of band; it is the only way to retrieve the file.")
+                        Text(L10n.t("nfil.token.hand", state.language))
                             .font(.caption).foregroundStyle(Theme.t2)
                     }.card()
                 }
@@ -86,7 +99,7 @@ private struct OutboundSection: View {
                             Text("retained until \(exp)").font(.caption2).foregroundStyle(Theme.t3)
                         }
                         if t.status != "revoked" {
-                            Button("Revoke access") { revoke(t) }
+                            Button(L10n.t("ntr.revoke", state.language)) { revoke(t) }
                                 .font(.caption.bold()).foregroundStyle(Theme.red)
                         }
                     }.card()
@@ -145,7 +158,7 @@ private struct IntakeSection: View {
     @State private var purpose = ""
     @State private var intakes: [Intake] = []
     @State private var mintedToken: String?
-    // "Act as the sender" demo form
+    // L10n.t("ntr.as.sender", state.language) demo form
     @State private var senderToken = ""
     @State private var senderFile = ""
     @State private var senderContent = ""
@@ -155,19 +168,19 @@ private struct IntakeSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Secure intake").font(.title2.bold()).foregroundStyle(Theme.txt)
-            Text("Ask a counterparty to send a file in. They authenticate with the one-shot submit token — no account needed.")
+            Text(L10n.t("ntr.intake", state.language)).font(.title2.bold()).foregroundStyle(Theme.txt)
+            Text(L10n.t("ntr.intake.sub", state.language))
                 .font(.footnote).foregroundStyle(Theme.t2)
 
             VStack(alignment: .leading, spacing: 10) {
-                field("From") { TextField("who should send it", text: $fromParty)
+                field(L10n.t("nreq.from", state.language)) { TextField(L10n.t("nreq.from.ph", state.language), text: $fromParty)
                     .foregroundStyle(Theme.txt).textInputAutocapitalization(.never) }
-                field("Purpose (optional)") { TextField("why you need it", text: $purpose)
+                field(L10n.t("nreq.purpose", state.language)) { TextField(L10n.t("nreq.purpose.ph", state.language), text: $purpose)
                     .foregroundStyle(Theme.txt) }
-                Text("Programs").font(.caption).foregroundStyle(Theme.t2)
+                Text(L10n.t("nfil.programs", state.language)).font(.caption).foregroundStyle(Theme.t2)
                 FlowChips(programs: programs, selected: $selected)
                 Button(action: create) {
-                    HStack { if busy { ProgressView().tint(.white) }; Text("Request file").bold() }
+                    HStack { if busy { ProgressView().tint(.white) }; Text(L10n.t("nreq.go", state.language)).bold() }
                         .frame(maxWidth: .infinity).padding(.vertical, 12)
                         .background(Theme.brand).foregroundStyle(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -178,10 +191,10 @@ private struct IntakeSection: View {
 
             if let mintedToken {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Submit token — shown once").font(.headline).foregroundStyle(Theme.amber)
+                    Text(L10n.t("nint.token.once", state.language)).font(.headline).foregroundStyle(Theme.amber)
                     Text(mintedToken).font(.system(.caption, design: .monospaced))
                         .foregroundStyle(Theme.txt)
-                    Text("Send this to the counterparty out of band; it is their only way in.")
+                    Text(L10n.t("nint.token.send", state.language))
                         .font(.caption).foregroundStyle(Theme.t2)
                 }.card()
             }
@@ -200,7 +213,7 @@ private struct IntakeSection: View {
                     Text(i.programs.map { $0.uppercased() }.joined(separator: " "))
                         .font(.caption2).foregroundStyle(Theme.t3)
                     if i.status == "submitted" {
-                        Button("Read sealed file") { read(i) }
+                        Button(L10n.t("ntr.read", state.language)) { read(i) }
                             .font(.caption.bold()).foregroundStyle(Theme.brandA)
                         if let f = received[i.id] {
                             Text("\(f.filename ?? "file"): \(f.content ?? "")")
@@ -212,7 +225,7 @@ private struct IntakeSection: View {
                         }
                     }
                     if i.status == "open" {
-                        Button("Close request") { close(i) }
+                        Button(L10n.t("nreq.close", state.language)) { close(i) }
                             .font(.caption.bold()).foregroundStyle(Theme.red)
                     }
                 }.card()
@@ -220,16 +233,16 @@ private struct IntakeSection: View {
 
             // The counterparty's side, for exercising the loop on-device.
             VStack(alignment: .leading, spacing: 10) {
-                Text("Act as the sender").font(.headline).foregroundStyle(Theme.txt)
-                Text("Paste an intake's submit token to answer it — this is what the counterparty does, no vault account involved.")
+                Text(L10n.t("ntr.as.sender", state.language)).font(.headline).foregroundStyle(Theme.txt)
+                Text(L10n.t("ntr.answer.sub", state.language))
                     .font(.caption).foregroundStyle(Theme.t2)
-                field("Submit token") { TextField("intk token", text: $senderToken)
+                field(L10n.t("nint.token", state.language)) { TextField(L10n.t("nint.token.ph", state.language), text: $senderToken)
                     .foregroundStyle(Theme.txt).textInputAutocapitalization(.never) }
-                field("Filename") { TextField("e.g. w2.pdf", text: $senderFile)
+                field(L10n.t("nfil.filename", state.language)) { TextField(L10n.t("nint.filename.ph", state.language), text: $senderFile)
                     .foregroundStyle(Theme.txt).textInputAutocapitalization(.never) }
-                field("Content") { TextField("the file body", text: $senderContent)
+                field(L10n.t("nfil.content", state.language)) { TextField(L10n.t("nint.content.ph", state.language), text: $senderContent)
                     .foregroundStyle(Theme.txt) }
-                Button("Submit into the newest open intake") { submit() }
+                Button(L10n.t("nint.go", state.language)) { submit() }
                     .font(.caption.bold()).foregroundStyle(.white)
                     .frame(maxWidth: .infinity).padding(.vertical, 10)
                     .background(Theme.brandA).clipShape(RoundedRectangle(cornerRadius: 11))

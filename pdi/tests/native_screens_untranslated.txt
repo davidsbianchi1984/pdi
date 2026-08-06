@@ -71,6 +71,6 @@
 #     asked     is this literal English
 #     mattered  is this literal something a translator should touch
 
-ios: 90
-android: 73
-windows: 101
+ios: 65
+android: 59
+windows: 69

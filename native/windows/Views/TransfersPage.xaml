@@ -8,20 +8,22 @@
     <Pivot MaxWidth="680" Margin="20,12" Foreground="{StaticResource PdiTxtBrush}">
 
         <!-- Outbound: seal a file for a recipient -->
-        <PivotItem Header="Outbound">
+        <PivotItem x:Name="NtrTOutbound" >
     <ScrollViewer>
         <StackPanel Spacing="14" Padding="4" HorizontalAlignment="Left">
-            <TextBlock Text="Transfers" FontSize="22" FontWeight="Bold" Foreground="{StaticResource PdiTxtBrush}" />
-            <TextBlock Text="Seal a file for a recipient under compliance controls. Retention follows the strictest program you pick."
+            <TextBlock x:Name="TabTransfers"  FontSize="22" FontWeight="Bold" Foreground="{StaticResource PdiTxtBrush}" />
+            <TextBlock x:Name="NfilSub" 
                        Foreground="{StaticResource PdiT2Brush}" FontSize="13" TextWrapping="Wrap" />
 
             <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="10">
-                    <TextBox x:Name="RecipientBox" Header="Recipient" PlaceholderText="who it's for" />
-                    <TextBox x:Name="FilenameBox" Header="Filename" PlaceholderText="e.g. results.pdf" />
-                    <TextBox x:Name="ContentBox" Header="Content" PlaceholderText="the file body to seal"
+                    <TextBox x:Name="RecipientBox"   />
+                    <TextBox x:Name="FilenameBox"   />
+                    <TextBox x:Name="ContentBox"  
                              AcceptsReturn="True" TextWrapping="Wrap" Height="70" />
+                    <TextBlock x:Name="ProgramsLabel" FontSize="12"
+                               Foreground="{StaticResource PdiT2Brush}" />
                     <ItemsControl x:Name="ProgramChips">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -35,7 +37,7 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <Button x:Name="CreateButton" Content="Seal &amp; create" HorizontalAlignment="Stretch"
+                    <Button x:Name="CreateButton"  HorizontalAlignment="Stretch"
                             Height="42" Foreground="White" Click="OnCreate">
                         <Button.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
@@ -54,11 +56,11 @@
                     BorderBrush="{StaticResource PdiLineBrush}" BorderThickness="1" CornerRadius="16"
                     Padding="16" Visibility="Collapsed">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="Receive token — shown once" FontWeight="Bold" FontSize="15"
+                    <TextBlock x:Name="NfilTokenOnce"  FontWeight="Bold" FontSize="15"
                                Foreground="{StaticResource PdiTxtBrush}" />
                     <TextBlock x:Name="TokenText" FontFamily="Consolas" FontSize="12"
                                Foreground="{StaticResource PdiT2Brush}" TextWrapping="Wrap" />
-                    <TextBlock Text="Hand this to the recipient out of band; it is the only way to retrieve the file."
+                    <TextBlock x:Name="NfilTokenHand" 
                                Foreground="{StaticResource PdiT2Brush}" FontSize="12" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
@@ -76,7 +78,7 @@
                                                Foreground="{StaticResource PdiT2Brush}" FontSize="12" />
                                 </Grid>
                                 <TextBlock Text="{Binding Meta}" Foreground="{StaticResource PdiT2Brush}" FontSize="12" />
-                                <Button Content="Revoke access" Tag="{Binding Id}" Click="OnRevoke"
+                                <Button Content="{Binding RevokeLabel}" Tag="{Binding Id}" Click="OnRevoke"
                                         Visibility="{Binding RevokeVisibility}"
                                         Background="Transparent" Foreground="{StaticResource PdiRed}" />
                             </StackPanel>
@@ -89,19 +91,19 @@
         </PivotItem>
 
         <!-- Intake: request a file in; the sender submits with a one-shot token -->
-        <PivotItem Header="Intake">
+        <PivotItem x:Name="NtrTIntake" >
             <ScrollViewer>
                 <StackPanel Spacing="14" Padding="4" HorizontalAlignment="Left">
-                    <TextBlock Text="Secure intake" FontSize="22" FontWeight="Bold"
+                    <TextBlock x:Name="NtrIntake"  FontSize="22" FontWeight="Bold"
                                Foreground="{StaticResource PdiTxtBrush}" />
-                    <TextBlock Text="Ask a counterparty to send a file in. They authenticate with the one-shot submit token — no account needed."
+                    <TextBlock x:Name="NtrIntakeSub" 
                                Foreground="{StaticResource PdiT2Brush}" FontSize="13" TextWrapping="Wrap" />
 
                     <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="10">
-                            <TextBox x:Name="FromBox" Header="From" PlaceholderText="who should send it" />
-                            <TextBox x:Name="PurposeBox" Header="Purpose (optional)" PlaceholderText="why you need it" />
+                            <TextBox x:Name="FromBox"   />
+                            <TextBox x:Name="PurposeBox"   />
                             <ItemsControl x:Name="IntakeProgramChips">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -115,7 +117,7 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <Button x:Name="RequestButton" Content="Request file" HorizontalAlignment="Stretch"
+                            <Button x:Name="RequestButton"  HorizontalAlignment="Stretch"
                                     Height="42" Foreground="White" Click="OnRequestIntake">
                                 <Button.Background>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
@@ -134,11 +136,11 @@
                             BorderBrush="{StaticResource PdiLineBrush}" BorderThickness="1" CornerRadius="16"
                             Padding="16" Visibility="Collapsed">
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Submit token — shown once" FontWeight="Bold" FontSize="15"
+                            <TextBlock x:Name="NintTokenOnce"  FontWeight="Bold" FontSize="15"
                                        Foreground="{StaticResource PdiTxtBrush}" />
                             <TextBlock x:Name="SubmitTokenText" FontFamily="Consolas" FontSize="12"
                                        Foreground="{StaticResource PdiT2Brush}" TextWrapping="Wrap" />
-                            <TextBlock Text="Send this to the counterparty out of band; it is their only way in."
+                            <TextBlock x:Name="NintTokenSend" 
                                        Foreground="{StaticResource PdiT2Brush}" FontSize="12" TextWrapping="Wrap" />
                         </StackPanel>
                     </Border>
@@ -160,10 +162,10 @@
                                                    FontFamily="Consolas" FontSize="11" TextWrapping="Wrap"
                                                    Visibility="{Binding FileVisibility}" />
                                         <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <Button Content="Read sealed file" Tag="{Binding Id}" Click="OnReadIntake"
+                                            <Button Content="{Binding ReadLabel}" Tag="{Binding Id}" Click="OnReadIntake"
                                                     Visibility="{Binding ReadVisibility}"
                                                     Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
-                                            <Button Content="Close request" Tag="{Binding Id}" Click="OnCloseIntake"
+                                            <Button Content="{Binding CloseLabel}" Tag="{Binding Id}" Click="OnCloseIntake"
                                                     Visibility="{Binding CloseVisibility}"
                                                     Background="Transparent" Foreground="{StaticResource PdiRed}" />
                                         </StackPanel>
@@ -176,14 +178,14 @@
                     <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
                             BorderThickness="1" CornerRadius="16" Padding="16">
                         <StackPanel Spacing="10">
-                            <TextBlock Text="Act as the sender" FontWeight="Bold" FontSize="16"
+                            <TextBlock x:Name="NtrAsSender"  FontWeight="Bold" FontSize="16"
                                        Foreground="{StaticResource PdiTxtBrush}" />
-                            <TextBlock Text="Paste an intake's submit token to answer it — this is what the counterparty does, no vault account involved."
+                            <TextBlock x:Name="NtrAnswerSub" 
                                        Foreground="{StaticResource PdiT2Brush}" FontSize="12" TextWrapping="Wrap" />
-                            <TextBox x:Name="SenderTokenBox" Header="Submit token" PlaceholderText="intk token" />
-                            <TextBox x:Name="SenderFileBox" Header="Filename" PlaceholderText="e.g. w2.pdf" />
-                            <TextBox x:Name="SenderContentBox" Header="Content" PlaceholderText="the file body" />
-                            <Button Content="Submit into the newest open intake" HorizontalAlignment="Stretch"
+                            <TextBox x:Name="SenderTokenBox"   />
+                            <TextBox x:Name="SenderFileBox"   />
+                            <TextBox x:Name="SenderContentBox"   />
+                            <Button x:Name="NintGo"  HorizontalAlignment="Stretch"
                                     Height="38" Click="OnSubmitIntake"
                                     Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
                         </StackPanel>

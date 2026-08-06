@@ -676,9 +676,9 @@ fun TransfersScreen(vm: VaultViewModel) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TabRow(selectedTabIndex = seg, containerColor = Pdi.Card, contentColor = Pdi.BrandA) {
-            listOf("Outbound", "Intake").forEachIndexed { i, t ->
+            listOf("ntr.t.outbound", "ntr.t.intake").forEachIndexed { i, t ->
                 Tab(selected = seg == i, onClick = { seg = i },
-                    text = { Text(t, fontSize = 13.sp) })
+                    text = { Text(L10n.t(t, vm.language), fontSize = 13.sp) })
             }
         }
         if (seg == 0) OutboundPanel(vm) else IntakePanel(vm)
@@ -704,15 +704,15 @@ private fun OutboundPanel(vm: VaultViewModel) {
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("Transfers", color = Pdi.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        Text("Seal a file for a recipient under compliance controls. Retention follows the strictest program you pick.",
+        Text(L10n.t("tab.transfers", vm.language), color = Pdi.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("nfil.sub", vm.language),
             color = Pdi.T2, fontSize = 13.sp)
 
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             labeledField(L10n.t("nfil.recipient", vm.language), recipient, L10n.t("nfil.recipient.ph", vm.language)) { recipient = it }
             labeledField(L10n.t("nfil.filename", vm.language), filename, L10n.t("nfil.filename.ph", vm.language)) { filename = it }
             labeledField(L10n.t("nfil.content", vm.language), content, L10n.t("nfil.content.ph", vm.language)) { content = it }
-            Text("Programs", color = Pdi.T2, fontSize = 12.sp)
+            Text(L10n.t("nfil.programs", vm.language), color = Pdi.T2, fontSize = 12.sp)
             programs.chunked(4).forEach { row ->
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     row.forEach { p ->
@@ -750,10 +750,10 @@ private fun OutboundPanel(vm: VaultViewModel) {
 
         minted?.let { tok ->
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("Receive token — shown once", color = Pdi.Amber, fontSize = 15.sp,
+                Text(L10n.t("nfil.token.once", vm.language), color = Pdi.Amber, fontSize = 15.sp,
                     fontWeight = FontWeight.Bold)
                 Text(tok, color = Pdi.Txt, fontSize = 11.sp)
-                Text("Hand this to the recipient out of band; it is the only way to retrieve the file.",
+                Text(L10n.t("nfil.token.hand", vm.language),
                     color = Pdi.T2, fontSize = 11.sp)
             }
         }
@@ -771,7 +771,7 @@ private fun OutboundPanel(vm: VaultViewModel) {
                 if (t.status != "revoked") {
                     TextButton(onClick = {
                         vm.call({ ApiClient.revokeTransfer(vm.token!!, t.id) }) { reload() }
-                    }) { Text("Revoke access", color = Pdi.Red, fontSize = 12.sp) }
+                    }) { Text(L10n.t("ntr.revoke", vm.language), color = Pdi.Red, fontSize = 12.sp) }
                 }
             }
         }
@@ -802,14 +802,14 @@ private fun IntakePanel(vm: VaultViewModel) {
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("Secure intake", color = Pdi.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        Text("Ask a counterparty to send a file in. They authenticate with the one-shot submit token — no account needed.",
+        Text(L10n.t("ntr.intake", vm.language), color = Pdi.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("ntr.intake.sub", vm.language),
             color = Pdi.T2, fontSize = 13.sp)
 
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             labeledField(L10n.t("nreq.from", vm.language), fromParty, L10n.t("nreq.from.ph", vm.language)) { fromParty = it }
             labeledField(L10n.t("nreq.purpose", vm.language), purpose, L10n.t("nreq.purpose.ph", vm.language)) { purpose = it }
-            Text("Programs", color = Pdi.T2, fontSize = 12.sp)
+            Text(L10n.t("nfil.programs", vm.language), color = Pdi.T2, fontSize = 12.sp)
             programs.chunked(4).forEach { row ->
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     row.forEach { p ->
@@ -844,10 +844,10 @@ private fun IntakePanel(vm: VaultViewModel) {
 
         minted?.let { tok ->
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("Submit token — shown once", color = Pdi.Amber, fontSize = 15.sp,
+                Text(L10n.t("nint.token.once", vm.language), color = Pdi.Amber, fontSize = 15.sp,
                     fontWeight = FontWeight.Bold)
                 Text(tok, color = Pdi.Txt, fontSize = 11.sp)
-                Text("Send this to the counterparty out of band; it is their only way in.",
+                Text(L10n.t("nint.token.send", vm.language),
                     color = Pdi.T2, fontSize = 11.sp)
             }
         }
@@ -866,7 +866,7 @@ private fun IntakePanel(vm: VaultViewModel) {
                         vm.call({ ApiClient.intakeFile(vm.token!!, i.id) }) { r ->
                             r.getOrNull()?.let { f -> received = received + (i.id to f) }
                         }
-                    }) { Text("Read sealed file", color = Pdi.BrandA, fontSize = 12.sp) }
+                    }) { Text(L10n.t("ntr.read", vm.language), color = Pdi.BrandA, fontSize = 12.sp) }
                     received[i.id]?.let { f ->
                         Text("${f.filename ?: "file"}: ${f.content ?: ""}",
                             color = Pdi.T2, fontSize = 11.sp,
@@ -877,15 +877,15 @@ private fun IntakePanel(vm: VaultViewModel) {
                 if (i.status == "open") {
                     TextButton(onClick = {
                         vm.call({ ApiClient.closeIntake(vm.token!!, i.id) }) { reload() }
-                    }) { Text("Close request", color = Pdi.Red, fontSize = 12.sp) }
+                    }) { Text(L10n.t("nreq.close", vm.language), color = Pdi.Red, fontSize = 12.sp) }
                 }
             }
         }
 
         // The counterparty's side, for exercising the loop on-device.
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Act as the sender", color = Pdi.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            Text("Paste an intake's submit token to answer it — this is what the counterparty does, no vault account involved.",
+            Text(L10n.t("ntr.as.sender", vm.language), color = Pdi.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("ntr.answer.sub", vm.language),
                 color = Pdi.T2, fontSize = 12.sp)
             labeledField(L10n.t("nint.token", vm.language), senderToken, L10n.t("nint.token.ph", vm.language)) { senderToken = it }
             labeledField(L10n.t("nfil.filename", vm.language), senderFile, L10n.t("nint.filename.ph", vm.language)) { senderFile = it }
