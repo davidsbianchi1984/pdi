@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api, BaaStatus, CompliancePrograms, HostingMode, KeyVersion,
          Row, TenantKey } from "../api";
 import { useSession } from "../store";
+import { deviceLanguage, fill, Lang, t } from "../l10n";
 
 /**
  * Who holds the key, who holds the hardware, and what paperwork the law
@@ -48,6 +49,7 @@ export function Custody() {
   const token = session.tenantToken;
   const admin = session.adminToken || undefined;
   const tenantId = session.tenantId;
+  const lang = (session.language as Lang) ?? deviceLanguage();
 
   function load() {
     api.compliancePrograms().then((r) => setPrograms(r.programs)).catch(fail);
@@ -75,37 +77,41 @@ export function Custody() {
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Custody</h2>
-        <span className="muted small">the key, the hardware, the paperwork</span>
+        <h2>{t("cu.title", lang)}</h2>
+        <span className="muted small">{t("cu.sub", lang)}</span>
       </header>
 
       {error && <div className="error">⚠ {error}</div>}
       {said && <div className="muted small">{said}</div>}
 
       <div className="card">
-        <h3>Can the operator decrypt this?</h3>
+        <h3>{t("cu.decrypt", lang)}</h3>
         <p style={{ fontSize: "1.4em" }}>
-          <strong>{key ? (key.operator_can_decrypt ? "Yes" : "No") : "…"}</strong>
+          <strong>{key
+            ? (key.operator_can_decrypt ? t("cu.yes", lang) : t("cu.no", lang))
+            : "…"}</strong>
         </p>
         {key && <p className="muted small">{key.note}</p>}
         {key && (
           <p className="muted small">
-            provider <code>{key.provider}</code> ·{" "}
+            {t("cu.provider", lang)} <code>{key.provider}</code> ·{" "}
             {key.customer_managed
-              ? "customer-managed" : "under deployment custody"}
+              ? t("cu.customer_managed", lang) : t("cu.deployment", lang)}
           </p>
         )}
         <div className="row">
-          <input value={customerKey} placeholder="base64 32-byte key"
+          <input value={customerKey} placeholder={t("cu.key.ph", lang)}
                  onChange={(e) => setCustomerKey(e.target.value)} />
           <button className="primary" disabled={busy || !customerKey.trim()}
                   onClick={() => run(() => api.setTenantKey(
                     { provider: "held", key: customerKey.trim() }, token!))}>
-            Hold our own key
+            {t("cu.hold", lang)}
           </button>
           <button disabled={busy}
                   onClick={() => run(() => api.setTenantKey(
-                    { provider: "kms" }, token!))}>Use a KMS</button>
+                    { provider: "kms" }, token!))}>
+            {t("cu.kms", lang)}
+          </button>
           <button disabled={busy}
                   onClick={() => run(async () => {
                     try {
@@ -116,12 +122,12 @@ export function Custody() {
                       // needs told rather than shown as a generic failure.
                       setSaid((e as Error).message);
                     }
-                  })}>Hand it back</button>
+                  })}>{t("cu.handback", lang)}</button>
         </div>
       </div>
 
       <div className="card">
-        <h3>Key versions</h3>
+        <h3>{t("cu.versions", lang)}</h3>
         <div className="row">
           <button disabled={busy}
                   onClick={() => run(async () => {
@@ -130,59 +136,54 @@ export function Custody() {
                       + `${r.resealed} resealed · `
                       + `${r.customer_managed_skipped} skipped because the `
                       + `customer holds their key and we cannot open it`);
-                  })}>Reseal under the active key</button>
+                  })}>{t("cu.reseal", lang)}</button>
           <button disabled={busy}
                   onClick={() => run(async () => {
                     const r = await api.retireOldKeys(admin);
                     setVersions(r.versions);
                     setSaid(`${r.retired} retired`);
-                  })}>Retire the old ones</button>
+                  })}>{t("cu.retire", lang)}</button>
         </div>
         {versions.map((v) => (
           <div key={v.version} className="row"
                style={{ padding: "4px 0" }}>
             <span style={{ flex: 1 }}>version {v.version}</span>
             <span className="muted small">
-              {v.provider}{v.active ? " · active" : ""} ·{" "}
+              {v.provider}{v.active ? ` · ${t("cu.active", lang)}` : ""} ·{" "}
               {new Date(v.created_at).toLocaleString()}
             </span>
           </div>
         ))}
-        <p className="muted small">
-          A reseal skips every record the customer holds the key for, and
-          reports how many. That number is the honest measure of bring-your-
-          own-key: it is how much of the vault the operator could not touch
-          even when asked to.
-        </p>
+        <p className="muted small">{t("cu.reseal.note", lang)}</p>
       </div>
 
       <div className="card">
-        <h3>Take it away, and put it back</h3>
+        <h3>{t("cu.away", lang)}</h3>
         <div className="row">
           <button disabled={busy || !token}
                   onClick={() => run(async () => {
                     const s = await api.snapshot(token!);
                     setSnapshot(s.records);
                     setSaid(`${s.records.length} record(s) in hand`);
-                  })}>Snapshot</button>
+                  })}>{t("cu.snapshot", lang)}</button>
           <button disabled={busy || !snapshot}
                   onClick={() => run(() =>
                     api.restoreRecords(snapshot!, token!))}>
-            Restore from the snapshot
+            {t("cu.restore", lang)}
           </button>
           <button disabled={busy || !tenantId}
                   onClick={() => run(() =>
                     api.restoreTenant(tenantId!, admin))}>
-            Restore the whole tenant
+            {t("cu.restore.all", lang)}
           </button>
         </div>
         <div className="row">
-          <input value={recordKey} placeholder="a record key"
+          <input value={recordKey} placeholder={t("cu.delrec.ph", lang)}
                  onChange={(e) => setRecordKey(e.target.value)} />
           <button disabled={busy || !recordKey.trim()}
                   onClick={() => run(() =>
                     api.deleteRecord(recordKey.trim(), token!))}>
-            Delete a record
+            {t("cu.delrec", lang)}
           </button>
         </div>
         <div className="row">
@@ -194,46 +195,41 @@ export function Custody() {
           <button className="danger" disabled={busy || !tenantId}
                   onClick={() => run(() =>
                     api.deleteTenant(tenantId!, deleteMode, admin))}>
-            Delete the tenant
+            {t("cu.deltenant", lang)}
           </button>
         </div>
-        <p className="muted small">
-          The audit trail survives every one of these. A deletion is an entry
-          in the chain, not a gap in it — a vault that could erase the record
-          of erasing something would not be evidence of anything.
-        </p>
+        <p className="muted small">{t("cu.audit.note", lang)}</p>
       </div>
 
       <div className="card">
-        <h3>Tokens</h3>
+        <h3>{t("cu.tokens", lang)}</h3>
         <div className="row">
           <button disabled={busy || !tenantId}
                   onClick={() => run(async () => {
                     const t = await api.mintToken(tenantId!, "read", admin);
                     setMinted(t.token);
-                  })}>Mint a read token</button>
+                  })}>{t("cu.mint.read", lang)}</button>
           <button disabled={busy || !tenantId}
                   onClick={() => run(async () => {
                     const t = await api.mintToken(tenantId!, "write", admin);
                     setMinted(t.token);
-                  })}>Mint a write token</button>
+                  })}>{t("cu.mint.write", lang)}</button>
           <button disabled={busy || !minted}
                   onClick={() => run(async () => {
                     await api.revokeToken(minted!, admin);
                     setMinted(null);
-                    setSaid("Revoked.");
-                  })}>Revoke it</button>
+                    setSaid(t("cu.revoked", lang));
+                  })}>{t("cu.revoke", lang)}</button>
         </div>
         {minted && (
           <p className="muted small">
-            <code>{minted}</code> — shown once. Only its SHA-256 is stored,
-            so nothing here or anywhere else can show it to you again.
+            <code>{minted}</code> {t("cu.minted.note", lang)}
           </p>
         )}
       </div>
 
       <div className="card">
-        <h3>The paperwork</h3>
+        <h3>{t("cu.paperwork", lang)}</h3>
         {baa && (
           <p className="muted small">
             {baa.executed
@@ -242,17 +238,17 @@ export function Custody() {
           </p>
         )}
         <div className="row">
-          <label>Customer legal name
-            <input value={legalName} placeholder="Customer legal name"
+          <label>{t("cu.cust.name", lang)}
+            <input value={legalName} placeholder={t("cu.cust.name", lang)}
                    onChange={(e) => setLegalName(e.target.value)} />
           </label>
-          <label>Operator legal name
-            <input value={operatorName} placeholder="Operator legal name"
+          <label>{t("cu.op.name", lang)}
+            <input value={operatorName} placeholder={t("cu.op.name", lang)}
                    onChange={(e) => setOperatorName(e.target.value)} />
           </label>
           {/* The date box carried no name at all — the other two at least
               said theirs in grey until somebody typed over it. */}
-          <label>Effective date
+          <label>{t("cu.eff", lang)}
             <input value={effective} type="date"
                    onChange={(e) => setEffective(e.target.value)} />
           </label>
@@ -261,25 +257,30 @@ export function Custody() {
                   onClick={() => run(() => api.recordBaa(tenantId!, {
                     customer_legal_name: legalName.trim(),
                     operator_legal_name: operatorName.trim(),
-                    effective_date: effective }, admin))}>Record it</button>
+                    effective_date: effective }, admin))}>
+            {t("cu.record", lang)}
+          </button>
           <button disabled={busy || !tenantId}
                   onClick={() => run(() =>
-                    api.rescindBaa(tenantId!, admin))}>Rescind</button>
+                    api.rescindBaa(tenantId!, admin))}>
+            {t("cu.rescind", lang)}
+          </button>
         </div>
         {tenantBaaRow?.executed && (
           <p className="muted small">
-            On file for this tenant: {tenantBaaRow.customer_legal_name} ↔{" "}
+            {t("cu.onfile", lang)} {tenantBaaRow.customer_legal_name} ↔{" "}
             {tenantBaaRow.operator_legal_name}
           </p>
         )}
-        <h4>Programs</h4>
+        <h4>{t("cu.programs", lang)}</h4>
         {programs.map((p) => (
           <div key={p.key}
                style={{ padding: "8px 0", borderBottom: "1px solid var(--line)" }}>
             <div className="row">
               <strong style={{ flex: 1 }}>{p.label}</strong>
               <span className="muted small">
-                {p.sector} · retention {p.retention_days} days
+                {p.sector} ·{" "}
+                {fill("cu.retention", lang, { n: p.retention_days })}
               </span>
             </div>
             <div className="muted small">{p.summary}</div>
@@ -289,7 +290,7 @@ export function Custody() {
       </div>
 
       <div className="card">
-        <h3>Where it physically is</h3>
+        <h3>{t("cu.where", lang)}</h3>
         {mine && (
           <p className="muted small">
             <strong>{mine.title}</strong> — {mine.means} · {mine.price}
@@ -311,7 +312,7 @@ export function Custody() {
           <button disabled={busy}
                   onClick={() => run(() => api.recordDeployment({
                     name: "new site", option: "colocation" }, token!))}>
-            Record a deployment
+            {t("cu.deploy", lang)}
           </button>
         </div>
         {mine && (

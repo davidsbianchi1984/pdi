@@ -4,6 +4,7 @@ import {
   type GatePage, type GateRoster,
 } from "../api";
 import { useSession } from "../store";
+import { deviceLanguage, Lang, t } from "../l10n";
 
 /**
  * Continuity, and the gateway that stands in when nobody is on shift.
@@ -29,6 +30,7 @@ import { useSession } from "../store";
 export function Continuity() {
   const { session } = useSession();
   const token = session.tenantToken;
+  const lang = (session.language as Lang) ?? deviceLanguage();
 
   const [bequests, setBequests] = useState<Bequest[]>([]);
   const [ceiling, setCeiling] = useState<GateCeiling | null>(null);
@@ -77,22 +79,17 @@ export function Continuity() {
     finally { setBusy(false); }
   }
 
-  if (!token) return <p>Paste a tenant token to sign in.</p>;
+  if (!token) return <p>{t("co.signin", lang)}</p>;
 
   return (
     <section className="screen">
-      <h2>Continuity &amp; gateway</h2>
+      <h2>{t("co.title", lang)}</h2>
       {error && <p className="error">{error}</p>}
       {said && <p className="muted">{said}</p>}
 
-      <h3>Bequests</h3>
-      <p className="muted">
-        A standing instruction, dormant when written. Creating one grants
-        nothing — it records what <em>would</em> become readable, by whom, if
-        the condition were ever attested by an operator holding a different
-        credential.
-      </p>
-      {bequests.length === 0 && <p className="muted">Nothing bequeathed.</p>}
+      <h3>{t("co.bequests", lang)}</h3>
+      <p className="muted">{t("co.bequests.note", lang)}</p>
+      {bequests.length === 0 && <p className="muted">{t("co.nothing", lang)}</p>}
       {bequests.map((b) => (
         <div key={b.id} className="card">
           <div className="row">
@@ -101,10 +98,10 @@ export function Continuity() {
             {b.revoked
               ? <span className="pill">revoked</span>
               : b.activated
-                ? <span className="pill">in force</span>
-                : <span className="muted">dormant</span>}
+                ? <span className="pill">{t("co.inforce", lang)}</span>
+                : <span className="muted">{t("co.dormant", lang)}</span>}
           </div>
-          <p className="muted">Would open: {b.key_prefixes.join(", ")}</p>
+          <p className="muted">{t("co.wouldopen", lang)} {b.key_prefixes.join(", ")}</p>
           {b.note && <p>{b.note}</p>}
           {b.activated && b.activation_ref && (
             <p className="muted">
@@ -125,11 +122,11 @@ export function Continuity() {
         </div>
       ))}
       <div className="row">
-        <input value={grantee} placeholder="Who inherits the read"
+        <input value={grantee} placeholder={t("co.grantee.ph", lang)}
           onChange={(e) => setGrantee(e.target.value)} />
-        <input value={prefixes} placeholder="Key prefixes, comma separated"
+        <input value={prefixes} placeholder={t("co.prefixes.ph", lang)}
           onChange={(e) => setPrefixes(e.target.value)} />
-        <input value={note} placeholder="Note (optional)"
+        <input value={note} placeholder={t("co.note.ph", lang)}
           onChange={(e) => setNote(e.target.value)} />
         <button disabled={busy || !grantee.trim() || !prefixes.trim()}
           onClick={() => run(async () => {
@@ -140,22 +137,18 @@ export function Continuity() {
             }, token);
             setGrantee(""); setPrefixes(""); setNote("");
           }, "Recorded. It opens nothing until it is activated.")}>
-          Record a bequest
+          {t("co.record", lang)}
         </button>
       </div>
 
-      <h3>Activation — the operator's act</h3>
-      <p className="muted">
-        Activation needs an admin token, not this tenant's. That separation is
-        the point: the person who wrote the bequest cannot also be the one who
-        declares its condition met. The reference given here goes into the
-        audit chain, and the grant token is shown <strong>once</strong>.
-      </p>
+      <h3>{t("co.activation", lang)}</h3>
+      <p className="muted">{t("co.activation.note", lang)}</p>
       <div className="row">
         <input type="password" value={adminToken}
-          placeholder={session.adminToken ? "Admin token (from your session)" : "Admin token"}
+          placeholder={session.adminToken
+            ? t("co.admin.session.ph", lang) : t("co.admin.ph", lang)}
           onChange={(e) => setAdminToken(e.target.value)} />
-        <input value={ref} placeholder="What attests the condition"
+        <input value={ref} placeholder={t("co.ref.ph", lang)}
           onChange={(e) => setRef(e.target.value)} />
       </div>
       {bequests.filter((b) => !b.activated && !b.revoked).map((b) => (
@@ -166,31 +159,24 @@ export function Continuity() {
               const out = await api.activateBequest(b.id, ref.trim(), adminToken.trim());
               if (out.grant_token) setMinted({ id: b.id, token: out.grant_token });
               setRef("");
-            }, "Activated.")}>
-            Activate
+            }, t("co.activated", lang))}>
+            {t("co.activate", lang)}
           </button>
         </div>
       ))}
       {minted && (
         <div className="card">
-          <p><strong>Grant token — copy it now.</strong> It is not stored and
-            will not be shown again.</p>
+          <p><strong>{t("co.minted", lang)}</strong>{" "}
+            {t("co.minted.note", lang)}</p>
           <code>{minted.token}</code>
-          <button onClick={() => setMinted(null)}>I have copied it</button>
+          <button onClick={() => setMinted(null)}>{t("co.copied", lang)}</button>
         </div>
       )}
 
       {bequests.filter((b) => b.activated && !b.revoked).length > 0 && (
         <>
-          <h3>Taking a grant back</h3>
-          <p className="muted">
-            Activation mints a token and hands it to a person. Revoking the
-            bequest is not the same act — this kills the token itself, which
-            is what you want when a grant went to the wrong hands or the
-            condition turned out not to hold. The backend has always had it;
-            the console offered only the softer button beside it, so an
-            operator who needed this one had no way to press it.
-          </p>
+          <h3>{t("co.takeback", lang)}</h3>
+          <p className="muted">{t("co.takeback.note", lang)}</p>
           {bequests.filter((b) => b.activated && !b.revoked).map((b) => (
             <div key={b.id} className="row">
               <span>{b.grantee_name}</span>
@@ -198,24 +184,20 @@ export function Continuity() {
                       disabled={busy || !adminToken.trim()}
                       onClick={() => run(
                         () => api.revokeBequestGrant(b.id, adminToken.trim()),
-                        "The grant token no longer opens anything.")}>
-                Revoke the grant token
+                        t("co.revoked.grant", lang))}>
+                {t("co.revoke.grant", lang)}
               </button>
             </div>
           ))}
         </>
       )}
 
-      <h3>Redeeming — the heir's side</h3>
-      <p className="muted">
-        Two separate secrets, and neither works alone: the grant token says
-        the condition was attested, the customer key decrypts. An executor who
-        holds only the token opens nothing.
-      </p>
+      <h3>{t("co.redeem", lang)}</h3>
+      <p className="muted">{t("co.redeem.note", lang)}</p>
       <div className="row">
-        <input type="password" value={heirGrant} placeholder="Grant token"
+        <input type="password" value={heirGrant} placeholder={t("co.grant.ph", lang)}
           onChange={(e) => setHeirGrant(e.target.value)} />
-        <input type="password" value={heirKey} placeholder="Customer key (base64)"
+        <input type="password" value={heirKey} placeholder={t("co.custkey.ph", lang)}
           onChange={(e) => setHeirKey(e.target.value)} />
         <button disabled={busy || !heirGrant.trim() || !heirKey.trim()}
           onClick={() => run(async () => {
@@ -243,20 +225,20 @@ export function Continuity() {
       ))}
       {heirValue && <pre>{heirValue}</pre>}
 
-      <h3>The gateway's ceiling</h3>
+      <h3>{t("co.ceiling", lang)}</h3>
       {/* Rendered from the server, key by key. This is the statement of what
           the agent may and may not do; paraphrasing it in the client would
           make the console the authority on a boundary it does not own. */}
       {ceiling && (
         <div className="card">
           <p><strong>{ceiling.rule}</strong></p>
-          <p className="muted">It may:</p>
+          <p className="muted">{t("co.may", lang)}</p>
           <ul>
             {Object.entries(ceiling.may).map(([k, v]) => (
               <li key={k}><strong>{k}</strong> — {v}</li>
             ))}
           </ul>
-          <p className="muted">It may never:</p>
+          <p className="muted">{t("co.maynever", lang)}</p>
           <ul>
             {Object.entries(ceiling.may_never).map(([k, v]) => (
               <li key={k}><strong>{k}</strong> — {v}</li>
@@ -265,14 +247,14 @@ export function Continuity() {
         </div>
       )}
 
-      <h3>Who is on shift</h3>
+      <h3>{t("co.shift", lang)}</h3>
       {roster && (
         <p className="muted">
           {roster.anybody_on_shift
             ? `${roster.on_now.map((r) => r.name).join(", ")} on now.`
-            : "Nobody on shift."}
+            : t("co.nobody", lang)}
           {roster.timezone ? ` Times in ${roster.timezone}.` : ""}
-          {!roster.configured && " No roster configured yet."}
+          {!roster.configured && t("co.noroster", lang)}
         </p>
       )}
       {(roster?.roster ?? []).map((r) => (
@@ -282,17 +264,17 @@ export function Continuity() {
             <span className="muted">{r.role}</span>
             {r.days && <span className="muted">{r.days}</span>}
             {r.from && <span className="muted">{r.from}–{r.to}</span>}
-            {r.crosses_midnight && <span className="muted">over midnight</span>}
+            {r.crosses_midnight && <span className="muted">{t("co.overmidnight", lang)}</span>}
           </div>
           <button disabled={busy}
-            onClick={() => run(() => api.removeFromRoster(r.id, token), "Removed.")}>
-            Remove
+            onClick={() => run(() => api.removeFromRoster(r.id, token), t("co.removed", lang))}>
+            {t("co.remove", lang)}
           </button>
         </div>
       ))}
       <div className="row">
         <label>Name
-          <input value={rosterName} placeholder="Name"
+          <input value={rosterName} placeholder={t("co.name.ph", lang)}
             onChange={(e) => setRosterName(e.target.value)} />
         </label>
         <label>Role
@@ -306,11 +288,11 @@ export function Continuity() {
             await api.addToRoster({ name: rosterName.trim(), role: rosterRole }, token);
             setRosterName("");
           }, "Added.")}>
-          Add to roster
+          {t("co.addroster", lang)}
         </button>
       </div>
       <div className="row">
-        <input value={tz} placeholder="Timezone (Europe/London)"
+        <input value={tz} placeholder={t("co.tz.ph", lang)}
           onChange={(e) => setTz(e.target.value)} />
         <button disabled={busy || !tz.trim()}
           onClick={() => run(async () => {
@@ -321,26 +303,24 @@ export function Continuity() {
         </button>
       </div>
 
-      <h3>What it sent</h3>
-      <p className="muted">
-        Pages the gateway raised when nobody was reachable, and whether they
-        arrived. A page that failed to deliver is the one worth seeing.
-      </p>
+      <h3>{t("co.sent", lang)}</h3>
+      <p className="muted">{t("co.sent.note", lang)}</p>
       {channel && (
         <p className="muted">
-          Channel{" "}
+          {t("co.channel", lang)}{" "}
           <strong>
-            {channel.configured ? "configured" : "not configured"}
+            {channel.configured
+              ? t("co.configured", lang) : t("co.notconfigured", lang)}
           </strong>
-          {channel.signed ? ", signed" : ""}
+          {channel.signed ? t("co.signed", lang) : ""}
           {channel.note ? ` — ${channel.note}` : ""}
         </p>
       )}
       {pages.length === 0 && (
         <p className="muted">
           {channel && !channel.configured
-            ? "Nothing paged — and nothing could have been, because no channel is configured. That is a different fact from a quiet week."
-            : "Nothing paged."}
+            ? t("co.nothingcould", lang)
+            : t("co.nothingpaged", lang)}
         </p>
       )}
       {pages.map((p, i) => (

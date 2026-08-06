@@ -5,30 +5,30 @@
 # test_the_desktop_and_the_phone_say_different_things.py, matched exactly in
 # both directions.
 #
-# ## The table exists now, and the zero means something different
+# ## Three zeros, three different reasons
 #
-# When this record was written at 0.48.1 it was empty because `app/src/l10n.ts`
-# **did not exist**: this console had no localization table at all, and the
-# zero meant *nothing to compare* rather than *nothing wrong*. The file said so
-# in its own text, and a check fired if that phrase were ever removed while the
-# table was still absent.
+# **0.48.1.** Empty because `app/src/l10n.ts` did not exist. The zero meant
+# *nothing to compare*, and the file said so, with a check that fired if that
+# phrase were removed while the table was still absent.
 #
-# 0.48.2 created the table and wired the first screen. So the zero now means
-# something else, and this file has to say which — the whole reason
-# `test_a_record_that_outlived_the_code.py` exists.
+# **0.48.2.** The table arrived with 36 rows and one English string in common
+# with each shell. Still empty, now because the two tables were about different
+# screens. This file predicted what would happen next:
+#
+#     it becomes a real record the moment a screen exists on both sides
+#
+# **0.48.3.** It did, within one round. Custody and Continuity brought the
+# table to 133 rows, and the guard immediately found one: `co.admin.ph`
+# against Android's `nadm.token`, both **Admin token**, disagreeing in
+# Portuguese, Hindi and Arabic. The console adopted the shells' wording — the
+# rule 0.48.1 settled — and the count returned to zero.
 #
 #     asked     do the console and the shells disagree
-#     mattered  do they yet have anything to disagree about
+#     mattered  is anything watching while they grow
 #
-# **36 console rows, and one English string in common with each shell.** The
-# console's rows are the Guiding screen's (`gd.*`); the shells' are the file,
-# recipient and transfer screens' (`nfil.*`, `ntr.*`). Two tables about
-# different screens cannot contradict each other yet.
-#
-# So this is a floor, but a shallow one: it becomes a real record the moment a
-# screen exists on both sides, which `console_untranslated.txt` puts at 229
-# strings and six screens away. The sibling products reached 102 and 25
-# disagreements by growing two tables past each other without ever comparing
-# them. This one is being grown with the comparison already running.
+# So this is a floor that has now done its job once, at a scale of one row,
+# which is the whole argument for building the table with the comparison
+# already running. The sibling products reached 102 and 25 disagreements by
+# growing two tables past each other for many releases with nothing watching.
 #
 # ceiling: 0

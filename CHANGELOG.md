@@ -4,6 +4,58 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.48.3] — 2026-08-06
+
+### Custody and Continuity read in the tenant's language
+
+The next bite out of this console's English, and not the largest screens first:
+**Custody** and **Continuity** are decisions rather than descriptions, which is
+the criterion this audit has used since the alarm surface.
+
+    229 → 177
+
+**Custody** answers the only question this product exists for — *can the
+operator decrypt this?* — and carries the sentence naming the honest measure of
+bring-your-own-key: how much of the vault the operator could not touch even
+when asked to. It also says, in ten languages now, that the audit trail
+survives a deletion: *a vault that could erase the record of erasing something
+would not be evidence of anything*.
+
+**Continuity** is what happens to a sealed file after a death. A bequest is a
+standing instruction that grants nothing when written. Its activation needs a
+different credential from the one that wrote it, *because the person who wrote
+the bequest cannot also be the one who declares its condition met*. And the
+heir holds two separate secrets of which neither works alone.
+
+### The record predicted this, and was right within one round
+
+`console_native_split.txt` said at 0.48.2 that it *"becomes a real record the
+moment a screen exists on both sides"*. It did. The table went to 133 rows and
+the guard found one disagreement immediately: `co.admin.ph` against Android's
+`nadm.token`, both **Admin token**, differing in Portuguese, Hindi and Arabic.
+The console adopted the shells' wording and the count returned to zero.
+
+That is the argument for building a table with the comparison already running.
+The sibling products reached 102 and 25 disagreements by growing two tables
+past each other for many releases with nothing watching.
+
+### Four more guards followed their sentences
+
+0.48.2 recorded that localizing a screen blinds every guard that greps it for
+English. This round hit four: the custody question, the reseal note, the
+difference between revoking a grant and revoking a bequest, and the difference
+between *nothing paged* and *nothing could have been paged*. All four now go
+through `_says()` — the screen must ask for the key **and** the table must hold
+it in all ten languages. Six of the fourteen screen-greps are converted; the
+other eight go blind the round their screen is localized, and are expected to.
+
+### Changed
+
+- `Custody.tsx` and `Continuity.tsx` read their words from the table — 38 and
+  41 sites, 79 new rows across ten languages.
+
+Cut together with QRME and JIM-mini at app-v0.48.3.
+
 ## [0.48.2] — 2026-08-06
 
 ### The console gets a table, and the language picker goes first

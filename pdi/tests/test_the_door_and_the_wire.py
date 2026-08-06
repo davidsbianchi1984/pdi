@@ -278,15 +278,18 @@ def test_nothing_paged_is_told_apart_from_nothing_could_be():
     """An empty page list on a deployment with no channel is not a quiet
     week. The screen showed the first and meant the second."""
     flat = " ".join(_screen("Continuity.tsx").split())
-    assert "nothing could have been" in flat
+    problems = _says(flat, "co.nothingcould", "nothing could have been")
+    assert not problems, ("the difference between a quiet week and a mute "
+                          "channel:\n    " + "\n    ".join(problems))
 
 
 def test_revoking_a_grant_is_offered_as_its_own_act():
     """Revoking the bequest and killing the token it already handed out are
     different things, and only the softer one had a button."""
     flat = " ".join(_screen("Continuity.tsx").split())
-    assert "Revoke the grant token" in flat
-    assert "not the same act" in flat
+    problems = (_says(flat, "co.revoke.grant", "Revoke the grant token")
+                + _says(flat, "co.takeback.note", "not the same act"))
+    assert not problems, ("revoking a grant:\n    " + "\n    ".join(problems))
 
 
 # --- what the screens must keep saying --------------------------------------
@@ -300,14 +303,17 @@ def test_the_custody_screen_leads_with_the_only_question():
     """Everything else on that page is downstream of whether the operator
     can decrypt, so it goes first and in the server's own words."""
     flat = " ".join(_screen("Custody.tsx").split())
-    assert "Can the operator decrypt this?" in flat
+    problems = _says(flat, "cu.decrypt", "Can the operator decrypt this?")
+    assert not problems, "the custody question:\n    " + "\n    ".join(problems)
     assert re.search(r"\{key\.note\}", flat)
 
 
 def test_the_reseal_reports_what_it_could_not_touch():
     flat = " ".join(_screen("Custody.tsx").split())
     assert "customer_managed_skipped" in flat
-    assert "how much of the vault the operator could not touch" in flat
+    problems = _says(flat, "cu.reseal.note",
+                     "how much of the vault the operator could not touch")
+    assert not problems, "the reseal note:\n    " + "\n    ".join(problems)
 
 
 def test_the_contributions_listing_is_a_count_not_contents():

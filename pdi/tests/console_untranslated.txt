@@ -14,66 +14,54 @@
 # carry a ten-language table and the backend answers a tenant in the language
 # they chose.
 #
-# ## The picker went first
+#     0.48.2   250 → 229   Guiding — the language picker itself
+#     0.48.3   229 → 177   Custody and Continuity
 #
-# `Guiding.tsx` renders a language picker — `GET /languages`, `PUT /language`.
-# A tenant opened the vault's console, selected Spanish, and the backend began
-# answering in Spanish inside a frame that stayed entirely English.
+# ## The order, and why it is not the order of the counts
 #
-#     asked     does the backend answer in the tenant's language
-#     mattered  can the tenant read the screen it answers on
+# **Guiding** went first because it holds the language picker: the screen where
+# a person chooses their language is the first that has to read in it.
 #
-# **0.48.2 wired that screen first**, for the reason it is the sharpest one:
-# the screen where a person chooses their language is the first that has to
-# read in it. The console now has `app/src/l10n.ts` — 36 rows, ten languages —
-# and the chosen language rides in the session, so every screen wired after
-# this one is a table entry rather than a piece of plumbing.
-#
-# 250 → 229.
-#
-# ## Two choices made in that table, and why
-#
-#   * **No formal/informal split.** 0.48.1 found QRME's console addressing a
-#     German reader as *Sie* in 204 rows while its phones said *du* in 60 — one
-#     product making two contradictory claims about the relationship. These
-#     rows avoid the T–V distinction wherever the language allows it, so the
-#     question does not arise and cannot drift.
-#   * **Portuguese is pt-PT** — *ficheiro*, *ecrã* — matching the shells.
+# **Custody** and **Continuity** went next, ahead of larger screens, because
+# they are decisions rather than descriptions — the same criterion this audit
+# has used since the alarm surface. Custody answers *can the operator decrypt
+# this*, and carries the sentence naming the honest measure of bring-your-own-
+# key: how much of the vault the operator could not touch even when asked to.
+# Continuity is what happens to a sealed file after a death — a standing
+# instruction that grants nothing when written, an activation that needs a
+# different credential from the one that wrote it, and an heir who holds two
+# separate secrets of which neither works alone.
 #
 # ## Localizing a screen blinds the guards that grep it
 #
 # Wiring Guiding.tsx turned `test_the_guide_screen_keeps_both_of_its_refusals`
-# red, and it was right to. That check makes sure the console keeps saying the
-# two things the server insists on — that the guide has no face, and that it
-# does no machine translation — and it did it by grepping the screen for the
-# English. The sentence moved into `l10n.ts`; the screen still says it; the
-# grep went blind.
+# red at 0.48.2, and it was right to. That check makes sure the console keeps
+# saying the two things the server insists on, and it did it by grepping the
+# screen for the English. The sentence moved into `l10n.ts`; the screen still
+# says it; the grep went blind.
 #
 #     asked     is this sentence in the screen file
 #     mattered  does the screen say it, in every language it offers
 #
-# This is this audit's own shape arriving inside the audit's guards, and it is
-# a hazard for every round that follows: **`test_the_door_and_the_wire.py`
-# greps fourteen screens for sentences they must keep**, and each one of those
-# greps goes blind the round its screen is localized. The fix is `_says()` in
-# that file — the screen must ask for the key and the table must hold it in all
-# ten languages, which is stricter than the grep it replaces, since that only
-# ever proved the English existed. Every screen wired from here on has to bring
-# its guards with it.
+# **0.48.3 hit four more** — the custody question, the reseal note, the
+# difference between revoking a grant and revoking a bequest, and the
+# difference between *nothing paged* and *nothing could have been paged*. All
+# four now go through `_says()` in `test_the_door_and_the_wire.py`: the screen
+# must ask for the key and the table must hold it in all ten languages, which
+# is stricter than the grep it replaces. Six of the fourteen screen-greps in
+# that file have now been converted; the remaining eight go blind the round
+# their screen is localized, and are expected to.
 #
 # ## What is left
 #
-# Worst first, by the count in each file. Positions, Continuity and Custody are
-# the next three: what a carrier is allowed to do, what happens to a sealed
-# file after a death, and who holds it now. Decisions rather than descriptions,
-# which is the order this audit has used throughout.
+# Worst first, by the count in each file:
 #
-#     Positions.tsx    35        Records.tsx      11
-#     Continuity.tsx   32        Settings.tsx      7
-#     Custody.tsx      30        Tenants.tsx       7
-#     Bridges.tsx      29        Overview.tsx      5
-#     Exchange.tsx     27        the rest         22
-#     Carriers.tsx     24
+#     Positions.tsx    35        Settings.tsx      7
+#     Bridges.tsx      29        Tenants.tsx       7
+#     Exchange.tsx     27        Overview.tsx      5
+#     Carriers.tsx     24        the rest         23
+#     Records.tsx      11
+#     Continuity.tsx    9        (its remaining rows are server-rendered)
 #
-# ceiling: 229
-console: 229
+# ceiling: 177
+console: 177
