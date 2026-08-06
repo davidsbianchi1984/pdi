@@ -4,6 +4,29 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.51.0] — 2026-08-06
+
+### Cut together at one version
+
+The three products are cut at one version, so this release exists here to keep
+that true. **No code changes in this repo this round.**
+
+The round's work is a dial and a count. JIM-mini's presence gains a
+**bearing** — companion by default, professional on request — and QRME's
+profiles start stating **how many people they are talking to**.
+
+Both are this repo's kind of decision. The bearing is a **register and never a
+capability**: it changes wording and changes nothing about what the guardian
+watches or which safety paths run, and that claim ships as a field a client
+renders rather than a line in a docstring — the same reason this repo's
+posture blocks state what an operator can and cannot decrypt in the response
+rather than in a comment. And the count is **offered rather than asked for**,
+which is the vault's own argument about disclosure: a fact somebody has to
+earn access to in order to learn is a fact the system was withholding, and the
+withholding is what turns an ordinary property into a betrayal.
+
+Cut together with QRME and JIM-mini at **app-v0.51.0**.
+
 ## [0.50.0] — 2026-08-06
 
 ### Cut together at one version
