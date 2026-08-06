@@ -5,6 +5,7 @@ export interface Session {
   tenantId?: string;        // the tenant currently being operated on
   tenantName?: string;
   tenantToken?: string;     // that tenant's write token
+  language?: string;        // the tenant's chosen console language
 }
 
 interface Ctx {

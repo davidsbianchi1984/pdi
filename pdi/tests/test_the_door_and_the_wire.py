@@ -93,6 +93,46 @@ def _screen(name: str) -> str:
     return (SCREENS / name).read_text(encoding="utf-8")
 
 
+L10N = REPO / "app" / "src" / "l10n.ts"
+LANGS = ["en", "es", "fr", "de", "pt", "it", "ja", "zh", "hi", "ar"]
+
+
+def _says(screen: str, key: str, english: str) -> list[str]:
+    """A sentence a screen must keep, now that screens are localized.
+
+    **0.48.2.** Every check in this file that a screen still says something
+    greps the screen for the English. The moment a screen reads its words from
+    a table instead, the sentence is still on the screen and the grep goes
+    blind — which is this whole audit's shape, arriving in the audit's own
+    guards. `test_the_guide_screen_keeps_both_of_its_refusals` was the first to
+    hit it, and it went red on the round that localized the screen, which is
+    the ratchet working rather than failing.
+
+        asked     is this sentence in the screen file
+        mattered  does the screen say it, in every language it offers
+
+    So the sentence is followed to wherever it lives: the screen must ask for
+    the key, and the table must hold it in all ten languages. That is stricter
+    than the grep it replaces, which only ever proved the English existed.
+    """
+    problems = []
+    if f'"{key}"' not in screen:
+        problems.append(f"the screen no longer asks for {key}")
+        return problems
+    table = L10N.read_text(encoding="utf-8")
+    m = re.search(r'"%s":\s*\{(.*?)\n  \}' % re.escape(key), table, re.S)
+    if not m:
+        problems.append(f"l10n.ts has no row for {key}")
+        return problems
+    row = m.group(1)
+    missing = [l for l in LANGS if not re.search(r"\b%s:\s*\"" % l, row)]
+    if missing:
+        problems.append(f"{key} is missing {missing}")
+    if english not in row:
+        problems.append(f"{key}'s English is no longer {english!r}")
+    return problems
+
+
 # --- the three records reach zero -------------------------------------------
 
 def test_the_console_backlog_record_is_empty():
@@ -279,5 +319,6 @@ def test_the_guide_screen_keeps_both_of_its_refusals():
     """It has no name and no face, and it does no machine translation. Both
     are things the server states and a console could quietly imply away."""
     flat = " ".join(_screen("Guiding.tsx").split())
-    assert "it cannot read" in flat
+    problems = _says(flat, "gd.refused", "it cannot read")
+    assert not problems, "the guide's refusal:\n    " + "\n    ".join(problems)
     assert "translated.engine" in flat or "engine:" in flat

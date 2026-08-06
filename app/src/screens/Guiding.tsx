@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api, ConsoleAnswer, DockCatalog, DockState, GuideBook,
          ImproveBoard, LanguageOption, Row, TranslateOut } from "../api";
 import { useSession } from "../store";
+import { deviceLanguage, fill, Lang, t } from "../l10n";
 
 /**
  * The console's own guide, the pane in its corner, and the words it uses.
@@ -23,7 +24,7 @@ import { useSession } from "../store";
  *     implying a capability the vault deliberately does not have.
  */
 export function Guiding() {
-  const { session } = useSession();
+  const { session, setSession } = useSession();
   const [book, setBook] = useState<GuideBook | null>(null);
   const [step, setStep] = useState<Row | null>(null);
   const [progress, setProgress] = useState<Row | null>(null);
@@ -46,13 +47,21 @@ export function Guiding() {
 
   const token = session.tenantToken;
   const tenantId = session.tenantId;
+  // The console's own words follow the tenant's choice; before there is one,
+  // they follow the browser rather than defaulting to English. The shells have
+  // read the device this way since the accountless-screen round.
+  const lang = (session.language as Lang) ?? deviceLanguage();
 
   function load() {
     api.guide().then(setBook).catch(fail);
     api.dockFaces().then(setCatalog).catch(fail);
     api.languages().then((r) => setLanguages(r.languages)).catch(fail);
     if (!token) return;
-    api.language(token).then(setMine).catch(fail);
+    api.language(token).then((r) => {
+      setMine(r);
+      const chosen = String(r.language ?? "");
+      if (chosen) { setLanguage(chosen); setSession({ language: chosen }); }
+    }).catch(fail);
     api.improvements(token).then(setBoard).catch(fail);
     if (tenantId) {
       api.dock(tenantId, token).then(setDock).catch(fail);
@@ -71,16 +80,16 @@ export function Guiding() {
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Guiding</h2>
+        <h2>{t("gd.title", lang)}</h2>
         <span className="muted small">
-          the console's guide, its corner, and its words
+          {t("gd.sub", lang)}
         </span>
       </header>
 
       {error && <div className="error">⚠ {error}</div>}
 
       <div className="card">
-        <h3>The guide</h3>
+        <h3>{t("gd.guide", lang)}</h3>
         <p className="muted small">{book?.guide ?? "…"}</p>
         {book?.ceiling && (
           <p className="muted small"><strong>{book.ceiling}</strong></p>
@@ -88,24 +97,26 @@ export function Guiding() {
         <div className="row">
           <button disabled={busy || !tenantId}
                   onClick={() => run(() => api.startGuide(
-                    { learner_id: tenantId! }))}>Start the walkthrough</button>
+                    { learner_id: tenantId! }))}>{t("gd.start", lang)}</button>
           <button disabled={busy}
                   onClick={() => run(async () => {
                     setStep(await api.guideStep("what_pdi_is"));
-                  })}>Read a step</button>
+                  })}>{t("gd.step", lang)}</button>
           <button disabled={busy}
                   onClick={() => run(async () => {
                     setStep(await api.guideForScreen(1));
-                  })}>What is this screen?</button>
+                  })}>{t("gd.thisscreen", lang)}</button>
           <button disabled={busy || !tenantId}
                   onClick={() => run(() => api.finishGuideStep(
                     { learner_id: tenantId!, lesson: "what_pdi_is" }))}>
-            Mark it done
+            {t("gd.done", lang)}
           </button>
         </div>
         {progress != null && (
           <p className="muted small">
-            {String(progress.done ?? 0)} of {String(progress.total ?? 0)} done
+            {fill("gd.progress", lang,
+                  { done: String(progress.done ?? 0),
+                    total: String(progress.total ?? 0) })}
           </p>
         )}
         {step && (
@@ -117,23 +128,23 @@ export function Guiding() {
         {(book?.chapters ?? []).map((c) => (
           <div key={c.chapter} className="muted small"
                style={{ padding: "4px 0" }}>
-            {c.chapter} · {c.steps.length} steps
+            {c.chapter} · {c.steps.length} {t("gd.steps", lang)}
           </div>
         ))}
       </div>
 
       <div className="card">
-        <h3>Ask it</h3>
+        <h3>{t("gd.ask.head", lang)}</h3>
         <div className="row">
-          <label>Question
-            <input value={question} placeholder="Where is the audit log?"
+          <label>{t("gd.q", lang)}
+            <input value={question} placeholder={t("gd.q.ph", lang)}
                    onChange={(e) => setQuestion(e.target.value)} />
           </label>
           <button className="primary" disabled={busy || !question.trim()}
                   onClick={() => run(async () => {
                     setAnswer(await api.askConsole(
                       { question: question.trim() }, token!));
-                  })}>Ask</button>
+                  })}>{t("gd.ask.go", lang)}</button>
         </div>
         {answer && (
           <>
@@ -141,29 +152,27 @@ export function Guiding() {
             <p className="muted small">{answer.disclosure}</p>
             {answer.refused && (
               <p className="muted small">
-                Refused — and that is the answer, not a failure. It was asked
-                something about what is inside the vault, which it cannot
-                read.
+                {t("gd.refused", lang)}
               </p>
             )}
             {answer.directions && (
               <p className="muted small">
-                → {answer.directions.title} · screens{" "}
+                → {answer.directions.title} · {t("gd.screens", lang)}{" "}
                 {answer.directions.screens.join(", ")}
               </p>
             )}
             <p className="muted small">
-              It knows about: {answer.topics.join(", ")}
+              {t("gd.knows", lang)} {answer.topics.join(", ")}
             </p>
           </>
         )}
       </div>
 
       <div className="card">
-        <h3>The corner</h3>
+        <h3>{t("gd.corner", lang)}</h3>
         {dock && (
           <p className="muted small">
-            {dock.corner} · {dock.state} · showing {dock.face}
+            {dock.corner} · {dock.state} · {t("gd.showing", lang)} {dock.face}
           </p>
         )}
         <div className="row">
@@ -180,13 +189,14 @@ export function Guiding() {
                   onClick={() => run(() => api.setDock(tenantId!,
                     { corner: dock?.corner === "bottom_right"
                         ? "bottom_left" : "bottom_right" }, token!))}>
-            Other corner
+            {t("gd.othercorner", lang)}
           </button>
           <button disabled={busy || !tenantId}
                   onClick={() => run(() => api.setDock(tenantId!,
                     { state: dock?.state === "open" ? "handle" : "open" },
                     token!))}>
-            {dock?.state === "open" ? "Tuck it away" : "Open it"}
+            {dock?.state === "open"
+              ? t("gd.tuck", lang) : t("gd.open", lang)}
           </button>
         </div>
         {face && where && (
@@ -197,68 +207,71 @@ export function Guiding() {
         )}
         {catalog && (
           <p className="muted small">
-            Never in the pane: {Object.values(catalog.never).join(" · ")}
+            {t("gd.never", lang)} {Object.values(catalog.never).join(" · ")}
           </p>
         )}
       </div>
 
       <div className="card">
-        <h3>Words</h3>
+        <h3>{t("gd.words", lang)}</h3>
         <div className="row">
-          <label>Language
+          <label>{t("gd.lang", lang)}
             <select value={language}
                     onChange={(e) => setLanguage(e.target.value)}>
               {languages.map((l) => (
                 <option key={l.code} value={l.code}>
                   {l.label}
-                  {l.notes_translated ? "" : " (notes stay in English)"}
+                  {l.notes_translated ? "" : t("gd.notes.en", lang)}
                 </option>
               ))}
             </select>
           </label>
           <button className="primary" disabled={busy || !token}
-                  onClick={() => run(() => api.setLanguage(
-                    { language }, token!))}>Use this</button>
+                  onClick={() => run(async () => {
+                    await api.setLanguage({ language }, token!);
+                    setSession({ language });
+                  })}>{t("gd.use", lang)}</button>
           <span className="muted small">
-            now: {String(mine?.label ?? "…")}
+            {t("gd.now", lang)} {String(mine?.label ?? "…")}
           </span>
         </div>
         <div className="row">
-          <label>Text
-            <input value={text} placeholder="A note to translate"
+          <label>{t("gd.text", lang)}
+            <input value={text} placeholder={t("gd.text.ph", lang)}
                    onChange={(e) => setText(e.target.value)} />
           </label>
           <button disabled={busy || !text.trim() || !token}
                   onClick={() => run(async () => {
                     setTranslated(await api.translate(
                       { text: text.trim(), to: language }, token!));
-                  })}>Translate</button>
+                  })}>{t("gd.translate", lang)}</button>
         </div>
         {translated && (
           <>
             <p>{translated.translation}</p>
             <p className="muted small">
-              engine: <code>{translated.engine}</code> — {translated.note}
+              {t("gd.engine", lang)} <code>{translated.engine}</code> — {translated.note}
             </p>
           </>
         )}
       </div>
 
       <div className="card">
-        <h3>Tell us about the console</h3>
+        <h3>{t("gd.tell", lang)}</h3>
         <div className="row">
-          <input value={idea} placeholder="What would make this better?"
+          <input value={idea} placeholder={t("gd.idea.ph", lang)}
                  onChange={(e) => setIdea(e.target.value)} />
           <button className="primary" disabled={busy || !idea.trim() || !token}
                   onClick={() => run(async () => {
                     await api.suggestImprovement({ category: "improvement",
                       message: idea.trim() }, token!);
                     setIdea("");
-                  })}>Send it</button>
+                  })}>{t("gd.send", lang)}</button>
         </div>
         {board && (
           <p className="muted small">
-            {board.total} in all · {board.mine.length} of them yours ·{" "}
+            {board.total} {t("gd.total", lang)} · {board.mine.length}{" "}
+            {t("gd.yours", lang)} ·{" "}
             {board.categories.join(", ")}
           </p>
         )}

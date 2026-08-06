@@ -7,49 +7,73 @@
 #
 # ## What this is
 #
-# The sibling products each audited their console's language rounds ago.
-# QRME's `console_untranslated.txt` opens by describing forty-six translated
-# sidebar labels in front of 1,577 English screens, and calls that worse than a
-# console uniformly in English, because it tells a Spanish reader the product
-# answers in their language and then hands them English the moment they click.
-# Both siblings drove that number to a floor.
+# The sibling products each audited their console's language rounds ago and
+# drove the number to a floor. **Nothing had ever counted this one.** Until
+# 0.48.1 there was no `app/src/l10n.ts` in this repo, no record, and no guard:
+# fourteen screens, 250 strings, all English, while all three native shells
+# carry a ten-language table and the backend answers a tenant in the language
+# they chose.
 #
-# **Nothing had ever counted this one.** There is no `app/src/l10n.ts` in this
-# repo, no `console_untranslated.txt` until now, and no guard. Fourteen
-# screens, 250 strings, all English, while all three of this product's native
-# shells carry a ten-language table and its backend answers a tenant in the
-# language they chose.
-#
-# ## The picker
+# ## The picker went first
 #
 # `Guiding.tsx` renders a language picker — `GET /languages`, `PUT /language`.
-# A tenant opens the vault's console, selects Spanish, and the backend begins
-# answering in Spanish inside a frame that stays entirely English. The
-# sentences that come back translated sit under **Sealed**, **Recipient**,
-# **Custody**, **Carriers**, **Positions** and **Continuity**, none of which do.
+# A tenant opened the vault's console, selected Spanish, and the backend began
+# answering in Spanish inside a frame that stayed entirely English.
 #
 #     asked     does the backend answer in the tenant's language
 #     mattered  can the tenant read the screen it answers on
 #
-# This is the opening finding of this whole arc — the chrome answers and
-# nothing behind it does — in the one place where the chrome does not answer
-# either.
+# **0.48.2 wired that screen first**, for the reason it is the sharpest one:
+# the screen where a person chooses their language is the first that has to
+# read in it. The console now has `app/src/l10n.ts` — 36 rows, ten languages —
+# and the chosen language rides in the session, so every screen wired after
+# this one is a table entry rather than a piece of plumbing.
 #
-# ## Why it is a count and not a fix
+# 250 → 229.
 #
-# 250 strings across fourteen screens is a round of its own, and this repo's
-# rule against machine-mangled text applies: PDI's console is where somebody
-# reads who has custody of a sealed file and on what terms. The number is
-# recorded honestly now, with a guard that will not let it rise, and the
-# screens come next.
+# ## Two choices made in that table, and why
 #
-# Worst first, by the count in each file:
+#   * **No formal/informal split.** 0.48.1 found QRME's console addressing a
+#     German reader as *Sie* in 204 rows while its phones said *du* in 60 — one
+#     product making two contradictory claims about the relationship. These
+#     rows avoid the T–V distinction wherever the language allows it, so the
+#     question does not arise and cannot drift.
+#   * **Portuguese is pt-PT** — *ficheiro*, *ecrã* — matching the shells.
 #
-#     Positions.tsx    35        Carriers.tsx     24
-#     Continuity.tsx   32        Guiding.tsx      22
-#     Custody.tsx      30        Records.tsx      11
-#     Bridges.tsx      29
-#     Exchange.tsx     27
+# ## Localizing a screen blinds the guards that grep it
 #
-# ceiling: 250
-console: 250
+# Wiring Guiding.tsx turned `test_the_guide_screen_keeps_both_of_its_refusals`
+# red, and it was right to. That check makes sure the console keeps saying the
+# two things the server insists on — that the guide has no face, and that it
+# does no machine translation — and it did it by grepping the screen for the
+# English. The sentence moved into `l10n.ts`; the screen still says it; the
+# grep went blind.
+#
+#     asked     is this sentence in the screen file
+#     mattered  does the screen say it, in every language it offers
+#
+# This is this audit's own shape arriving inside the audit's guards, and it is
+# a hazard for every round that follows: **`test_the_door_and_the_wire.py`
+# greps fourteen screens for sentences they must keep**, and each one of those
+# greps goes blind the round its screen is localized. The fix is `_says()` in
+# that file — the screen must ask for the key and the table must hold it in all
+# ten languages, which is stricter than the grep it replaces, since that only
+# ever proved the English existed. Every screen wired from here on has to bring
+# its guards with it.
+#
+# ## What is left
+#
+# Worst first, by the count in each file. Positions, Continuity and Custody are
+# the next three: what a carrier is allowed to do, what happens to a sealed
+# file after a death, and who holds it now. Decisions rather than descriptions,
+# which is the order this audit has used throughout.
+#
+#     Positions.tsx    35        Records.tsx      11
+#     Continuity.tsx   32        Settings.tsx      7
+#     Custody.tsx      30        Tenants.tsx       7
+#     Bridges.tsx      29        Overview.tsx      5
+#     Exchange.tsx     27        the rest         22
+#     Carriers.tsx     24
+#
+# ceiling: 229
+console: 229

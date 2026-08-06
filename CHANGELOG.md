@@ -4,6 +4,78 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.48.2] — 2026-08-06
+
+### The console gets a table, and the language picker goes first
+
+0.48.1 recorded what this repo's console cost: fourteen screens, 250 English
+strings, no `app/src/l10n.ts` at all, and a **language picker** on `Guiding.tsx`
+that changed what the backend said and nothing that the console said.
+
+This round builds the table and wires that screen, for the reason it is the
+sharpest one: **the screen where a person chooses their language is the first
+that has to read in it.** 36 rows, ten languages, and the chosen language now
+rides in the session — so every screen wired after this one is a table entry
+rather than a piece of plumbing.
+
+    250 → 229
+
+### Two choices in that table, both answers to findings next door
+
+* **No formal/informal split.** 0.48.1 found QRME's console addressing a German
+  reader as *Sie* in 204 rows while its phones said *du* in 60 — one product
+  making two contradictory claims about the relationship. These rows avoid the
+  T–V distinction wherever the language allows it, so the question does not
+  arise and cannot drift.
+* **Portuguese is pt-PT** — *ficheiro*, *ecrã* — matching the shells.
+
+### The zero that changed meaning
+
+`console_native_split.txt` was an empty floor at 0.48.1 because there was
+nothing to compare. It is still empty, and now for a different reason: 36
+console rows and one English string in common with each shell, because the two
+tables are still about different screens. The record has been rewritten to say
+which zero it is — a record that outlives the code it describes is what
+`test_a_record_that_outlived_the_code.py` exists to stop.
+
+The sibling products reached 102 and 25 disagreements by growing two tables
+past each other without ever comparing them. This one is being grown with the
+comparison already running.
+
+### Localizing a screen blinded a guard, and the guard was right
+
+Wiring `Guiding.tsx` turned `test_the_guide_screen_keeps_both_of_its_refusals`
+red. That check makes sure the console keeps saying the two things the server
+insists on — that the guide has no face, and that it does no machine
+translation — and it did it by grepping the screen for the English. The
+sentence moved into the table; the screen still says it; the grep went blind.
+
+    asked     is this sentence in the screen file
+    mattered  does the screen say it, in every language it offers
+
+This audit's own shape, arriving inside the audit's guards. The fix follows the
+sentence rather than weakening the check: the screen must ask for the key and
+the table must hold it in **all ten languages**, which is stricter than the
+grep it replaces, since that only ever proved the English existed.
+`test_the_door_and_the_wire.py` greps fourteen screens this way, so each will
+go blind the round its screen is localized — recorded in
+`console_untranslated.txt` so the next round expects it.
+
+### Added
+
+- `app/src/l10n.ts` — the console's first localization table, with
+  `deviceLanguage()` reading the browser before a tenant has chosen, matching
+  what the shells have done since the accountless-screen round.
+- `pdi/tests/test_the_three_shells_say_the_same_thing.py` and
+  `pdi/tests/native_shell_split.txt` — the third axis, at a floor of zero here.
+
+### Changed
+
+- `Guiding.tsx` reads all 31 of its own strings from the table.
+- The session carries the tenant's chosen console language.
+
+Cut together with QRME and JIM-mini at app-v0.48.2.
+
 ## [0.48.1] — 2026-08-06
 
 ### This console has no table, and nothing had ever said so

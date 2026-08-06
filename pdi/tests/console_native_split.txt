@@ -2,31 +2,33 @@
 #
 # English strings held by both the desktop console's table and a shell's, on
 # which no console row and no native row share a wording. Checked by
-# test_the_desktop_and_the_phone_say_different_things.py.
+# test_the_desktop_and_the_phone_say_different_things.py, matched exactly in
+# both directions.
 #
-# ## There is no console table
+# ## The table exists now, and the zero means something different
 #
-# This file is empty for a reason that is worse than the defect it was written
-# to catch. `app/src/l10n.ts` does not exist in this repo. The sibling products
-# each have one — 1,882 rows in QRME's, 628 in JIM-mini's — and each disagreed
-# with its own phones in roughly a hundred and twenty-five places between them.
-# This console cannot disagree with anything, because it has nothing to
-# disagree with.
+# When this record was written at 0.48.1 it was empty because `app/src/l10n.ts`
+# **did not exist**: this console had no localization table at all, and the
+# zero meant *nothing to compare* rather than *nothing wrong*. The file said so
+# in its own text, and a check fired if that phrase were ever removed while the
+# table was still absent.
 #
-#     asked     do this product's two tables agree
-#     mattered  does this product have two tables
+# 0.48.2 created the table and wired the first screen. So the zero now means
+# something else, and this file has to say which — the whole reason
+# `test_a_record_that_outlived_the_code.py` exists.
 #
-# The zero above is *nothing to compare*, not *nothing wrong*, and
-# `test_the_absent_console_table_is_recorded_not_assumed` fires if this line
-# ever loses the words **no console table** while the file is still absent —
-# because a zero that reads as agreement is the failure this whole audit is
-# named after.
+#     asked     do the console and the shells disagree
+#     mattered  do they yet have anything to disagree about
 #
-# What is wrong is recorded next door, in `console_untranslated.txt`: fourteen
-# screens of English behind a language picker that changes what the backend
-# says and nothing that the console says.
+# **36 console rows, and one English string in common with each shell.** The
+# console's rows are the Guiding screen's (`gd.*`); the shells' are the file,
+# recipient and transfer screens' (`nfil.*`, `ntr.*`). Two tables about
+# different screens cannot contradict each other yet.
 #
-# When a table is added here, this record becomes a real one, and the checks in
-# that file start comparing instead of abstaining.
+# So this is a floor, but a shallow one: it becomes a real record the moment a
+# screen exists on both sides, which `console_untranslated.txt` puts at 229
+# strings and six screens away. The sibling products reached 102 and 25
+# disagreements by growing two tables past each other without ever comparing
+# them. This one is being grown with the comparison already running.
 #
 # ceiling: 0
