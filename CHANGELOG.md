@@ -4,6 +4,23 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.47.1] — 2026-08-06
+
+### The ternary blind spot, ported and corrected
+
+This repo's native-shell guard is the sibling's guard, copied, so it carried
+the same blind spot: a string chosen by `cond ? "A" : "B"` is not at the
+start of an argument list, and every pattern looked only there. The widening
+is ported verbatim from the repo that found it, with the two tests that hold
+it — one fails if the rule stops matching, one fails if it starts counting
+lone tokens.
+
+The recorded counts rise by **12**: iOS 88 → 94, Android 75 → 78, Windows
+119 → 122. Nothing regressed. Twelve strings were always there and could not
+be seen.
+
+Cut together with QRME and JIM-mini at app-v0.47.1.
+
 ## [0.47.0] — 2026-08-06
 
 ### Version alignment

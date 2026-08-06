@@ -35,6 +35,15 @@
 # localized, which is a measurement saying the opposite of the truth. The
 # counts below are what is actually unreadable.
 
-ios: 88
-android: 75
-windows: 119
+# **Corrected in 0.47.1.** This repo's guard is the sibling's guard, copied,
+# so it carried the same blind spot: a string chosen by a ternary — `cond ?
+# "A" : "B"` — is not at the start of an argument list, and every pattern here
+# looked only there. The widening is ported verbatim from the repo that found
+# it, along with the two tests that hold it in place.
+#
+# The counts below rise by twelve. Nothing regressed; twelve strings were
+# always there and could not be seen.
+
+ios: 94
+android: 78
+windows: 122
