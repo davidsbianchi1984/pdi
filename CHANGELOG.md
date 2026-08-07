@@ -4,6 +4,28 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.57.6] — 2026-08-07
+
+### The half of the Windows shell that is not code
+
+0.57.5's parse check globbed `*.swift`, `*.kt` and `*.cs` and reported the
+three shells parseable. The Windows shell's screens are XAML, and it never
+opened one. Five pages across the other two products do not parse; none of
+them are here, which is worth knowing rather than assuming.
+
+```
+asked     do the files that look like code still parse
+mattered  do the shells' screens still parse
+```
+
+### Added
+
+- Four markup checks in `test_the_shells_still_parse.py`: the page is
+  well-formed XML; no two elements in it share a name; every handler it names
+  exists in its code-behind; every control the code-behind drives is named in
+  the page. Clean across all ten pages here. Reach floors on all four, and
+  four injected defects confirming each can fail.
+
 ## [0.57.5] — 2026-08-07
 
 ### Nothing here builds the phones, so nothing here noticed when they stopped
