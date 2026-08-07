@@ -4,6 +4,34 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.54.0] — 2026-08-07
+
+### Cut together at one version
+
+The three products are cut at one version, so this release exists here to keep
+that true. **No code changes in this repo this round.**
+
+The round's work is QRME's, and it is about a number that had been read as
+waste. A shell holding a row it never asks for looks like a translation to
+delete; 263 of QRME's ~335 such rows are asked for by a **sibling** shell, and
+are therefore a to-do list about screens — each one asking why one shell says
+less than the others about the same thing.
+
+Two were closed. The iPhone had **no camera-permission state at all**, so a
+person who declined got a black screen and never saw *"Nothing is recorded —
+frames are read and discarded"* — a privacy promise only Android readers had
+been given. And Windows was printing "scan(s)" and "picked up" as English
+literals with those exact strings translated beside them.
+
+This repo's version of the same argument: a refusal or a promise is only
+kept if every reader gets it. A vault that states its posture in one language
+has stated it to some of its auditors. The guard QRME built extracts every
+literal from every screen and compares it against that shell's own table —
+and its first version could not see the bug it was written for, which the
+injection pass caught before it shipped.
+
+Cut together with QRME and JIM-mini at **app-v0.54.0**.
+
 ## [0.53.1] — 2026-08-07
 
 ### `operator_can_decrypt: false`, checked against the whole database
