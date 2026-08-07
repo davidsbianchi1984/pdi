@@ -4,6 +4,38 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.57.0] — 2026-08-07
+
+### The guard arrives, and finds this client correct
+
+0.56.9 said QRME's Kotlin guard could not be ported here because its extractor
+found zero routes in this client, and that lowering the threshold to zero
+would ship a guard asserting on nothing. The diagnosis was right and the cause
+was smaller than it looked: QRME's `request` returns a `String` and wraps every
+read in `JSONObject(...)`; this client's returns a `JSONObject` already, so the
+wrapper the pattern required is not there.
+
+With it optional, the extractor reads eighteen routes and thirty-one keys, and
+drives fifteen of them against a live fixture. Every key this client asks for
+is a key its route sends, in a shape `org.json` can give back.
+`pdi/tests/android_keys_unverified.txt` records none, at a ceiling of zero, so
+that stays true rather than becoming a place to put things.
+
+That is the same answer this client gave the Swift guard in 0.56.8, and it is
+worth saying why it is a result rather than an absence. QRME found eight wrong
+reads in its Kotlin client and nine in its Swift; JIM-mini found six states in
+each. A guard that reads eighteen routes and reports nothing has been shown to
+be able to report something — three injected defects were confirmed to fail it
+before this shipped, and the floors under its reach are set to what it
+honestly finds, so a pattern that stops matching fails loudly instead of
+reporting a clean client.
+
+### Also
+
+Every recorded row in the ratchet file must now name a read the client still
+makes. The file is empty, so the check is vacuous here — and it is the check
+that keeps it from filling up with rows that describe nothing.
+
 ## [0.56.9] — 2026-08-07
 
 ### The Android client gets a guard it was thought not to need — over there

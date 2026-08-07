@@ -1,0 +1,14 @@
+# status: backlog — 0 rows
+# ceiling: 0
+#
+# Keys the Android client asks for that the route does not send, which are
+# real. There are none.
+#
+# `test_the_keys_the_android_client_reads.py` drives every GET this client
+# binds a `JSONObject` to and checks each key read off it — the name, and
+# whether `org.json`'s accessor can give back what actually arrives. QRME's
+# copy found eight in its own Kotlin client on the first run. This one has
+# none, and the ceiling says zero so that stays true: a key added here in
+# hope rather than from the route will fail the guard, not this file.
+#
+# Ratcheted: this list may shrink and must never grow.
