@@ -1,0 +1,10 @@
+# status: backlog — 0 rows
+# ceiling: 0
+#
+# Writes whose body the route cannot accept, which are real. There are none,
+# on the first run — 42 writes, 33 of them readable, 34 matched to a model.
+#
+# QRME found none either; JIM-mini found two, both silently discarded fields.
+# Three injected defects were confirmed to fail this guard before it shipped.
+#
+# Ratcheted: this list may shrink and must never grow.

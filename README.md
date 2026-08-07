@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.57.1** ([changelog](CHANGELOG.md) ·
+**Current release: v0.57.2** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -200,6 +200,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.57.2** | Request bodies get the guard responses have had since 0.56.4 — 42 writes, 33 readable, 34 matched to a model, nothing wrong. QRME was clean too; JIM-mini had two silently discarded health readings. Three injected defects confirm this guard can still fail |
 | **0.57.1** | The console gets the shape guard the native clients have had since 0.56.4 — 33 shapes, 224 fields, 60 GET bindings, 27 driven, and nothing wrong. QRME's console had four defects and JIM-mini's two; three injected defects confirm this guard can still fail |
 | **0.57.0** | The Kotlin guard arrives and finds this client correct — 18 routes, 31 keys, 15 driven, nothing recorded at a ceiling of zero. The port failed in 0.56.9 over a required `JSONObject(` wrapper this client does not use; three injected defects confirm the guard can still fail |
 | **0.56.9** | QRME found eight wrong reads in its Kotlin client, all already fixed in its C#. The guard is not here yet: ported across, its extractor found zero routes — this client calls the backend in a different shape, and lowering the threshold until it passed would ship a guard that asserts on nothing |

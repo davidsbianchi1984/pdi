@@ -4,6 +4,25 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.57.2] — 2026-08-07
+
+### The question, not just the answer — and this one asks it correctly
+
+Every guard since 0.56.4 has asked whether a client understands what a route
+sends back. None asked what the client sends *in*, and a request body fails
+the same two ways: a required field the model never receives is a 422 on every
+press, and a field the model does not declare is dropped without a word.
+
+Checked against `app.openapi()`, the schema FastAPI validates with, so the
+guard cannot describe a rule the app does not enforce. **42 writes, 33 with a
+body it can read, 34 matched to a model, and nothing wrong.** QRME's writes
+were clean too; JIM-mini had two, both silently discarding a health reading.
+
+A clean result rather than an absence: three defects were injected and
+confirmed to fail this guard before it shipped, and the floors under its reach
+are set to what it honestly finds — so a pattern that stops matching fails
+loudly instead of reporting a clean client.
+
 ## [0.57.1] — 2026-08-07
 
 ### The console reads the wire too, and here it reads it right
