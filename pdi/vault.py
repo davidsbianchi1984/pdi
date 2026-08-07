@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import secrets
 
 from . import audit, crypto, db, terms
@@ -141,32 +142,126 @@ def issue_token(tenant_id: str, role: str) -> dict:
     return {"tenant_id": tenant_id, "role": role, "token": token}
 
 
+#: The one tenant-scoped table a wipe must **not** clear.
+#:
+#: The audit log is the record that the wipe happened, and it is hash-chained —
+#: deleting rows from it both destroys the evidence and breaks the chain for
+#: every entry after them. A vault that erases its own proof of erasure is
+#: worse than one that never promised to erase.
+WIPE_KEEPS = frozenset({"audit"})
+
+#: Tables a wipe **retires** rather than deletes, and the statement that does it.
+#:
+#: A third category, and it exists because deleting is not always the honest
+#: answer. A `bequests` row is the *estate record*: somebody named a grantee and
+#: a shelf, and a person on the other side is holding a grant. Erasing the row
+#: makes their credential fail with silence, which reads as a bug; retiring it
+#: makes the same credential fail with *revoked*, which is the truth.
+#:
+#: What must not survive is the **live credential** — `grant_hash` — and the
+#: standing state. `test_a_wipe_retires_the_bequest_itself` next door is what
+#: holds this to that, and it predates the cascade: an earlier round had already
+#: decided this correctly, table by table, and the cascade would have quietly
+#: overridden the decision by being more thorough than it was right to be.
+WIPE_RETIRES = {
+    "bequests": ("UPDATE bequests SET revoked_at=?, grant_hash=NULL"
+                 " WHERE tenant_id=? AND revoked_at IS NULL"),
+}
+
+
+def tenant_scoped_tables() -> list[str]:
+    """Every table carrying a ``tenant_id``, read from the live schema.
+
+    Not a list written by hand, for the reason this function exists at all: a
+    hand-kept list is complete on the day it is written and quietly stops being
+    complete at the next migration — and the table it stops covering is exactly
+    the one holding a wiped tenant's data.
+    """
+    conn = db.connect()
+    out = []
+    for (name,) in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' "
+            "AND name NOT LIKE 'sqlite_%' ORDER BY name").fetchall():
+        cols = [c[1] for c in conn.execute(f"PRAGMA table_info({name})")]
+        if "tenant_id" in cols:
+            out.append(name)
+    return out
+
+
+def cascade(conn, tenant_id: str) -> dict[str, int]:
+    """Clear every row naming this tenant, and report what went, per table.
+
+    The single place a tenant stops existing. There are two ways out of this
+    product — an operator calling `DELETE /tenants/{id}?mode=wipe`, and the
+    retention sweep purging a soft-deleted tenant once its recovery window
+    closes — and before this function they were two hand-written lists of the
+    same three tables. The sweep is the one that matters more: it runs on a
+    schedule with nobody reading the result.
+
+    Does not delete the `tenants` row itself; the caller decides that, because
+    the sweep and the wipe reach this point holding different locks on it.
+    """
+    cleared: dict[str, int] = {}
+    for table in tenant_scoped_tables():
+        if table in WIPE_KEEPS:
+            continue
+        if table in WIPE_RETIRES:
+            n = conn.execute(WIPE_RETIRES[table],
+                             (db.utcnow(), tenant_id)).rowcount
+            if n:
+                cleared[f"{table} (retired)"] = n
+            continue
+        n = conn.execute(f"DELETE FROM {table} WHERE tenant_id=?",
+                         (tenant_id,)).rowcount
+        if n:
+            cleared[table] = n
+    return cleared
+
+
 def delete_tenant(tenant_id: str, mode: str) -> dict | None:
     """Tenant deletion. ``soft`` sets a tombstone (data retained, access cut,
-    restorable during the recovery window); ``wipe`` permanently removes the
-    tenant's records, scoped tokens, and the tenant row. Both are audited."""
+    restorable during the recovery window); ``wipe`` permanently removes every
+    row in this deployment that names the tenant, except the audit chain. Both
+    are audited.
+
+    ## What "wipe" used to mean
+
+    Three tables — ``records``, ``tenant_tokens``, ``tenants`` — plus a targeted
+    ``UPDATE`` on ``bequests`` added the round somebody noticed a grant hash was
+    outliving the account it had been cut from. That fix was correct and it was
+    the *shape* of the problem rather than the whole of it: this schema has
+    twenty tenant-scoped tables, and a wiped tenant left rows in sixteen.
+
+    What survived a **permanent wipe** included ``tenant_keys`` and
+    ``tenant_key_versions`` — the customer's key-provider configuration and its
+    check values — and ``baa_records``, a signed Business Associate Agreement
+    carrying two companies' legal names. For a product whose whole claim is
+    custody, "we deleted your account" meaning "we deleted some of your account"
+    is not a bug in a corner.
+
+    So the cascade is **derived from the schema** rather than enumerated: every
+    table with a ``tenant_id`` column, minus :data:`WIPE_KEEPS`. A migration
+    that adds a table is covered by writing it, not by remembering this
+    function.
+    """
     conn = db.connect()
     row = conn.execute("SELECT id FROM tenants WHERE id=?",
                        (tenant_id,)).fetchone()
     if row is None:
         return None
     if mode == "wipe":
-        records = conn.execute(
-            "DELETE FROM records WHERE tenant_id=?", (tenant_id,)).rowcount
-        conn.execute("DELETE FROM tenant_tokens WHERE tenant_id=?", (tenant_id,))
-        # The scoped tokens went; the *bequest* grants did not. A wipe left
-        # rows naming a grantee, a shelf and a live grant hash against a
-        # tenant that no longer existed — a credential outliving both the data
-        # it opened and the account it was cut from. The docstring below said
-        # "scoped tokens" and meant the ones in `tenant_tokens`.
-        conn.execute(
-            "UPDATE bequests SET revoked_at=?, grant_hash=NULL"
-            " WHERE tenant_id=? AND revoked_at IS NULL",
-            (db.utcnow(), tenant_id))
+        cleared = cascade(conn, tenant_id)
+        records = cleared.get("records", 0)
         conn.execute("DELETE FROM tenants WHERE id=?", (tenant_id,))
         conn.commit()
-        audit.record("tenant.wipe", tenant_id=tenant_id, ref=str(records))
-        return {"tenant_id": tenant_id, "mode": "wipe", "records_wiped": records}
+        # The per-table counts go on the chain. "Rows were deleted" is the
+        # claim; which tables and how many is what makes the claim checkable a
+        # year later by somebody who was not here when it ran.
+        audit.record("tenant.wipe", tenant_id=tenant_id,
+                     ref=json.dumps(cleared, sort_keys=True))
+        return {"tenant_id": tenant_id, "mode": "wipe",
+                "records_wiped": records, "cleared": cleared,
+                "kept": sorted(WIPE_KEEPS)}
     conn.execute("UPDATE tenants SET deleted_at=? WHERE id=?",
                  (db.utcnow(), tenant_id))
     conn.commit()

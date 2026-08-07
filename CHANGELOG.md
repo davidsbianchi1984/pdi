@@ -4,6 +4,47 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.56.0] — 2026-08-07
+
+### `mode=wipe` said *permanently removes*. It removed three tables of twenty.
+
+The strongest promise this product makes after custody itself was implemented
+as four statements — `records`, `tenant_tokens`, a targeted `UPDATE` on
+`bequests`, and the `tenants` row — against a schema with **twenty
+tenant-scoped tables**.
+
+Driven against a tenant that had done nothing unusual (signed a BAA, sealed one
+record, adopted a customer-held key, set a hosting mode and a dock preference),
+a permanent wipe left rows behind in four of them:
+
+```
+baa_records          1
+dock_prefs           1
+tenant_key_versions  1
+tenant_keys          1
+```
+
+`tenant_keys` is the customer's key-provider configuration and its check value —
+the row that says which key opens this tenant. `baa_records` is an executed
+Business Associate Agreement carrying two companies' legal names. Both outlived
+the account they belonged to.
+
+**The `bequests` line is why this happened.** It was added the round somebody
+noticed a grant hash outliving the account it had been cut from — a real find,
+correctly fixed, and fixed *one table at a time*. The repair went to the
+instance instead of to the shape, so the next fifteen instances stayed.
+
+`vault.cascade` now derives the table list from `sqlite_master` at call time, so
+a migration is covered by being written rather than by somebody remembering the
+function. `retention.sweep` runs the same cascade — and that path mattered more:
+an operator running a wipe reads the response, while the sweep is a scheduled
+job whose output is two integers that nobody reads.
+
+The audit chain is the single deliberate exception, and the new guard pins that
+it is the only one. It is the record that the deletion happened and it is
+hash-linked; a vault that erases its own proof of erasure is worse than one that
+never promised to erase. Both paths now put the per-table counts on the chain.
+
 ## [0.55.0] — 2026-08-07
 
 ### The rule the record stated, with something behind it at last

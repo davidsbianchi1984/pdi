@@ -18,10 +18,11 @@ pruning it would break its guarantee — so retention never touches it.
 
 from __future__ import annotations
 
+import json
 import os
 from datetime import datetime, timezone
 
-from . import audit, db
+from . import audit, db, vault
 
 WINDOWS = {"7d": 7, "30d": 30, "90d": 90, "180d": 180, "1y": 365, "forever": None}
 
@@ -93,11 +94,15 @@ def sweep() -> dict:
                 "SELECT id, deleted_at FROM tenants WHERE deleted_at IS NOT NULL"
         ).fetchall():
             if _age_days(r["deleted_at"]) >= rw:
-                conn.execute("DELETE FROM records WHERE tenant_id=?", (r["id"],))
-                conn.execute("DELETE FROM tenant_tokens WHERE tenant_id=?", (r["id"],))
+                # The same cascade a wipe runs, for the same reason and with
+                # rather more at stake: this path fires on a schedule, so
+                # nobody is reading its result. It used to clear two tables of
+                # the twenty that name a tenant.
+                cleared = vault.cascade(conn, r["id"])
                 conn.execute("DELETE FROM tenants WHERE id=?", (r["id"],))
                 purged_tenants += 1
-                audit.record("tenant.purge", tenant_id=r["id"])
+                audit.record("tenant.purge", tenant_id=r["id"],
+                             ref=json.dumps(cleared, sort_keys=True))
 
     for t in conn.execute(
             "SELECT id, retention_days FROM tenants"
