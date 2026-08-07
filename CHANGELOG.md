@@ -4,6 +4,33 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.57.3] — 2026-08-07
+
+### The Windows client read zero writes, and only the floor said so
+
+0.57.2 gave the console a guard on what it *sends*. This release extends it to
+the three native shells, each with its own extractor, and the port found
+something before it found anything else: the Windows reader returned **zero
+writes** for this client.
+
+QRME wraps its writes in a helper — `Put($"/path", new { k }, token)`. This
+one builds the message by hand:
+
+    new HttpRequestMessage(HttpMethod.Put, "/records")
+    {
+        Content = JsonContent.Create(new { key, value }),
+    }
+
+Nothing matched, nothing was found, and nothing found is indistinguishable
+from nothing wrong. The per-client reach floor is the only assertion that
+could fail on it, and did. 0.56.5 established that a borrowed pattern must be
+re-written per client; this is the same fact one level up — per *product*, in
+the same language.
+
+With both shapes read: **13 / 12 / 12 writes per shell, 12 / 7 / 9 with a
+readable body, 10–11 matched to a model, and nothing wrong.** Recorded at a
+ceiling of zero. Three injected defects confirm the guard can still fail.
+
 ## [0.57.2] — 2026-08-07
 
 ### The question, not just the answer — and this one asks it correctly
