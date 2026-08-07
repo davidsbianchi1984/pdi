@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.57.4** ([changelog](CHANGELOG.md) ·
+**Current release: v0.57.5** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -200,6 +200,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.57.5** | The shells get a parse check — duplicate declarations in one scope, and braces that do not balance — after QRME shipped a Swift compile error no text-reading guard could see. Clean here; three injected defects confirm it can fail |
 | **0.57.4** | Nothing to collect here — QRME's shells needed six inputs its screens never asked for; this product's were already correct, and the request-body guard stays green at a ceiling of zero. Cut with the others |
 | **0.57.3** | Request bodies get the guard on all three native shells — and the port found the Windows reader returning zero writes, because this client builds its messages by hand where QRME wraps them in a helper. Only the per-client reach floor could catch that. With both shapes read: nothing wrong |
 | **0.57.2** | Request bodies get the guard responses have had since 0.56.4 — 42 writes, 33 readable, 34 matched to a model, nothing wrong. QRME was clean too; JIM-mini had two silently discarded health readings. Three injected defects confirm this guard can still fail |
