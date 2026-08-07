@@ -4,6 +4,40 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.55.0] — 2026-08-07
+
+### The rule the record stated, with something behind it at last
+
+`pdi/tests/field_labels_unmapped.txt` records the request-model fields that keep their API identifier in a
+422 instead of the label a form shows, and gives a sound reason for each: enum
+members a control sets, ids a client fills in from the resource it is already
+looking at, flags a switch owns. Every word of that is a claim about **the
+screens**, and nothing in this repository was reading the screens.
+
+The ceiling stops the list growing. It says nothing about a field already on
+the list that a screen quietly grew an input for — the record would go on
+shrinking, every test would stay green, and the field would sit there being
+typed into a box by a person and named by an identifier in the refusal
+underneath it.
+
+This record admits in its own header that a 0.46.4 sweep found **forty** rows
+with a control on a form and no label beside it — five bare selects, eight
+boxes carrying only a placeholder, a date input with nothing at all. That
+sweep was somebody reading every screen by hand, and when it finished, nothing
+was left behind to notice the forty-first. Now something is. The five fields
+this vault's forms ask for today all carry labels.
+
+`pdi/tests/test_a_form_that_asks_for_it_has_a_label_for_it.py` now reads the screens and asks the question the record could not: is
+any field **both** bound to a form control and sent in a request body, without
+a label? The AND is the whole guard — screens are full of object literals, and
+control bindings alone match local state that never leaves the browser. Either
+half alone reports dozens of fields no person types into; together they find
+exactly the population `_FIELD_LABELS` exists for. 
+
+QRME found two of its own this way, in a blend screen that had been asking for
+**share** and **their…** in ten languages while its refusal said `weight` and
+`aspect`. Both now carry the label the form shows.
+
 ## [0.54.1] — 2026-08-07
 
 ### Cut together at one version
