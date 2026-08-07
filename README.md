@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.51.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.52.0** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -214,6 +214,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.52.0** | Cut together at one version; the round's work withholds before the content exists rather than handing a client a flag, and names what it held — this repo's two arguments, on a speaker |
 | **0.51.0** | Cut together at one version; the round's work is a dial that changes wording and no capability, and a count offered rather than earned — both stated as fields a client renders |
 | **0.50.0** | Cut together at one version; the round's work is JIM-mini's presence — refusals on the wire rather than in a docstring, and an offline path that is the floor rather than the fallback |
 | **0.49.0** | Cut together at one version; the round's work is QRME's public stream and JIM-mini's GET-only door onto it — the rule about what plays asserted on the wire rather than in four clients, the same shape as this repo's posture blocks |

@@ -4,6 +4,29 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.52.0] — 2026-08-07
+
+### Cut together at one version
+
+The three products are cut at one version, so this release exists here to keep
+that true. **No code changes in this repo this round.**
+
+The round's work is JIM-mini's presence learning what a room may hear. On a
+surface other people can hear, a vital, a condition, a medication, money, a
+journal or a crisis is held back and shown on a screen instead.
+
+Two things there are this repo's kind of decision. **The withholding happens
+before the content exists** — the decision is made server-side ahead of any
+synthesis, rather than handed to a client with a flag attached, which is the
+same reason this vault decrypts nothing it has not first decided the caller may
+read. And **the refusal is legible**: the answer names the categories it held
+and why, the way this repo's posture blocks state what an operator can and
+cannot decrypt. A guardian that goes quiet without saying why has taken the
+beat away rather than moved it, and a vault that refuses without saying what it
+refused is one nobody can audit.
+
+Cut together with QRME and JIM-mini at **app-v0.52.0**.
+
 ## [0.51.0] — 2026-08-06
 
 ### Cut together at one version
