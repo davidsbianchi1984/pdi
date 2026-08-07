@@ -4,6 +4,20 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.57.4] — 2026-08-07
+
+### Nothing to collect here, and the version moves with the others
+
+0.57.3 gave the three native shells a guard on what they *send*. The port
+found this product's Windows reader blind — it builds its messages by hand
+where QRME wraps them in a helper — and once both shapes were read, every
+shell was correct: 13 / 12 / 12 writes, nothing wrong.
+
+QRME recorded six defects as needing an input its screens did not collect;
+0.57.4 collects them and empties that record. There was nothing here to
+collect. The guard and its floors are unchanged and still green, and the
+three repos are cut at one version.
+
 ## [0.57.3] — 2026-08-07
 
 ### The Windows client read zero writes, and only the floor said so
