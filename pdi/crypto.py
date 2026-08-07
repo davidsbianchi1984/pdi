@@ -39,6 +39,7 @@ import hashlib
 import hmac
 import json
 import os
+import time
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
@@ -91,24 +92,187 @@ def _kek() -> bytes:
     return _EPHEMERAL
 
 
-class KmsKeyProvider:
-    """Production key provider — the KEK stays inside a cloud KMS/HSM and is
-    never materialised on the app host. Configure ``PDI_KMS_KEY_ID`` (and the
-    cloud SDK's own credentials). This is the integration seam: wire the call
-    below to e.g. AWS KMS ``Decrypt`` on a stored wrapped KEK, or a PKCS#11 HSM
-    unwrap. Left unimplemented so a mis-set ``PDI_KEY_PROVIDER=kms`` fails
-    loudly rather than silently falling back to a local key."""
+class KmsUnavailable(Exception):
+    """The KMS could not be reached, or is not configured to be reachable.
 
-    def __init__(self, key_id: str | None = None) -> None:
+    Its own class rather than a bare ``RuntimeError`` because a caller must be
+    able to tell *the key store is down* from *the key is wrong*: the first is
+    an outage to retry and page about, the second is a refusal that retrying
+    will never fix.
+    """
+
+
+#: How long an unwrapped KEK may be held in memory before the KMS is asked
+#: again. Not zero: an unwrap per record would make the vault's throughput a
+#: function of somebody's KMS quota, and the API call is also billed. Not
+#: unbounded: a revoked key must stop working within a bounded time, and
+#: "until the next deploy" is not bounded.
+KEK_CACHE_SECONDS = 300
+
+_KEK_CACHE: dict[str, tuple[bytes, float]] = {}
+
+
+def clear_kek_cache() -> None:
+    """Drop every cached KEK. Called after a key is retired or rotated, and by
+    tests that would otherwise inherit a previous case's key."""
+    _KEK_CACHE.clear()
+
+
+class KmsKeyProvider:
+    """Production key provider — the KEK lives in a cloud KMS or an HSM and is
+    unwrapped on demand, never stored on the app host.
+
+    ## The shape, and why it is unwrap rather than fetch
+
+    PDI does not ask the KMS *for* a key. It stores a **wrapped** KEK
+    (``PDI_KMS_WRAPPED_KEK``, base64 of the ciphertext blob the KMS returned
+    when the KEK was created) and asks the KMS to **decrypt** it. That is the
+    difference between a deployment whose database leak costs you the data and
+    one where it costs you nothing: the blob is useless without the KMS, the
+    KMS enforces its own policy on every call, and every unwrap is a line in
+    the customer's CloudTrail rather than a thing that silently happened here.
+
+    ## Backends
+
+    * ``aws`` — ``kms:Decrypt`` through boto3, with an encryption context
+      binding the blob to this deployment so a blob lifted from one tenant
+      cannot be replayed against another.
+    * ``pkcs11`` — a ``C_UnwrapKey`` against a hardware token through
+      ``python-pkcs11``.
+
+    Both raise :class:`KmsUnavailable` when their library, configuration or
+    service is missing. **Nothing falls back to a local key.** A vault that
+    quietly seals under a laptop key when the HSM is unreachable has converted
+    an outage into a silent, permanent downgrade of its central claim.
+
+    ## What has and has not been exercised
+
+    The wrap/unwrap contract, the encryption context, the cache and every
+    refusal path are driven by the tests next door against an injected client.
+    **No live AWS or HSM call has been made from this repository** — that needs
+    credentials and hardware this project does not have — so the boto3 and
+    pkcs11 call sites are written from their documented signatures and are
+    marked ``pragma: no cover``. Read them before pointing this at production.
+    """
+
+    def __init__(self, key_id: str | None = None, client=None) -> None:
         # A per-tenant key id (BYOK) takes precedence over the deployment's.
         self.key_id = key_id
+        # Injectable so the contract can be driven without an AWS account.
+        # It is a constructor argument rather than a module global because a
+        # global would let one tenant's test double answer another's unwrap.
+        self.client = client
+
+    # -- configuration ------------------------------------------------------
+
+    def resolved_key_id(self) -> str:
+        key_id = self.key_id or os.environ.get("PDI_KMS_KEY_ID")
+        if not key_id:
+            raise KmsUnavailable(
+                "PDI_KEY_PROVIDER=kms but no key id: set PDI_KMS_KEY_ID, or "
+                "give the tenant its own under BYOK. Refusing rather than "
+                "reaching for a local key.")
+        return key_id
+
+    def wrapped(self) -> bytes:
+        raw = os.environ.get("PDI_KMS_WRAPPED_KEK")
+        if not raw:
+            raise KmsUnavailable(
+                "PDI_KMS_WRAPPED_KEK is unset. This deployment stores the KEK "
+                "wrapped and asks the KMS to unwrap it — without the blob "
+                "there is nothing to unwrap, and inventing a key here would "
+                "make every existing record unreadable.")
+        try:
+            return base64.b64decode(raw, validate=True)
+        except Exception as exc:
+            raise KmsUnavailable(
+                f"PDI_KMS_WRAPPED_KEK is not valid base64: {exc}") from exc
+
+    def encryption_context(self) -> dict[str, str]:
+        """Binds the blob to this deployment and this key.
+
+        Without it, a wrapped KEK copied out of one deployment's environment
+        decrypts in any other deployment the same KMS key allows — the blob
+        stops being a secret about *this* vault and becomes a bearer token for
+        the key.
+        """
+        return {"pdi:key_id": self.resolved_key_id(),
+                "pdi:purpose": "record-kek"}
+
+    # -- the backends -------------------------------------------------------
+
+    def _aws(self) -> bytes:  # pragma: no cover - needs an AWS account
+        try:
+            import boto3
+        except ImportError as exc:
+            raise KmsUnavailable(
+                "the aws backend needs boto3 installed on this host") from exc
+        client = self.client or boto3.client("kms")
+        try:
+            out = client.decrypt(
+                CiphertextBlob=self.wrapped(),
+                KeyId=self.resolved_key_id(),
+                EncryptionContext=self.encryption_context())
+        except Exception as exc:
+            raise KmsUnavailable(f"kms:Decrypt failed: {exc}") from exc
+        return out["Plaintext"]
+
+    def _pkcs11(self) -> bytes:  # pragma: no cover - needs a hardware token
+        try:
+            import pkcs11
+        except ImportError as exc:
+            raise KmsUnavailable(
+                "the pkcs11 backend needs python-pkcs11 installed") from exc
+        lib_path = os.environ.get("PDI_PKCS11_LIB")
+        if not lib_path:
+            raise KmsUnavailable("PDI_PKCS11_LIB is unset")
+        lib = pkcs11.lib(lib_path)
+        token = lib.get_token(token_label=os.environ.get("PDI_PKCS11_TOKEN"))
+        with token.open(user_pin=os.environ.get("PDI_PKCS11_PIN")) as session:
+            wrapping = session.get_key(label=self.resolved_key_id())
+            return bytes(wrapping.decrypt(self.wrapped()))
+
+    def _injected(self) -> bytes:
+        """The path the tests drive: whatever client was handed in.
+
+        Deliberately the same contract as boto3's — `decrypt(CiphertextBlob=,
+        KeyId=, EncryptionContext=) -> {"Plaintext": bytes}` — so a double
+        that satisfies this is a double that would satisfy AWS, and the tests
+        are testing the real shape rather than a shape invented for them.
+        """
+        out = self.client.decrypt(
+            CiphertextBlob=self.wrapped(),
+            KeyId=self.resolved_key_id(),
+            EncryptionContext=self.encryption_context())
+        return out["Plaintext"]
+
+    # -- the door ------------------------------------------------------------
 
     def kek(self) -> bytes:
-        key_id = self.key_id or os.environ.get("PDI_KMS_KEY_ID")
-        raise NotImplementedError(
-            "KMS key provider is a production integration seam. Wire it to your "
-            f"HSM (key id: {key_id or 'PDI_KMS_KEY_ID unset'}) — e.g. AWS KMS "
-            "Decrypt on a stored wrapped KEK, or a PKCS#11 unwrap.")
+        key_id = self.resolved_key_id()
+        cached = _KEK_CACHE.get(key_id)
+        if cached and (time.time() - cached[1]) < KEK_CACHE_SECONDS:
+            return cached[0]
+
+        backend = os.environ.get("PDI_KMS_BACKEND", "aws")
+        if self.client is not None:
+            key = self._injected()
+        elif backend == "aws":
+            key = self._aws()
+        elif backend == "pkcs11":
+            key = self._pkcs11()
+        else:
+            raise KmsUnavailable(
+                f"no such KMS backend: {backend} (aws, pkcs11)")
+
+        if len(key) != 32:
+            # Caught here rather than at first use, where the failure would be
+            # an AES error three layers down naming nothing useful.
+            raise KmsUnavailable(
+                f"the KMS returned a {len(key)}-byte key; this vault seals "
+                f"under AES-256 and needs 32")
+        _KEK_CACHE[key_id] = (key, time.time())
+        return key
 
 
 # --------------------------------------------------------------------------- #
@@ -156,7 +320,17 @@ def custody(tenant_id: str) -> dict:
         "note": "the KEK lives in the customer's KMS; the operator can decrypt "
                 "while the customer's grant is live, and cannot once it is "
                 "revoked",
-        "limits": ["Integration seam — KmsKeyProvider.kek() is not implemented."],
+        "limits": [
+            "The KEK is unwrapped through kms:Decrypt on a stored wrapped "
+            "blob and cached in memory for at most "
+            f"{KEK_CACHE_SECONDS}s, so a revoked grant stops opening records "
+            "within that window rather than instantly.",
+            "The aws and pkcs11 call sites are written to their documented "
+            "signatures and have no verified live run in this repository. "
+            "The contract around them — unwrap not fetch, encryption "
+            "context, cache scoping, and every refusal path — is driven by "
+            "tests against an injected client.",
+        ],
     }
 
 

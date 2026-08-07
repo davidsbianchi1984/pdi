@@ -51,11 +51,25 @@ def test_rotate_and_reseal_moves_records_to_new_version(client):
 
 
 def test_kms_provider_fails_loudly(client, monkeypatch):
+    """The intent is unchanged; only the exception is.
+
+    This asserted `NotImplementedError` while the provider was a seam. The
+    provider is now implemented, so an unconfigured one raises
+    `KmsUnavailable` instead — a different type carrying the same refusal,
+    and a distinct class so a caller can tell *the key store is down* from
+    *this key is wrong*.
+
+    What must never change is the second half: no fallback. A vault that
+    reaches for a local key when the KMS is unreachable seals every record
+    written during the outage under a key nobody can reproduce.
+    """
     monkeypatch.setenv("PDI_KEY_PROVIDER", "kms")
+    monkeypatch.delenv("PDI_KMS_KEY_ID", raising=False)
+    crypto.clear_kek_cache()
     try:
         crypto.KmsKeyProvider().kek()
-    except NotImplementedError as e:
-        assert "KMS" in str(e)
+    except crypto.KmsUnavailable as e:
+        assert "PDI_KMS_KEY_ID" in str(e)
     else:
         raise AssertionError("KMS provider should fail loudly, not fall back")
 

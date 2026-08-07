@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.56.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.56.1** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -214,6 +214,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.56.1** | **The key that lives in the HSM** — the KMS provider was a documented `NotImplementedError`; it now unwraps a stored blob through kms:Decrypt or PKCS#11, binds it to this deployment with an encryption context, and refuses rather than falling back to a local key. No live AWS call has been made from this repo, and the custody statement says so |
 | **0.56.0** | **A wipe that cleared three tables of twenty** — a permanently-wiped tenant left its key configuration and its signed BAA behind. The cascade now reads the schema instead of a list, the scheduled purge runs the same one, and the audit chain is the only thing either is allowed to keep |
 | **0.55.0** | Cut together at one version; the hand sweep that once found forty unlabelled boxes on these forms is now a guard that will notice the forty-first |
 | **0.54.1** | Cut together at one version; the same care a vault takes between a label on a posture block and the identifier a route compares |

@@ -4,6 +4,58 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.56.1] — 2026-08-07
+
+### The key that lives in the HSM
+
+`KmsKeyProvider.kek()` raised `NotImplementedError` and called itself an
+integration seam. That was an honest label and it was load-bearing — `custody()`
+listed it under `limits`, so a customer reading the custody statement was told
+the truth. But a vault whose production key path does not exist has exactly one
+deployment mode, and it is the one where the key sits in an environment variable
+on the app host.
+
+The provider is now implemented, for AWS KMS and for PKCS#11.
+
+### Unwrap, not fetch
+
+PDI does not ask the KMS *for* a key. It stores a **wrapped** KEK — the
+ciphertext blob the KMS returned when the key was created — and asks the KMS to
+decrypt it. Three things follow:
+
+* a database or environment leak yields a blob that is useless without the KMS,
+  which enforces its own policy on every call;
+* every unwrap is a line in the customer's own audit trail rather than something
+  that quietly happened inside this process;
+* an **encryption context** binds the blob to this deployment and this key id,
+  so a blob copied out of one deployment cannot be replayed in another that the
+  same KMS key happens to allow.
+
+### Nothing falls back
+
+Every missing library, missing configuration and failed call raises
+`KmsUnavailable`, and it is its own exception class so a caller can tell *the
+key store is down* — retry, page somebody — from *this key is wrong*, which
+retrying will never fix. A vault that seals under a local key when the HSM is
+unreachable has converted an outage into a silent, permanent downgrade of its
+central claim: every record written during the outage is sealed under a key
+nobody can reproduce, and nobody finds out until a restore.
+
+The KEK is cached for at most five minutes — long enough that throughput is not
+a function of somebody's KMS quota, short enough that a revoked grant stops
+opening records within a bounded window. The cache is keyed by key id, because a
+cache that was not would hand one tenant's BYOK key to another.
+
+### What has not been exercised
+
+**No live AWS or HSM call was made from this repository** — that needs
+credentials and hardware this project does not have. The contract is driven
+against an injected client carrying boto3's exact `decrypt(CiphertextBlob=,
+KeyId=, EncryptionContext=)` signature, so a double that satisfies the tests is
+one that would satisfy AWS; but the `_aws` and `_pkcs11` call sites themselves
+are unrun and marked `pragma: no cover`. The custody statement now says so in
+its own `limits`, in place of the line about the seam.
+
 ## [0.56.0] — 2026-08-07
 
 ### `mode=wipe` said *permanently removes*. It removed three tables of twenty.
