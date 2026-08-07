@@ -1,0 +1,16 @@
+# status: backlog — 0 rows
+# ceiling: 0
+#
+# Console declarations the shape guard saw a route not satisfy, which are
+# real. There are none, on the first run.
+#
+# QRME found four in its console and JIM-mini two, all six visible on a
+# screen. This one had none — 33 declared shapes, 224 fields, 60 GET
+# bindings, 27 of them driven against a live fixture.
+#
+# That is a result rather than an absence: three injected defects were
+# confirmed to fail this guard before it shipped, and the floors under its
+# reach are set to what it honestly finds, so a pattern that stops matching
+# fails loudly instead of reporting a clean client.
+#
+# Ratcheted: this list may shrink and must never grow.

@@ -4,6 +4,29 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.57.1] — 2026-08-07
+
+### The console reads the wire too, and here it reads it right
+
+The guard family has asked three clients the same question since 0.56.4.
+The console — the client most people actually open — was never asked, in any
+of the three products. It declares its expected shape on every call as a
+TypeScript type argument, and TypeScript is erased at build time, so a wrong
+declaration never fails: `undefined` renders as nothing and the layout closes
+up around it.
+
+QRME's console had four defects, all visible on a screen; JIM-mini's had two.
+This one has none: **33 declared shapes, 224 fields, 60 GET bindings, 27 of
+them driven** against a live fixture, and every required field is a field its
+route sends, in a shape the declared type can hold.
+`pdi/tests/console_shapes_unverified.txt` records nothing, at a ceiling of
+zero.
+
+That is a result rather than an absence. Three defects were injected and
+confirmed to fail this guard before it shipped, and the floors under its reach
+are set to what it honestly finds — so a pattern that stops matching fails
+loudly instead of reporting a clean client.
+
 ## [0.57.0] — 2026-08-07
 
 ### The guard arrives, and finds this client correct
