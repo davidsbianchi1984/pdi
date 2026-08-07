@@ -4,6 +4,23 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.56.8] — 2026-08-07
+
+### The Swift client gets the same guard, and answers the same way
+
+QRME found nine fictions in its own iOS client — every one a defect already
+fixed on its Windows side in 0.56.4 or 0.56.7 and never carried across.
+Fixing a defect in one client was not fixing the defect, and nothing was
+checking the other one.
+
+`test_the_shape_the_swift_client_expects.py` is here now too. It drives every
+GET binding in `native/ios/Sources/ApiClient.swift` and asks both halves of
+the same question: is each declared field a key the route returns, and can its
+declared type decode the shape that arrives.
+
+**This client came back with no fictions** — the third time in four releases
+these clients have answered a new check cleanly.
+
 ## [0.56.7] — 2026-08-07
 
 ### The shape guard learned to read types, and this client is still clean

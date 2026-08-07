@@ -1,0 +1,19 @@
+# status: backlog — 0 rows
+# ceiling: 0
+#
+# iOS fields the Swift shape guard saw a route not return, which are real.
+#
+# `test_the_shape_the_swift_client_expects.py` drives every GET binding in
+# this product's Swift client and checks each struct against what the route
+# actually sends — the names, and whether the declared type can decode the
+# shape that arrives. QRME's copy found nine fictions in its own Swift client
+# on the first run, every one a defect already fixed on the Windows side in
+# 0.56.4 and 0.56.7 and never carried across.
+#
+# This file is empty, and that is the finding: every field this client
+# declares is a field its route sends, in the state a tenant with one sealed
+# record is already in — the same answer this product's C# client gave.
+#
+# It stays in the tree so the ceiling is enforced at zero.
+#
+# Ratcheted: this list may shrink and must never grow.
