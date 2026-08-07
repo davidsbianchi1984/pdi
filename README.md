@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.56.4** ([changelog](CHANGELOG.md) ·
+**Current release: v0.56.5** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -214,6 +214,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.56.5** | QRME's shape guard is here now, rewritten to see this client — it builds each request itself and carries the tenant token beside it, so a borrowed regex finds zero calls. Clean sweep; the unverified record stays at ceiling zero |
 | **0.56.4** | Cut together at one version; QRME found fourteen client records declaring fields their routes have never sent, and a guard that drives every binding to check. That guard is not in this repo yet — next round's work, named here |
 | **0.56.3** | Cut together at one version; QRME's collision record falls 28 → 24 — three counts that shared a name with the boolean they counted, and one client bug wearing the same disguise |
 | **0.56.2** | **The compiler nobody ran** — `tsc` and a wire-name guard join the suite. Two collisions recorded, of which `sealed` matters most for a vault: a sealing detail in one place and a boolean in another |

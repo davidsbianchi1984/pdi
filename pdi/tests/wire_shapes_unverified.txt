@@ -1,0 +1,21 @@
+# status: backlog — 0 rows
+# ceiling: 0
+#
+# Client fields the shape guard saw a route not return, which are real anyway.
+#
+# `test_the_shape_the_client_expects.py` drives every GET binding in the
+# Windows client and compares each record's `JsonPropertyName` set against the
+# keys the route actually sent back. QRME's copy of that guard found fourteen
+# records over there declaring fields their routes have never sent.
+#
+# This file is empty, and that is the finding: every field this product's
+# Windows client declares is a field its route sends, in the state a tenant
+# with one sealed record is already in. Nothing to record.
+#
+# It stays here rather than being deleted so the ceiling is enforced at zero.
+# A future round that adds a client record from imagination has to either
+# correct it or argue with this file, and a file that says *nothing was
+# unverified here* is a harder thing to add a row to than a file that does not
+# exist.
+#
+# Ratcheted: this list may shrink and must never grow.

@@ -4,6 +4,47 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.56.5] — 2026-08-07
+
+### The guard is here now, and it had to be rewritten to see this client
+
+0.56.4 built a guard in QRME that reads the Windows client's GET bindings,
+drives each one against a live app, and asserts every `JsonPropertyName` in
+the bound record is a key the route actually returned. It found fourteen
+records over there declaring fields their routes have never sent. That
+changelog said the guard belonged here too and was not here yet.
+
+The sibling guard — one wire name, one type — was copied into this repo
+verbatim, because it only reads records. This one could not be. It has to find
+the *calls*, and this client does not make them the way the other two do:
+
+```csharp
+Send<VaultRecord>(new HttpRequestMessage(HttpMethod.Get, $"/records/{key}"), token)
+```
+
+There is no `Get(path)` helper here. Every call builds its own request and
+carries the tenant token beside it, because in this product a token is not a
+session — it is the tenant, and a call without one has nobody to be. A regex
+borrowed from QRME finds **zero** bindings in this file, and zero found reads
+exactly like zero wrong. `test_the_extractor_finds_this_products_calls` exists
+for that failure, and fails below fifteen.
+
+**This client came out clean.** `wire_shapes_unverified.txt` is empty and stays
+in the tree anyway, ceiling zero, so a future record written from imagination
+has to argue with a file that says nothing here was unverified.
+
+#### Two things the port fixed in all three copies
+
+The record parser counted a wrapped reason — an indented `#` continuing the
+line above — as an empty row, so a record with any wrapped comment failed its
+own ratchet. Filtering on the parsed result rather than the raw line fixes it.
+
+And a deliberately malformed injection, made while checking the guard fires,
+showed the record-block regex will run one record's body into the next when a
+paren is unbalanced — reporting fields against the wrong record name, which
+reads as a real finding and is not one. There is now an assertion that no
+extracted body contains another record.
+
 ## [0.56.4] — 2026-08-07
 
 ### Cut together at one version
