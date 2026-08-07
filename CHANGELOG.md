@@ -4,6 +4,26 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.56.2] — 2026-08-07
+
+### The compiler nobody ran
+
+JIM-mini shipped a TypeScript error on `main` for several releases, because one
+wire field name carried three incompatible types across its API and **no suite
+in any of these three repositories ran `tsc`**.
+
+This console typechecks clean and always did, but nothing was checking.
+`pdi/tests/test_one_name_one_type_on_the_wire.py` now runs `tsc --noEmit`, and
+adds the general guard: every `JsonPropertyName` in the Windows client is read,
+and a wire name carrying two types fails.
+
+**Two collisions found here** — `programs` is a compliance-program list in one
+place and a plain string list in another, and `sealed` is both a record's
+sealing detail and a boolean. Both are recorded and ratcheted. For a vault, the
+second is the one worth naming: a reader who takes `sealed: {...}` for
+`sealed: true` has drawn the right conclusion from the wrong evidence, and
+would draw the wrong one the day the shape changed.
+
 ## [0.56.1] — 2026-08-07
 
 ### The key that lives in the HSM
