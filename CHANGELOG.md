@@ -4,6 +4,30 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.53.0] — 2026-08-07
+
+### Cut together at one version
+
+The three products are cut at one version, so this release exists here to keep
+that true. **No code changes in this repo this round.**
+
+The round's work is JIM-mini checking whether its posture blocks were kept
+rather than merely stated. They were — but nothing had been testing it, and one
+sentence claimed more than the code delivered.
+
+This is the vault's own subject. A posture block is this repo's central idea
+exported to a bridge: state what can and cannot be done, in a field a client
+renders, rather than in a comment. What this round adds to that idea is the
+second half — **a stated posture needs a test that could catch it lying**, and
+the test cannot be a read of the statement. It has to take the action and look
+at what moved.
+
+And the correction is the one an auditor makes: a list of refusals that never
+names what *is* kept invites a reader to conclude nothing is. The answer now
+names the record it writes.
+
+Cut together with QRME and JIM-mini at **app-v0.53.0**.
+
 ## [0.52.0] — 2026-08-07
 
 ### Cut together at one version
