@@ -4,6 +4,41 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.53.1] — 2026-08-07
+
+### `operator_can_decrypt: false`, checked against the whole database
+
+`custody()` reports that a tenant under **held** custody has a key "the
+deployment never stores". That sentence is why outsourced hosting of this
+vault is a different product from every other one, and it is the sentence a
+security review quotes.
+
+What checked it was a literal read back out of the dict that hardcodes it —
+`assert body["operator_can_decrypt"] is False` — and one real but narrow test
+reading **two columns of one table**: `SELECT check_value, config FROM
+tenant_keys`. That is where a first implementation would put a key, so it was
+the right place to look first. It is not the claim. The claim is *nowhere*.
+
+A key does not have to be stored on purpose to be stored. It rides a header on
+every request, and this deployment has an operations journal, an audit trail,
+an error path and a retention sweep — any of which could carry a request
+detail into a row without anybody deciding to.
+
+So the sweep walks **every table and every column**, from `sqlite_master`
+rather than a hand-written list, looking for the key in every representation
+it could wear: the base64 the client sends, the raw bytes, and hex. Then it
+does it again while using the key on every door, and again after a *refused*
+key, because the error path is where secrets go to be logged. The record's
+plaintext gets the same treatment, under both custody modes — "the operator
+cannot open these records" and "the plaintext is not sitting in a column
+somewhere else" are different claims and only the first had a test.
+
+**Nothing leaked.** Seven assertions, including one that writes the key into a
+column on purpose and requires the sweep to name the table — a guard nobody
+has watched fail is a guard nobody should trust.
+
+Cut together with QRME and JIM-mini at **app-v0.53.1**.
+
 ## [0.53.0] — 2026-08-07
 
 ### Cut together at one version

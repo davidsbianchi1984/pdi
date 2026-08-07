@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.53.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.53.1** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -214,6 +214,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.53.1** | **`operator_can_decrypt: false`, checked against the whole database** — every column of every table swept for the customer's key in base64, raw and hex, including after a refused key. Nothing leaked; two columns of one table were all that had been checked |
 | **0.53.0** | Cut together at one version; a stated posture needs a test that could catch it lying, and that test cannot be a read of the statement — the vault's own subject, applied to a bridge |
 | **0.52.0** | Cut together at one version; the round's work withholds before the content exists rather than handing a client a flag, and names what it held — this repo's two arguments, on a speaker |
 | **0.51.0** | Cut together at one version; the round's work is a dial that changes wording and no capability, and a count offered rather than earned — both stated as fields a client renders |
