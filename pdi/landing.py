@@ -109,7 +109,8 @@ def _page(title: str, body: str, language: str = "en") -> str:
     # untranslated.
     direction = "rtl" if language == "ar" else "ltr"
     return (
-        f'<!doctype html><html lang="{language}" dir="{direction}">'
+        f'<!doctype html><html lang="{html.escape(language)}" '
+        f'dir="{direction}">'
         '<head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1,'
         'viewport-fit=cover"><meta name="theme-color" content="#0c0920">'
@@ -332,7 +333,7 @@ def gate_page(card: dict, language: str = "en") -> str:
     kinds = (("delivery", "A delivery"), ("collection", "A collection"),
              ("access", "Access to the site"), ("other", "Something else"))
     options = "".join(
-        f'<option value="{value}">{html.escape(t(label))}</option>'
+        f'<option value="{html.escape(value)}">{html.escape(t(label))}</option>'
         for value, label in kinds)
     body = (
         '<div class="seal">'
