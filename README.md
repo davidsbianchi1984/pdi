@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.58.4** ([changelog](CHANGELOG.md) ·
+**Current release: v0.58.5** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -200,6 +200,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.58.5** | **The disclosure that showed nobody** — the pinned table's reader learns to follow a dict built in pieces and a list built by appending, and to refuse a `**` it cannot resolve. Clean here; the finding was QRME's live-microphone disclosure, which rendered as nobody on all three clients |
 | **0.58.4** | **The key was right and the shape was wrong** — a per-route key check is not derivable by reading; what shipped instead pins a shell model to the backend function whose `return` is its contract, inferring nothing. Clean here; the finding was QRME's guided tour, blank on both phones and correct on Windows |
 | **0.58.3** | **The key the server never sends** — every key a shell decodes is now read against everything this backend can put on a response. Clean here across all three shells; the finding was next door, where the overlay disclosure showed nobody and Sign in with Google and Apple could not start on either phone |
 | **0.58.2** | **The colour that wasn't in the palette** — 0.58.1 checked the one receiver whose type is known for free; this checks all eight, adding the API client, the theme object and `App.xaml`'s brushes. Clean here across 36 client call sites and the whole palette; the finding was QRME's Android theme, and this product gets the check because the next one could be here |

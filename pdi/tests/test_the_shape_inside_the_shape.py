@@ -38,16 +38,11 @@ on. It is small on purpose, and it is meant to grow one verified row at a time.
 
 ## What the pinning found
 
-Nothing here, and that is what a pinned table looks like on the day it is
-written: the rows are a contract somebody read at both ends, not a search.
-The finding was next door — QRME's guided tour, blank on both phones and
-correct on Windows, where `/tutorial` sends `chapters: [{chapter, steps}]`
-and both phones read `key` and `title`, and where three more buttons decoded
-a wrapper as the thing it wraps.
-
-Windows had all four right, and carried a comment saying a chapter never had
-a `key` or a `title` of its own. Somebody fixed one shell and the note never
-crossed to the others, which is the argument for a file rather than a comment.
+Nothing here. The finding was next door, and it was the same class as the
+guided tour but louder: QRME's live-microphone disclosure — *who in this room
+has lent the profiles an open microphone* — reads `lent` on all three shells
+against a route that sends `microphones_lent`. It rendered as nobody, on every
+client, which is exactly what a disclosure looks like when it is broken.
 """
 
 from __future__ import annotations
@@ -101,9 +96,115 @@ def _elem(node) -> ast.Dict | None:
     return node if isinstance(node, ast.Dict) else None
 
 
-def _keys(node: ast.Dict) -> set[str]:
-    return {k.value for k in node.keys
-            if isinstance(k, ast.Constant) and isinstance(k.value, str)}
+def _module_dict(tree: ast.Module, name: str) -> set[str] | None:
+    """A module-level dict of dicts, all of whose values carry the same keys.
+    Anything else returns None and the pin is refused rather than guessed."""
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign) and len(node.targets) == 1:
+            target = node.targets[0]
+            ident = target.id if isinstance(target, ast.Name) else None
+            value = node.value
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            ident, value = node.target.id, node.value
+        else:
+            continue
+        if ident != name or not isinstance(value, ast.Dict):
+            continue
+        shapes = []
+        for v in value.values:
+            if not isinstance(v, ast.Dict):
+                return None
+            shapes.append(_keys(v))
+        if not shapes or any(sh != shapes[0] for sh in shapes[1:]):
+            return None
+        return shapes[0]
+    return None
+
+
+def _spread(tree: ast.Module, fn, name: str) -> set[str] | None:
+    """`{"surface": name, **spec, …}` — resolve what `spec` holds.
+
+    Either a module-level dict of dicts by that name, or the value half of a
+    `for _k, spec in SOMETHING.items()` in the function being read. Both are
+    lookups; neither is a guess.
+    """
+    direct = _module_dict(tree, name)
+    if direct is not None:
+        return direct
+    for node in ast.walk(fn):
+        if not (isinstance(node, ast.For) and isinstance(node.target, ast.Tuple)
+                and len(node.target.elts) == 2
+                and isinstance(node.target.elts[1], ast.Name)
+                and node.target.elts[1].id == name):
+            continue
+        it = node.iter
+        if (isinstance(it, ast.Call) and isinstance(it.func, ast.Attribute)
+                and it.func.attr == "items"
+                and isinstance(it.func.value, ast.Name)):
+            return _module_dict(tree, it.func.value.id)
+    return None
+
+
+def _keys(node: ast.Dict, tree: ast.Module | None = None, fn=None) -> set[str]:
+    out = set()
+    for k in node.keys:
+        if isinstance(k, ast.Constant) and isinstance(k.value, str):
+            out.add(k.value)
+        elif k is None and tree is not None:
+            # `{"surface": name, **spec, …}` — the spread is part of the
+            # contract, and skipping it would call a real key a defect.
+            v = node.values[node.keys.index(k)]
+            spread = (_spread(tree, fn, v.id)
+                      if isinstance(v, ast.Name) and fn is not None else None)
+            assert spread is not None, (
+                "a `**` this file cannot resolve is a pin it must not guess at")
+            out |= spread
+    return out
+
+
+def _named(fn, ident: str) -> tuple[ast.Dict | None, set[str]]:
+    """Resolve a local name to the dict it holds, inside one pinned function.
+
+    Three shapes, all of them assignment in the body being read — no
+    cross-function inference:
+
+        out = {...}                     a dict, built at once
+        out["k"] = ...                  and added to afterwards
+        rows = [{...} for r in …]       a list of dicts
+        rows = []; rows.append(row)     a list built by appending one
+
+    0.58.4 named the last of these as a limit and refused to guess past it.
+    Lifting it is the same promise kept differently: still one function, still
+    read rather than inferred.
+    """
+    found, extra = None, set()
+    for node in ast.walk(fn):
+        if not (isinstance(node, ast.Assign) and len(node.targets) == 1):
+            continue
+        target = node.targets[0]
+        if isinstance(target, ast.Name) and target.id == ident:
+            found = _elem(node.value) or (
+                node.value if isinstance(node.value, ast.Dict) else found)
+        elif (isinstance(target, ast.Subscript)
+              and isinstance(target.value, ast.Name)
+              and target.value.id == ident
+              and isinstance(target.slice, ast.Constant)
+              and isinstance(target.slice.value, str)):
+            extra.add(target.slice.value)
+    if found is None:
+        for node in ast.walk(fn):
+            if (isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Attribute)
+                    and node.func.attr == "append"
+                    and isinstance(node.func.value, ast.Name)
+                    and node.func.value.id == ident and node.args):
+                arg = node.args[0]
+                if isinstance(arg, ast.Dict):
+                    found = arg
+                elif isinstance(arg, ast.Name):
+                    found, more = _named(fn, arg.id)
+                    extra |= more
+    return found, extra
 
 
 def contract(module: str, func: str, container: str | None) -> set[str]:
@@ -123,31 +224,23 @@ def contract(module: str, func: str, container: str | None) -> set[str]:
             # `out = {...}` … `out["speak"] = …` … `return out`. Built in
             # pieces is still built here, and this is a pinned function: the
             # whole body is fair to read.
-            built, extra = None, set()
-            for node in ast.walk(fn):
-                if (isinstance(node, ast.Assign) and len(node.targets) == 1):
-                    t = node.targets[0]
-                    if isinstance(t, ast.Name) and t.id == ret.id:
-                        built = _elem(node.value) or built
-                    elif (isinstance(t, ast.Subscript)
-                          and isinstance(t.value, ast.Name)
-                          and t.value.id == ret.id
-                          and isinstance(t.slice, ast.Constant)
-                          and isinstance(t.slice.value, str)):
-                        extra.add(t.slice.value)
+            built, extra = _named(fn, ret.id)
             if built is not None and container is None:
-                return _keys(built) | extra
+                return _keys(built, tree, fn) | extra
             top = built
         if top is None:
             continue
         if container is None:
-            return _keys(top)
+            return _keys(top, tree, fn)
         for k, v in zip(top.keys, top.values):
             if isinstance(k, ast.Constant) and k.value == container:
                 inner = _elem(v)
+                spread: set[str] = set()
+                if inner is None and isinstance(v, ast.Name):
+                    inner, spread = _named(fn, v.id)
                 assert inner is not None, (
                     f"{module}.{func}[{container!r}] is not a list of dicts")
-                return _keys(inner)
+                return _keys(inner, tree, fn) | spread
     raise AssertionError(f"{module}.{func} returns no dict this file can read")
 
 
