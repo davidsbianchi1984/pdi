@@ -17,6 +17,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse, JSONResponse
 
+from . import pagehead
 from . import (app_connectors, assistant, audit, baa, beacons, bequests,
                catalog,
                compliance, connectors, crypto, db, dock as dock_mod, gate,
@@ -117,7 +118,7 @@ RECEIVE_NO = "that token does not open anything here"
 RECEIVE_REVOKED = "this transfer has been revoked"
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="Private Data Infrastructure", version="0.59.2")
+    app = FastAPI(title="Private Data Infrastructure", version="0.59.3")
 
     @app.middleware("http")
     async def localize_response_notes(request, call_next):
@@ -1564,6 +1565,35 @@ def create_app() -> FastAPI:
         from fastapi.staticfiles import StaticFiles
         app.mount("/app", StaticFiles(directory=str(_console), html=True),
                   name="console")
+
+    # What a page promises a browser before it says anything else.
+    #
+    # These products serve HTML a person reaches without an account, on a
+    # device that is not theirs: the sticker a stranger kneels over, the
+    # sealed-carrier card, the page a sign-in provider sends a browser back
+    # to. Measured over HTTP at 0.59.3, every one of them went out with no
+    # Content-Security-Policy, no X-Content-Type-Options, no X-Frame-Options
+    # and no Referrer-Policy — and nothing in-process could see that, because
+    # a TestClient reads none of those headers and a browser reads all of
+    # them.
+    #
+    # The nonce is minted before the route runs so the page builders can
+    # stamp it on their own inline script; the policy then names that nonce
+    # and nothing else, which is the difference between a header that stops
+    # an injected `<script>` and one that decorates the response.
+    #
+    #     asked     is the page correct
+    #     mattered  what can a page do that is not
+    @app.middleware("http")
+    async def _what_a_page_promises_a_browser(request: Request, call_next):
+        value = pagehead.new_nonce()
+        response = await call_next(request)
+        if response.headers.get("content-type", "").startswith("text/html"):
+            for key, header in pagehead.HEADERS.items():
+                response.headers.setdefault(key, header)
+            response.headers.setdefault("content-security-policy",
+                                        pagehead.policy(value))
+        return response
 
     # A failure the console can read.
     #

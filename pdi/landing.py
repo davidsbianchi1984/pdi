@@ -32,6 +32,8 @@ while anybody is testing.
 
 from __future__ import annotations
 
+from . import pagehead
+
 import html
 import json
 
@@ -306,7 +308,7 @@ def seal_card_page(card: dict, language: str = "en") -> str:
         '<div class="status" id="st"></div>'
         "</div>"
         f'<p class="foot">{html.escape(t(FOUND_FOOT))}</p>'
-        "<script>"
+        + pagehead.script_open()
         + _FOUND_JS % {"endpoint": _js(f"/s/{card['reference']}/found"),
                        "strings": _strings(language, working="Recording…",
                                            done="Recorded. Thank you.",
@@ -354,7 +356,7 @@ def gate_page(card: dict, language: str = "en") -> str:
         '<div class="status" id="st"></div>'
         "</div>"
         f'<p class="foot">{html.escape(t(GATE_FOOT))}</p>'
-        "<script>"
+        + pagehead.script_open()
         + _RING_JS % {"endpoint": _js(f"/s/{card['reference']}/ring"),
                       "strings": _strings(language, working="Ringing…",
                                           ai="AI REPLY",
@@ -481,7 +483,7 @@ def receive_page(tid: str, language: str = "en") -> str:
         f'<p class="note">{html.escape(t(RECEIVE_AGAIN))}</p>'
         "</div>"
         "</div>"
-        "<script>"
+        + pagehead.script_open()
         + _RECEIVE_JS % {
             "tid": _js(tid),
             "strings": _strings(language, fetching="Fetching…",

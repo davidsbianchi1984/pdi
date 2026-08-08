@@ -96,7 +96,7 @@ def _visible(page: str) -> str:
     markup. Comparing the source against the English would have quietly
     excused exactly the sentences that matter most.
     """
-    return html.unescape(re.sub(r"<script>.*?</script>", "", page, flags=re.S))
+    return html.unescape(re.sub(r"<script[^>]*>.*?</script>", "", page, flags=re.S))
 
 
 def _ours(page: str) -> str:
