@@ -63,7 +63,8 @@ export function Custody() {
     api.baaStatus(token).then(setBaa).catch(fail);
     if (tenantId) {
       api.hosting(tenantId, token).then(setMine).catch(fail);
-      api.hostingHistory(tenantId, token).then(setHistory).catch(fail);
+      api.hostingHistory(tenantId, token)
+        .then((r) => setHistory(r.history)).catch(fail);
       // 404 until one is on file, which is itself the answer.
       api.tenantBaa(tenantId, admin).then(setTenantBaaRow)
         .catch(() => setTenantBaaRow(null));

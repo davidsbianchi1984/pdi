@@ -680,8 +680,14 @@ export const api = {
   hostingModes: () => req<{ modes: Record<string, HostingMode> }>("/hosting"),
   hosting: (tenantId: string, token: string) =>
     req<HostingMode & { tenant_id: string }>(`/hosting/${tenantId}`, { token }),
+  // An **object** with a `history` key, not the array the name suggests.
+  // Typed `Row[]` here, the Custody screen called `.map` on an object and
+  // threw `history.map is not a function` the moment a vault had ever been
+  // moved — a screen that worked on every fresh vault and on no vault with
+  // a past.
   hostingHistory: (tenantId: string, token: string) =>
-    req<Row[]>(`/hosting/${tenantId}/history`, { token }),
+    req<{ tenant_id: string; history: Row[] }>(
+      `/hosting/${tenantId}/history`, { token }),
   setHosting: (tenantId: string, body: { mode: string; note?: string },
                token: string) =>
     req<Row>(`/hosting/${tenantId}`, { method: "PUT", body, token }),
