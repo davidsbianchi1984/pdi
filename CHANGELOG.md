@@ -4,6 +4,40 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.58.1] — 2026-08-08
+
+### The member that isn't there
+
+0.58.0 ended by restating the standing gap: no Swift, Kotlin or C# toolchain
+on this machine, so the native UI is asserted by reading and not by running —
+and that round widened the amount of screen riding on it. The honest response
+is not to pretend a compiler exists. It is to keep taking the classes of
+compile error that *can* be caught by reading. 0.57.5 took duplicate
+declarations and unbalanced braces; 0.57.6 took the markup; this takes the
+next one.
+
+Each shell has exactly one object the screens read their session from, and
+exactly one file that declares it — so `state.x` is not a guess about types.
+It is the one receiver in these trees whose declaration is known without
+resolving anything.
+
+```
+asked     do the screens parse, and do they say the right things
+mattered  is the thing they reach for actually there
+```
+
+### Fixed
+
+- `OfflinePostureCard` reached `state.api` on an `AppState` that has no client
+  at all — every other screen in this tree uses `ApiClient.shared`, which is
+  what it does now. Swift does not compile the old line.
+
+### Added
+
+- `test_the_member_that_isnt_there.py`, with the injection that catches it.
+
+Suite: **872 passed**, 3 skipped.
+
 ## [0.58.0] — 2026-08-08
 
 ### The key the phones never carried
