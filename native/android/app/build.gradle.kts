@@ -12,8 +12,8 @@ android {
         applicationId = "com.pdi.vault"
         minSdk = 26
         targetSdk = 34
-        versionCode = 58006
-        versionName = "0.58.6"
+        versionCode = 58007
+        versionName = "0.58.7"
 
         // Where content-free problem reports go, and the token to post them
         // with. The console's equivalent is the `define` block in

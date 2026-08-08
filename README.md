@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.58.6** ([changelog](CHANGELOG.md) ·
+**Current release: v0.58.7** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -200,6 +200,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.58.7** | **A wire model is data, and data has no methods** — the empty-model hole that hid a broken pin here for a release is closed: every pin asserts on both ends, and three checks audit the readers themselves. Clean here; the finding was QRME's missing brace, which put ninety-five client methods inside a wire model |
 | **0.58.6** | **The refusal surfaces** — the compliance catalogue is pinned, and the reader learns to follow a module table handed out whole. The trap was the guard's own and it was here: this repo declares one-line structs, the property pattern required end-of-line, so the model read as empty and the pin had been checking nothing at all |
 | **0.58.5** | **The disclosure that showed nobody** — the pinned table's reader learns to follow a dict built in pieces and a list built by appending, and to refuse a `**` it cannot resolve. Clean here; the finding was QRME's live-microphone disclosure, which rendered as nobody on all three clients |
 | **0.58.4** | **The key was right and the shape was wrong** — a per-route key check is not derivable by reading; what shipped instead pins a shell model to the backend function whose `return` is its contract, inferring nothing. Clean here; the finding was QRME's guided tour, blank on both phones and correct on Windows |
