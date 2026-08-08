@@ -236,3 +236,17 @@ def test_the_scan_reaches_every_client():
     assert len(seen) == 3, f"only found {sorted(seen)}"
     for name, n in seen.items():
         assert n >= 2, f"{name}: only {n} request(s) built — the pattern has "
+
+
+def test_this_product_sends_no_header_the_console_keeps_to_itself():
+    """0.58.0, and the honest version of it for this product.
+
+    The sibling products found `x-llm-api-key` sent by the console and by no
+    shell. There is no model key here — this product runs no generation — so
+    the header does not exist and the check is that it stays that way rather
+    than a comparison dressed up as one.
+    """
+    console = (REPO / "app/src/api.ts").read_text(encoding="utf-8")
+    assert "x-llm-api-key" not in console, (
+        "a model key has appeared in this console; the shells need the same "
+        "field and the same header, which is what 0.58.0 did next door")

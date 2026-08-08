@@ -4,6 +4,42 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.58.0] — 2026-08-08
+
+### The key the phones never carried
+
+0.57.9 ended by naming the shape: a guard that verifies *a* line rather than
+*every* path has a blind spot, and the same audit run on a different header
+would probably be productive. It was — but not the way it was expected to be.
+Asked of every header the console attaches to every request, the answer was
+not *some paths miss it*. It was **one header the shells do not send at all.**
+
+```
+x-llm-api-key
+```
+
+The person's own model key. Pasted into the console since 0.4.3, read by the
+backend per request into a context var and never written down, and sent by no
+native shell. A key set on the desktop was used on the desktop, and the
+deployment's key was used on the phone — same account, same profile, two
+different credentials, and nothing anywhere saying so. The phones even drew
+the provider list with *ready* / *no key* beside each row, which is the
+**deployment's** key state: the screen showed a fact about somebody else's
+credential and offered no way to supply your own.
+
+```
+asked     does every request carry the headers this client sends
+mattered  does this client send the headers the product has
+```
+
+This product runs no generation, so there is no model key and nothing to
+carry. What it gets is the check in its honest form: an assertion that the
+header has not appeared in the console here either — because the day it does,
+the shells need the same field and the same header, which is what this round
+did next door.
+
+Suite: **866 passed**, 3 skipped.
+
 ## [0.57.9] — 2026-08-08
 
 ### A funnel only funnels what goes into it
