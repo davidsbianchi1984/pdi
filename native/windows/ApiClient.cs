@@ -152,6 +152,20 @@ public sealed class ApiClient
 
     private readonly HttpClient _http = new() { BaseAddress = new Uri("http://127.0.0.1:8000") };
 
+    /// <summary>Every request this client sends, and the one place the
+    /// reader's language is attached to it.
+    ///
+    /// <para>The header used to be set in the shared send helper — and the
+    /// calls that went straight to <c>_http.SendAsync</c> instead never got
+    /// it. Those are the uploads, the streams and the raw-response reads, and
+    /// every refusal they draw arrived in English no matter what the machine
+    /// was set to. A funnel only funnels what goes into it.</para></summary>
+    private Task<HttpResponseMessage> Dispatch(HttpRequestMessage req)
+    {
+        req.Headers.TryAddWithoutValidation("accept-language", L10n.DeviceLanguage());
+        return _http.SendAsync(req);
+    }
+
     public void SetBase(string url)
     {
         var t = url.TrimEnd('/');
@@ -181,12 +195,11 @@ public sealed class ApiClient
         // The language the reader actually speaks. Every sentence the backend
         // composes on a public route is chosen from this header, and no native
         // shell was sending it.
-        req.Headers.TryAddWithoutValidation("accept-language", L10n.DeviceLanguage());
 
         HttpResponseMessage res;
         try
         {
-            res = await _http.SendAsync(req);
+            res = await Dispatch(req);
         }
         catch
         {
@@ -223,7 +236,7 @@ public sealed class ApiClient
     private async Task SendNoContent(HttpRequestMessage req, string token)
     {
         req.Headers.Add("authorization", $"Bearer {token}");
-        var res = await _http.SendAsync(req);
+        var res = await Dispatch(req);
         if (!res.IsSuccessStatusCode)
         {
             var body = await res.Content.ReadAsStringAsync();
@@ -293,7 +306,7 @@ public sealed class ApiClient
             Content = JsonContent.Create(new { }),
         };
         req.Headers.Add("authorization", $"Bearer {adminToken}");
-        var res = await _http.SendAsync(req);
+        var res = await Dispatch(req);
         res.EnsureSuccessStatusCode();
         return await AdminKeys(adminToken);
     }
@@ -457,7 +470,7 @@ public sealed class ApiClient
             Content = JsonContent.Create(new { filename, content }),
         };
         req.Headers.Add("X-Submit-Token", submitToken);
-        var res = await _http.SendAsync(req);
+        var res = await Dispatch(req);
         if (!res.IsSuccessStatusCode)
         {
             var body = await res.Content.ReadAsStringAsync();
