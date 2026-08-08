@@ -4,6 +4,92 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.59.0] — 2026-08-08
+
+### A floor nobody raised is a floor nobody is standing on
+
+0.58.8 found the route reader had one floor and four clients. 0.58.9 found the
+localizer's floor was ten against fifty-four. Twice in a row, the same defect
+in a different instrument: a number written when the surface was small,
+correct on the day, never raised.
+
+Fixing them one file at a time does not generalise. This round swept every
+floor in the suite instead.
+
+### The two questions
+
+A floor answers one question on every run — *is the number satisfied* — and
+that is exactly the question that keeps passing after the number stops meaning
+anything.
+
+    asked     is the number satisfied
+    mattered  is the number still near what it measures
+
+The standard is the one 0.58.8 set for its own table and 0.58.9 kept: a floor
+under **half** of what it measures is not holding anything. Applied here, and
+this is the product where the interesting rows are the ones that passed:
+
+    l10n asked, per shell        10 against 48-62        ratio 0.19
+    l10n held, per shell         10 against 51-64        ratio 0.18
+    path literals, all surfaces  40 against 183          ratio 0.22
+    console call sites          100 against 121          ratio 0.83  held
+    native call sites            20 against 35-36        ratio 0.57  held
+
+**58 floors in this product** carried their own literal, across 29 files.
+
+### The finding underneath the finding
+
+The rows that **passed** are as informative as the ones that did not. The same
+literals appear in all three products, copied across when a guard was ported.
+`assert len(made) > 200` is four-fifths of JIM-mini's console and 0.47 of
+QRME's. `assert len(made) > 20` is a real floor against PDI's thirty-five
+native call sites and a twentieth of QRME's four hundred and thirty.
+
+**One number written to work in three repositories is calibrated for whichever
+of them was smallest when it was written.** It reads as fine in the small
+products forever, and ages into decoration in the large one, and nothing in
+any of the three could tell the difference — because none of them had the
+measurement attached.
+
+`test_the_console_is_a_client_too.py` even carried the reason in its own
+docstring: the floor was set low deliberately *because the three products'
+shells differ by a factor of three in size*. That is a true sentence about why
+the number is small and a false one about what it holds.
+
+### The convention, because the sweep needed one first
+
+A floor is spelled a dozen ways — `assert len(found) > 20`, `assert total >=
+40`, a `FLOORS` tuple, a bare `_MIN_PATHS`. Nothing could walk them all,
+because the number is not the hard part: the **measurement** is. A literal
+inside an assertion has none attached, which is precisely why it can drift to
+a fiftieth of the truth with every run passing.
+
+`tests/ratchets.py` is a floor plus the way to read the same quantity now:
+
+    Ratchet("route.calls.console", 340, _calls("console"),
+            "call sites the route audit reads out of the console")
+
+Registering one has three effects. The number lives in one place instead of
+inside an assertion. `test_a_floor_is_within_sight_of_what_it_measures.py`
+checks it against reality on every run, in both directions. And because the
+assertion now reads `ratchets.floor("name")` — a call, not a constant — the
+AST sweep stops seeing it, so registering removes a row from the backlog with
+nobody editing a list.
+
+### What is left is counted, not guessed at
+
+The remaining bare floors are held in `unregistered_floors.txt` with a
+ceiling, the way every backlog in this estate is. Not all of them are wrong;
+some are small fixed cardinalities that will never drift. Telling those apart
+from the decoration requires knowing what each one measures, which is the work
+of registering it. A **new** bare floor now fails at the moment it is written
+rather than three releases later.
+
+### Also
+
+- Versions moved to 0.59.0 across the console, the backend, and the iOS,
+  Android and Windows projects (build 59000).
+
 ## [0.58.9] — 2026-08-08
 
 ### Ten against fifty-four
