@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.59.7** ([changelog](CHANGELOG.md) ·
+**Current release: v0.59.8** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -200,6 +200,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.59.8** | **The check that covered one client of four** — 0.59.7 asked whether the shape a screen declares is the shape its route answers with, and asked it of the console alone. The three shells decode the same answers into their own types, and a wrong one there throws the same way. Extended to all four clients (console 116 · iOS 31 · Android 24 · Windows 20); no disagreements, and the reach is now a record that cannot go down, because a reader that stops matching reports agreement |
 | **0.59.7** | **`req<T>` is a cast, and a cast is a claim nothing checks** — `GET /hosting/{tenant_id}/history` answers `{tenant_id, history}`; the console declared `Row[]` and the Custody screen called `.map` on it, throwing `history.map is not a function` during render on any vault that had ever been moved — which no fresh test vault ever has. Now read per call expression across all three consoles, with the reader's own blind spot kept as a test |
 | **0.59.6** | **The clients agreed with each other and were all wrong** — a tenant that moved its vault under a customer-managed key locked **every client in this product** out of every record: `x-tenant-key` is required by the auth dependency and was sent on two heir routes and nowhere else. The hand-back button that undoes customer custody was itself behind it. The console and all three shells now carry the key in memory and present it on every request, never storing it; the requirement is now read out of the application's own dependency tree |
 | **0.59.5** | **The third sink, where both the escaping and the policy miss** — `_js` and `_strings` here were bare `json.dumps`, which escapes what ends a JavaScript *string* and says nothing about `</script`, which ends the *element*. QRME had it right. Both now share one primitive, verified by behaviour rather than trusted by name — the guard's first draft whitelisted `_strings` while this product's `_strings` was the unsafe one. Consoles swept and clean |

@@ -1,0 +1,12 @@
+# status: manifest — 4 clients
+#
+# How many calls this file can compare, per client. Not a floor: the numbers
+# are honestly lopsided — a shell that discards the body on most of its calls
+# names no shape and cannot be wrong about one.
+#
+# The rule is that a row does not go down. A reader that stops matching
+# reports agreement, which is the failure this file was written after.
+android: 24
+console: 116
+ios: 31
+windows: 20
