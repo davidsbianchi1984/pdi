@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.59.4** ([changelog](CHANGELOG.md) ·
+**Current release: v0.59.5** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -200,6 +200,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.59.5** | **The third sink, where both the escaping and the policy miss** — `_js` and `_strings` here were bare `json.dumps`, which escapes what ends a JavaScript *string* and says nothing about `</script`, which ends the *element*. QRME had it right. Both now share one primitive, verified by behaviour rather than trusted by name — the guard's first draft whitelisted `_strings` while this product's `_strings` was the unsafe one. Consoles swept and clean |
 | **0.59.4** | **The sweep that found the last one, kept** — the sibling products' reflected XSS was found by walking every f-string that builds markup, by hand, once. It is now a guard with a ratcheted record: **7 rows**, all pre-escaped composites the analysis cannot follow. It follows escaping through single assignments and helper returns, and refuses to read prose containing angle brackets as a page. `<html lang=…>`, the option values and the policy nonce are now escaped too |
 | **0.59.3** | **What a page promises a browser** — the sealed-carrier card and the receive page are read by a stranger on a device that is not theirs, and both went out with no `Content-Security-Policy`, no `nosniff`, no frame or referrer policy. `pagehead.py` now stamps all four plus a per-response nonce the policy names; the three inline scripts carry it. The sibling products' sign-in callback was reflecting `?error=` as live markup — this product has no such route, and the sweep is what says so |
 | **0.59.2** | **A crash the browser threw away** — an unhandled 500 is rendered by Starlette *outside* every middleware the app adds, including CORS, so it went back with no `access-control-allow-origin` and the browser discarded it whole. Every crash reached its user as "Failed to fetch", indistinguishable from a backend that is not running. No in-process test could see it: a `TestClient` sends no `Origin` and applies no browser rule. Fixed with a catch-all inside the CORS layer, and guarded by a file that boots a real server |

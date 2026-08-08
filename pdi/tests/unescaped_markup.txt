@@ -1,4 +1,4 @@
-# status: backlog — 7 rows
+# status: backlog — 6 rows
 #
 # Every interpolation into markup whose value the sweep cannot see reach an
 # escape. Written by `test_a_page_never_prints_what_it_was_given.py`.
@@ -37,11 +37,10 @@
 # can follow it. The ceiling does not move up: a new row is a value somebody
 # can put markup into.
 #
-# ceiling: 7
-landing.py:112: {_CSS}
-landing.py:112: {body}
-landing.py:200: {chips}
-landing.py:291: {_rows(card, language)}
-landing.py:291: {who}
-landing.py:339: {_rows(card, language)}
-landing.py:339: {options}
+# ceiling: 6
+landing.py: {_CSS}
+landing.py: {_rows(card, language)}
+landing.py: {body}
+landing.py: {chips}
+landing.py: {options}
+landing.py: {who}

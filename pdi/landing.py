@@ -118,10 +118,43 @@ def _page(title: str, body: str, language: str = "en") -> str:
         f'<body><main class="card">{body}</main></body></html>')
 
 
+def _js_literal(obj) -> str:
+    """Any JSON value, safe to drop **inside a `<script>` element**.
+
+    The one primitive both `_js` and `_strings` are built on, because they had
+    drifted apart: one escaped for the element and the other did not, and the
+    difference was invisible at every call site.
+
+    `json.dumps` escapes what would end a JavaScript *string*. It has nothing
+    to say about `</script`, which ends the *element* whatever the JavaScript
+    quoting says — so the value closes the page's own nonced script and
+    everything after it is parsed as markup.
+    """
+    return html.escape(json.dumps(obj, ensure_ascii=False),
+                       quote=False).replace("</", "<\\/")
+
+
 def _js(value: str) -> str:
-    """A string safe to drop into inline script — json.dumps escapes the
-    quotes and anything else that would end the literal early."""
-    return json.dumps(value)
+    """A JS string literal safe to drop into an inline script.
+
+    `json.dumps` alone is not enough, and the difference is the whole reason
+    this function exists. Inside a `<script>` element the HTML parser ends the
+    element at the first `</script`, **whatever the JavaScript quoting says**
+    — so a value containing `</script>` closes the script early and everything
+    after it is parsed as markup. `json.dumps` escapes what would end a *JS
+    string*; it has nothing to say about what ends an *HTML element*.
+
+    QRME had this right and this product did not, for the reason 0.59.1 named
+    about a floor and 0.59.0 about a literal: a helper written once and copied
+    into three repositories drifts, and the copy that drifted was the one
+    whose entire job is to be safe. No route here currently passes a
+    caller-supplied string through it — the values are database identifiers
+    and translated constants, and a path segment cannot carry `</script>`
+    because the slash breaks routing — so this is a latent hole rather than a
+    live one. It is fixed anyway: the next value somebody escapes with this is
+    exactly the one it was written for.
+    """
+    return _js_literal(value)
 
 
 def _strings(language: str, **english: str) -> str:
@@ -131,9 +164,8 @@ def _strings(language: str, **english: str) -> str:
     escaped form triples the size of every non-Latin blob — on a page whose
     whole premise is one cold request in a loading bay with one bar.
     """
-    return json.dumps({name: i18n.tr_page(text, language)
-                       for name, text in english.items()},
-                      ensure_ascii=False)
+    return _js_literal({name: i18n.tr_page(text, language)
+                        for name, text in english.items()})
 
 def _t(language: str):
     """A lookup bound to one reader's language.
