@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.58.3** ([changelog](CHANGELOG.md) ·
+**Current release: v0.58.4** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -200,6 +200,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.58.4** | **The key was right and the shape was wrong** — a per-route key check is not derivable by reading; what shipped instead pins a shell model to the backend function whose `return` is its contract, inferring nothing. Clean here; the finding was QRME's guided tour, blank on both phones and correct on Windows |
 | **0.58.3** | **The key the server never sends** — every key a shell decodes is now read against everything this backend can put on a response. Clean here across all three shells; the finding was next door, where the overlay disclosure showed nobody and Sign in with Google and Apple could not start on either phone |
 | **0.58.2** | **The colour that wasn't in the palette** — 0.58.1 checked the one receiver whose type is known for free; this checks all eight, adding the API client, the theme object and `App.xaml`'s brushes. Clean here across 36 client call sites and the whole palette; the finding was QRME's Android theme, and this product gets the check because the next one could be here |
 | **0.58.1** | **The member that isn't there** — the offline-posture card reached `state.api` on an `AppState` that has no client at all, which Swift does not compile. A guard now reads every member the screens reach for against the one file that declares them |
