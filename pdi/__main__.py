@@ -135,7 +135,27 @@ def run_desktop(args: argparse.Namespace) -> int:
 
 
 def run_serve(args: argparse.Namespace) -> int:
+    import os
+
     import uvicorn
+
+    # The packaged console (the installer's window, or the Vite dev server
+    # during a from-source run) calls this API from its own origin, so a
+    # serve meant to stand behind it needs CORS — off, the console's every
+    # request dies as "Failed to fetch". The frozen backend in
+    # `packaging/backend_entry.py` has always defaulted it open for exactly
+    # this reason; `serve` did not, so the installed app worked and the
+    # from-source one did not.
+    #
+    # Loopback only. A non-loopback bind is somebody serving a vault to a
+    # network, and this is the last place to open it by default. `--no-cors`
+    # restores the closed posture; an explicit PDI_CORS_ORIGINS is never
+    # overwritten.
+    if not args.no_cors and not os.environ.get("PDI_CORS_ORIGINS") \
+            and args.host in {"127.0.0.1", "localhost", "::1"}:
+        os.environ["PDI_CORS_ORIGINS"] = "*"
+        print("• CORS open for the local console (PDI_CORS_ORIGINS=*); "
+              "pass --no-cors or set PDI_CORS_ORIGINS to restrict.")
     uvicorn.run("pdi.api:app", host=args.host, port=args.port)
     return 0
 
@@ -165,6 +185,9 @@ def main(argv: list[str] | None = None) -> int:
     serve = sub.add_parser("serve", help="run the headless API alone")
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8000)
+    serve.add_argument("--no-cors", action="store_true",
+                       help="keep CORS closed even on loopback (the packaged "
+                            "console will not be able to reach this API)")
 
     args = parser.parse_args(argv)
     if args.command == "phone":
