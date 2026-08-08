@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.59.1** ([changelog](CHANGELOG.md) ·
+**Current release: v0.59.2** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -200,6 +200,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.59.2** | **A crash the browser threw away** — an unhandled 500 is rendered by Starlette *outside* every middleware the app adds, including CORS, so it went back with no `access-control-allow-origin` and the browser discarded it whole. Every crash reached its user as "Failed to fetch", indistinguishable from a backend that is not running. No in-process test could see it: a `TestClient` sends no `Origin` and applies no browser rule. Fixed with a catch-all inside the CORS layer, and guarded by a file that boots a real server |
 | **0.59.1** | **`serve` never opened CORS for its own console** — the frozen backend always did, so the installed app worked and the from-source one answered every console request with no access-control header at all; measured over HTTP, the preflight was a bare 405. Found by a sweep of test-function names across the three products: `test_serve_cors.py` existed in two of them and not here, and so did the code. The shared vocabulary is now written down and checked |
 | **0.59.0** | **A floor nobody raised** — every floor in the suite swept against what it measures. 58 carried their own literal. Two **passed**: the console's `> 100` against 121 and the native `> 20` against 35, both honest here and decoration in QRME, because one number written for three repositories is calibrated for whichever was smallest. `ratchets.py` gives each floor a measurement; the rest are a backlog that only shrinks |
 | **0.58.9** | **Ten against fifty-four** — the L10n guard's floor has not moved since it was written, and these shells hold no dotless rows at all, so the dead-row path reports nothing whatsoever when the call reader goes dark. Narrowing the pattern to `L10n.t("…")` blinds C# alone — Windows 54 → 0. Per-shell floors on both halves, plus a spread across the three ports that needs no hand-chosen number |
