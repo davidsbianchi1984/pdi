@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.58.8** ([changelog](CHANGELOG.md) ·
+**Current release: v0.58.9** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -200,6 +200,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.58.9** | **Ten against fifty-four** — the L10n guard's floor has not moved since it was written, and these shells hold no dotless rows at all, so the dead-row path reports nothing whatsoever when the call reader goes dark. Narrowing the pattern to `L10n.t("…")` blinds C# alone — Windows 54 → 0. Per-shell floors on both halves, plus a spread across the three ports that needs no hand-chosen number |
 | **0.58.8** | **The route reader had one floor and four clients** — six files ask `clientpaths` what each client calls, so a reader read short narrows all of them at once, in the safe direction. An absolute floor per client and a spread check across the three shells, with this product's own measured numbers; the console sits outside the spread because its 121 call sites against 35 per phone are a real difference in surface |
 | **0.58.7** | **A wire model is data, and data has no methods** — the empty-model hole that hid a broken pin here for a release is closed: every pin asserts on both ends, and three checks audit the readers themselves. Clean here; the finding was QRME's missing brace, which put ninety-five client methods inside a wire model |
 | **0.58.6** | **The refusal surfaces** — the compliance catalogue is pinned, and the reader learns to follow a module table handed out whole. The trap was the guard's own and it was here: this repo declares one-line structs, the property pattern required end-of-line, so the model read as empty and the pin had been checking nothing at all |
