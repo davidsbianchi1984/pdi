@@ -4,6 +4,83 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.57.8] — 2026-08-08
+
+### The rows the guard skipped were the interesting ones
+
+`test_a_shell_does_not_print_what_it_translated.py` has, since 0.54.0, opened
+its row reader with
+
+```python
+if "{" in english:
+    continue
+```
+
+Every row with a slot in it went unchecked, for four releases. That is not a
+corner of the table: a row with a slot is a row *about something*, which is
+most of what a screen actually says — and a sentence assembled around a value
+is the one a screen is most likely to hand-build, because building it is what
+the code is already doing.
+
+```
+? $"closest overlap {best}, below the {th} threshold for naming anyone"
+```
+
+against `ns.who.below` — *"closest overlap {best}, below the {threshold}
+threshold for naming anyone"* — the same sentence, hole for hole, in that same
+shell's table in ten languages.
+
+```
+asked     does a screen print a whole English row verbatim
+mattered  does a screen print an English row the reader will never see
+          translated, however it is spelled
+```
+
+Found from the other side and by accident: 0.57.7 was fixing a Windows page
+that would not parse, read the code-behind while deciding a rename, and saw
+seven of these on one screen. This closes the general case rather than the
+seven.
+
+**A slotted row is compared by its fragments**, not by rebuilding the
+sentence — the shell's holes are not the table's, and `{en.Seconds:F1}s` is
+not `{secs}`. The row is split at its slots and the literal text between them
+is matched. Fragments shorter than a phrase are dropped, so `Built {date}`
+contributes nothing; that is a deliberate miss and the file says so.
+
+### Two false findings, caught before they shipped
+
+The check's own first run against the sibling products reported two defects
+that were the reader's, not the code's, and both are now tested against:
+
+* `L10n.t("cw.sensitivity", …)` is a screen *asking* for a row, and the
+  fragment *"sensitivity"* is inside that key. A key is not something a reader
+  sees.
+* `$"{(int)Math.Round(p.Confidence * 100)}"` matched the row *"Confidence
+  {pct}% — earned from…"* on the word `Confidence`, which is a C# property
+  there and a heading here. The holes come out of the shown string too — the
+  same removal that is done to the row.
+
+Same lesson as the eighty-six protocol values that shaped the original: strip
+what is not prose before comparing prose.
+
+### Fixed
+
+The guard did not exist here either. Seven sites, five of them labels:
+
+* `Language` as a heading on all three shells;
+* `Connectors` on the iPhone and the desktop;
+* *Show what would be sent* on the desktop audit page.
+
+And one that the whole-row half found and is worth naming on its own: the
+iPhone's sources picker rendered `Text($0.rawValue)`, so **both of its tabs
+read English on every device**. `TransfersView` next door had settled the rule
+— the raw value is the stored identity, a `key` beside it is what a person
+reads — and it had never been applied one file over.
+
+The two recorded rows are those raw values.
+
+Suite: **863 passed**, 3 skipped.
+
 ## [0.57.7] — 2026-08-08
 
 ### The files the release never touched

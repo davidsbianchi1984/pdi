@@ -3,13 +3,29 @@ import SwiftUI
 /// Sources: everything that feeds the vault — robot bodies and social-platform
 /// connectors — behind one tab so the bar stays tidy.
 struct SourcesView: View {
-    enum Tab: String, CaseIterable { case robots = "Robots", connectors = "Connectors" }
+    enum Tab: String, CaseIterable {
+        case robots = "Robots", connectors = "Connectors"
+
+        /// The raw value is what the screen switches on; this is what a
+        /// person reads. The picker rendered the raw value, so both tabs
+        /// were English on every device — the rule `TransfersView` settled
+        /// next door, not applied here.
+        var key: String {
+            switch self {
+            case .robots:     return "tab.robots"
+            case .connectors: return "tab.connectors"
+            }
+        }
+    }
+    @EnvironmentObject var state: AppState
     @State private var tab: Tab = .robots
 
     var body: some View {
         VStack(spacing: 0) {
             Picker("", selection: $tab) {
-                ForEach(Tab.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                ForEach(Tab.allCases, id: \.self) {
+                    Text(L10n.t($0.key, state.language)).tag($0)
+                }
             }
             .pickerStyle(.segmented)
             .padding(.horizontal, 20).padding(.top, 8)
@@ -39,7 +55,8 @@ private struct ConnectorsSection: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text("Connectors").font(.title2.bold()).foregroundStyle(Theme.txt)
+                Text(L10n.t("tab.connectors", state.language))
+                    .font(.title2.bold()).foregroundStyle(Theme.txt)
                 Text("Link a platform account. Collected content is sealed into the vault; every ingest is hash-chained in the audit log.")
                     .font(.footnote).foregroundStyle(Theme.t2)
 

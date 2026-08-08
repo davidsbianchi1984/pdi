@@ -36,7 +36,8 @@ struct OverviewView: View {
                 }.card()
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Language").font(.headline).foregroundStyle(Theme.txt)
+                    Text(L10n.t("wel.language", state.language))
+                        .font(.headline).foregroundStyle(Theme.txt)
                     Text("PDI's explanatory notes arrive in this language; sealed data is untouched.")
                         .font(.caption).foregroundStyle(Theme.t2)
                     Picker("", selection: $language) {

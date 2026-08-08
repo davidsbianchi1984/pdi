@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.57.7** ([changelog](CHANGELOG.md) ·
+**Current release: v0.57.8** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -200,6 +200,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.57.8** | The untranslated-literal guard lands here too. Seven sites — `Language` on all three shells, `Connectors` on two, the audit page's preview link — and one worth naming: the iPhone's sources picker rendered its own enum raw values, so **both tabs read English on every device**, a rule the transfers screen next door had already settled and never had applied to it |
 | **0.57.7** | The version a person installs. The iOS spec, the Gradle config and the `.csproj` all reported `0.1.0` or nothing while the release said `0.57.6`. Checked against `pyproject.toml` now, with the Android `versionCode` derived rather than kept by hand, and a capability check that will catch the first screen here to open a camera without saying why |
 | **0.57.6** | The parse check reaches the XAML the Windows shell's screens are actually written in — five pages across the other two products did not parse, and none of them were here. Four markup checks, clean on all ten pages; four injected defects confirm each can fail |
 | **0.57.5** | The shells get a parse check — duplicate declarations in one scope, and braces that do not balance — after QRME shipped a Swift compile error no text-reading guard could see. Clean here; three injected defects confirm it can fail |

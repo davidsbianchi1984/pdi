@@ -28,7 +28,13 @@ public sealed partial class ConnectorsPage : Page
 
     private SocialConn[] _conns = Array.Empty<SocialConn>();
 
-    public ConnectorsPage() => InitializeComponent();
+    public ConnectorsPage()
+    {
+        InitializeComponent();
+        // In code rather than XAML: a XAML literal cannot be re-read when the
+        // language changes, and this heading was the English one.
+        TitleText.Text = L10n.T("tab.connectors");
+    }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {

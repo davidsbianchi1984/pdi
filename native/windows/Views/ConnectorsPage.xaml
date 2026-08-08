@@ -7,7 +7,7 @@
 
     <ScrollViewer>
         <StackPanel MaxWidth="640" Spacing="14" Padding="28" HorizontalAlignment="Left">
-            <TextBlock Text="Connectors" FontSize="22" FontWeight="Bold" Foreground="{StaticResource PdiTxtBrush}" />
+            <TextBlock x:Name="TitleText" FontSize="22" FontWeight="Bold" Foreground="{StaticResource PdiTxtBrush}" />
             <TextBlock Text="Link a platform account. Collected content is sealed into the vault; every ingest is hash-chained in the audit log."
                        Foreground="{StaticResource PdiT2Brush}" FontSize="13" TextWrapping="Wrap" />
 

@@ -201,7 +201,8 @@ fun OverviewScreen(vm: VaultViewModel) {
             Text(vm.baseURL, color = Pdi.T3, fontSize = 12.sp)
         }
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Language", color = Pdi.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("wel.language", vm.language), color = Pdi.Txt, fontSize = 16.sp,
+                 fontWeight = FontWeight.Bold)
             Text("PDI's explanatory notes arrive in this language; sealed data is untouched.",
                 color = Pdi.T2, fontSize = 12.sp)
             languages.chunked(3).forEach { row ->

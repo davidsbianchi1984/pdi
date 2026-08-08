@@ -64,7 +64,7 @@
                     </StackPanel>
                     <ToggleSwitch x:Name="ProblemsSwitch" Header="Send failure counts"
                                   Toggled="OnProblemsToggled" Visibility="Collapsed" />
-                    <HyperlinkButton x:Name="ProblemsPreviewButton" Content="Show what would be sent"
+                    <HyperlinkButton x:Name="ProblemsPreviewButton"
                                      Click="OnProblemsPreview" />
                     <TextBlock x:Name="ProblemsPreview" FontSize="11" TextWrapping="Wrap"
                                FontFamily="Consolas" Visibility="Collapsed"

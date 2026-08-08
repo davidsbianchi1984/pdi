@@ -12,6 +12,7 @@ public sealed partial class AuditPage : Page
     public AuditPage()
     {
         InitializeComponent();
+        ProblemsPreviewButton.Content = L10n.T("prb.show");
         // The card reads three stored choices, so it has to be told when
         // the page appears rather than only when a button is pressed.
         Loaded += (_, _) => RefreshProblemsCard();
