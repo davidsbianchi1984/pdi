@@ -11,6 +11,9 @@ struct WelcomeView: View {
         ("ja", "日本語"), ("zh", "中文"), ("hi", "हिन्दी"), ("ar", "العربية"),
     ]
     @State private var base = "http://127.0.0.1:8000"
+    /// Held in view state and handed to the client, never to
+    /// `UserDefaults` — see `ApiClient.holdKey`.
+    @State private var tenantKey = ""
     @State private var busy = false
     @State private var error: String?
 
@@ -43,6 +46,15 @@ struct WelcomeView: View {
                     }
                     field(L10n.t("wel.server", lang)) {
                         TextField("http://127.0.0.1:8000", text: $base).textFieldStyle(.plain).foregroundStyle(Theme.txt)
+                            .textInputAutocapitalization(.never).autocorrectionDisabled()
+                    }
+                    // Only a vault under customer custody needs this, which
+                    // is why it is optional and says so. Leaving it blank on
+                    // such a vault is what every phone did until now, and
+                    // every record answered 428.
+                    field(L10n.t("wel.tenantkey", lang)) {
+                        SecureField(L10n.t("wel.tenantkey.ph", lang), text: $tenantKey)
+                            .textFieldStyle(.plain).foregroundStyle(Theme.txt)
                             .textInputAutocapitalization(.never).autocorrectionDisabled()
                     }
                     field(L10n.t("wel.language", lang)) {
@@ -86,6 +98,9 @@ struct WelcomeView: View {
         busy = true; error = nil
         Task {
             await ApiClient.shared.setBase(base)
+            // Before the validating call, not after: on a vault under
+            // customer custody the validation itself needs the key.
+            await ApiClient.shared.holdKey(tenantKey)
             do {
                 _ = try await ApiClient.shared.keys(token: token)   // 200 == valid token
                 if language != "en" {

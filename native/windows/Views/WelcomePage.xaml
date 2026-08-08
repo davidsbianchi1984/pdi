@@ -26,6 +26,11 @@
                 <StackPanel Spacing="12">
                     <PasswordBox x:Name="TokenBox" PlaceholderText="pdi_…" />
                     <TextBox x:Name="BaseBox" Text="http://127.0.0.1:8000" />
+                    <!-- Only a vault under customer custody needs this.
+                         Leaving it blank on such a vault is what every
+                         shell did until now, and every record answered
+                         428. -->
+                    <PasswordBox x:Name="TenantKeyBox" />
                     <ComboBox x:Name="LanguageBox" SelectedIndex="0"
                               HorizontalAlignment="Stretch">
                     </ComboBox>

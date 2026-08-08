@@ -339,6 +339,59 @@ const CHROME: Table = {
     ja: "自分たちの鍵を持つ", zh: "自己保管密钥",
     hi: "अपनी कुंजी स्वयं रखें", ar: "الاحتفاظ بمفتاحنا",
   },
+  "cu.key.armed": {
+    en: "This session is carrying the key — sent with every request, stored "
+        + "nowhere.",
+    es: "Esta sesión lleva la clave: se envía en cada solicitud y no se "
+        + "guarda en ningún sitio.",
+    fr: "Cette session porte la clé : envoyée à chaque requête, stockée "
+        + "nulle part.",
+    de: "Diese Sitzung führt den Schlüssel mit — bei jeder Anfrage gesendet, "
+        + "nirgends gespeichert.",
+    pt: "Esta sessão leva a chave: enviada em cada pedido, guardada em lado "
+        + "nenhum.",
+    it: "Questa sessione porta la chiave: inviata a ogni richiesta, non "
+        + "memorizzata da nessuna parte.",
+    ja: "このセッションは鍵を保持しています。すべてのリクエストで送信され、どこにも保存されません。",
+    zh: "本次会话正携带密钥：每个请求都会发送，且不存储在任何地方。",
+    hi: "यह सत्र कुंजी वहन कर रहा है — हर अनुरोध के साथ भेजी जाती है, कहीं संग्रहीत नहीं होती।",
+    ar: "تحمل هذه الجلسة المفتاح — يُرسل مع كل طلب ولا يُخزَّن في أي مكان.",
+  },
+  "cu.key.absent": {
+    en: "This session is not carrying a key. If this vault is under customer "
+        + "custody, enter it below — every record answers 428 until you do.",
+    es: "Esta sesión no lleva ninguna clave. Si esta bóveda está bajo "
+        + "custodia del cliente, introdúcela abajo: hasta entonces cada "
+        + "registro responde 428.",
+    fr: "Cette session ne porte aucune clé. Si ce coffre est sous la garde "
+        + "du client, saisissez-la ci-dessous : jusque-là chaque "
+        + "enregistrement répond 428.",
+    de: "Diese Sitzung führt keinen Schlüssel mit. Steht dieser Tresor unter "
+        + "Kundenverwahrung, geben Sie ihn unten ein — bis dahin antwortet "
+        + "jeder Datensatz mit 428.",
+    pt: "Esta sessão não leva nenhuma chave. Se este cofre está sob custódia "
+        + "do cliente, introduza-a abaixo: até lá cada registo responde 428.",
+    it: "Questa sessione non porta alcuna chiave. Se questo caveau è sotto "
+        + "custodia del cliente, inseriscila qui sotto: fino ad allora ogni "
+        + "record risponde 428.",
+    ja: "このセッションは鍵を保持していません。この保管庫が顧客管理であれば、下に入力してください。それまで各レコードは 428 を返します。",
+    zh: "本次会话未携带密钥。若此保险库由客户自管，请在下方输入；在此之前每条记录都会返回 428。",
+    hi: "यह सत्र कोई कुंजी नहीं वहन कर रहा। यदि यह तिजोरी ग्राहक-अभिरक्षा में है, तो इसे नीचे दर्ज करें — तब तक हर अभिलेख 428 उत्तर देता है।",
+    ar: "لا تحمل هذه الجلسة أي مفتاح. إذا كانت هذه الخزنة تحت حفظ العميل، فأدخله أدناه — حتى ذلك الحين يجيب كل سجل بـ 428.",
+  },
+  "cu.key.use": {
+    en: "Use for this session", es: "Usar en esta sesión",
+    fr: "Utiliser pour cette session", de: "Für diese Sitzung verwenden",
+    pt: "Usar nesta sessão", it: "Usare per questa sessione",
+    ja: "このセッションで使う", zh: "用于本次会话",
+    hi: "इस सत्र के लिए उपयोग करें", ar: "استخدامه في هذه الجلسة",
+  },
+  "cu.key.forget": {
+    en: "Forget the key", es: "Olvidar la clave", fr: "Oublier la clé",
+    de: "Schlüssel vergessen", pt: "Esquecer a chave",
+    it: "Dimenticare la chiave", ja: "鍵を忘れる", zh: "忘记密钥",
+    hi: "कुंजी भूल जाएँ", ar: "نسيان المفتاح",
+  },
   "cu.kms": {
     en: "Use a KMS", es: "Usar un KMS", fr: "Utiliser un KMS",
     de: "Ein KMS verwenden", pt: "Usar um KMS", it: "Usare un KMS",

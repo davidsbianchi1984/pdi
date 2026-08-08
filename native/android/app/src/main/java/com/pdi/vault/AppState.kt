@@ -34,9 +34,13 @@ class VaultViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Validate the pasted token against GET /records, then persist on success. */
     fun signIn(token: String, base: String, language: String? = null,
+               tenantKey: String? = null,
                onError: (String) -> Unit, onBusy: (Boolean) -> Unit) {
         onBusy(true)
         ApiClient.base = base
+        // Before the validating call, not after: on a vault under customer
+        // custody the validation itself needs the key.
+        ApiClient.tenantKey = tenantKey
         viewModelScope.launch {
             runCatching { ApiClient.keys(token) }
                 .onSuccess { _ ->

@@ -155,6 +155,23 @@ actor ApiClient {
         if !t.isEmpty, let u = URL(string: t) { base = u }
     }
 
+    /// The customer-managed key, for a tenant that holds its own.
+    ///
+    /// `_tenant` on the backend reads `x-tenant-key`, and a vault under
+    /// customer custody answers **428** to every record read and every write
+    /// without it. No shell sent it, so a tenant that pressed *hold our own
+    /// key* in the console had locked all three phones out of the vault.
+    ///
+    /// In memory, never in `UserDefaults` or the keychain: the whole promise
+    /// of this custody mode is that the key exists only where the customer
+    /// puts it. Being asked again after a relaunch is that promise working.
+    private var tenantKey: String?
+
+    func holdKey(_ key: String?) {
+        let t = key?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        tenantKey = t.isEmpty ? nil : t
+    }
+
     // token is optional because GET /languages is genuinely public — it is
     // the catalog a client reads before it has a tenant token at all. Sending
     // an empty "Bearer " there would be a malformed header, not a no-op.
@@ -178,6 +195,7 @@ actor ApiClient {
         // English after the routes learned to speak.
         req.setValue(L10n.deviceLanguage, forHTTPHeaderField: "accept-language")
         if let token { req.setValue("Bearer \(token)", forHTTPHeaderField: "authorization") }
+        if let tenantKey { req.setValue(tenantKey, forHTTPHeaderField: "x-tenant-key") }
         if let body { req.httpBody = try JSONSerialization.data(withJSONObject: body) }
 
         let data: Data

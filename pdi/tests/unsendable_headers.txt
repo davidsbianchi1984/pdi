@@ -1,0 +1,9 @@
+# status: backlog — 0 rows
+# ceiling: 6
+#
+# Client/header pairs that are deliberate: a route a client has a door to
+# whose header that client is not meant to present.
+#
+# Empty on purpose so far. A row here needs a reason — "the phone does not
+# do that" is usually the defect rather than the reason, which is how
+# 0.59.6 started.

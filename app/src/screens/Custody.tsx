@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { api, BaaStatus, CompliancePrograms, HostingMode, KeyVersion,
-         Row, TenantKey } from "../api";
+import { api, BaaStatus, CompliancePrograms, holdKey, HostingMode, KeyVersion,
+         keyIsHeld, Row, TenantKey } from "../api";
 import { useSession } from "../store";
 import { deviceLanguage, fill, Lang, t } from "../l10n";
 
@@ -40,6 +40,10 @@ export function Custody() {
   const [busy, setBusy] = useState(false);
 
   const [customerKey, setCustomerKey] = useState("");
+  // Mirrors the module-level key in api.ts so the screen re-renders when it
+  // is armed or forgotten. The key itself stays there and out of React's
+  // state tree, which devtools would happily print.
+  const [armed, setArmed] = useState(keyIsHeld());
   const [legalName, setLegalName] = useState("");
   const [operatorName, setOperatorName] = useState("Vault Operations LLC");
   const [effective, setEffective] = useState("");
@@ -99,13 +103,42 @@ export function Custody() {
               ? t("cu.customer_managed", lang) : t("cu.deployment", lang)}
           </p>
         )}
+        {/* Whether this session is *carrying* the key, which is a different
+            question from whether the tenant is under customer custody: the
+            first is about this browser tab, the second about the vault. A
+            reload answers yes to the second and no to the first, and every
+            request in between comes back 428. */}
+        <p className="muted small">
+          {armed ? t("cu.key.armed", lang) : t("cu.key.absent", lang)}
+        </p>
         <div className="row">
           <input value={customerKey} placeholder={t("cu.key.ph", lang)}
+                 type="password" autoComplete="off"
                  onChange={(e) => setCustomerKey(e.target.value)} />
           <button className="primary" disabled={busy || !customerKey.trim()}
-                  onClick={() => run(() => api.setTenantKey(
-                    { provider: "held", key: customerKey.trim() }, token!))}>
+                  onClick={() => run(async () => {
+                    // Armed *before* the adopt call, not after: the reload
+                    // this button triggers reads /key, which is behind the
+                    // same dependency the adoption puts a key in front of.
+                    holdKey(customerKey.trim());
+                    setArmed(true);
+                    await api.setTenantKey(
+                      { provider: "held", key: customerKey.trim() }, token!);
+                  })}>
             {t("cu.hold", lang)}
+          </button>
+          <button disabled={busy || !customerKey.trim()}
+                  onClick={() => { holdKey(customerKey.trim());
+                                   setArmed(true);
+                                   setSaid(t("cu.key.armed", lang));
+                                   load(); }}>
+            {t("cu.key.use", lang)}
+          </button>
+          <button disabled={busy || !armed}
+                  onClick={() => { holdKey(null); setArmed(false);
+                                   setCustomerKey("");
+                                   setSaid(t("cu.key.absent", lang)); }}>
+            {t("cu.key.forget", lang)}
           </button>
           <button disabled={busy}
                   onClick={() => run(() => api.setTenantKey(

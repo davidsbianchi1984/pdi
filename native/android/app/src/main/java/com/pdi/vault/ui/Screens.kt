@@ -95,6 +95,9 @@ fun WelcomeScreen(vm: VaultViewModel) {
     var token by remember { mutableStateOf("") }
     var language by remember { mutableStateOf("en") }
     var base by remember { mutableStateOf(vm.baseURL) }
+    // Held in composition and handed to the client, never to
+    // SharedPreferences — see ApiClient.tenantKey.
+    var tenantKey by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
@@ -118,6 +121,11 @@ fun WelcomeScreen(vm: VaultViewModel) {
                 labeledField(L10n.t("wel.token", lang), token, L10n.t("nacc.id.ph", vm.language)) { token = it }
                 labeledField(L10n.t("wel.server", lang), base,
                     "http://10.0.2.2:8000") { base = it }
+                // Only a vault under customer custody needs this. Leaving it
+                // blank on such a vault is what every phone did until now,
+                // and every record answered 428.
+                labeledField(L10n.t("wel.tenantkey", lang), tenantKey,
+                    L10n.t("wel.tenantkey.ph", lang)) { tenantKey = it }
                 Text(L10n.t("wel.language", lang), color = Pdi.T2, fontSize = 12.sp)
                 LANGUAGE_CHOICES.chunked(3).forEach { row ->
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -139,7 +147,7 @@ fun WelcomeScreen(vm: VaultViewModel) {
             BrandButton(L10n.t("wel.unlock", lang), enabled = token.isNotBlank(),
                 busy = busy) {
                 error = null
-                vm.signIn(token, base, language,
+                vm.signIn(token, base, language, tenantKey,
                     onError = { error = it }, onBusy = { busy = it })
             }
             Text(L10n.t("wel.backend", lang)

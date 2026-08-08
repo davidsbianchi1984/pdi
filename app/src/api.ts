@@ -41,6 +41,27 @@ export function setBase(url: string) {
 }
 export function clearBase() { localStorage.removeItem("pdi.base"); }
 
+// -- the key the customer holds --------------------------------------------
+//
+// A tenant under customer custody presents its key on **every** request:
+// `_tenant` reads `x-tenant-key`, and without it the vault answers 428 to
+// every record read and every write. This console sent that header on two
+// bequest calls and nowhere else, so pressing *hold my own key* on the
+// Custody screen locked the console out of its own vault — including out of
+// the hand-back button that is supposed to undo it.
+//
+// In memory and never on disk. `localStorage` is the operator's machine at
+// rest, which is precisely what this product promises nobody but the
+// customer holds; being asked for the key again after a reload is the
+// guarantee working rather than an obstacle.
+let heldKey: string | null = null;
+
+/** Arm the customer key for this session, or forget it with `null`. */
+export function holdKey(key: string | null) {
+  heldKey = key && key.trim() ? key.trim() : null;
+}
+export function keyIsHeld(): boolean { return heldKey !== null; }
+
 // The console's own version, injected at build time (vite.config.ts) and
 // compared against /health's — see VersionGuard.tsx.
 declare const __APP_VERSION__: string;
@@ -65,6 +86,7 @@ async function reqText(
 ): Promise<string> {
   const headers: Record<string, string> = {};
   if (opts.token) headers["authorization"] = `Bearer ${opts.token}`;
+  if (heldKey) headers["x-tenant-key"] = heldKey;
   const res = await fetch(getBase() + path, { headers });
   const text = await res.text();
   if (!res.ok) {
@@ -84,6 +106,9 @@ async function req<T>(
 ): Promise<T> {
   const headers: Record<string, string> = { "content-type": "application/json" };
   if (opts.token) headers["authorization"] = `Bearer ${opts.token}`;
+  if (heldKey) headers["x-tenant-key"] = heldKey;
+  // After the session key, so an heir's separately-held customer key still
+  // wins on the two grant calls that pass one explicitly.
   Object.assign(headers, opts.extra ?? {});
   const res = await fetch(getBase() + path, {
     method: opts.method || "GET",

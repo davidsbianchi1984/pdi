@@ -163,7 +163,29 @@ public sealed class ApiClient
     private Task<HttpResponseMessage> Dispatch(HttpRequestMessage req)
     {
         req.Headers.TryAddWithoutValidation("accept-language", L10n.DeviceLanguage());
+        if (_tenantKey is not null)
+            req.Headers.TryAddWithoutValidation("x-tenant-key", _tenantKey);
         return _http.SendAsync(req);
+    }
+
+    /// <summary>The customer-managed key, for a tenant that holds its own.
+    ///
+    /// <para><c>_tenant</c> on the backend reads <c>x-tenant-key</c>, and a
+    /// vault under customer custody answers <b>428</b> to every record read
+    /// and every write without it. No shell sent it, so a tenant that pressed
+    /// <i>hold our own key</i> in the console had locked all three phones out
+    /// of the vault.</para>
+    ///
+    /// <para>In memory, never in settings or the credential store: the whole
+    /// promise of this custody mode is that the key exists only where the
+    /// customer puts it. Being asked again after a relaunch is that promise
+    /// working.</para></summary>
+    private string? _tenantKey;
+
+    public void HoldKey(string? key)
+    {
+        var t = key?.Trim();
+        _tenantKey = string.IsNullOrEmpty(t) ? null : t;
     }
 
     public void SetBase(string url)

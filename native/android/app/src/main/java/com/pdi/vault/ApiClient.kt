@@ -56,6 +56,26 @@ object ApiClient {
             if (trimmed.isNotBlank()) field = trimmed
         }
 
+    /**
+     * The customer-managed key, for a tenant that holds its own.
+     *
+     * `_tenant` on the backend reads `x-tenant-key`, and a vault under
+     * customer custody answers **428** to every record read and every write
+     * without it. No shell sent it, so a tenant that pressed *hold our own
+     * key* in the console had locked all three phones out of the vault.
+     *
+     * In memory, never in `SharedPreferences`: the whole promise of this
+     * custody mode is that the key exists only where the customer puts it.
+     * Being asked again after a relaunch is that promise working.
+     */
+    @Volatile
+    var tenantKey: String? = null
+        set(value) {
+            val trimmed = value?.trim()
+            field = if (trimmed.isNullOrEmpty()) null else trimmed
+        }
+
+
 
     /** What the deployment can and cannot reach. Read-only: the posture is
      *  set in the deployment's environment, not by somebody signed in. */
@@ -81,6 +101,7 @@ object ApiClient {
             // header, and no native shell was sending it.
             setRequestProperty("accept-language", L10n.deviceLanguage())
             setRequestProperty("authorization", "Bearer $token")
+            tenantKey?.let { setRequestProperty("x-tenant-key", it) }
             connectTimeout = 8000; readTimeout = 8000
             if (body != null) {
                 doOutput = true

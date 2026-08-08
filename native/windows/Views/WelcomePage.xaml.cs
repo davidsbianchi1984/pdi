@@ -37,6 +37,8 @@ public sealed partial class WelcomePage : Page
         Sub.Text = L10n.T("wel.sub", lang);
         TokenBox.Header = L10n.T("wel.token", lang);
         BaseBox.Header = L10n.T("wel.server", lang);
+        TenantKeyBox.Header = L10n.T("wel.tenantkey", lang);
+        TenantKeyBox.PlaceholderText = L10n.T("wel.tenantkey.ph", lang);
         LanguageBox.Header = L10n.T("wel.language", lang);
         StartButton.Content = L10n.T("wel.unlock", lang);
         BackendHint.Text = L10n.T("wel.backend", lang)
@@ -56,6 +58,9 @@ public sealed partial class WelcomePage : Page
         try
         {
             ApiClient.Shared.SetBase(baseUrl);
+            // Before the validating call, not after: on a vault under
+            // customer custody the validation itself needs the key.
+            ApiClient.Shared.HoldKey(TenantKeyBox.Password.Trim());
             await ApiClient.Shared.Keys(token);   // 200 == valid token
             var language = (LanguageBox.SelectedItem as ComboBoxItem)?.Tag as string;
             if (language is { Length: > 0 } && language != "en")
