@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.60.2** ([changelog](CHANGELOG.md) ·
+**Current release: v0.60.3** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -200,6 +200,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.60.3** | **A check that cannot fail before the merge is not a check** — this product's CI happened to be green, on the same trigger that hid 29 red runs in QRME and 123 in `native.yml`. Green under a blind trigger is luck, not evidence. Trigger fixed in all three, and a guard that reads the triggers themselves |
 | **0.60.2** | **The compiler was in the room the whole time and nothing listened** — the native workflow fires on any branch push now. iOS and Android green first; Windows named two missing `using` lists, a `_base` field the class does not have, a `Get` helper that lives in another product, a `ShowStatus` this page never had, and a public route the client could not ask for |
 | **0.60.1** | **The sweep this product's history did not need, and one reason it has it anyway** — `cascade()` has read the schema since before 0.59.9, so the orphan class the siblings are cleaning up was never created here. `python -m pdi.orphans` lands anyway: a wipe removes the `tenants` row from the *caller* rather than the cascade, and one of those two callers is a scheduled sweep nobody reads. `audit` is kept and `bequests` retired, both borrowed from the cascade. Plus the member guard, which read `AppState.Current.X` only when a page spelled it out — next door that widening found 38 broken reaches; this tree came back clean |
 | **0.60.0** | **An export is measured against the schema too** — `/snapshot` is the disaster-recovery export and is ciphertext-only on purpose, so nothing answered *what do you hold about us*: hosting history, bequests, beacons and the paperwork on file were not available to the tenant they describe. `GET /export` now answers, derived from the schema, redacting credentials **and** the sealed bytes that belong in the snapshot |

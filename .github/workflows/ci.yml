@@ -1,8 +1,20 @@
 name: CI
 
+# When this fires is as much a part of the check as what it runs.
+#
+# It used to be `push` restricted to `main` plus `pull_request`. Releases here
+# are fast-forward merges, so no pull request is ever opened, and a push to
+# `main` happens *after* the decision to ship. Both halves of that trigger
+# therefore ran only where the answer could no longer change anything. This
+# workflow happens to have been green throughout; QRME's, on the same trigger,
+# was red for twenty-nine consecutive runs and `native.yml` for a hundred and
+# twenty-three, and nothing noticed either. Green under a blind trigger is
+# luck, not evidence.
+#
+# Any branch push now. A check that cannot fail before the merge is not a
+# check, it is a record.
 on:
   push:
-    branches: [main]
   pull_request:
 
 jobs:
