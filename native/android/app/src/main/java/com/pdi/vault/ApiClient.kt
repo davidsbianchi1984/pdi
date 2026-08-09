@@ -91,7 +91,7 @@ object ApiClient {
 
     private suspend fun request(
         path: String, method: String = "GET",
-        body: JSONObject? = null, token: String,
+        body: JSONObject? = null, token: String? = null,
     ): String = withContext(Dispatchers.IO) {
         val conn = (URL(base + path).openConnection() as HttpURLConnection).apply {
             requestMethod = method
@@ -100,7 +100,11 @@ object ApiClient {
             // backend composes on a public route is chosen from this
             // header, and no native shell was sending it.
             setRequestProperty("accept-language", L10n.deviceLanguage())
-            setRequestProperty("authorization", "Bearer $token")
+            // A public route carries no bearer. Sending `Bearer null`
+            // is worse than sending nothing: it is a credential the
+            // server has to reject rather than an absent one.
+            token?.takeIf { it.isNotBlank() }
+                ?.let { setRequestProperty("authorization", "Bearer $it") }
             tenantKey?.let { setRequestProperty("x-tenant-key", it) }
             connectTimeout = 8000; readTimeout = 8000
             if (body != null) {
