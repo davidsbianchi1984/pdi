@@ -122,6 +122,16 @@ def _markup_strings() -> int:
     return scanned()
 
 
+def _erase_planted() -> int:
+    from .test_an_erase_is_measured_against_the_schema import plantable
+    return plantable()
+
+
+def _erase_scoped() -> int:
+    from .test_an_erase_is_measured_against_the_schema import scoped_tables
+    return len(scoped_tables())
+
+
 def _route_shapes() -> int:
     from .test_a_screen_expects_the_shape_the_route_returns import route_shapes
     return len(route_shapes())
@@ -174,6 +184,10 @@ RATCHETS: tuple[Ratchet, ...] = (
             "TypeScript sources the console sink sweep reads"),
     Ratchet("console.calls_typed", 90, _calls_typed,
             "console calls that declare the shape they expect back"),
+    Ratchet("erase.tables_planted", 14, _erase_planted,
+            "tables this suite can put a probe row into"),
+    Ratchet("erase.scoped_tables", 16, _erase_scoped,
+            "tables the schema scopes to a single tenant"),
     Ratchet("route.declared_shapes", 105, _route_shapes,
             "routes whose answer is decisively a list or an object"),
     Ratchet("markup.strings_scanned", 8, _markup_strings,
