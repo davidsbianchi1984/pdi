@@ -167,9 +167,16 @@ def test_receive_and_submit_use_their_own_tokens():
 
 
 def test_the_screen_says_the_tokens_are_not_the_tenants():
+    """The two sentences a person needs before pressing anything on Exchange:
+    the receive token is served once, and the submit token belongs to the
+    other party. 0.60.5 localized the screen and these went from grepped
+    English to followed keys, which is the 0.48.2 lesson arriving in the last
+    two guards in this file that had not had it yet."""
     flat = " ".join(_screen("Exchange.tsx").split())
-    assert "The submit token is theirs, not yours" in flat
-    assert "never served again" in flat
+    problems = (_says(flat, "exc.onewaydoor",
+                      "The submit token is theirs, not yours")
+                + _says(flat, "exc.once", "never served again"))
+    assert not problems, ("whose token it is:\n    " + "\n    ".join(problems))
 
 
 def test_the_markup_routes_do_not_go_through_the_json_helper():
@@ -295,8 +302,14 @@ def test_revoking_a_grant_is_offered_as_its_own_act():
 # --- what the screens must keep saying --------------------------------------
 
 def test_the_carrier_card_says_custody_not_contents():
+    """`contents` is null on every scan card and always will be, and the
+    screen says so rather than leaving a reader to infer it from a blank.
+    Followed to the table at 0.60.5 for the same reason as the pair above."""
     flat = " ".join(_screen("Carriers.tsx").split())
-    assert "there is no value of `disclose` that changes that" in flat
+    problems = _says(flat, "car.contents.never",
+                     "there is no value of `disclose` that changes that")
+    assert not problems, ("custody, not contents:\n    "
+                          + "\n    ".join(problems))
 
 
 def test_the_custody_screen_leads_with_the_only_question():

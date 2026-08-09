@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, getBase, CustodyChain, IntakeRow, TransferRow } from "../api";
 import { useSession } from "../store";
+import { deviceLanguage, fill, Lang, t } from "../l10n";
 
 /**
  * What leaves the vault, and what is asked to come into it.
@@ -57,137 +58,131 @@ export function Exchange() {
     finally { setBusy(false); }
   }
 
+  const lang = (session.language as Lang) ?? deviceLanguage();
+
   if (!token) {
     return <div className="screen"><p className="muted center">
-      Select a tenant first.</p></div>;
+      {t("exc.pick", lang)}</p></div>;
   }
 
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Exchange</h2>
-        <span className="muted small">
-          what leaves sealed, and what is asked to come in
-        </span>
+        <h2>{t("exc.title", lang)}</h2>
+        <span className="muted small">{t("exc.sub", lang)}</span>
       </header>
 
       {error && <div className="error">⚠ {error}</div>}
 
       <div className="card">
-        <h3>Send something out</h3>
+        <h3>{t("exc.send", lang)}</h3>
         <div className="row">
           {/* The placeholders stay what they were — an example, not a name.
               A 422 that says `filename` can now say Filename instead. */}
-          <label>Recipient
+          <label>{t("exc.recipient", lang)}
             <input value={recipient} placeholder="clinic-a"
                    onChange={(e) => setRecipient(e.target.value)} />
           </label>
-          <label>Filename
+          <label>{t("exc.filename", lang)}
             <input value={filename} placeholder="report.pdf"
                    onChange={(e) => setFilename(e.target.value)} />
           </label>
         </div>
         {/* `content` on the wire, and the table has said Content in ten
             languages since the first round of this work. */}
-        <label>Content
-          <textarea rows={3} value={text} placeholder="The contents"
+        <label>{t("exc.content", lang)}
+          <textarea rows={3} value={text}
+                    placeholder={t("exc.content.ph", lang)}
                     onChange={(e) => setText(e.target.value)} />
         </label>
         <button className="primary"
                 disabled={busy || !recipient.trim() || !text.trim()}
                 onClick={() => run(async () => {
-                  const t = await api.sendTransfer({
+                  const sent = await api.sendTransfer({
                     recipient: recipient.trim(), filename: filename.trim(),
                     content: btoa(unescape(encodeURIComponent(text))) },
                     token!);
-                  if (t.receive_token) {
-                    setReceipts((m) => ({ ...m, [t.id]: t.receive_token! }));
+                  if (sent.receive_token) {
+                    setReceipts((m) => ({ ...m,
+                                          [sent.id]: sent.receive_token! }));
                   }
                   setText(""); setRecipient("");
-                })}>Seal and send</button>
-        <p className="muted small">
-          The receive token comes back once, here, and is never served again.
-          Use <strong>Copy the recipient&apos;s link</strong> on the transfer
-          below and send them that — it carries the token in the URL fragment,
-          which browsers never transmit to a server, so the link can pass
-          through mail without leaving the token in anybody&apos;s logs. It is
-          the thing that opens this transfer and nothing else opens it.
-        </p>
+                })}>{t("exc.seal", lang)}</button>
+        <p className="muted small">{t("exc.once", lang)}</p>
       </div>
 
       <div className="card">
-        <h3>Out</h3>
+        <h3>{t("exc.out", lang)}</h3>
         {transfers.length === 0 && (
-          <div className="muted small">Nothing sent.</div>
+          <div className="muted small">{t("exc.nothingsent", lang)}</div>
         )}
-        {transfers.map((t) => (
-          <div key={t.id}
+        {transfers.map((tr) => (
+          <div key={tr.id}
                style={{ padding: "10px 0", borderBottom: "1px solid var(--line)" }}>
             <div className="row">
-              <strong style={{ flex: 1 }}>{t.filename}</strong>
+              <strong style={{ flex: 1 }}>{tr.filename}</strong>
               <span className="muted small">
-                → {t.recipient} · {t.size} bytes · {t.status}
-                {t.programs.length > 0 ? ` · ${t.programs.join(", ")}` : ""}
+                → {tr.recipient} ·{" "}
+                {fill("exc.bytes", lang, { n: tr.size })} · {tr.status}
+                {tr.programs.length > 0 ? ` · ${tr.programs.join(", ")}` : ""}
               </span>
             </div>
             <div className="row">
               <button disabled={busy}
                       onClick={() => run(async () => {
-                        await api.transfer(t.id, token!);
-                      })}>Refresh</button>
+                        await api.transfer(tr.id, token!);
+                      })}>{t("exc.refresh", lang)}</button>
               <button disabled={busy}
                       onClick={() => run(async () => {
-                        setCustody(await api.transferCustody(t.id, token!));
-                      })}>Chain of custody</button>
+                        setCustody(await api.transferCustody(tr.id, token!));
+                      })}>{t("exc.chain", lang)}</button>
               {/* The recipient's actual door. Until this existed, `/r/{id}`
                   was a page nobody could link to and the receive token was
                   something the sender was told to hand over with nowhere for
                   it to be used — the same defect one step earlier. */}
-              <button disabled={busy || !receipts[t.id]}
-                      title={receipts[t.id]
-                        ? "The link to send them — token in the fragment"
-                        : "The receive token was shown once, in another session"}
+              <button disabled={busy || !receipts[tr.id]}
+                      title={receipts[tr.id]
+                        ? t("exc.copylink.t", lang)
+                        : t("exc.tokengone", lang)}
                       onClick={() => run(async () => {
                         // Resolve it before handing it over: a misconfigured
                         // public base would otherwise be discovered by the
                         // recipient, who has nobody to ask.
-                        await api.recipientPage(t.id);
-                        const link = `${getBase()}/r/${t.id}`
-                          + `#${encodeURIComponent(receipts[t.id])}`;
+                        await api.recipientPage(tr.id);
+                        const link = `${getBase()}/r/${tr.id}`
+                          + `#${encodeURIComponent(receipts[tr.id])}`;
                         navigator.clipboard?.writeText(link);
                         setGot(link);
-                      })}>Copy the recipient&apos;s link</button>
-              <button disabled={busy || !receipts[t.id]}
-                      title={receipts[t.id]
-                        ? "Fetch it the way the recipient would"
-                        : "The receive token was shown once, in another session"}
+                      })}>{t("exc.copylink", lang)}</button>
+              <button disabled={busy || !receipts[tr.id]}
+                      title={receipts[tr.id]
+                        ? t("exc.asrecipient.t", lang)
+                        : t("exc.tokengone", lang)}
                       onClick={() => run(async () => {
                         const out = await api.receiveTransfer(
-                          t.id, receipts[t.id]);
+                          tr.id, receipts[tr.id]);
                         setGot(decodeURIComponent(escape(atob(out.content))));
-                      })}>Receive it as the recipient</button>
+                      })}>{t("exc.asrecipient", lang)}</button>
               <button disabled={busy}
                       onClick={() => run(() =>
-                        api.withdrawTransfer(t.id, token!))}>Withdraw</button>
+                        api.withdrawTransfer(tr.id, token!))}>{t("exc.withdraw", lang)}</button>
             </div>
-            {receipts[t.id] && (
-              <div className="muted small">
-                receive token held for this session only
-              </div>
+            {receipts[tr.id] && (
+              <div className="muted small">{t("exc.sessiononly", lang)}</div>
             )}
           </div>
         ))}
       </div>
 
       <div className="card">
-        <h3>Ask for something in</h3>
+        <h3>{t("exc.ask", lang)}</h3>
         <div className="row">
-          <label>Requesting party
-            <input value={party} placeholder="Dr Osei's office"
+          <label>{t("exc.party", lang)}
+            <input value={party} placeholder={t("exc.party.ph", lang)}
                    onChange={(e) => setParty(e.target.value)} />
           </label>
-          <label>Purpose
-            <input value={purpose} placeholder="records request"
+          <label>{t("exc.purpose", lang)}
+            <input value={purpose} placeholder={t("exc.purpose.ph", lang)}
                    onChange={(e) => setPurpose(e.target.value)} />
           </label>
           <button className="primary" disabled={busy || !party.trim()}
@@ -199,19 +194,15 @@ export function Exchange() {
                       setSubmits((m) => ({ ...m, [i.id]: i.submit_token! }));
                     }
                     setParty(""); setPurpose("");
-                  })}>Open an intake</button>
+                  })}>{t("exc.openintake", lang)}</button>
         </div>
-        <p className="muted small">
-          An intake is a one-way door somebody else walks through. The submit
-          token is theirs, not yours — the same shape as a receive token and
-          for the same reason.
-        </p>
+        <p className="muted small">{t("exc.onewaydoor", lang)}</p>
       </div>
 
       <div className="card">
-        <h3>In</h3>
+        <h3>{t("exc.in", lang)}</h3>
         {intakes.length === 0 && (
-          <div className="muted small">Nothing requested.</div>
+          <div className="muted small">{t("exc.nothingasked", lang)}</div>
         )}
         {intakes.map((i) => (
           <div key={i.id}
@@ -227,29 +218,29 @@ export function Exchange() {
               <button disabled={busy}
                       onClick={() => run(async () => {
                         await api.intake(i.id, token!);
-                      })}>Refresh</button>
+                      })}>{t("exc.refresh", lang)}</button>
               <button disabled={busy}
                       onClick={() => run(async () => {
                         setCustody(await api.intakeCustody(i.id, token!));
-                      })}>Chain of custody</button>
+                      })}>{t("exc.chain", lang)}</button>
               <button disabled={busy || !submits[i.id]}
                       title={submits[i.id]
-                        ? "Send a file in the way the other party would"
-                        : "The submit token was shown once, in another session"}
+                        ? t("exc.assubmitter.t", lang)
+                        : t("exc.tokengone.submit", lang)}
                       onClick={() => run(() => api.submitToIntake(
                         i.id, submits[i.id],
                         { filename: "their-file.pdf",
                           content: btoa("a file from the other party") }))}>
-                Submit as the other party
+                {t("exc.assubmitter", lang)}
               </button>
               <button disabled={busy || i.status !== "submitted"}
                       onClick={() => run(async () => {
                         const f = await api.intakeFile(i.id, token!);
                         setGot(decodeURIComponent(escape(atob(f.content))));
-                      })}>Open what came in</button>
+                      })}>{t("exc.openwhat", lang)}</button>
               <button disabled={busy}
                       onClick={() => run(() =>
-                        api.cancelIntake(i.id, token!))}>Cancel</button>
+                        api.cancelIntake(i.id, token!))}>{t("exc.cancel", lang)}</button>
             </div>
           </div>
         ))}
@@ -257,25 +248,24 @@ export function Exchange() {
 
       {got !== null && (
         <div className="card">
-          <h3>What came out of the seal</h3>
+          <h3>{t("exc.outofseal", lang)}</h3>
           <pre style={{ whiteSpace: "pre-wrap" }}>{got}</pre>
-          <p className="muted small">
-            That read is in the audit chain. Opening a sealed thing is an
-            event, not a lookup.
-          </p>
+          <p className="muted small">{t("exc.readisevent", lang)}</p>
         </div>
       )}
 
       {custody && (
         <div className="card">
-          <h3>Chain of custody</h3>
+          <h3>{t("exc.chain", lang)}</h3>
           <p className="muted small">
-            Audit chain{" "}
+            {t("exc.auditchain", lang)}{" "}
             <strong>
-              {custody.audit_chain_intact ? "verifies" : "DOES NOT VERIFY"}
+              {custody.audit_chain_intact ? t("exc.verifies", lang)
+                                          : t("exc.notverify", lang)}
             </strong>
             {custody.retained_until
-              ? ` · retained until ${custody.retained_until}`
+              ? ` · ${fill("exc.retained", lang,
+                           { when: custody.retained_until })}`
               : ""}
           </p>
           {custody.chain_of_custody.map((e, i) => (

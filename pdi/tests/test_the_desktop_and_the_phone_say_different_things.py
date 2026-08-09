@@ -407,6 +407,37 @@ def test_the_reader_reads_more_than_the_regex_did():
         "has quietly gone back to being one")
 
 
+def test_every_console_row_is_complete_in_every_language():
+    """A partial row is worse than a missing one.
+
+    `t()` falls back to English when a language is absent, so a row with nine
+    languages and a gap renders in English for exactly one reader and looks
+    fine to everyone else — including to the count above, which reads the
+    *screens* and sees a key rather than a sentence. A screen wired to a
+    half-filled table subtracts from `console_untranslated.txt` and delivers
+    nothing to the reader whose language is the missing one.
+
+        asked     is the screen wired to the table
+        mattered  does the table answer in the language the reader picked
+
+    Until 0.60.5 the only completeness check here was a single probe key.
+    That is a check on the parser, not on the table: it proves the reader can
+    see ten languages somewhere, which is a different claim from every row
+    having them. 0.60.5 added eighty-seven rows in one commit, which is the
+    kind of change that makes the difference matter.
+    """
+    if not CONSOLE.exists():
+        return
+    gaps = {key: [c for c in LANGS if c not in row]
+            for key, row in _console().items()}
+    gaps = {k: v for k, v in gaps.items() if v}
+    assert not gaps, (
+        f"{len(gaps)} console row(s) are missing languages:\n    "
+        + "\n    ".join(f"{k}: {', '.join(v)}" for k, v in sorted(gaps.items())[:20])
+        + "\n  `t()` falls back to English, so each of these is a screen that "
+          "reads as translated and is not, for one reader at a time.")
+
+
 def test_both_tables_still_parse():
     """A guard on the guard. A table read as empty shares no strings with
     anything and would report two tables in perfect agreement."""

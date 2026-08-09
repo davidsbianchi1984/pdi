@@ -18,6 +18,7 @@
 #     0.48.3   229 → 177   Custody and Continuity
 #     0.60.4   177 → 233   **the reader, not the console** — see below
 #     0.60.4   233 → 225   VersionGuard, which the old reader saw none of
+#     0.60.5   225 → 154   Carriers and Exchange
 #
 # ## The one rise in this record, and why it is not a regression
 #
@@ -100,5 +101,35 @@
 #     Records.tsx      11
 #     Continuity.tsx    9        (its remaining rows are server-rendered)
 #
-# ceiling: 225
-console: 225
+# ceiling: 154
+#
+# ## 0.60.5, and the criterion for what went next
+#
+# Four screens held 141 of the 225: Carriers 38, Positions 36, Bridges 34,
+# Exchange 33. Carriers and Exchange went first on the criterion this record
+# has used since the alarm surface — **decisions before descriptions**.
+#
+# **Carriers** is the console side of the surface whose *landing pages* were
+# the finding in `test_the_strangers_language.py`. A courier holding a crate
+# scans a code and reads the card in their own language; the holder who places
+# the code, reads the chain of custody and answers a ring read English. One
+# half of a two-sided surface had been taught to speak and the other had not.
+#
+# **Exchange** is where nothing has an undo. A receive token served exactly
+# once, a seal that opens into the audit chain rather than being looked at, an
+# intake that is a one-way door somebody else walks through. A person reading
+# a language this console does not speak was making those decisions from the
+# button labels alone.
+#
+# Two things fell out of doing it:
+#
+#   * The TypeScript compiler caught `transfers.map((t) => …)` shadowing the
+#     translator the moment `t` became a function. A reading guard would not
+#     have; the type checker did, on the first run.
+#   * `test_the_desktop_and_the_phone_say_the_same_thing` caught seven rows
+#     where the new console wording and a shell's wording for the same English
+#     disagreed — *Recipient*, *Filename*, *Refresh*. The shells' wordings win:
+#     two tables saying one English in two Spanishes is one product making two
+#     claims to one reader.
+
+console: 154

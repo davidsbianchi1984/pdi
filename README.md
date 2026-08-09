@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.60.4** ([changelog](CHANGELOG.md) ·
+**Current release: v0.60.5** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -200,6 +200,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.60.5** | **Carriers and Exchange, on the criterion of decisions before descriptions** — the console side of the courier's surface, and the screen where nothing has an undo. 225 → 154 across 87 rows. The type checker caught a `map((t) => …)` shadowing the translator; the drift guard caught 7 wordings disagreeing with the shells; two guards that greped English now follow the key |
 | **0.60.4** | **The reader was a quarter blind, and both rounds were graded against it** — this console's English was measured by a regex that rejected any run containing a newline, an interpolation, or a lowercase first letter: 233 strings against the 177 it reported. The extractor QRME and JIM use is ported, the ceiling re-baselined honestly, and `VersionGuard` — invisible in all six of its strings — wired |
 | **0.60.3** | **A check that cannot fail before the merge is not a check** — this product's CI happened to be green, on the same trigger that hid 29 red runs in QRME and 123 in `native.yml`. Green under a blind trigger is luck, not evidence. Trigger fixed in all three, and a guard that reads the triggers themselves |
 | **0.60.2** | **The compiler was in the room the whole time and nothing listened** — the native workflow fires on any branch push now. iOS and Android green first; Windows named two missing `using` lists, a `_base` field the class does not have, a `Get` helper that lives in another product, a `ShowStatus` this page never had, and a public route the client could not ask for |

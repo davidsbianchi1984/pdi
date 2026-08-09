@@ -4,6 +4,55 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.60.5] — 2026-08-09
+
+### Carriers and Exchange, on the criterion of decisions before descriptions
+
+0.60.4 made the console's English count honest — 225, where a regex had been
+reporting 177. Four screens hold 141 of it: Carriers 38, Positions 36,
+Bridges 34, Exchange 33. Two went first, on the criterion this record has used
+since the alarm surface.
+
+**Carriers** is the console side of the surface whose *landing pages* were the
+finding in `test_the_strangers_language.py`. A courier holding a crate scans a
+code and reads the card in their own language; the holder who places the code,
+reads the chain of custody and answers a ring read English. One half of a
+two-sided surface had been taught to speak and the other had not.
+
+**Exchange** is where nothing has an undo — a receive token served exactly
+once, a seal that opens *into* the audit chain rather than being looked at, an
+intake that is a one-way door somebody else walks through. A person reading a
+language this console does not speak was making those decisions off the button
+labels alone.
+
+**225 → 154.** Eighty-seven rows, ten languages each.
+
+Three things the work turned up, none of them found by reading:
+
+- **The TypeScript compiler** caught `transfers.map((t) => …)` shadowing the
+  translator the moment `t` became a function. Six errors on the first run.
+- **`test_the_desktop_and_the_phone_say_the_same_thing`** caught seven rows
+  where a new console wording and a shell's wording for the same English
+  disagreed — *Recipient*, *Filename*, *Refresh*. The shells' wordings win:
+  two tables saying one English in two Spanishes is one product making two
+  claims to one reader.
+- **Two guards in `test_the_door_and_the_wire.py`** went red because they
+  grepped the screens for English that had just moved into the table. That is
+  the 0.48.2 lesson — *localizing a screen blinds the guards that grep it* —
+  arriving in the last two guards in that file which had not had it. Both now
+  follow the sentence to wherever it lives: the screen must ask for the key,
+  and the table must hold it in all ten languages.
+
+New: **`test_every_console_row_is_complete_in_every_language`**. The only
+completeness check here was a single probe key, which proves the *parser* can
+see ten languages somewhere — a different claim from every row having them.
+`t()` falls back to English, so a row with nine languages and a gap renders in
+English for exactly one reader and looks fine to everyone else, including to
+the count, which reads screens and sees a key rather than a sentence. Adding
+eighty-seven rows in one commit is the kind of change that makes the
+difference matter. Confirmed by injection: dropping Hindi from one row fails
+naming the row and the language.
+
 ## [0.60.4] — 2026-08-09
 
 ### The reader was a quarter blind, and both rounds were graded against it

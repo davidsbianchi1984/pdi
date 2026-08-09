@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api, BeaconRefKind, BeaconRow, CustodyChain, RingKind, Row,
          ScanCard } from "../api";
 import { useSession } from "../store";
+import { deviceLanguage, fill, Lang, t } from "../l10n";
 
 /**
  * A sealed carrier, and the code on the outside of it.
@@ -62,42 +63,41 @@ export function Carriers() {
     finally { setBusy(false); }
   }
 
+  const lang = (session.language as Lang) ?? deviceLanguage();
+
   if (!token) {
     return <div className="screen"><p className="muted center">
-      Select a tenant first — carriers are placed with the tenant's own
-      token.</p></div>;
+      {t("car.pick", lang)}</p></div>;
   }
 
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Carriers</h2>
-        <span className="muted small">
-          a sealed thing, and the code on the outside of it
-        </span>
+        <h2>{t("car.title", lang)}</h2>
+        <span className="muted small">{t("car.sub", lang)}</span>
       </header>
 
       {error && <div className="error">⚠ {error}</div>}
 
       <div className="card">
-        <h3>Place a code</h3>
+        <h3>{t("car.place", lang)}</h3>
         <div className="row">
-          <label>Label
-            <input value={label} placeholder="Server rack A"
+          <label>{t("car.label", lang)}
+            <input value={label} placeholder={t("car.label.ph", lang)}
                    onChange={(e) => setLabel(e.target.value)} />
           </label>
-          <label>What the code stands for
+          <label>{t("car.standsfor", lang)}
             <select value={kind}
                     onChange={(e) => setKind(e.target.value as BeaconRefKind)}>
               {KINDS.map((k) => <option key={k} value={k}>{k}</option>)}
             </select>
           </label>
-          <label>What a scan discloses
+          <label>{t("car.disclose", lang)}
             <select value={disclose}
                     onChange={(e) =>
                       setDisclose(e.target.value as "blind" | "contact")}>
-              <option value="blind">blind — custody only</option>
-              <option value="contact">contact — and a way to reach us</option>
+              <option value="blind">{t("car.disclose.blind", lang)}</option>
+              <option value="contact">{t("car.disclose.contact", lang)}</option>
             </select>
           </label>
           <button className="primary" disabled={busy || !label.trim()}
@@ -105,19 +105,15 @@ export function Carriers() {
                     await api.placeBeacon({ ref_kind: kind,
                       label: label.trim(), disclose }, token!);
                     setLabel("");
-                  })}>Place</button>
+                  })}>{t("car.place.go", lang)}</button>
         </div>
-        <p className="muted small">
-          A code on a crate is for whoever is holding the crate, so scanning
-          it needs no account. Blind is the default because the safe answer
-          to <em>what is in here</em> is that the code cannot tell you.
-        </p>
+        <p className="muted small">{t("car.blindwhy", lang)}</p>
       </div>
 
       <div className="card">
-        <h3>Placed</h3>
+        <h3>{t("car.placed", lang)}</h3>
         {beacons.length === 0 && (
-          <div className="muted small">None placed.</div>
+          <div className="muted small">{t("car.none", lang)}</div>
         )}
         {beacons.map((b) => (
           <div key={b.id}
@@ -125,30 +121,31 @@ export function Carriers() {
             <div className="row">
               <strong style={{ flex: 1 }}>{b.label}</strong>
               <span className="muted small">
-                {b.ref_kind} · {b.state} · {b.disclose} · {b.scans} scan
-                {b.scans === 1 ? "" : "s"}
-                {b.active ? "" : " · lifted"}
+                {b.ref_kind} · {b.state} · {b.disclose} ·{" "}
+                {b.scans === 1 ? t("car.scans.one", lang)
+                              : fill("car.scans", lang, { n: b.scans })}
+                {b.active ? "" : ` · ${t("car.lifted", lang)}`}
               </span>
             </div>
             <div className="row">
               <button disabled={busy}
                       onClick={() => run(async () => {
                         setCustody(await api.beaconCustody(b.id, token!));
-                      })}>Chain of custody</button>
+                      })}>{t("car.chain", lang)}</button>
               <button disabled={busy}
                       onClick={() => run(async () => {
                         setCard(await api.scanCard(b.id));
-                      })}>What a scanner sees</button>
+                      })}>{t("car.sees", lang)}</button>
               <button disabled={busy}
                       onClick={() => run(async () => {
                         setPage(await api.scanPage(b.id));
                         setQr(await api.scanQr(b.id));
-                      })}>The code itself</button>
+                      })}>{t("car.codeitself", lang)}</button>
               <button disabled={busy}
                       onClick={() => run(async () => {
                         setCustody(null);
                         await api.beacon(b.id, token!);
-                      })}>Refresh</button>
+                      })}>{t("car.refresh", lang)}</button>
               <select value={b.state}
                       onChange={(e) => run(() => api.setBeaconState(
                         b.id, e.target.value, token!))}>
@@ -158,12 +155,12 @@ export function Carriers() {
               </select>
               <button disabled={busy}
                       onClick={() => run(() => api.liftBeacon(b.id, token!))}>
-                Lift it
+                {t("car.lift", lang)}
               </button>
             </div>
             <div className="row">
-              <span className="muted small">Act as a scanner:</span>
-              <label>Kind
+              <span className="muted small">{t("car.asscanner", lang)}</span>
+              <label>{t("car.kind", lang)}
                 <select value={ringKind}
                         onChange={(e) =>
                           setRingKind(e.target.value as RingKind)}>
@@ -172,10 +169,10 @@ export function Carriers() {
               </label>
               <button disabled={busy}
                       onClick={() => run(() => api.ringHolder(b.id,
-                        { kind: ringKind }))}>Ring the holder</button>
+                        { kind: ringKind }))}>{t("car.ring", lang)}</button>
               <button disabled={busy}
                       onClick={() => run(() => api.reportFound(b.id,
-                        { where: "loading dock" }))}>Report it found</button>
+                        { where: "loading dock" }))}>{t("car.found", lang)}</button>
             </div>
           </div>
         ))}
@@ -183,33 +180,36 @@ export function Carriers() {
 
       {card && (
         <div className="card">
-          <h3>The card a stranger gets</h3>
+          <h3>{t("car.strangercard", lang)}</h3>
           <p><strong>{card.badge}</strong></p>
           <p className="muted small">{card.note}</p>
           <p className="muted small">
             {card.reference} · {card.kind} · {card.state} ·{" "}
-            {card.under_custody ? "under custody" : "not under custody"}
-            {card.held_by ? ` · held by ${card.held_by}` : ""}
+            {card.under_custody ? t("car.custody.yes", lang)
+                               : t("car.custody.no", lang)}
+            {card.held_by
+              ? ` · ${fill("car.heldby", lang, { who: card.held_by })}` : ""}
           </p>
           <p className="muted small">
-            Contents: <strong>{card.contents === null ? "not disclosed" : "?"}</strong>
-            {" "}— and there is no value of `disclose` that changes that.
+            {t("car.contents", lang)}{" "}
+            <strong>{card.contents === null
+                       ? t("car.contents.no", lang) : "?"}</strong>
+            {" "}{t("car.contents.never", lang)}
           </p>
         </div>
       )}
 
       {(page || qr) && (
         <div className="card">
-          <h3>The printed code</h3>
+          <h3>{t("car.printed", lang)}</h3>
           {qr && (
-            <img alt="the scannable code"
+            <img alt={t("car.scannable", lang)}
                  src={"data:image/svg+xml;utf8," + encodeURIComponent(qr)}
                  style={{ width: 180, height: 180 }} />
           )}
           {page && (
             <p className="muted small">
-              The landing page is {page.length} characters of HTML — a page
-              for a courier's phone, not a document for this console.
+              {fill("car.landing", lang, { n: page.length })}
             </p>
           )}
         </div>
@@ -217,14 +217,14 @@ export function Carriers() {
 
       {custody && (
         <div className="card">
-          <h3>Chain of custody</h3>
+          <h3>{t("car.chain", lang)}</h3>
           <p className="muted small">
-            Audit chain{" "}
+            {t("car.auditchain", lang)}{" "}
             <strong>
-              {custody.audit_chain_intact ? "verifies" : "DOES NOT VERIFY"}
+              {custody.audit_chain_intact ? t("car.verifies", lang)
+                                          : t("car.notverify", lang)}
             </strong>
-            . A custody list nobody can check is a list of claims, so the
-            verification is shown above the list rather than under it.
+            . {t("car.claims", lang)}
           </p>
           {custody.chain_of_custody.map((e, i) => (
             <div key={i} className="row"
@@ -237,21 +237,22 @@ export function Carriers() {
           ))}
           {(custody.controls?.required ?? []).length > 0 && (
             <p className="muted small">
-              Controls required: {custody.controls.required.join(", ")}
+              {fill("car.controls", lang,
+                    { list: custody.controls.required.join(", ") })}
             </p>
           )}
         </div>
       )}
 
       <div className="card">
-        <h3>Somebody rang</h3>
+        <h3>{t("car.rang", lang)}</h3>
         <label className="row">
           <input type="checkbox" checked={openOnly}
                  onChange={(e) => setOpenOnly(e.target.checked)} />
-          {" "}open only
+          {" "}{t("car.openonly", lang)}
         </label>
         {rings.length === 0 && (
-          <div className="muted small">Nobody has scanned and rung.</div>
+          <div className="muted small">{t("car.norings", lang)}</div>
         )}
         {rings.map((r) => (
           <div key={String(r.id)} className="row"
@@ -264,7 +265,7 @@ export function Carriers() {
                     onClick={() => run(async () => {
                       setTranscript(
                         await api.ringTranscript(String(r.id), token!));
-                    })}>Transcript</button>
+                    })}>{t("car.transcript", lang)}</button>
           </div>
         ))}
         {transcript && (
