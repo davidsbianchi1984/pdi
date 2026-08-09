@@ -118,7 +118,7 @@ RECEIVE_NO = "that token does not open anything here"
 RECEIVE_REVOKED = "this transfer has been revoked"
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="Private Data Infrastructure", version="0.59.9")
+    app = FastAPI(title="Private Data Infrastructure", version="0.60.0")
 
     @app.middleware("http")
     async def localize_response_notes(request, call_next):
@@ -825,6 +825,21 @@ def create_app() -> FastAPI:
         if result == "closed":
             raise HTTPException(409, "this intake is no longer open")
         return result
+
+    @app.get("/export")
+    def export_everything(tenant: dict = Depends(_tenant)) -> dict:
+        """Portability: every table in this deployment that names you.
+
+        Distinct from `/snapshot`, which is the disaster-recovery export and
+        is ciphertext-only on purpose — it exists to be restored. This one
+        answers *what do you hold about us*, which until now had no route at
+        all: the snapshot returned records and nothing else, so hosting
+        history, bequests, beacons and the paperwork on file were not
+        available to the tenant they describe.
+
+        Live credentials and sealed bytes are dropped per column.
+        """
+        return vault.export_everything(tenant["id"])
 
     @app.get("/snapshot")
     def snapshot(tenant: dict = Depends(_tenant)) -> dict:

@@ -200,6 +200,22 @@ export function Custody() {
                     setSnapshot(s.records);
                     setSaid(`${s.records.length} record(s) in hand`);
                   })}>{t("cu.snapshot", lang)}</button>
+          <button disabled={busy || !token}
+                  onClick={() => run(async () => {
+                    // Everything this deployment holds about this tenant, as
+                    // a file. The snapshot beside it is ciphertext for
+                    // restoring; this is the answer to *what do you have*.
+                    const all = await api.exportEverything(token!);
+                    const blob = new Blob([JSON.stringify(all, null, 2)],
+                                          { type: "application/json" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `pdi-export-${tenantId ?? "tenant"}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    setSaid(`${Object.keys(all.tables).length} table(s) in hand`);
+                  })}>{t("cu.export", lang)}</button>
           <button disabled={busy || !snapshot}
                   onClick={() => run(() =>
                     api.restoreRecords(snapshot!, token!))}>

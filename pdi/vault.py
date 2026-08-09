@@ -390,3 +390,58 @@ def export_snapshot(tenant: dict) -> dict:
     ).fetchall()
     audit.record("snapshot.export", tenant_id=tenant["id"])
     return {"tenant_id": tenant["id"], "records": [dict(r) for r in rows]}
+
+#: What an export must never hand back, matched as **marks inside a column
+#: name** rather than as a list of exact names.
+#:
+#: The first cut of this was a list, and the guard next door caught it on its
+#: first run: `owner_token`, `qrme_interactor_token` and a third all sat in
+#: tables the export now reaches and none of them were in the list. A list of
+#: credential columns goes stale exactly the way the erase cascade's list of
+#: tables did, and for the same reason — somebody adds a column.
+#:
+#: Deliberately not the bare word `hash`: an audit chain's hash is a record,
+#: not a credential, and a person auditing their own export should be able to
+#: verify it. `ciphertext` is here because the sealed bytes belong in
+#: the disaster-recovery snapshot, which exists to be restored.
+EXPORT_REDACTS = ("ciphertext", "token", "secret", "password", "api_key", "private_key",
+                  "grant_hash", "check_value", "credential")
+
+
+def _public(row) -> dict:
+    """A row with every credential-bearing column dropped."""
+    return {k: v for k, v in dict(row).items()
+            if not any(mark in k.lower() for mark in EXPORT_REDACTS)}
+
+
+def export_everything(tenant_id: str) -> dict:
+    """Every row in this deployment that names this tenant, by table.
+
+    Distinct from :func:`export_snapshot`, which is the disaster-recovery
+    export and is ciphertext-only on purpose — it exists to be restored, and
+    `restore_records` reads its shape. This is the portability answer: what
+    do you hold about us, all of it, in a form a person can read.
+
+    Derived from the schema for the same reason the cascade is. `ciphertext`
+    is redacted here rather than exported: the DR snapshot is where sealed
+    bytes belong, and a tenant asking what is held wants the record's shape
+    and history, not a blob only this deployment's keys open.
+    """
+    conn = db.connect()
+    tables: dict[str, list[dict]] = {}
+    for table in tenant_scoped_tables():
+        rows = conn.execute(f"SELECT * FROM {table} WHERE tenant_id=?",
+                            (tenant_id,)).fetchall()
+        if rows:
+            tables[table] = [_public(r) for r in rows]
+    row = conn.execute("SELECT * FROM tenants WHERE id=?",
+                       (tenant_id,)).fetchone()
+    audit.record("tenant.export", tenant_id=tenant_id)
+    return {
+        "tenant": _public(row) if row else None,
+        "tables": tables,
+        "note": "every table in this deployment that names this tenant, with "
+                "live credentials and sealed bytes dropped per column — the "
+                "ciphertext lives in GET /snapshot, which exists to be "
+                "restored",
+    }

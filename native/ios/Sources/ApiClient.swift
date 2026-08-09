@@ -133,6 +133,18 @@ struct KeyVersion: Decodable, Identifiable {
     var id: Int { version }
 }
 
+struct TenantExport: Decodable {
+    let tables: [String: [[String: AnyCodableValue]]]
+    let note: String
+}
+
+/// A JSON value the export carries whose shape this shell does not model —
+/// it counts rows and shows the table names; reading every column of every
+/// table into Swift types would be a second copy of the schema.
+struct AnyCodableValue: Decodable {
+    init(from decoder: Decoder) throws { }
+}
+
 struct KeysInfo: Decodable { let provider: String; let versions: [KeyVersion] }
 
 struct RetireResult: Decodable { let retired: Int; let versions: [KeyVersion] }
@@ -227,6 +239,17 @@ actor ApiClient {
         }
         if data.isEmpty { return try JSONDecoder().decode(T.self, from: Data("{}".utf8)) }
         return try JSONDecoder().decode(T.self, from: data)
+    }
+
+    /// Everything this deployment holds about the tenant, by table.
+    ///
+    /// Distinct from the disaster-recovery snapshot: that one is ciphertext
+    /// and exists to be restored. This is the portability answer, and the
+    /// phone needs it because a person whose only device is a phone is
+    /// exactly the person who cannot use a desktop console to get their
+    /// data out.
+    func exportEverything(token: String) async throws -> TenantExport {
+        try await request("/export", token: token)
     }
 
     /// List the tenant's record keys — also the sign-in validation call.

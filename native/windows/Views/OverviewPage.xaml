@@ -118,6 +118,10 @@
                                Foreground="{StaticResource PdiT2Brush}" FontSize="12" TextWrapping="Wrap" />
                     <PasswordBox x:Name="AdminTokenBox" Header="Admin token" />
                     <StackPanel Orientation="Horizontal" Spacing="8">
+                        <!-- The portability door: counts on the desktop
+                             shell, the document itself in the console. -->
+                        <Button Content="What do you hold about us"
+                                Click="OnExportEverything" />
                         <Button Content="Load versions" Click="OnLoadKeys"
                                 Background="{StaticResource PdiBrandABrush}" Foreground="White" FontSize="12" />
                         <Button x:Name="RotateButton" Content="Rotate key" Click="OnRotateKey" IsEnabled="False"

@@ -9,6 +9,7 @@ struct AdminCard: View {
     @State private var info: KeysInfo?
     @State private var status: String?
     @State private var error: String?
+    @State private var held: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -34,6 +35,15 @@ struct AdminCard: View {
                 Button("Retire old") { retire() }
                     .font(.caption.bold()).foregroundStyle(Theme.red)
                     .disabled(info == nil)
+            }
+
+            Button("What do you hold about us") { exportAll() }
+                .font(.caption.bold()).foregroundStyle(.white)
+                .padding(.horizontal, 12).padding(.vertical, 8)
+                .background(Theme.brand).clipShape(Capsule())
+
+            if let held {
+                Text(held).font(.caption).foregroundStyle(Theme.t2)
             }
 
             if let info {
@@ -84,6 +94,23 @@ struct AdminCard: View {
                 info = KeysInfo(provider: info?.provider ?? "env", versions: r.versions)
                 status = "Retired \(r.retired) old version(s)."
             } catch { self.error = error.localizedDescription }
+        }
+    }
+}
+
+extension AdminCard {
+    /// The portability door. Counts and table names on the phone; the
+    /// document itself is what the console downloads.
+    func exportAll() {
+        Task {
+            do {
+                let all = try await ApiClient.shared.exportEverything(
+                    token: AppState.shared.token ?? "")
+                let rows = all.tables.values.reduce(0) { $0 + $1.count }
+                held = "\(all.tables.count) table(s), \(rows) row(s) — \(all.note)"
+            } catch {
+                self.error = error.localizedDescription
+            }
         }
     }
 }

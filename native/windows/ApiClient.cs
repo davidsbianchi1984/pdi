@@ -146,6 +146,14 @@ public record ImproveState(
 /// token (`pdi_...`), issued out of band and pasted at sign-in. Windows reaches
 /// the local dev server directly on 127.0.0.1.
 /// </summary>
+/// The export bundle, counted rather than modelled: reading every column of
+/// every table into C# types would be a second copy of the schema.
+public sealed class TenantExport
+{
+    public Dictionary<string, List<Dictionary<string, object>>> Tables { get; set; } = new();
+    public string Note { get; set; } = "";
+}
+
 public sealed class ApiClient
 {
     public static ApiClient Shared { get; } = new();
@@ -282,6 +290,14 @@ public sealed class ApiClient
     /// <summary>List record keys — also the sign-in validation call.</summary>
     public async Task<string[]> Keys(string token) =>
         (await Send<KeysResponse>(new HttpRequestMessage(HttpMethod.Get, "/records"), token)).Keys;
+
+    /// <summary>Everything this deployment holds about the tenant, by table.
+    ///
+    /// <para>Distinct from the disaster-recovery snapshot, which is
+    /// ciphertext and exists to be restored. This is the portability answer:
+    /// what do you have about us.</para></summary>
+    public Task<TenantExport> ExportEverything(string token) =>
+        Send<TenantExport>(Get("/export", token));
 
     public Task<RecordProvenance> Provenance(string token, string key) =>
         Send<RecordProvenance>(new HttpRequestMessage(

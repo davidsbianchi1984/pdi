@@ -225,5 +225,20 @@ public sealed partial class OverviewPage : Page
             AdminStatus.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
         }
         catch (System.Exception ex) { ShowAdminError(ex.Message); }
+    
+    private async void OnExportEverything(object sender,
+                                          Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Token is null) return;
+        try
+        {
+            var all = await ApiClient.Shared.ExportEverything(s.Token);
+            var rows = 0;
+            foreach (var t in all.Tables.Values) rows += t.Count;
+            ShowStatus($"{all.Tables.Count} table(s), {rows} row(s) — {all.Note}");
+        }
+        catch (Exception ex) { ShowStatus(ex.Message); }
     }
+}
 }

@@ -140,6 +140,28 @@ object ApiClient {
     }
 
     /** List record keys — also the sign-in validation call. */
+
+    /**
+     * Everything this deployment holds about the tenant, by table.
+     *
+     * Distinct from the disaster-recovery snapshot, which is ciphertext and
+     * exists to be restored. This is the portability answer, and the phone
+     * needs it because a person whose only device is a phone is exactly the
+     * person who cannot use a desktop console to get their data out.
+     */
+    suspend fun exportEverything(token: String): Pair<Int, Int> =
+        withContext(Dispatchers.IO) {
+            val o = org.json.JSONObject(
+                request("/export", "GET", null, token))
+            val tables = o.optJSONObject("tables") ?: org.json.JSONObject()
+            var rows = 0
+            val names = tables.keys()
+            while (names.hasNext()) {
+                rows += tables.optJSONArray(names.next())?.length() ?: 0
+            }
+            Pair(tables.length(), rows)
+        }
+
     suspend fun keys(token: String): List<String> {
         val arr = JSONObject(request("/records", token = token)).getJSONArray("keys")
         return (0 until arr.length()).map { arr.getString(it) }

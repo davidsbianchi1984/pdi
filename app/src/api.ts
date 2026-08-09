@@ -640,6 +640,12 @@ export const api = {
     req<{ retired: number; versions: KeyVersion[] }>("/keys/retire",
       { method: "POST", token: adminToken }),
 
+  // Portability, distinct from the disaster-recovery snapshot below: every
+  // table in the deployment that names this tenant, credentials and sealed
+  // bytes dropped per column.
+  exportEverything: (token: string) =>
+    req<{ tenant: Row | null; tables: Record<string, Row[]>; note: string }>(
+      "/export", { token }),
   snapshot: (token: string) =>
     req<{ tenant_id: string; records: Row[] }>("/snapshot", { token }),
   restoreRecords: (records: Row[], token: string) =>

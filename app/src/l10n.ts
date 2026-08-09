@@ -451,6 +451,13 @@ const CHROME: Table = {
     ja: "持ち出して、戻す", zh: "取走，再放回",
     hi: "ले जाएँ, और वापस रखें", ar: "أخذه ثم إعادته",
   },
+  "cu.export": {
+    en: "Download everything", es: "Descargar todo",
+    fr: "Tout télécharger", de: "Alles herunterladen",
+    pt: "Descarregar tudo", it: "Scaricare tutto",
+    ja: "すべてダウンロード", zh: "下载全部",
+    hi: "सब कुछ डाउनलोड करें", ar: "تنزيل كل شيء",
+  },
   "cu.snapshot": {
     en: "Snapshot", es: "Instantánea", fr: "Instantané",
     de: "Momentaufnahme", pt: "Instantâneo", it: "Istantanea",

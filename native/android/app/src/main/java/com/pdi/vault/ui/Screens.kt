@@ -99,6 +99,7 @@ fun WelcomeScreen(vm: VaultViewModel) {
     // SharedPreferences — see ApiClient.tenantKey.
     var tenantKey by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
+    var held by remember { mutableStateOf<String?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
 
     // Nobody reading this screen has a tenant, so there is no stored
@@ -144,6 +145,16 @@ fun WelcomeScreen(vm: VaultViewModel) {
                 }
             }
             error?.let { Text(it, color = Pdi.Red, fontSize = 13.sp) }
+            // The portability door: counts and table names on the phone; the
+            // document itself is what the console downloads.
+            BrandButton("What do you hold about us", enabled = true) {
+                vm.call({ ApiClient.exportEverything(vm.token ?: "") }) { r ->
+                    r.onSuccess { (tables, rows) ->
+                        held = "$tables table(s), $rows row(s)"
+                    }
+                }
+            }
+
             BrandButton(L10n.t("wel.unlock", lang), enabled = token.isNotBlank(),
                 busy = busy) {
                 error = null
