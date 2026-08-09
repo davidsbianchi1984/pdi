@@ -239,8 +239,8 @@ export function Custody() {
         <div className="row">
           <select value={deleteMode}
                   onChange={(e) => setDeleteMode(e.target.value)}>
-            <option value="soft">soft — recoverable</option>
-            <option value="hard">hard — gone</option>
+            <option value="soft">{t("cu.del.soft", lang)}</option>
+            <option value="hard">{t("cu.del.hard", lang)}</option>
           </select>
           <button className="danger" disabled={busy || !tenantId}
                   onClick={() => run(() =>
@@ -347,7 +347,9 @@ export function Custody() {
           </p>
         )}
         {mine?.free_because && (
-          <p className="muted small">Free because: {mine.free_because}</p>
+          <p className="muted small">
+            {t("cu.free", lang)} {mine.free_because}
+          </p>
         )}
         <div className="row">
           {Object.entries(modes).map(([id, m]) => (
@@ -368,10 +370,10 @@ export function Custody() {
         {mine && (
           <>
             <p className="muted small">
-              We are responsible for: {mine.we_are_responsible_for.join(", ")}
+              {t("cu.we", lang)} {mine.we_are_responsible_for.join(", ")}
             </p>
             <p className="muted small">
-              You are responsible for: {mine.you_are_responsible_for.join(", ")}
+              {t("cu.you", lang)} {mine.you_are_responsible_for.join(", ")}
             </p>
           </>
         )}

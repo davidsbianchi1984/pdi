@@ -1351,6 +1351,57 @@ const CHROME: Table = {
     hi: "एक परिनियोजन दर्ज करें", ar: "تسجيل عملية نشر",
   },
 
+  // The five this screen kept, and the round that found them.
+  //
+  // Custody was wired at 0.48.3 and counted as finished for twelve releases.
+  // It was not: the two delete modes and the three responsibility labels
+  // stayed English behind a screen that imports `t` on every other line.
+  // `test_a_screen_that_imports_the_translator_holds_no_english` is the check
+  // that would have said so on the round it happened.
+  //
+  // `cu.you` is decided rather than translated, and named here so the choice
+  // is visible. The English is *You are responsible for:* — second person,
+  // which in German, Spanish and Italian forces the T–V question this table
+  // has avoided in every other row. The nine translations answer with the
+  // party instead of the pronoun (*Verantwortung des Kunden*), which says the
+  // same thing about a shared-responsibility split and cannot drift formal.
+  "cu.free": {
+    en: "Free because:", es: "Gratuito porque:", fr: "Gratuit parce que :",
+    de: "Kostenlos, weil:", pt: "Gratuito porque:", it: "Gratuito perché:",
+    ja: "無料の理由:", zh: "免费的原因：", hi: "निःशुल्क क्योंकि:",
+    ar: "مجاني لأن:",
+  },
+  "cu.we": {
+    en: "We are responsible for:", es: "Nuestra responsabilidad:",
+    fr: "Notre responsabilité :", de: "Unsere Verantwortung:",
+    pt: "A nossa responsabilidade:", it: "La nostra responsabilità:",
+    ja: "当方の責任範囲:", zh: "我方负责：", hi: "हमारी ज़िम्मेदारी:",
+    ar: "مسؤوليتنا:",
+  },
+  "cu.you": {
+    en: "You are responsible for:", es: "Responsabilidad del cliente:",
+    fr: "Responsabilité du client :", de: "Verantwortung des Kunden:",
+    pt: "Responsabilidade do cliente:", it: "Responsabilità del cliente:",
+    ja: "お客様の責任範囲:", zh: "客户负责：", hi: "ग्राहक की ज़िम्मेदारी:",
+    ar: "مسؤولية العميل:",
+  },
+  // The wire values stay `soft` and `hard`; only the words move.
+  "cu.del.soft": {
+    en: "soft — recoverable", es: "reversible — recuperable",
+    fr: "réversible — récupérable", de: "reversibel — wiederherstellbar",
+    pt: "reversível — recuperável", it: "reversibile — recuperabile",
+    ja: "可逆 — 復元可能", zh: "可逆 — 可恢复",
+    hi: "प्रतिवर्ती — पुनर्प्राप्त करने योग्य",
+    ar: "قابل للتراجع — قابل للاسترجاع",
+  },
+  "cu.del.hard": {
+    en: "hard — gone", es: "definitivo — sin vuelta atrás",
+    fr: "définitif — sans retour", de: "endgültig — unwiderruflich",
+    pt: "definitivo — sem retorno", it: "definitivo — senza ritorno",
+    ja: "完全 — 復元不可", zh: "彻底 — 无法恢复",
+    hi: "स्थायी — वापसी नहीं", ar: "نهائي — بلا رجعة",
+  },
+
   // --- Continuity: what happens to a sealed file after a death -------------
   //
   // Third screen wired. Two of its sentences are checked by name in
@@ -1763,6 +1814,60 @@ const CHROME: Table = {
     zh: "没有发出呼叫——而且根本无从发出，因为尚未配置任何通道。这与「平静的一周」是完全不同的事实。",
     hi: "कोई पेज नहीं भेजा गया — और भेजा जा भी नहीं सकता था, क्योंकि कोई चैनल कॉन्फ़िगर नहीं है। यह एक शांत सप्ताह से भिन्न तथ्य है।",
     ar: "لا نداءات — ولم يكن بالإمكان إطلاق أي نداء، إذ لا قناة مضبوطة. وهذه حقيقة مختلفة عن أسبوع هادئ.",
+  },
+
+  // The four this screen kept.
+  //
+  // Continuity was wired at 0.48.3 alongside Custody and, like it, counted as
+  // finished. Ten strings stayed English. Six of them — *Name*, *Role*,
+  // *Read*, *Set*, *What can I open?* and the sentence about a grant opening
+  // nothing — were strings this table **already held**, under `co.name.ph`,
+  // `co.role.ph`, `co.read`, `co.set`, `co.whatopen` and
+  // `co.nothing.readable`. The screen had the key and typed the word anyway,
+  // which is the sharpest form of the finding: not a missing translation, a
+  // translation already paid for and not asked for.
+  //
+  // Only these four needed writing.
+  //
+  // The attestation sentence is two rows rather than one with an optional
+  // slot, because the date is optional and a row cannot hold a gap that
+  // renders as *on  —*. Whichever branch runs, the reader gets one sentence.
+  "co.attested": {
+    en: "Attested as “{ref}” — recorded in the audit chain.",
+    es: "Atestiguado como «{ref}» — registrado en la cadena de auditoría.",
+    fr: "Attesté comme « {ref} » — consigné dans la chaîne d’audit.",
+    de: "Bezeugt als „{ref}“ — in der Prüfkette festgehalten.",
+    pt: "Atestado como «{ref}» — registado na cadeia de auditoria.",
+    it: "Attestato come «{ref}» — registrato nella catena di audit.",
+    ja: "「{ref}」として立証 — 監査チェーンに記録されました。",
+    zh: "以「{ref}」为凭证 — 已记入审计链。",
+    hi: "“{ref}” के रूप में प्रमाणित — ऑडिट श्रृंखला में दर्ज।",
+    ar: "مُوثَّق باسم «{ref}» — مُسجَّل في سلسلة التدقيق.",
+  },
+  "co.attested.dated": {
+    en: "Attested as “{ref}” on {date} — recorded in the audit chain.",
+    es: "Atestiguado como «{ref}» el {date} — registrado en la cadena de auditoría.",
+    fr: "Attesté comme « {ref} » le {date} — consigné dans la chaîne d’audit.",
+    de: "Bezeugt als „{ref}“ am {date} — in der Prüfkette festgehalten.",
+    pt: "Atestado como «{ref}» em {date} — registado na cadeia de auditoria.",
+    it: "Attestato come «{ref}» il {date} — registrato nella catena di audit.",
+    ja: "{date} に「{ref}」として立証 — 監査チェーンに記録されました。",
+    zh: "于 {date} 以「{ref}」为凭证 — 已记入审计链。",
+    hi: "{date} को “{ref}” के रूप में प्रमाणित — ऑडिट श्रृंखला में दर्ज।",
+    ar: "مُوثَّق باسم «{ref}» في {date} — مُسجَّل في سلسلة التدقيق.",
+  },
+  // Revoking the *bequest* — distinct from `co.revoke.grant`, which takes back
+  // an already-activated grant token. `test_the_door_and_the_wire.py` checks
+  // that the console keeps offering the two as separate acts.
+  "co.revoke": {
+    en: "Revoke", es: "Revocar", fr: "Révoquer", de: "Widerrufen",
+    pt: "Revogar", it: "Revocare", ja: "取り消す", zh: "撤销",
+    hi: "निरस्त करें", ar: "إبطال",
+  },
+  "co.retry": {
+    en: "Retry", es: "Reintentar", fr: "Réessayer", de: "Erneut versuchen",
+    pt: "Tentar de novo", it: "Riprovare", ja: "再試行", zh: "重试",
+    hi: "पुन: प्रयास करें", ar: "إعادة المحاولة",
   },
 
   // -- positions: the role-mapping questionnaire --------------------------

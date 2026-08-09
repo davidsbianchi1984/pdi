@@ -4,7 +4,7 @@ import {
   type GatePage, type GateRoster,
 } from "../api";
 import { useSession } from "../store";
-import { deviceLanguage, Lang, t } from "../l10n";
+import { deviceLanguage, fill, Lang, t } from "../l10n";
 
 /**
  * Continuity, and the gateway that stands in when nobody is on shift.
@@ -105,9 +105,11 @@ export function Continuity() {
           {b.note && <p>{b.note}</p>}
           {b.activated && b.activation_ref && (
             <p className="muted">
-              Attested as “{b.activation_ref}”
-              {b.activated_at ? ` on ${b.activated_at.slice(0, 10)}` : ""} —
-              recorded in the audit chain.
+              {b.activated_at
+                ? fill("co.attested.dated", lang, {
+                    ref: b.activation_ref,
+                    date: b.activated_at.slice(0, 10) })
+                : fill("co.attested", lang, { ref: b.activation_ref })}
             </p>
           )}
           {!b.revoked && (
@@ -116,7 +118,7 @@ export function Continuity() {
                 if (confirm(`Revoke ${b.grantee_name}'s bequest? It stops being able to open anything.`))
                   run(() => api.revokeBequest(b.id, token), "Revoked.");
               }}>
-              Revoke
+              {t("co.revoke", lang)}
             </button>
           )}
         </div>
@@ -205,11 +207,11 @@ export function Continuity() {
             setHeirKeys(out.keys ?? []);
             setHeirValue(null);
           })}>
-          What can I open?
+          {t("co.whatopen", lang)}
         </button>
       </div>
       {heirKeys && heirKeys.length === 0
-        && <p className="muted">Nothing is readable under that grant.</p>}
+        && <p className="muted">{t("co.nothing.readable", lang)}</p>}
       {(heirKeys ?? []).map((k) => (
         <div key={k} className="row">
           <span>{k}</span>
@@ -219,7 +221,7 @@ export function Continuity() {
               setHeirValue(typeof out.value === "string"
                 ? out.value : JSON.stringify(out.value, null, 1));
             })}>
-            Read
+            {t("co.read", lang)}
           </button>
         </div>
       ))}
@@ -273,11 +275,11 @@ export function Continuity() {
         </div>
       ))}
       <div className="row">
-        <label>Name
+        <label>{t("co.name.ph", lang)}
           <input value={rosterName} placeholder={t("co.name.ph", lang)}
             onChange={(e) => setRosterName(e.target.value)} />
         </label>
-        <label>Role
+        <label>{t("co.role.ph", lang)}
           <select value={rosterRole} onChange={(e) => setRosterRole(e.target.value)}>
             {["on-call", "supervisor", "reception", "security", "site lead"]
               .map((r) => <option key={r} value={r}>{r}</option>)}
@@ -299,7 +301,7 @@ export function Continuity() {
             await api.setGateTimezone(tz.trim(), token);
             setTz("");
           }, "Timezone set.")}>
-          Set
+          {t("co.set", lang)}
         </button>
       </div>
 
@@ -333,7 +335,7 @@ export function Continuity() {
               <button disabled={busy}
                 onClick={() => run(() => api.retryPage(String(p.id), token),
                   "Retried.")}>
-                Retry
+                {t("co.retry", lang)}
               </button>
             )}
           </div>

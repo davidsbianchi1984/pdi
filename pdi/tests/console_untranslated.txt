@@ -21,6 +21,7 @@
 #     0.60.5   225 → 154   Carriers and Exchange
 #     0.60.6   154 → 168   **the reader again** — see below
 #     0.60.6   168 →  91   Positions and Bridges
+#      (next)    91 →  76   Continuity and Custody — *finished* this time
 #
 # ## The one rise in this record, and why it is not a regression
 #
@@ -96,17 +97,19 @@
 #
 # Worst first, by the count in each file:
 #
-#     Records.tsx      12        ProblemNotice.tsx   6
-#     Continuity.tsx   10        Audit.tsx           6
+#     Records.tsx      12        Audit.tsx           6
 #     Problems.tsx      9        Operations.tsx      6
-#     Settings.tsx      9        Custody.tsx         5
+#     Settings.tsx      9        ProblemNotice.tsx   6
 #     Tenants.tsx       8        VaultLight.tsx      4
 #     Keys.tsx          7        App.tsx             2
 #     Overview.tsx      7
 #
-# Continuity's remaining rows are server-rendered.
+# Continuity and Custody are off this list as of the round below. The prose
+# still visible on Continuity that no key covers is server-rendered — it
+# arrives already in the reader's language, or does not, at the backend's
+# discretion rather than the console's.
 #
-# ceiling: 91
+# ceiling: 76
 #
 # ## 0.60.5, and the criterion for what went next
 #
@@ -198,5 +201,62 @@
 # One row was decided rather than translated. `bri.source.ph` is the placeholder
 # `jim-mini` — a product's own name, the same word in all ten languages. It has
 # a row so that the record shows a decision instead of an oversight.
+#
+# ## Wired is not finished, and this list could not tell them apart
+#
+# Every round above picked its next screen off the list under *What is left*,
+# worst count first. That ordering carries an assumption nothing had ever
+# checked: that a screen which has been *through* a localization round is done
+# with. The list is built from screens that still hold English, so a screen
+# that holds any less than all of it drops down the list and eventually off
+# the bottom of attention — not because it was finished, because it was
+# cheaper than the next one.
+#
+#     asked     does this screen import the translator
+#     mattered  does this screen still hold English
+#
+# Eight of this console's files import `t` from `../l10n`. Six hold no
+# English. Two had held some since **0.48.3**, the round that claimed them:
+# `Continuity.tsx` with ten strings and `Custody.tsx` with five. Twelve
+# releases, five localization rounds, and both sat on the finished side of the
+# ledger the whole time while the audit worked down a list neither was on.
+#
+# The sharp part is not that fifteen strings were missed. It is what six of
+# Continuity's ten turned out to be:
+#
+#     Name                                  co.name.ph
+#     Role                                  co.role.ph
+#     Read                                  co.read
+#     Set                                   co.set
+#     What can I open?                      co.whatopen
+#     Nothing is readable under that grant. co.nothing.readable
+#
+# Six rows this table **already held**, in all ten languages, on the screen
+# that imports the translator to reach five of its neighbours. The screen had
+# the key and typed the word anyway. Not a missing translation — a translation
+# already written, already paid for, and never asked for. Only four rows
+# needed writing (`co.attested`, `co.attested.dated`, `co.revoke`, `co.retry`)
+# and Custody's five, of which `cu.you` is decided rather than translated:
+# the English *You are responsible for:* is second person, which in German,
+# Spanish and Italian forces the T–V question this table avoids everywhere
+# else, so the nine translations name the party instead of the pronoun.
+#
+# ## The guard, and what it can and cannot see
+#
+# `test_a_screen_that_imports_the_translator_holds_no_english` holds the claim
+# from here on: **a screen that asks the table for a word may not also
+# hard-code one.** A file is free to be untranslated — that is what the
+# ceiling above is for, and it may take as many rounds as it takes. What it
+# may not be is half-translated and counted as whole. It failed on the round
+# it was written, naming both files and all fifteen strings, which is how it
+# was known to work before either was fixed.
+#
+# It reads what `_console_english` reads: JSX text, `placeholder` and `title`.
+# So it sees what a person reads off the screen and **not** English inside a
+# `setSaid(…)` or a template literal — `Handed back to deployment custody.` in
+# Custody is still English and still uncounted, here and in every screen this
+# record has ever called done. That is the next reader question rather than
+# this one, and it is written down here so the guard is not read as claiming
+# more than it checks.
 
-console: 91
+console: 76

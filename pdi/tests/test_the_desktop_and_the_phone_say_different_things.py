@@ -327,9 +327,16 @@ def _jsx_text() -> dict[str, list[str]]:
     return json.loads(proc.stdout)
 
 
-def _console_english() -> int:
+def _english_by_file() -> dict[str, set[str]]:
+    """The same reading as `_console_english`, kept per file.
+
+    The total is what the ratchet records; the breakdown is what
+    `test_a_screen_that_imports_the_translator_holds_no_english` needs, and
+    reading them off one extractor means the guard and the count can never
+    disagree about what English is.
+    """
     text_nodes = _jsx_text()
-    total = 0
+    by_file: dict[str, set[str]] = {}
     for path in sorted((REPO / "app" / "src").rglob("*.tsx")):
         rel = str(path.relative_to(REPO / "app"))
         source = path.read_text(encoding="utf-8")
@@ -343,8 +350,19 @@ def _console_english() -> int:
                 s = _HOLE.sub("", s).strip()
                 if _is_english(s):
                     found.add(s)
-        total += len(found)
-    return total
+        by_file[rel] = found
+    return by_file
+
+
+def _console_english() -> int:
+    return sum(len(v) for v in _english_by_file().values())
+
+
+#: A screen asking the table for a word. Matched on the *import* rather than
+#: on a call, because a screen that imports `t` and then renders none of it
+#: is exactly the state this guard exists to name.
+_IMPORTS_T = re.compile(
+    r"""import\s*\{[^}]*\bt\b[^}]*\}\s*from\s*['"][^'"]*l10n['"]""")
 
 
 def test_the_absent_console_table_is_recorded_not_assumed():
@@ -374,6 +392,52 @@ def test_the_console_english_count_only_shrinks():
         f"only {found} found against a ceiling of {ceiling} — a drop that "
         "large is an extractor that stopped matching, not a round of work; "
         "lower the ceiling deliberately when it is real")
+
+
+def test_a_screen_that_imports_the_translator_holds_no_english():
+    """Wired is not finished, and the ledger could not tell them apart.
+
+    The ratchet above is a total. A total falls when any screen improves, so
+    the way it was read — worst file first, localize it, watch the number
+    drop — quietly assumed the other direction: that a screen already through
+    a localization round was done with. Nothing ever asked.
+
+    Eight of this console's files import `t` from `../l10n`. Six hold no
+    English. Two have held some since 0.48.3, the round that claimed them:
+    `Continuity.tsx` with ten and `Custody.tsx` with five. Both sat on the
+    finished side of the ledger for twelve releases while the audit worked
+    down a list neither was on, because the list was ordered by count and
+    theirs had already been counted as spent.
+
+        asked     does this screen import the translator
+        mattered  does this screen still hold English
+
+    So the claim is made once and then held: **a screen that asks the table
+    for a word may not also hard-code one.** A file is free to be untranslated
+    — the ratchet is where that is recorded, and it may take as many rounds as
+    it takes. What it may not be is half-translated and counted as whole. The
+    moment a screen imports `t`, this is the check it lives under.
+
+    That makes the guard cheap in the only way that matters: it costs nothing
+    until someone wires a screen and leaves a string behind, and then it names
+    the file and the string on the same round rather than twelve releases
+    later.
+    """
+    by_file = _english_by_file()
+    claimed = {rel: sorted(found)
+               for rel, found in by_file.items()
+               if _IMPORTS_T.search((REPO / "app" / rel).read_text(encoding="utf-8"))
+               and found}
+    assert not claimed, (
+        f"{len(claimed)} screen(s) import the translator and still hold "
+        "English:\n"
+        + "\n".join(
+            f"    {rel} ({len(found)})\n"
+            + "\n".join(f"        {s!r}" for s in found)
+            for rel, found in sorted(claimed.items()))
+        + "\n  A screen that asks the table for one word and hard-codes "
+          "another reads as translated to everything that counts it, and as "
+          "half-English to the person it is for.")
 
 
 def test_the_jsx_extractor_can_still_see():
