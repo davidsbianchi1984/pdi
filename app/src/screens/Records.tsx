@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import { useSession } from "../store";
+import { deviceLanguage, Lang, t } from "../l10n";
 
-export function Records({ go }: { go: (t: "tenants") => void }) {
+export function Records({ go }: { go: (tab: "tenants") => void }) {
   const { session } = useSession();
+  const lang = (session.language as Lang) ?? deviceLanguage();
   const [keys, setKeys] = useState<string[]>([]);
   const [key, setKey] = useState("records/med/contact");
   const [value, setValue] = useState("Maria Bianchi · +1 415 555 0199");
@@ -25,10 +27,12 @@ export function Records({ go }: { go: (t: "tenants") => void }) {
   if (!session.tenantToken) {
     return (
       <div className="screen">
-        <header className="screen-head"><h2>Vault</h2></header>
+        <header className="screen-head"><h2>{t("rec.vault", lang)}</h2></header>
         <div className="card">
-          <p className="muted">No tenant selected — create or select one first.</p>
-          <button className="primary" onClick={() => go("tenants")}>Go to Tenants</button>
+          <p className="muted">{t("pos.notenant", lang)}</p>
+          <button className="primary" onClick={() => go("tenants")}>
+            {t("pos.gotenants", lang)}
+          </button>
         </div>
       </div>
     );
@@ -56,26 +60,32 @@ export function Records({ go }: { go: (t: "tenants") => void }) {
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Vault</h2>
-        <span className="muted small">records sealed at rest · AES-256-GCM · {session.tenantName}</span>
+        <h2>{t("rec.vault", lang)}</h2>
+        <span className="muted small">
+          {t("rec.atrest", lang)} {session.tenantName}
+        </span>
       </header>
 
       <div className="card">
-        <h3>Seal a record</h3>
-        <label>Key<input value={key} onChange={(e) => setKey(e.target.value)} /></label>
-        <label>Value (plaintext — sealed by PDI)<input value={value} onChange={(e) => setValue(e.target.value)} /></label>
-        <button className="primary" onClick={seal}>Seal record</button>
+        <h3>{t("rec.seal.head", lang)}</h3>
+        <label>{t("rec.key", lang)}
+          <input value={key} onChange={(e) => setKey(e.target.value)} />
+        </label>
+        <label>{t("rec.value.ph", lang)}
+          <input value={value} onChange={(e) => setValue(e.target.value)} />
+        </label>
+        <button className="primary" onClick={seal}>{t("rec.seal", lang)}</button>
         {error && <div className="error">⚠ {error}</div>}
       </div>
 
       <div className="card">
-        <h3>Records <span className="muted small">({keys.length})</span></h3>
-        {keys.length === 0 && <div className="muted">No records yet.</div>}
+        <h3>{t("rec.title", lang)} <span className="muted small">({keys.length})</span></h3>
+        {keys.length === 0 && <div className="muted">{t("rec.none", lang)}</div>}
         <ul className="keylist">
           {keys.map((k) => (
             <li key={k}>
               <span className="mono">🔒 {k}</span>
-              <button onClick={() => open(k)}>Open</button>
+              <button onClick={() => open(k)}>{t("pos.open", lang)}</button>
             </li>
           ))}
         </ul>
@@ -83,7 +93,7 @@ export function Records({ go }: { go: (t: "tenants") => void }) {
 
       {opened && (
         <div className="card">
-          <h3>Decrypted</h3>
+          <h3>{t("rec.decrypted", lang)}</h3>
           <div className="muted small mono">{opened.key}</div>
           <pre className="mono cyan">{opened.value}</pre>
         </div>

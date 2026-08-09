@@ -4,6 +4,8 @@ import {
   clearProblems, collectorUrl, problemReport, problems, sendProblems,
   sendingEnabled, setSending, type Problem, type SendOutcome,
 } from "./errors";
+import { deviceLanguage, Lang, t } from "./l10n";
+import { useSession } from "./store";
 
 /**
  * What went wrong, and exactly what leaves this device.
@@ -18,16 +20,20 @@ import {
  * the history is unchanged and the preview is empty, and that difference is the
  * honest picture rather than a bug in the screen.
  */
+/** Keys rather than sentences: this map is module-level and cannot ask for a
+ *  language, so the screen resolves what it names. */
 const OUTCOME: Record<SendOutcome, string> = {
-  "sent": "Sent.",
-  "nothing-to-send": "Nothing new to send.",
-  "turned-off": "Sending is off.",
-  "no-collector": "This build has nowhere to send.",
-  "awaiting-notice": "Waiting for you to answer the notice first.",
-  "failed": "Could not reach the collector — it will try again next time.",
+  "sent": "pr.out.sent",
+  "nothing-to-send": "pr.out.nothing",
+  "turned-off": "pr.out.off",
+  "no-collector": "pr.out.nocollector",
+  "awaiting-notice": "pr.out.awaiting",
+  "failed": "pr.out.failed",
 };
 
 export function Problems() {
+  const { session } = useSession();
+  const lang = (session.language as Lang) ?? deviceLanguage();
   const [rows, setRows] = useState<Problem[]>(problems);
   const [showing, setShowing] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -45,21 +51,15 @@ export function Problems() {
 
   return (
     <div className="card">
-      <h3>What went wrong</h3>
-      <p className="muted small">
-        Failed requests this app has seen. The operation and the status code are
-        recorded; the error message is not, because those messages quote what
-        you typed — a device name, a place on your body, a language code. You
-        can read the message when it happens; it is yours, and it does not
-        belong in a log.
-      </p>
+      <h3>{t("pr.title", lang)}</h3>
+      <p className="muted small">{t("pr.note", lang)}</p>
 
-      {rows.length === 0 && <p className="muted small">Nothing has failed.</p>}
+      {rows.length === 0 && <p className="muted small">{t("pr.none", lang)}</p>}
       {rows.map((r) => (
         <div key={r.fingerprint} className="row">
           <code>{r.op}</code>
           <span className="muted">
-            {r.status === 0 ? "no answer" : r.status}
+            {r.status === 0 ? t("pr.noanswer", lang) : r.status}
           </span>
           {r.count > 1 && <span className="muted">×{r.count}</span>}
           <span className="muted">{r.day}</span>
@@ -68,15 +68,9 @@ export function Problems() {
 
       <p className="muted small">
         {collector
-          ? <>Sent to <code>{collector}</code> when the app opens, so the
-            people fixing these can see them. Only what the preview below
-            shows, and only the part that has not been sent already —
-            reopening the app does not send the same failure twice. Nothing
-            went anywhere before you answered the notice on first run, and
-            this switch is the same answer, changeable whenever you like.</>
-          : <>This build has no collector configured, so nothing is sent
-            anywhere. The report below exists for you to copy if you want to
-            pass it on.</>}
+          ? <>{t("pr.sentto", lang)} <code>{collector}</code>{" "}
+            {t("pr.sentto.rest", lang)}</>
+          : <>{t("pr.nocollector", lang)}</>}
       </p>
 
       {collector && (
@@ -87,18 +81,18 @@ export function Problems() {
               checked={on}
               onChange={(e) => { setSending(e.target.checked); setOn(e.target.checked); }}
             />{" "}
-            Send these automatically
+            {t("pr.auto", lang)}
           </label>
           <button
             disabled={sending || !unsent}
             onClick={async () => {
               setSendingNow(true);
               const outcome = await sendProblems(CONSOLE_VERSION);
-              setSaid(OUTCOME[outcome]);
+              setSaid(t(OUTCOME[outcome], lang));
               setRows(problems());
               setSendingNow(false);
             }}>
-            {sending ? "Sending…" : "Send now"}
+            {sending ? t("pr.sending", lang) : t("pr.sendnow", lang)}
           </button>
           {said && <span className="muted small">{said}</span>}
         </div>
@@ -108,7 +102,7 @@ export function Problems() {
         <>
           <div className="row">
             <button onClick={() => setShowing(!showing)}>
-              {showing ? "Hide" : "Show me exactly what would be shared"}
+              {showing ? t("pr.hide", lang) : t("pr.show", lang)}
             </button>
             <button
               onClick={async () => {
@@ -122,7 +116,7 @@ export function Problems() {
                   setShowing(true);
                 }
               }}>
-              {copied ? "Copied" : "Copy the report"}
+              {copied ? t("pr.copied", lang) : t("pr.copy", lang)}
             </button>
             <button
               onClick={() => {
@@ -130,17 +124,13 @@ export function Problems() {
                 setRows([]);
                 setCopied(false);
               }}>
-              Clear
+              {t("pr.clear", lang)}
             </button>
           </div>
           {showing && (
             <>
               {unsent === 0 && (
-                <p className="muted small">
-                  Everything here has been sent already, so the next report is
-                  empty. The list above is your copy and stays until you clear
-                  it.
-                </p>
+                <p className="muted small">{t("pr.allsent", lang)}</p>
               )}
               <pre className="small">{report}</pre>
             </>

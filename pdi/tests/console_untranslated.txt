@@ -22,6 +22,7 @@
 #     0.60.6   154 → 168   **the reader again** — see below
 #     0.60.6   168 →  91   Positions and Bridges
 #      (next)    91 →  76   Continuity and Custody — *finished* this time
+#      (next)    76 →  32   Records, Problems, Settings, Tenants, ProblemNotice
 #
 # ## The one rise in this record, and why it is not a regression
 #
@@ -97,19 +98,16 @@
 #
 # Worst first, by the count in each file:
 #
-#     Records.tsx      12        Audit.tsx           6
-#     Problems.tsx      9        Operations.tsx      6
-#     Settings.tsx      9        ProblemNotice.tsx   6
-#     Tenants.tsx       8        VaultLight.tsx      4
-#     Keys.tsx          7        App.tsx             2
-#     Overview.tsx      7
+#     Keys.tsx          7        Operations.tsx      6
+#     Overview.tsx      7        VaultLight.tsx      4
+#     Audit.tsx         6        App.tsx             2
 #
-# Continuity and Custody are off this list as of the round below. The prose
-# still visible on Continuity that no key covers is server-rendered — it
-# arrives already in the reader's language, or does not, at the backend's
-# discretion rather than the console's.
+# Seven screens came off this list in the round below. The prose still visible
+# on Continuity that no key covers is server-rendered — it arrives already in
+# the reader's language, or does not, at the backend's discretion rather than
+# the console's.
 #
-# ceiling: 76
+# ceiling: 32
 #
 # ## 0.60.5, and the criterion for what went next
 #
@@ -258,5 +256,47 @@
 # record has ever called done. That is the next reader question rather than
 # this one, and it is written down here so the guard is not read as claiming
 # more than it checks.
+#
+# ## The five that went with them, and the two kinds of string
+#
+# Records, Problems, Settings, Tenants and ProblemNotice — 44 strings, 76 → 32.
+# Records is the vault's own screen and went first on the criterion this record
+# has used since the alarm surface: sealing and opening a record is the thing
+# the product is *for*, and it read in English only. Problems and ProblemNotice
+# are one feature in two places — what leaves the device, and the consent asked
+# before anything does — and it would be a strange product that asks for that
+# consent in a language the asking is not offered in.
+#
+# Seven of the 44 were English the tables already held. Four are the shells' —
+# `nrec.t.records`, `tab.vault`, `nrec.key`, `nrec.seal` — and the wordings are
+# copied from them rather than written again, which is the split
+# `test_the_desktop_and_the_phone_say_the_same_thing` exists to catch, avoided
+# in advance for once instead of after it went red. Three more were already in
+# this table under `pos.` and are called by their existing keys.
+#
+# ## What the ratchet cannot see, and what was done about it anyway
+#
+# The reader counts JSX text, `placeholder` and `title`. It does not count a
+# string literal inside a JSX *expression*, which is where a surprising amount
+# of this console's English lives: `{busy ? "Creating…" : "Create tenant"}` in
+# Tenants, the whole offline-posture block in Settings, six outcome sentences
+# in a module-level map in Problems.
+#
+#     asked     what does the ratchet count
+#     mattered  what does a person read
+#
+# Those were translated too, and they are the reason the row count added in
+# this round is far above 44. A button reading *Create tenant* under a Spanish
+# heading is English to the person looking at it whatever the reader thinks.
+# `Problems.tsx`'s `OUTCOME` map needed a shape change to allow it: a
+# module-level constant cannot ask for a language, so it now holds keys and the
+# screen resolves them.
+#
+# One shadowing, caught by `npx tsc --noEmit` on the first run and not by
+# reading: `const t = await api.createTenant(…)` in Tenants, where `t` became
+# the translator the moment the screen was wired. That is the second time in
+# three rounds the type checker has found this exact shape — 0.60.5 had
+# `transfers.map((t) => …)` in Exchange — which is why the method says to drive
+# it rather than read it.
 
-console: 76
+console: 32

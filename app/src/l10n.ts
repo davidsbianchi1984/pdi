@@ -2680,6 +2680,556 @@ const CHROME: Table = {
     hi: "{name} बनाया गया — {n} रिकॉर्ड। {note}",
     ar: "أُنشئ {name} — {n} سجلات. {note}",
   },
+
+  // -- records: the vault's own screen ------------------------------------
+  //
+  // Sealing and opening, which is the thing the product is for, and the last
+  // large screen to read in English only.
+  //
+  // Four of its twelve strings are English the *shells* already carry, so the
+  // wordings below are copied from them rather than written fresh —
+  // `nrec.t.records`, `tab.vault`, `nrec.key` and `nrec.seal`. Writing them
+  // again would have been the split `test_the_desktop_and_the_phone_say_the_
+  // same_thing` exists to catch: one English, two translations, one product
+  // making two claims to a reader who owns both a laptop and a phone.
+  //
+  // Three more were already in this table under `pos.` — *Open*,
+  // *Go to Tenants*, and the sentence about no tenant being selected — and
+  // are called by their existing keys rather than duplicated, the same
+  // finding this round opened with.
+  "rec.title": {
+    en: "Records", es: "Registros", fr: "Enregistrements", de: "Datensätze",
+    pt: "Registos", it: "Record", ja: "レコード", zh: "记录",
+    hi: "रिकॉर्ड", ar: "السجلات",
+  },
+  "rec.vault": {
+    en: "Vault", es: "Bóveda", fr: "Coffre", de: "Tresor", pt: "Cofre",
+    it: "Cassaforte", ja: "保管庫", zh: "保险库", hi: "वॉल्ट",
+    ar: "الخزنة",
+  },
+  "rec.key": {
+    en: "Key", es: "Clave", fr: "Clé", de: "Schlüssel", pt: "Chave",
+    it: "Chiave", ja: "キー", zh: "键名", hi: "कुंजी", ar: "المفتاح",
+  },
+  "rec.seal": {
+    en: "Seal record", es: "Sellar el registro",
+    fr: "Sceller l'enregistrement", de: "Datensatz versiegeln",
+    pt: "Selar o registo", it: "Sigilla il record", ja: "レコードを封印",
+    zh: "封存记录", hi: "रिकॉर्ड सील करें", ar: "ختم السجل",
+  },
+  "rec.seal.head": {
+    en: "Seal a record", es: "Sellar un registro",
+    fr: "Sceller un enregistrement", de: "Einen Datensatz versiegeln",
+    pt: "Selar um registo", it: "Sigillare un record",
+    ja: "レコードを封印する", zh: "封存一条记录",
+    hi: "एक रिकॉर्ड सील करें", ar: "ختم سجل",
+  },
+  // The parenthesis is the whole point of the label: what goes in is readable
+  // and what comes to rest is not.
+  "rec.value.ph": {
+    en: "Value (plaintext — sealed by PDI)",
+    es: "Valor (texto sin cifrar — sellado por PDI)",
+    fr: "Valeur (en clair — scellée par PDI)",
+    de: "Wert (Klartext — von PDI versiegelt)",
+    pt: "Valor (texto simples — selado pelo PDI)",
+    it: "Valore (in chiaro — sigillato da PDI)",
+    ja: "値（平文 — PDI が封印します）",
+    zh: "值（明文 — 由 PDI 封存）",
+    hi: "मान (सादा पाठ — PDI द्वारा सील किया गया)",
+    ar: "القيمة (نص صريح — يختمه PDI)",
+  },
+  "rec.none": {
+    en: "No records yet.", es: "Aún no hay registros.",
+    fr: "Aucun enregistrement pour l'instant.", de: "Noch keine Datensätze.",
+    pt: "Ainda não há registos.", it: "Ancora nessun record.",
+    ja: "まだレコードはありません。", zh: "尚无记录。",
+    hi: "अभी तक कोई रिकॉर्ड नहीं।", ar: "لا سجلات بعد.",
+  },
+  "rec.decrypted": {
+    en: "Decrypted", es: "Descifrado", fr: "Déchiffré", de: "Entschlüsselt",
+    pt: "Decifrado", it: "Decifrato", ja: "復号済み", zh: "已解密",
+    hi: "डिक्रिप्ट किया गया", ar: "مفكوك التشفير",
+  },
+  // Trailing separator and tenant name are appended by the screen.
+  "rec.atrest": {
+    en: "records sealed at rest · AES-256-GCM ·",
+    es: "registros sellados en reposo · AES-256-GCM ·",
+    fr: "enregistrements scellés au repos · AES-256-GCM ·",
+    de: "Datensätze im Ruhezustand versiegelt · AES-256-GCM ·",
+    pt: "registos selados em repouso · AES-256-GCM ·",
+    it: "record sigillati a riposo · AES-256-GCM ·",
+    ja: "保存時に封印されたレコード · AES-256-GCM ·",
+    zh: "静态封存的记录 · AES-256-GCM ·",
+    hi: "विश्राम में सील किए गए रिकॉर्ड · AES-256-GCM ·",
+    ar: "سجلات مختومة عند التخزين · AES-256-GCM ·",
+  },
+
+  // -- tenants: one per integrating system --------------------------------
+  //
+  // `tn.creating` and `tn.createbtn` are English the ratchet does not count:
+  // both sit in a ternary inside a JSX expression rather than in JSX text, so
+  // the extractor never sees them. They are translated anyway. A button that
+  // reads *Create tenant* under a Spanish heading is English to the person
+  // looking at it whatever the reader thinks, and the point of the round is
+  // the reader on the other side of the screen, not the one in the suite.
+  "tn.title": {
+    en: "Tenants", es: "Inquilinos", fr: "Locataires", de: "Mandanten",
+    pt: "Inquilinos", it: "Tenant", ja: "テナント", zh: "租户",
+    hi: "टेनेंट", ar: "المستأجرون",
+  },
+  "tn.sub": {
+    en: "one per integrating system", es: "uno por sistema integrado",
+    fr: "un par système intégré", de: "einer je angebundenem System",
+    pt: "um por sistema integrado", it: "uno per sistema integrato",
+    ja: "連携するシステムごとに一つ", zh: "每个接入系统一个",
+    hi: "प्रत्येक एकीकृत प्रणाली के लिए एक",
+    ar: "واحد لكل نظام متكامل",
+  },
+  "tn.create": {
+    en: "Create a tenant", es: "Crear un inquilino", fr: "Créer un locataire",
+    de: "Einen Mandanten anlegen", pt: "Criar um inquilino",
+    it: "Creare un tenant", ja: "テナントを作成する", zh: "创建一个租户",
+    hi: "एक टेनेंट बनाएँ", ar: "إنشاء مستأجر",
+  },
+  "tn.retention": {
+    en: "Record retention (up to forever)",
+    es: "Conservación de registros (hasta para siempre)",
+    fr: "Conservation des enregistrements (jusqu'à indéfiniment)",
+    de: "Aufbewahrung der Datensätze (bis unbegrenzt)",
+    pt: "Retenção de registos (até para sempre)",
+    it: "Conservazione dei record (fino a per sempre)",
+    ja: "レコードの保持期間（無期限まで）",
+    zh: "记录保留期（最长永久）",
+    hi: "रिकॉर्ड प्रतिधारण (सदा तक)",
+    ar: "الاحتفاظ بالسجلات (حتى الأبد)",
+  },
+  "tn.creating": {
+    en: "Creating…", es: "Creando…", fr: "Création…", de: "Wird angelegt…",
+    pt: "A criar…", it: "Creazione…", ja: "作成中…", zh: "创建中…",
+    hi: "बनाया जा रहा है…", ar: "جارٍ الإنشاء…",
+  },
+  "tn.createbtn": {
+    en: "Create tenant", es: "Crear inquilino", fr: "Créer le locataire",
+    de: "Mandant anlegen", pt: "Criar inquilino", it: "Crea tenant",
+    ja: "テナントを作成", zh: "创建租户", hi: "टेनेंट बनाएँ",
+    ar: "إنشاء المستأجر",
+  },
+  "tn.token": {
+    en: "Token — shown once", es: "Token — se muestra una sola vez",
+    fr: "Jeton — affiché une seule fois", de: "Token — einmalig angezeigt",
+    pt: "Token — mostrado uma só vez",
+    it: "Token — mostrato una sola volta", ja: "トークン — 一度だけ表示",
+    zh: "令牌 — 仅显示一次", hi: "टोकन — केवल एक बार दिखाया गया",
+    ar: "الرمز — يُعرض مرة واحدة",
+  },
+  "tn.token.note": {
+    en: "Only its SHA-256 hash is stored. It's now this session's active tenant.",
+    es: "Solo se guarda su hash SHA-256. Ya es el inquilino activo de esta sesión.",
+    fr: "Seule son empreinte SHA-256 est conservée. C'est désormais le locataire actif de cette session.",
+    de: "Gespeichert wird nur sein SHA-256-Hash. Er ist jetzt der aktive Mandant dieser Sitzung.",
+    pt: "Apenas o seu hash SHA-256 é guardado. É agora o inquilino ativo desta sessão.",
+    it: "Viene conservato solo il suo hash SHA-256. È ora il tenant attivo di questa sessione.",
+    ja: "保存されるのは SHA-256 ハッシュだけです。これがこのセッションの有効なテナントになりました。",
+    zh: "仅存储其 SHA-256 哈希值。它现在是本次会话的活动租户。",
+    hi: "केवल इसका SHA-256 हैश संग्रहीत होता है। यह अब इस सत्र का सक्रिय टेनेंट है।",
+    ar: "لا يُخزَّن سوى بصمته SHA-256. وهو الآن المستأجر النشط لهذه الجلسة.",
+  },
+  "tn.active": {
+    en: "Active tenant", es: "Inquilino activo", fr: "Locataire actif",
+    de: "Aktiver Mandant", pt: "Inquilino ativo", it: "Tenant attivo",
+    ja: "有効なテナント", zh: "活动租户", hi: "सक्रिय टेनेंट",
+    ar: "المستأجر النشط",
+  },
+
+  // -- settings: connection, the phone, and signing out -------------------
+  //
+  // `st.signout` copies `action.sign_out` from all three shells rather than
+  // wording it again — the one string on this screen the phones already say.
+  //
+  // The offline block (`st.offline` … `st.noreach`) is the same call as
+  // Tenants' button: uncounted by the reader because it lives in a ternary,
+  // and translated because it is the answer to *can this host talk to the
+  // internet* and an auditor reading over somebody's shoulder is exactly the
+  // reader it was written for.
+  "st.title": {
+    en: "Settings", es: "Ajustes", fr: "Réglages", de: "Einstellungen",
+    pt: "Definições", it: "Impostazioni", ja: "設定", zh: "设置",
+    hi: "सेटिंग्स", ar: "الإعدادات",
+  },
+  "st.connection": {
+    en: "Connection", es: "Conexión", fr: "Connexion", de: "Verbindung",
+    pt: "Ligação", it: "Connessione", ja: "接続", zh: "连接",
+    hi: "कनेक्शन", ar: "الاتصال",
+  },
+  "st.base": {
+    en: "Backend base URL", es: "URL base del backend",
+    fr: "URL de base du backend", de: "Basis-URL des Backends",
+    pt: "URL base do backend", it: "URL di base del backend",
+    ja: "バックエンドのベース URL", zh: "后端基础 URL",
+    hi: "बैकएंड बेस URL", ar: "عنوان URL الأساسي للخادم",
+  },
+  "st.admin.note": {
+    en: "(leave blank if the backend runs open, dev mode)",
+    es: "(dejar en blanco si el backend está abierto, modo de desarrollo)",
+    fr: "(laisser vide si le backend est ouvert, mode développement)",
+    de: "(leer lassen, wenn das Backend offen läuft, Entwicklungsmodus)",
+    pt: "(deixar em branco se o backend estiver aberto, modo de desenvolvimento)",
+    it: "(lasciare vuoto se il backend è aperto, modalità di sviluppo)",
+    ja: "（バックエンドが開放状態＝開発モードなら空のまま）",
+    zh: "（若后端处于开放状态，即开发模式，则留空）",
+    hi: "(यदि बैकएंड खुला चल रहा है, विकास मोड, तो खाली छोड़ें)",
+    ar: "(يُترك فارغًا إذا كان الخادم مفتوحًا، وضع التطوير)",
+  },
+  "st.save": {
+    en: "Save", es: "Guardar", fr: "Enregistrer", de: "Speichern",
+    pt: "Guardar", it: "Salva", ja: "保存", zh: "保存", hi: "सहेजें",
+    ar: "حفظ",
+  },
+  "st.saved": {
+    en: "Saved ✓", es: "Guardado ✓", fr: "Enregistré ✓", de: "Gespeichert ✓",
+    pt: "Guardado ✓", it: "Salvato ✓", ja: "保存しました ✓", zh: "已保存 ✓",
+    hi: "सहेजा गया ✓", ar: "تم الحفظ ✓",
+  },
+  "st.phone": {
+    en: "Open on your phone", es: "Abrir en el teléfono",
+    fr: "Ouvrir sur le téléphone", de: "Auf dem Telefon öffnen",
+    pt: "Abrir no telemóvel", it: "Aprire sul telefono",
+    ja: "スマートフォンで開く", zh: "在手机上打开",
+    hi: "फ़ोन पर खोलें", ar: "الفتح على الهاتف",
+  },
+  "st.qr.alt": {
+    en: "QR code for the console URL on this network",
+    es: "Código QR de la URL de la consola en esta red",
+    fr: "Code QR de l'URL de la console sur ce réseau",
+    de: "QR-Code der Konsolen-URL in diesem Netzwerk",
+    pt: "Código QR do URL da consola nesta rede",
+    it: "Codice QR dell'URL della console su questa rete",
+    ja: "このネットワーク上のコンソール URL の QR コード",
+    zh: "此网络上控制台 URL 的二维码",
+    hi: "इस नेटवर्क पर कंसोल URL का QR कोड",
+    ar: "رمز QR لعنوان الوحدة على هذه الشبكة",
+  },
+  "st.session": {
+    en: "Session", es: "Sesión", fr: "Session", de: "Sitzung",
+    pt: "Sessão", it: "Sessione", ja: "セッション", zh: "会话",
+    hi: "सत्र", ar: "الجلسة",
+  },
+  "st.tenant": {
+    en: "Tenant:", es: "Inquilino:", fr: "Locataire :", de: "Mandant:",
+    pt: "Inquilino:", it: "Tenant:", ja: "テナント:", zh: "租户：",
+    hi: "टेनेंट:", ar: "المستأجر:",
+  },
+  "st.none": {
+    en: "none", es: "ninguno", fr: "aucun", de: "keiner", pt: "nenhum",
+    it: "nessuno", ja: "なし", zh: "无", hi: "कोई नहीं", ar: "لا شيء",
+  },
+  "st.signout": {
+    en: "Sign out", es: "Cerrar sesión", fr: "Se déconnecter",
+    de: "Abmelden", pt: "Sair", it: "Esci", ja: "サインアウト",
+    zh: "退出登录", hi: "साइन आउट", ar: "تسجيل الخروج",
+  },
+  "st.offline": {
+    en: "Offline — nothing leaves this host",
+    es: "Sin conexión — nada sale de este host",
+    fr: "Hors ligne — rien ne quitte cet hôte",
+    de: "Offline — nichts verlässt diesen Host",
+    pt: "Offline — nada sai deste anfitrião",
+    it: "Offline — nulla lascia questo host",
+    ja: "オフライン — このホストから何も出ません",
+    zh: "离线 — 任何数据都不会离开此主机",
+    hi: "ऑफ़लाइन — इस होस्ट से कुछ भी बाहर नहीं जाता",
+    ar: "غير متصل — لا شيء يغادر هذا المضيف",
+  },
+  "st.online": {
+    en: "Online", es: "En línea", fr: "En ligne", de: "Online",
+    pt: "Online", it: "Online", ja: "オンライン", zh: "在线",
+    hi: "ऑनलाइन", ar: "متصل",
+  },
+  "st.canreach": {
+    en: "This deployment can reach other machines.",
+    es: "Esta instalación puede alcanzar otras máquinas.",
+    fr: "Cette installation peut joindre d'autres machines.",
+    de: "Diese Installation kann andere Maschinen erreichen.",
+    pt: "Esta instalação consegue alcançar outras máquinas.",
+    it: "Questa installazione può raggiungere altre macchine.",
+    ja: "この配備は他のマシンに到達できます。",
+    zh: "此部署可以访问其他机器。",
+    hi: "यह परिनियोजन अन्य मशीनों तक पहुँच सकता है।",
+    ar: "يستطيع هذا التركيب الوصول إلى أجهزة أخرى.",
+  },
+  "st.noreach": {
+    en: "Every path out of this host refuses any address that is not this machine or its own network.",
+    es: "Todas las salidas de este host rechazan cualquier dirección que no sea esta máquina o su propia red.",
+    fr: "Toute sortie de cet hôte refuse toute adresse autre que cette machine ou son propre réseau.",
+    de: "Jeder Weg aus diesem Host heraus weist jede Adresse ab, die nicht diese Maschine oder ihr eigenes Netzwerk ist.",
+    pt: "Todas as saídas deste anfitrião recusam qualquer endereço que não seja esta máquina ou a sua própria rede.",
+    it: "Ogni via d'uscita da questo host rifiuta qualsiasi indirizzo che non sia questa macchina o la sua stessa rete.",
+    ja: "このホストから出るすべての経路は、このマシンまたはその自身のネットワーク以外のアドレスを拒否します。",
+    zh: "此主机的每一条出口路径都会拒绝除本机或其自身网络之外的任何地址。",
+    hi: "इस होस्ट से बाहर जाने वाला हर मार्ग ऐसे किसी भी पते को अस्वीकार करता है जो यह मशीन या इसका अपना नेटवर्क नहीं है।",
+    ar: "كل مسار خارج من هذا المضيف يرفض أي عنوان ليس هذا الجهاز أو شبكته الخاصة.",
+  },
+
+  // -- the problem notice: consent, before anything is sent ---------------
+  //
+  // The paragraph is three rows rather than one because a `<code>` sample
+  // sits inside the sentence: `pn.like` runs up to it and `pn.after` picks up
+  // on the other side. The sample itself — `POST /profiles/{id}/chat → 500` —
+  // stays literal in the screen. It is a path and a status code, the same in
+  // every language, and it is the whole point of the notice that what is
+  // shown is the thing that would be sent rather than a description of it.
+  "pn.aria": {
+    en: "Error reporting", es: "Informes de errores",
+    fr: "Rapports d'erreur", de: "Fehlerberichte",
+    pt: "Relatórios de erro", it: "Segnalazione errori",
+    ja: "エラー報告", zh: "错误报告", hi: "त्रुटि रिपोर्टिंग",
+    ar: "الإبلاغ عن الأخطاء",
+  },
+  "pn.lead": {
+    en: "When something in this app fails, we would like to know.",
+    es: "Cuando algo falla en esta aplicación, nos gustaría saberlo.",
+    fr: "Lorsque quelque chose échoue dans cette application, nous aimerions le savoir.",
+    de: "Wenn in dieser Anwendung etwas fehlschlägt, möchten wir davon erfahren.",
+    pt: "Quando algo falha nesta aplicação, gostaríamos de saber.",
+    it: "Quando qualcosa in questa applicazione non funziona, vorremmo saperlo.",
+    ja: "このアプリで何かが失敗したとき、それを知らせてほしいと考えています。",
+    zh: "当此应用中出现故障时，我们希望知道。",
+    hi: "जब इस ऐप में कुछ विफल होता है, तो हम जानना चाहेंगे।",
+    ar: "عندما يخفق شيء في هذا التطبيق، نودّ أن نعرف.",
+  },
+  "pn.like": {
+    en: "It sends a list of what broke — the operation and the error code, like",
+    es: "Envía una lista de lo que falló: la operación y el código de error, como",
+    fr: "Elle envoie une liste de ce qui a échoué — l'opération et le code d'erreur, comme",
+    de: "Gesendet wird eine Liste dessen, was fehlschlug — der Vorgang und der Fehlercode, etwa",
+    pt: "Envia uma lista do que falhou — a operação e o código de erro, como",
+    it: "Invia un elenco di ciò che non ha funzionato — l'operazione e il codice di errore, come",
+    ja: "送られるのは、失敗した内容の一覧 — 操作とエラーコードです。たとえば",
+    zh: "它会发送一份故障清单 — 操作与错误代码，例如",
+    hi: "यह विफल हुई चीज़ों की सूची भेजता है — संक्रिया और त्रुटि कोड, जैसे",
+    ar: "تُرسَل قائمة بما أخفق — العملية ورمز الخطأ، مثل",
+  },
+  "pn.after": {
+    en: ". Never the error message, never who you are, never anything you typed or stored. Nothing has been sent yet, and nothing will be until you answer. You can change your mind later: the settings panel that lists these reports has the same switch.",
+    es: ". Nunca el mensaje de error, nunca la identidad de nadie, nunca nada escrito ni almacenado. Todavía no se ha enviado nada, y nada se enviará hasta que haya una respuesta. La decisión puede cambiarse después: el panel de ajustes que enumera estos informes tiene el mismo interruptor.",
+    fr: ". Jamais le message d'erreur, jamais l'identité de qui que ce soit, jamais rien de saisi ni de stocké. Rien n'a encore été envoyé, et rien ne le sera avant une réponse. La décision reste modifiable ensuite : le panneau de réglages qui liste ces rapports porte le même interrupteur.",
+    de: ". Niemals die Fehlermeldung, niemals die Identität einer Person, niemals etwas Eingegebenes oder Gespeichertes. Bisher wurde nichts gesendet, und es wird nichts gesendet, bevor eine Antwort vorliegt. Die Entscheidung lässt sich später ändern: dieselbe Schaltung findet sich im Einstellungsbereich, der diese Berichte auflistet.",
+    pt: ". Nunca a mensagem de erro, nunca a identidade de ninguém, nunca nada escrito ou guardado. Ainda não foi enviado nada, e nada será enviado até haver resposta. A decisão pode mudar depois: o painel de definições que lista estes relatórios tem o mesmo interruptor.",
+    it: ". Mai il messaggio di errore, mai l'identità di nessuno, mai nulla di digitato o memorizzato. Finora non è stato inviato nulla, e nulla lo sarà prima di una risposta. La decisione si può cambiare in seguito: il pannello delle impostazioni che elenca queste segnalazioni ha lo stesso interruttore.",
+    ja: "。エラーメッセージは決して送りません。誰であるかも、入力や保存した内容も決して送りません。まだ何も送信されておらず、回答があるまで送信されることもありません。この判断は後から変更できます。これらの報告を一覧する設定画面に同じ切り替えがあります。",
+    zh: "。绝不包含错误消息，绝不包含身份，绝不包含任何输入或存储的内容。目前尚未发送任何内容，在得到回答之前也不会发送。此决定日后可以更改：列出这些报告的设置面板中有同一个开关。",
+    hi: "। कभी भी त्रुटि संदेश नहीं, कभी भी किसी की पहचान नहीं, कभी भी टाइप या संग्रहीत की गई कोई चीज़ नहीं। अभी तक कुछ नहीं भेजा गया है, और उत्तर मिलने तक कुछ नहीं भेजा जाएगा। यह निर्णय बाद में बदला जा सकता है: इन रिपोर्टों को सूचीबद्ध करने वाले सेटिंग्स पैनल में वही स्विच है।",
+    ar: ". لا رسالة الخطأ أبدًا، ولا هوية أحد، ولا أي شيء مكتوب أو مخزَّن. لم يُرسَل شيء بعد، ولن يُرسَل حتى يأتي الجواب. ويمكن تغيير القرار لاحقًا: لوحة الإعدادات التي تسرد هذه التقارير تحمل المفتاح نفسه.",
+  },
+  "pn.yes": {
+    en: "That’s fine", es: "De acuerdo", fr: "C'est entendu",
+    de: "Einverstanden", pt: "Está bem", it: "Va bene", ja: "かまいません",
+    zh: "可以", hi: "ठीक है", ar: "لا بأس",
+  },
+  "pn.no": {
+    en: "No thanks", es: "No, gracias", fr: "Non merci", de: "Nein, danke",
+    pt: "Não, obrigado", it: "No, grazie", ja: "遠慮します",
+    zh: "不用了", hi: "नहीं, धन्यवाद", ar: "لا، شكرًا",
+  },
+  "pn.hide": {
+    en: "Hide", es: "Ocultar", fr: "Masquer", de: "Ausblenden",
+    pt: "Ocultar", it: "Nascondi", ja: "隠す", zh: "隐藏",
+    hi: "छिपाएँ", ar: "إخفاء",
+  },
+  "pn.show": {
+    en: "Show me exactly what would be sent",
+    es: "Mostrar exactamente lo que se enviaría",
+    fr: "Montrer exactement ce qui serait envoyé",
+    de: "Genau anzeigen, was gesendet würde",
+    pt: "Mostrar exatamente o que seria enviado",
+    it: "Mostrare esattamente ciò che verrebbe inviato",
+    ja: "送信される内容をそのまま表示する",
+    zh: "确切显示将要发送的内容",
+    hi: "जो भेजा जाएगा वह ठीक-ठीक दिखाएँ",
+    ar: "عرض ما سيُرسَل بالضبط",
+  },
+
+  // -- problems: what leaves the device, and the switch that stops it -----
+  //
+  // `OUTCOME` in `Problems.tsx` was a module-level map from a send outcome to
+  // an English sentence. A module-level constant cannot ask for a language,
+  // so the map now holds *keys* and the screen resolves them — the same shape
+  // the rest of this console uses, and the reason the six `pr.out.*` rows
+  // exist rather than six literals.
+  "pr.title": {
+    en: "What went wrong", es: "Qué falló", fr: "Ce qui a échoué",
+    de: "Was fehlgeschlagen ist", pt: "O que falhou",
+    it: "Che cosa non ha funzionato", ja: "何が失敗したか", zh: "出了什么问题",
+    hi: "क्या विफल हुआ", ar: "ما الذي أخفق",
+  },
+  "pr.note": {
+    en: "Failed requests this app has seen. The operation and the status code are recorded; the error message is not, because those messages quote what you typed — a device name, a place on your body, a language code. You can read the message when it happens; it is yours, and it does not belong in a log.",
+    es: "Solicitudes fallidas que esta aplicación ha visto. Se registran la operación y el código de estado; el mensaje de error no, porque esos mensajes citan lo que se escribió: el nombre de un dispositivo, un lugar del cuerpo, un código de idioma. El mensaje puede leerse cuando ocurre; es de quien lo escribió, y no pertenece a un registro.",
+    fr: "Requêtes en échec que cette application a vues. L'opération et le code de statut sont consignés ; le message d'erreur ne l'est pas, car ces messages citent ce qui a été saisi — un nom d'appareil, un endroit du corps, un code de langue. Le message reste lisible au moment où il survient ; il appartient à qui l'a écrit, et n'a pas sa place dans un journal.",
+    de: "Fehlgeschlagene Anfragen, die diese Anwendung gesehen hat. Festgehalten werden der Vorgang und der Statuscode; die Fehlermeldung nicht, denn solche Meldungen zitieren das Eingegebene — einen Gerätenamen, eine Körperstelle, einen Sprachcode. Die Meldung ist im Moment ihres Auftretens lesbar; sie gehört der Person, die sie ausgelöst hat, und gehört nicht in ein Protokoll.",
+    pt: "Pedidos falhados que esta aplicação viu. A operação e o código de estado são registados; a mensagem de erro não, porque essas mensagens citam o que foi escrito — o nome de um dispositivo, um lugar do corpo, um código de idioma. A mensagem pode ser lida quando acontece; pertence a quem a escreveu, e não pertence a um registo.",
+    it: "Richieste fallite che questa applicazione ha visto. Vengono registrati l'operazione e il codice di stato; il messaggio di errore no, perché quei messaggi citano ciò che è stato digitato — il nome di un dispositivo, un punto del corpo, un codice di lingua. Il messaggio è leggibile nel momento in cui accade; appartiene a chi lo ha scritto, e non appartiene a un registro.",
+    ja: "このアプリが見た失敗した要求です。記録されるのは操作と状態コードで、エラーメッセージは記録されません。そうしたメッセージは入力された内容 — 機器の名前、身体の部位、言語コード — をそのまま含むからです。メッセージは起きたその場で読めます。それは書いた人のものであり、ログに置くものではありません。",
+    zh: "此应用遇到的失败请求。记录的是操作与状态码；错误消息不记录，因为那些消息会引用所输入的内容 — 设备名称、身体部位、语言代码。消息在发生时即可阅读；它属于输入者，不应进入日志。",
+    hi: "इस ऐप ने जो विफल अनुरोध देखे हैं। संक्रिया और स्थिति कोड दर्ज किए जाते हैं; त्रुटि संदेश नहीं, क्योंकि वे संदेश टाइप की गई चीज़ों को उद्धृत करते हैं — एक उपकरण का नाम, शरीर का कोई स्थान, एक भाषा कोड। संदेश घटित होने पर पढ़ा जा सकता है; वह उसी का है, और वह किसी लॉग में नहीं जाता।",
+    ar: "الطلبات التي أخفقت وشاهدها هذا التطبيق. تُسجَّل العملية ورمز الحالة؛ أما رسالة الخطأ فلا، لأن تلك الرسائل تقتبس ما كُتب — اسم جهاز، موضعًا من الجسد، رمز لغة. يمكن قراءة الرسالة حين تقع؛ فهي ملك صاحبها، ولا مكان لها في سجل.",
+  },
+  "pr.none": {
+    en: "Nothing has failed.", es: "No ha fallado nada.",
+    fr: "Rien n'a échoué.", de: "Nichts ist fehlgeschlagen.",
+    pt: "Nada falhou.", it: "Non è fallito nulla.",
+    ja: "失敗したものはありません。", zh: "没有任何失败。",
+    hi: "कुछ भी विफल नहीं हुआ।", ar: "لم يخفق شيء.",
+  },
+  "pr.sentto": {
+    en: "Sent to", es: "Se envía a", fr: "Envoyé à", de: "Gesendet an",
+    pt: "Enviado para", it: "Inviato a", ja: "送信先", zh: "发送至",
+    hi: "यहाँ भेजा गया", ar: "يُرسَل إلى",
+  },
+  "pr.sentto.rest": {
+    en: "when the app opens, so the people fixing these can see them. Only what the preview below shows, and only the part that has not been sent already — reopening the app does not send the same failure twice. Nothing went anywhere before you answered the notice on first run, and this switch is the same answer, changeable whenever you like.",
+    es: "al abrir la aplicación, para que quienes los corrigen puedan verlos. Solo lo que muestra la vista previa de abajo, y solo la parte que aún no se ha enviado: reabrir la aplicación no envía dos veces el mismo fallo. Nada salió a ninguna parte antes de responder al aviso del primer arranque, y este interruptor es esa misma respuesta, modificable en cualquier momento.",
+    fr: "à l'ouverture de l'application, afin que ceux qui les corrigent puissent les voir. Uniquement ce que montre l'aperçu ci-dessous, et uniquement la part qui n'a pas déjà été envoyée — rouvrir l'application n'envoie pas deux fois le même échec. Rien n'est parti avant la réponse à l'avis du premier lancement, et cet interrupteur est cette même réponse, modifiable à tout moment.",
+    de: "beim Öffnen der Anwendung, damit die Personen, die das beheben, es sehen können. Nur das, was die Vorschau unten zeigt, und nur der noch nicht gesendete Teil — ein erneutes Öffnen sendet denselben Fehler nicht zweimal. Vor der Antwort auf den Hinweis beim ersten Start ging nichts irgendwohin, und dieser Schalter ist dieselbe Antwort, jederzeit änderbar.",
+    pt: "ao abrir a aplicação, para que quem os corrige os possa ver. Apenas o que a pré-visualização abaixo mostra, e apenas a parte que ainda não foi enviada — reabrir a aplicação não envia duas vezes a mesma falha. Nada saiu para lado nenhum antes da resposta ao aviso do primeiro arranque, e este interruptor é essa mesma resposta, alterável a qualquer momento.",
+    it: "all'apertura dell'applicazione, così che chi le corregge possa vederle. Solo ciò che mostra l'anteprima qui sotto, e solo la parte non ancora inviata — riaprire l'applicazione non invia due volte lo stesso errore. Nulla è andato da nessuna parte prima della risposta all'avviso al primo avvio, e questo interruttore è quella stessa risposta, modificabile in qualsiasi momento.",
+    ja: "アプリを開いたときに送られ、修正する人たちが見られるようになります。送られるのは下のプレビューが示すものだけ、しかもまだ送っていない分だけです。開き直しても同じ失敗を二度は送りません。初回起動の通知に答える前は、どこへも何も出ていません。この切り替えはその同じ答えであり、いつでも変えられます。",
+    zh: "在应用打开时发送，好让修复它们的人能看到。只发送下方预览所显示的内容，且只发送尚未发送的部分 — 重新打开应用不会重复发送同一故障。在首次运行时回答通知之前，任何内容都未曾外发；此开关就是那同一个回答，随时可以更改。",
+    hi: "जब ऐप खुलता है, ताकि इन्हें ठीक करने वाले लोग इन्हें देख सकें। केवल वही जो नीचे का पूर्वावलोकन दिखाता है, और केवल वह भाग जो पहले नहीं भेजा गया — ऐप फिर से खोलने पर वही विफलता दोबारा नहीं भेजी जाती। पहली बार चलाने पर सूचना का उत्तर देने से पहले कुछ भी कहीं नहीं गया, और यह स्विच वही उत्तर है, जिसे जब चाहें बदला जा सकता है।",
+    ar: "عند فتح التطبيق، ليتمكن من يصلحونها من رؤيتها. فقط ما تُظهره المعاينة أدناه، وفقط الجزء الذي لم يُرسَل بعد — وإعادة فتح التطبيق لا تُرسل الإخفاق نفسه مرتين. لم يخرج شيء إلى أي جهة قبل الإجابة عن الإشعار في التشغيل الأول، وهذا المفتاح هو الإجابة نفسها، قابلة للتغيير في أي وقت.",
+  },
+  "pr.nocollector": {
+    en: "This build has no collector configured, so nothing is sent anywhere. The report below exists for you to copy if you want to pass it on.",
+    es: "Esta compilación no tiene ningún recolector configurado, así que no se envía nada a ninguna parte. El informe de abajo está para copiarlo, por si conviene transmitirlo.",
+    fr: "Cette version n'a aucun collecteur configuré, donc rien n'est envoyé nulle part. Le rapport ci-dessous est là pour être copié, au cas où il faudrait le transmettre.",
+    de: "In dieser Fassung ist kein Sammler eingerichtet, also wird nichts irgendwohin gesendet. Der Bericht unten steht zum Kopieren bereit, falls er weitergegeben werden soll.",
+    pt: "Esta compilação não tem nenhum coletor configurado, por isso nada é enviado para lado nenhum. O relatório abaixo existe para ser copiado, caso convenha transmiti-lo.",
+    it: "Questa build non ha alcun collettore configurato, quindi non viene inviato nulla da nessuna parte. Il rapporto qui sotto è lì per essere copiato, nel caso vada trasmesso.",
+    ja: "このビルドには収集先が設定されていないため、どこにも何も送られません。下の報告は、必要なら誰かに渡せるよう、写し取るために置かれています。",
+    zh: "此版本未配置收集端，因此不会向任何地方发送内容。下方的报告供复制，以便在需要时转交。",
+    hi: "इस बिल्ड में कोई संग्राहक कॉन्फ़िगर नहीं है, इसलिए कुछ भी कहीं नहीं भेजा जाता। नीचे दी गई रिपोर्ट प्रतिलिपि बनाने के लिए है, यदि इसे आगे पहुँचाना हो।",
+    ar: "لا يوجد في هذه النسخة أي مُجمِّع مضبوط، فلا يُرسَل شيء إلى أي جهة. التقرير أدناه موجود لنسخه، إن أُريد تمريره.",
+  },
+  "pr.auto": {
+    en: "Send these automatically", es: "Enviar estos automáticamente",
+    fr: "Envoyer ceux-ci automatiquement",
+    de: "Diese automatisch senden", pt: "Enviar estes automaticamente",
+    it: "Inviare questi automaticamente", ja: "これらを自動的に送る",
+    zh: "自动发送这些", hi: "इन्हें स्वचालित रूप से भेजें",
+    ar: "إرسال هذه تلقائيًا",
+  },
+  "pr.clear": {
+    en: "Clear", es: "Borrar", fr: "Effacer", de: "Leeren", pt: "Limpar",
+    it: "Svuota", ja: "消去", zh: "清除", hi: "साफ़ करें", ar: "مسح",
+  },
+  "pr.allsent": {
+    en: "Everything here has been sent already, so the next report is empty. The list above is your copy and stays until you clear it.",
+    es: "Todo lo que hay aquí ya se ha enviado, así que el próximo informe está vacío. La lista de arriba es la copia local y permanece hasta que se borre.",
+    fr: "Tout ce qui se trouve ici a déjà été envoyé, le prochain rapport est donc vide. La liste ci-dessus est la copie locale et demeure jusqu'à son effacement.",
+    de: "Alles hier wurde bereits gesendet, der nächste Bericht ist daher leer. Die Liste oben ist die eigene Kopie und bleibt bestehen, bis sie geleert wird.",
+    pt: "Tudo o que está aqui já foi enviado, por isso o próximo relatório está vazio. A lista acima é a cópia local e permanece até ser limpa.",
+    it: "Tutto ciò che è qui è già stato inviato, quindi il prossimo rapporto è vuoto. L'elenco qui sopra è la copia locale e resta finché non viene svuotato.",
+    ja: "ここにあるものはすべて送信済みなので、次の報告は空です。上の一覧は手元の写しで、消去するまで残ります。",
+    zh: "此处的一切都已发送，因此下一份报告为空。上面的列表是本地副本，在清除之前会一直保留。",
+    hi: "यहाँ सब कुछ पहले ही भेजा जा चुका है, इसलिए अगली रिपोर्ट खाली है। ऊपर की सूची स्थानीय प्रति है और साफ़ किए जाने तक बनी रहती है।",
+    ar: "كل ما هنا أُرسِل بالفعل، فالتقرير التالي فارغ. والقائمة أعلاه هي النسخة المحلية وتبقى إلى أن تُمسَح.",
+  },
+  "pr.sending": {
+    en: "Sending…", es: "Enviando…", fr: "Envoi…", de: "Wird gesendet…",
+    pt: "A enviar…", it: "Invio…", ja: "送信中…", zh: "发送中…",
+    hi: "भेजा जा रहा है…", ar: "جارٍ الإرسال…",
+  },
+  "pr.sendnow": {
+    en: "Send now", es: "Enviar ahora", fr: "Envoyer maintenant",
+    de: "Jetzt senden", pt: "Enviar agora", it: "Invia ora",
+    ja: "今すぐ送る", zh: "立即发送", hi: "अभी भेजें", ar: "إرسال الآن",
+  },
+  "pr.hide": {
+    en: "Hide", es: "Ocultar", fr: "Masquer", de: "Ausblenden",
+    pt: "Ocultar", it: "Nascondi", ja: "隠す", zh: "隐藏",
+    hi: "छिपाएँ", ar: "إخفاء",
+  },
+  "pr.show": {
+    en: "Show me exactly what would be shared",
+    es: "Mostrar exactamente lo que se compartiría",
+    fr: "Montrer exactement ce qui serait partagé",
+    de: "Genau anzeigen, was geteilt würde",
+    pt: "Mostrar exatamente o que seria partilhado",
+    it: "Mostrare esattamente ciò che verrebbe condiviso",
+    ja: "共有される内容をそのまま表示する",
+    zh: "确切显示将要共享的内容",
+    hi: "जो साझा किया जाएगा वह ठीक-ठीक दिखाएँ",
+    ar: "عرض ما سيُشارَك بالضبط",
+  },
+  "pr.copied": {
+    en: "Copied", es: "Copiado", fr: "Copié", de: "Kopiert", pt: "Copiado",
+    it: "Copiato", ja: "コピーしました", zh: "已复制", hi: "प्रतिलिपि बनी",
+    ar: "تم النسخ",
+  },
+  "pr.copy": {
+    en: "Copy the report", es: "Copiar el informe", fr: "Copier le rapport",
+    de: "Den Bericht kopieren", pt: "Copiar o relatório",
+    it: "Copiare il rapporto", ja: "報告を写し取る", zh: "复制报告",
+    hi: "रिपोर्ट की प्रतिलिपि बनाएँ", ar: "نسخ التقرير",
+  },
+  "pr.noanswer": {
+    en: "no answer", es: "sin respuesta", fr: "aucune réponse",
+    de: "keine Antwort", pt: "sem resposta", it: "nessuna risposta",
+    ja: "応答なし", zh: "无响应", hi: "कोई उत्तर नहीं", ar: "بلا رد",
+  },
+  "pr.out.sent": {
+    en: "Sent.", es: "Enviado.", fr: "Envoyé.", de: "Gesendet.",
+    pt: "Enviado.", it: "Inviato.", ja: "送信しました。", zh: "已发送。",
+    hi: "भेज दिया गया।", ar: "أُرسِل.",
+  },
+  "pr.out.nothing": {
+    en: "Nothing new to send.", es: "No hay nada nuevo que enviar.",
+    fr: "Rien de nouveau à envoyer.", de: "Nichts Neues zu senden.",
+    pt: "Nada de novo para enviar.", it: "Nulla di nuovo da inviare.",
+    ja: "新たに送るものはありません。", zh: "没有新内容可发送。",
+    hi: "भेजने के लिए कुछ नया नहीं।", ar: "لا جديد لإرساله.",
+  },
+  "pr.out.off": {
+    en: "Sending is off.", es: "El envío está desactivado.",
+    fr: "L'envoi est désactivé.", de: "Das Senden ist ausgeschaltet.",
+    pt: "O envio está desligado.", it: "L'invio è disattivato.",
+    ja: "送信は無効になっています。", zh: "发送已关闭。",
+    hi: "भेजना बंद है।", ar: "الإرسال متوقف.",
+  },
+  "pr.out.nocollector": {
+    en: "This build has nowhere to send.",
+    es: "Esta compilación no tiene adónde enviar.",
+    fr: "Cette version n'a nulle part où envoyer.",
+    de: "Diese Fassung hat kein Ziel zum Senden.",
+    pt: "Esta compilação não tem para onde enviar.",
+    it: "Questa build non ha dove inviare.",
+    ja: "このビルドには送り先がありません。", zh: "此版本没有发送目标。",
+    hi: "इस बिल्ड के पास भेजने के लिए कोई स्थान नहीं है।",
+    ar: "لا وجهة لدى هذه النسخة للإرسال.",
+  },
+  "pr.out.awaiting": {
+    en: "Waiting for you to answer the notice first.",
+    es: "Falta responder primero al aviso.",
+    fr: "L'avis doit d'abord recevoir une réponse.",
+    de: "Zuerst muss der Hinweis beantwortet werden.",
+    pt: "Falta responder primeiro ao aviso.",
+    it: "Occorre prima rispondere all'avviso.",
+    ja: "先に通知への回答が必要です。", zh: "需要先回答通知。",
+    hi: "पहले सूचना का उत्तर देना बाकी है।",
+    ar: "يلزم الإجابة عن الإشعار أولًا.",
+  },
+  "pr.out.failed": {
+    en: "Could not reach the collector — it will try again next time.",
+    es: "No se pudo contactar con el recolector: lo intentará de nuevo la próxima vez.",
+    fr: "Le collecteur n'a pas pu être joint — une nouvelle tentative aura lieu la prochaine fois.",
+    de: "Der Sammler war nicht erreichbar — beim nächsten Mal folgt ein neuer Versuch.",
+    pt: "Não foi possível contactar o coletor — tentará novamente da próxima vez.",
+    it: "Non è stato possibile raggiungere il collettore — riproverà la prossima volta.",
+    ja: "収集先に到達できませんでした。次回あらためて試みます。",
+    zh: "无法连接收集端 — 下次将重试。",
+    hi: "संग्राहक तक नहीं पहुँच सका — अगली बार फिर प्रयास करेगा।",
+    ar: "تعذّر الوصول إلى المُجمِّع — ستُعاد المحاولة في المرة القادمة.",
+  },
 };
 
 /** `t("gd.title", lang)` — the key itself if the row is missing, which is

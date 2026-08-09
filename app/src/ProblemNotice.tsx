@@ -3,6 +3,8 @@ import { CONSOLE_VERSION } from "./api";
 import {
   answerNotice, collectorUrl, noticeAnswered, problemReport, sendProblems,
 } from "./errors";
+import { deviceLanguage, Lang, t } from "./l10n";
+import { useSession } from "./store";
 
 /**
  * Told once, before anything is sent.
@@ -23,6 +25,8 @@ import {
  * teaches them that these notices are noise.
  */
 export function ProblemNotice() {
+  const { session } = useSession();
+  const lang = (session.language as Lang) ?? deviceLanguage();
   const [answered, setAnswered] = useState(noticeAnswered);
   const [showing, setShowing] = useState(false);
 
@@ -41,23 +45,20 @@ export function ProblemNotice() {
 
   return (
     <div className="problem-notice" role="region"
-         aria-label="Error reporting">
+         aria-label={t("pn.aria", lang)}>
       <p>
-        <strong>When something in this app fails, we would like to know.</strong>{" "}
-        It sends a list of what broke — the operation and the error code, like{" "}
-        <code>POST /profiles/&#123;id&#125;/chat → 500</code>. Never the error
-        message, never who you are, never anything you typed or stored.
-        Nothing has been sent yet, and nothing will be until you answer. You
-        can change your mind later: the settings panel that lists these
-        reports has the same switch.
+        <strong>{t("pn.lead", lang)}</strong>{" "}
+        {t("pn.like", lang)}{" "}
+        <code>POST /profiles/&#123;id&#125;/chat → 500</code>
+        {t("pn.after", lang)}
       </p>
       <div className="row">
         <button className="pn-yes" onClick={() => decide(true)}>
-          That&apos;s fine
+          {t("pn.yes", lang)}
         </button>
-        <button onClick={() => decide(false)}>No thanks</button>
+        <button onClick={() => decide(false)}>{t("pn.no", lang)}</button>
         <button onClick={() => setShowing(!showing)}>
-          {showing ? "Hide" : "Show me exactly what would be sent"}
+          {showing ? t("pn.hide", lang) : t("pn.show", lang)}
         </button>
       </div>
       {showing && (
