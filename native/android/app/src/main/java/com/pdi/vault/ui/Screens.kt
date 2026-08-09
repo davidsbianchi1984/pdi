@@ -18,6 +18,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pdi.vault.ApiClient
+import com.pdi.vault.Problems
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import com.pdi.vault.ImproveState
 import com.pdi.vault.KeysInfo
 import com.pdi.vault.OfflinePosture

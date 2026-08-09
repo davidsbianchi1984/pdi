@@ -225,7 +225,8 @@ public sealed partial class OverviewPage : Page
             AdminStatus.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
         }
         catch (System.Exception ex) { ShowAdminError(ex.Message); }
-    
+    }
+
     private async void OnExportEverything(object sender,
                                           Microsoft.UI.Xaml.RoutedEventArgs e)
     {
@@ -240,5 +241,4 @@ public sealed partial class OverviewPage : Page
         }
         catch (Exception ex) { ShowStatus(ex.Message); }
     }
-}
 }
