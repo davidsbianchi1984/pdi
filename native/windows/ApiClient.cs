@@ -210,9 +210,13 @@ public sealed class ApiClient
         await Send<OfflinePosture>(new HttpRequestMessage(HttpMethod.Get,
             "/offline/status"));
 
-    private async Task<T> Send<T>(HttpRequestMessage req, string token)
+    /// <param name="token">Empty for the public routes — the posture read
+    /// is one of them, and a bearer header with nothing behind it is a
+    /// worse answer than no header at all.</param>
+    private async Task<T> Send<T>(HttpRequestMessage req, string token = "")
     {
-        req.Headers.Add("authorization", $"Bearer {token}");
+        if (!string.IsNullOrWhiteSpace(token))
+            req.Headers.Add("authorization", $"Bearer {token}");
         // The path as written, for the recorder. Read before the send, which
         // consumes `req`. Absolute and relative are both handled: these calls
         // build relative URIs against BaseAddress, but a `RequestUri` that
