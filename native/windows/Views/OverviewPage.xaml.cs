@@ -238,8 +238,10 @@ public sealed partial class OverviewPage : Page
             var all = await ApiClient.Shared.ExportEverything(s.Token);
             var rows = 0;
             foreach (var t in all.Tables.Values) rows += t.Count;
-            ShowStatus($"{all.Tables.Count} table(s), {rows} row(s) — {all.Note}");
+            AdminStatus.Text =
+                $"{all.Tables.Count} table(s), {rows} row(s) — {all.Note}";
+            AdminStatus.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
         }
-        catch (Exception ex) { ShowStatus(ex.Message); }
+        catch (Exception ex) { ShowAdminError(ex.Message); }
     }
 }

@@ -208,7 +208,7 @@ public sealed class ApiClient
     /// posture is set in the deployment's environment, not in the app.</summary>
     public async Task<OfflinePosture> OfflineStatus() =>
         await Send<OfflinePosture>(new HttpRequestMessage(HttpMethod.Get,
-            _base + "/offline/status"));
+            "/offline/status"));
 
     private async Task<T> Send<T>(HttpRequestMessage req, string token)
     {
@@ -298,7 +298,8 @@ public sealed class ApiClient
     /// ciphertext and exists to be restored. This is the portability answer:
     /// what do you have about us.</para></summary>
     public Task<TenantExport> ExportEverything(string token) =>
-        Send<TenantExport>(Get("/export", token));
+        Send<TenantExport>(new HttpRequestMessage(
+            HttpMethod.Get, "/export"), token);
 
     public Task<RecordProvenance> Provenance(string token, string key) =>
         Send<RecordProvenance>(new HttpRequestMessage(
