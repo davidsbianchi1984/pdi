@@ -16,6 +16,43 @@
 #
 #     0.48.2   250 → 229   Guiding — the language picker itself
 #     0.48.3   229 → 177   Custody and Continuity
+#     0.60.4   177 → 233   **the reader, not the console** — see below
+#     0.60.4   233 → 225   VersionGuard, which the old reader saw none of
+#
+# ## The one rise in this record, and why it is not a regression
+#
+# Until 0.60.4 this file was measured by three regexes, the first of which was
+# `>\s*([A-Z][^<>{}\n]{2,})\s*<`. QRME and JIM both abandoned that reader
+# rounds ago — three separate regexes over the same source each hid real
+# strings — and moved to `app/scripts/jsx-text.mjs`, which parses the file
+# with TypeScript's own parser and returns every `JsxText` node. This product
+# kept the regex, and nothing had compared the two.
+#
+# The three characters that pattern forbids are the three shapes most of this
+# console's prose takes:
+#
+#   * `\n` — any sentence long enough to wrap. The paragraph in
+#     `ProblemNotice` explaining what a problem report does and does not carry
+#     is four source lines: one string to a reader, no string at all to this.
+#   * `{}` — any sentence with a value in the middle. `VersionGuard` reads
+#     *This app is v{CONSOLE_VERSION}, but the backend at {getBase()} is
+#     v{backend} — an older install is still running*. Three interpolations
+#     cut that into fragments and the pattern rejected every one. The screen
+#     whose whole job is to explain why an install answers "Not Found" was the
+#     least visible thing in the console.
+#   * a leading capital — *no tenant selected*, *entries verified*,
+#     *what reaches into this vault*, *one per integrating system*.
+#
+# Fifty-six strings, a quarter of the true total, and hidden in the direction
+# that makes a ratchet look satisfied. Both localization rounds above were
+# graded against a number that was low.
+#
+#     asked     how much English does this pattern match
+#     mattered  how much English does a person read
+#
+# The rise from 177 to 233 is the reader getting honest in one step. The fall
+# to 225 is `VersionGuard`, wired the same day, because a finding that only
+# raises a number is half a finding.
 #
 # ## The order, and why it is not the order of the counts
 #
@@ -63,5 +100,5 @@
 #     Records.tsx      11
 #     Continuity.tsx    9        (its remaining rows are server-rendered)
 #
-# ceiling: 177
-console: 177
+# ceiling: 225
+console: 225

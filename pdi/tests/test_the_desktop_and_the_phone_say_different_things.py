@@ -110,7 +110,9 @@ make sure a zero here always comes with the reason.
 
 from __future__ import annotations
 
+import json
 import re
+import subprocess
 from collections import defaultdict
 from pathlib import Path
 
@@ -251,9 +253,9 @@ def _recorded() -> set[str]:
 
 UNTRANSLATED = Path(__file__).resolve().parent / "console_untranslated.txt"
 
-#: Words a person reads off this console, in the two places JSX puts them.
-_JSX = [re.compile(r'>\s*([A-Z][^<>{}\n]{2,})\s*<'),
-        re.compile(r'placeholder=\{?"([^"]{3,})"'),
+#: Attributes a person reads off this console. JSX *text* is not read here —
+#: see `_console_english` below for why, and by what.
+_JSX = [re.compile(r'placeholder=\{?"([^"]{3,})"'),
         re.compile(r'title=\{?"([^"]{3,})"')]
 _HOLE = re.compile(r"\{[^}]*\}")
 #: Phrases, or a single capitalised word — the same under-counting rule the
@@ -262,13 +264,59 @@ _HOLE = re.compile(r"\{[^}]*\}")
 _WORDS = re.compile(r"[A-Za-z]\s[A-Za-z]|^[A-Z][a-z]{2,}$")
 
 
+#: The extractor QRME and JIM both moved to, ported here at 0.60.4.
+#:
+#: The regex it replaces was `>\s*([A-Z][^<>{}\n]{2,})\s*<`, and the three
+#: things it forbids are the three shapes most of this console's prose takes:
+#:
+#:   * `\n` — every sentence long enough to wrap. The paragraph in
+#:     `ProblemNotice` explaining what a problem report does and does not
+#:     contain is four source lines, so it was one string to a reader and no
+#:     string at all to the reader of the reader.
+#:   * `{}` — every sentence with a value in the middle of it. `VersionGuard`
+#:     says *This app is v{CONSOLE_VERSION}, but the backend at {getBase()} is
+#:     v{backend} — an older install is still running*. The interpolations cut
+#:     that into five fragments and the pattern rejected all five. That screen
+#:     is the one that tells a person why their install is answering "Not
+#:     Found", and it was invisible in every one of its six strings.
+#:   * `[A-Z]` at the start — *no tenant selected*, *entries verified*,
+#:     *what reaches into this vault*, *one per integrating system*.
+#:
+#: 233 strings against the 177 the regex reported: the number two localization
+#: rounds were graded against was a quarter low, and low in the direction that
+#: makes a ratchet look satisfied.
+#:
+#:     asked     how much English does this pattern match
+#:     mattered  how much English does a person read
+#:
+#: The extractor parses the file with TypeScript's own parser and returns
+#: every `JsxText` node, which is the same thing the browser lays out. It
+#: fails loudly rather than returning nothing — see the fixture check below,
+#: because an extractor that silently stopped would report a perfect zero.
+def _jsx_text() -> dict[str, list[str]]:
+    files = sorted((REPO / "app" / "src").rglob("*.tsx"))
+    rel = [str(p.relative_to(REPO / "app")) for p in files]
+    proc = subprocess.run(["node", "scripts/jsx-text.mjs", *rel],
+                          cwd=REPO / "app", capture_output=True, text=True)
+    assert proc.returncode == 0, (
+        "the JSX text extractor failed, so this check would report a "
+        f"comfortable zero:\n{proc.stderr}")
+    return json.loads(proc.stdout)
+
+
 def _console_english() -> int:
+    text_nodes = _jsx_text()
     total = 0
     for path in sorted((REPO / "app" / "src").rglob("*.tsx")):
-        text = path.read_text(encoding="utf-8")
+        rel = str(path.relative_to(REPO / "app"))
+        source = path.read_text(encoding="utf-8")
         found = set()
+        for s in text_nodes.get(rel, []):
+            s = _HOLE.sub("", s).strip()
+            if _WORDS.search(s):
+                found.add(s)
         for pat in _JSX:
-            for s in pat.findall(text):
+            for s in pat.findall(source):
                 s = _HOLE.sub("", s).strip()
                 if _WORDS.search(s):
                     found.add(s)
@@ -303,6 +351,60 @@ def test_the_console_english_count_only_shrinks():
         f"only {found} found against a ceiling of {ceiling} — a drop that "
         "large is an extractor that stopped matching, not a round of work; "
         "lower the ceiling deliberately when it is real")
+
+
+def test_the_jsx_extractor_can_still_see():
+    """The guard on the reader that replaced the regex.
+
+    Everything above trusts a subprocess. If node disappears, or the parser
+    stops recognising `JsxText`, `_jsx_text` returns nothing and 225 strings
+    read as translated. The quietest failures in this audit have all been a
+    pattern that stopped matching, and the regex this replaced is one of
+    them — it never stopped, it just never started on three quarters of the
+    shapes.
+    """
+    proc = subprocess.run(
+        ["node", "scripts/jsx-text.mjs", "scripts/jsx-text.fixture.tsx"],
+        cwd=REPO / "app", capture_output=True, text=True)
+    assert proc.returncode == 0, f"the extractor will not run:\n{proc.stderr}"
+    found = json.loads(proc.stdout)["scripts/jsx-text.fixture.tsx"]
+    assert "A heading" in found, found
+    multiline = next((s for s in found if s.startswith("A paragraph")), None)
+    assert multiline and "one sentence to whoever reads it." in multiline, (
+        "the extractor stopped joining a wrapped sentence — the shape the "
+        f"regex could not see at all:\n{found}")
+    assert "an interpolated value." in found, (
+        "the extractor stopped returning text after an interpolation — the "
+        f"shape `VersionGuard` is made of:\n{found}")
+
+
+def test_the_reader_reads_more_than_the_regex_did():
+    """0.60.4's finding, kept as an assertion rather than a memory.
+
+    The old pattern is reconstructed here and run beside the extractor. It is
+    not a check that the console is translated — that is the ceiling above.
+    It is a check that the *reason* the ceiling moved is still true, so a
+    future round cannot quietly revert to the cheaper reader and read the
+    fall as progress.
+    """
+    old = [re.compile(r'>\s*([A-Z][^<>{}\n]{2,})\s*<'),
+           re.compile(r'placeholder=\{?"([^"]{3,})"'),
+           re.compile(r'title=\{?"([^"]{3,})"')]
+    regex_total = 0
+    for path in sorted((REPO / "app" / "src").rglob("*.tsx")):
+        text = path.read_text(encoding="utf-8")
+        found = set()
+        for pat in old:
+            for hit in pat.findall(text):
+                hit = _HOLE.sub("", hit).strip()
+                if _WORDS.search(hit):
+                    found.add(hit)
+        regex_total += len(found)
+    assert _console_english() > regex_total, (
+        f"the extractor sees {_console_english()} and the regex it replaced "
+        f"sees {regex_total} — if those have converged, either the console "
+        "has been rewritten into shapes the regex can read, or the reader "
+        "has quietly gone back to being one")
 
 
 def test_both_tables_still_parse():

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, CONSOLE_VERSION, clearBase, getBase } from "./api";
+import { useSession } from "./store";
+import { deviceLanguage, fill, Lang, t } from "./l10n";
 
 /**
  * The version handshake, made visible.
@@ -17,6 +19,7 @@ import { api, CONSOLE_VERSION, clearBase, getBase } from "./api";
  * sentence, with the one-click fix when there is one.
  */
 export function VersionGuard() {
+  const { session } = useSession();
   const [backend, setBackend] = useState<string | null>(null);
   const [dismissed, setDismissed] = useState(false);
 
@@ -31,6 +34,8 @@ export function VersionGuard() {
 
   if (dismissed || backend === null || backend === CONSOLE_VERSION) return null;
 
+  const lang = (session.language as Lang) ?? deviceLanguage();
+
   const desktop = (window as {
     pdiDesktop?: { backendUrl?: string | null } }).pdiDesktop?.backendUrl;
   const stored = typeof localStorage !== "undefined"
@@ -42,24 +47,20 @@ export function VersionGuard() {
   return (
     <div className="version-guard" role="alert">
       <span>
-        <b>Two versions of PDI are answering.</b> This app is
-        v{CONSOLE_VERSION}, but the backend at {getBase()} is
-        v{backend} — an older install is still running, which is why newer
-        screens say “Not Found”.
+        <b>{t("vg.two", lang)}</b>{" "}
+        {fill("vg.mismatch", lang, { console: CONSOLE_VERSION,
+                                     base: getBase(), backend })}
       </span>
       {canRepoint ? (
         <button className="vg-fix"
                 onClick={() => { clearBase(); location.reload(); }}>
-          Use this app’s own backend
+          {t("vg.useown", lang)}
         </button>
       ) : (
-        <span className="vg-hint">
-          Quit the older PDI app (or end a leftover “pdi-backend” process —
-          a restart of the computer also works), then reopen this app.
-        </span>
+        <span className="vg-hint">{t("vg.quit", lang)}</span>
       )}
       <button className="vg-close" onClick={() => setDismissed(true)}
-              aria-label="Dismiss">×</button>
+              aria-label={t("vg.dismiss", lang)}>×</button>
     </div>
   );
 }

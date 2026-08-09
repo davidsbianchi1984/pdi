@@ -25,6 +25,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      # The suite shells out to `app/scripts/jsx-text.mjs` — a TypeScript-AST
+      # reader for JSX text, ported here at 0.60.4 after the regex it replaced
+      # turned out to be missing a quarter of this console's English. It
+      # imports `typescript` from the app's own `node_modules`, so the job
+      # that runs pytest has to install them. `native.yml`'s sibling guard
+      # said so the moment the first such check landed, before CI ran once.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+        working-directory: app
       - run: pip install -e .[dev]
       - run: pytest -q
 

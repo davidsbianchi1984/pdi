@@ -169,12 +169,11 @@ def test_every_named_exception_still_exists():
 def test_the_python_suite_runs_where_it_is_checked():
     """The other half of 0.60.2's second finding.
 
-    This product has no JSX-text guard: its console prose is read by regex,
-    which is the reader QRME and JIM both abandoned after three separate
-    regexes over the same source each hid real strings. Porting the extractor
-    here is named and not done. Until it is, `shells_out` is empty and this
-    check has nothing to say — which is the truth, and is why it says nothing
-    rather than passing on a technicality.
+    This check had nothing to say when it was written: this product read its
+    console prose by regex, so no guard shelled out to anything. 0.60.4 ported
+    the extractor QRME and JIM use, and this fired the same hour — naming the
+    new guard and the job that would have failed it, before CI ran once. That
+    is the whole point of reading the trigger rather than the run.
     """
     ci = (WORKFLOWS / "ci.yml").read_text(encoding="utf-8")
     # The invocation, not the mention: this file names the script in its own

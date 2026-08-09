@@ -4,6 +4,55 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.60.4] — 2026-08-09
+
+### The reader was a quarter blind, and both rounds were graded against it
+
+QRME and JIM read their consoles' English with `app/scripts/jsx-text.mjs`,
+which parses the file with TypeScript's own parser and returns every `JsxText`
+node. They moved to it rounds ago, after three separate regexes over the same
+source each hid real strings. This product kept the regex, and nothing had
+ever run the two side by side.
+
+The first of its three patterns was `>\s*([A-Z][^<>{}\n]{2,})\s*<`, and the
+three characters it forbids are the three shapes most of this console's prose
+takes:
+
+- `\n` — any sentence long enough to wrap. `ProblemNotice`'s paragraph on what
+  a problem report does and does not carry is four source lines: one string to
+  a reader, no string at all to this.
+- `{}` — any sentence with a value in the middle. `VersionGuard` reads *This
+  app is v{CONSOLE_VERSION}, but the backend at {getBase()} is v{backend} — an
+  older install is still running*. Three interpolations cut that into
+  fragments and the pattern rejected every one.
+- a leading capital — *no tenant selected*, *entries verified*, *what reaches
+  into this vault*, *one per integrating system*.
+
+    asked     how much English does this pattern match
+    mattered  how much English does a person read
+
+**233 against the 177 the regex reported.** Fifty-six strings, a quarter of
+the true total, hidden in the direction that makes a ratchet look satisfied —
+so both localization rounds in `console_untranslated.txt` were graded against
+a number that was low.
+
+- The extractor is ported, and the ceiling re-baselined at the honest figure
+  with the rise written into the record's history: a reader getting honest in
+  one step, not a console getting worse.
+- **`VersionGuard` is wired**, 233 → 225. It was invisible in all six of its
+  strings, and it is the screen whose whole job is to explain why an install
+  is answering "Not Found" — the least visible thing in the console was the
+  one that tells you something is wrong.
+- Two guards on the reader: the fixture check that fails loudly if the
+  extractor stops parsing, and one that reconstructs the old regex and asserts
+  the extractor still sees more, so a later round cannot quietly revert to the
+  cheaper reader and read the fall as progress.
+
+`ci.yml` grew the node steps this needs — named by
+`test_a_check_that_cannot_fail_before_the_merge.py` the hour the first such
+guard landed, before CI ran once. That is what reading the trigger rather than
+the run is for.
+
 ## [0.60.3] — 2026-08-09
 
 ### A check that cannot fail before the merge is not a check

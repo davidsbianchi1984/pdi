@@ -51,6 +51,66 @@ export function deviceLanguage(): Lang {
 }
 
 const CHROME: Table = {
+  // -- the version banner ------------------------------------------------
+  //
+  // Wired at 0.60.4, and the reason the reader changed. Every string on this
+  // screen sits either side of an interpolation, so the regex that read this
+  // console — which rejected any run containing `{` — saw none of the six.
+  // The screen that explains why an install is answering "Not Found" was
+  // itself the least visible thing in the console.
+  "vg.two": {
+    en: "Two versions of PDI are answering.",
+    es: "Hay dos versiones de PDI respondiendo.",
+    fr: "Deux versions de PDI répondent.",
+    de: "Zwei PDI-Versionen antworten.",
+    pt: "Há duas versões do PDI a responder.",
+    it: "Ci sono due versioni di PDI che rispondono.",
+    ja: "PDI の 2 つのバージョンが応答しています。",
+    zh: "有两个 PDI 版本在响应。",
+    hi: "PDI के दो संस्करण उत्तर दे रहे हैं।",
+    ar: "هناك نسختان من PDI تستجيبان.",
+  },
+  "vg.mismatch": {
+    en: "This app is v{console}, but the backend at {base} is v{backend} — an older install is still running, which is why newer screens say “Not Found”.",
+    es: "Esta aplicación es v{console}, pero el backend en {base} es v{backend}: sigue ejecutándose una instalación antigua, por eso las pantallas nuevas dicen «Not Found».",
+    fr: "Cette application est en v{console}, mais le backend à {base} est en v{backend} — une ancienne installation tourne encore, d’où le « Not Found » des écrans récents.",
+    de: "Diese App ist v{console}, das Backend unter {base} jedoch v{backend} — eine ältere Installation läuft noch, daher melden neuere Bildschirme „Not Found“.",
+    pt: "Esta aplicação é v{console}, mas o backend em {base} é v{backend} — continua a correr uma instalação antiga, e por isso os ecrãs mais recentes dizem «Not Found».",
+    it: "Questa app è v{console}, ma il backend su {base} è v{backend} — un’installazione più vecchia è ancora in esecuzione, per questo le schermate nuove dicono «Not Found».",
+    ja: "このアプリは v{console} ですが、{base} のバックエンドは v{backend} です。古いインストールがまだ動作しており、新しい画面が「Not Found」と表示される原因です。",
+    zh: "本应用为 v{console}，而 {base} 上的后端为 v{backend} — 旧的安装仍在运行，这就是新页面显示“Not Found”的原因。",
+    hi: "यह ऐप v{console} है, पर {base} पर बैकएंड v{backend} है — पुरानी स्थापना अब भी चल रही है, इसीलिए नई स्क्रीनें “Not Found” कहती हैं।",
+    ar: "هذا التطبيق بإصدار v{console}، لكن الخادم على {base} بإصدار v{backend} — لا تزال نسخة أقدم قيد التشغيل، ولهذا تقول الشاشات الأحدث «Not Found».",
+  },
+  "vg.useown": {
+    en: "Use this app’s own backend",
+    es: "Usar el backend propio de esta aplicación",
+    fr: "Utiliser le backend propre à cette application",
+    de: "Eigenes Backend dieser App verwenden",
+    pt: "Usar o backend próprio desta aplicação",
+    it: "Usare il backend proprio di questa app",
+    ja: "このアプリ自身のバックエンドを使う",
+    zh: "使用本应用自带的后端",
+    hi: "इस ऐप का अपना बैकएंड उपयोग करें",
+    ar: "استخدام الخادم الخاص بهذا التطبيق",
+  },
+  "vg.quit": {
+    en: "Quit the older PDI app (or end a leftover “pdi-backend” process — a restart of the computer also works), then reopen this app.",
+    es: "Cierre la aplicación PDI antigua (o finalice un proceso «pdi-backend» residual; reiniciar el equipo también sirve) y vuelva a abrir esta aplicación.",
+    fr: "Quitter l’ancienne application PDI (ou terminer un processus « pdi-backend » résiduel — un redémarrage de l’ordinateur convient aussi), puis rouvrir cette application.",
+    de: "Die ältere PDI-App beenden (oder einen übrig gebliebenen „pdi-backend“-Prozess beenden — ein Neustart des Rechners genügt auch) und diese App erneut öffnen.",
+    pt: "Feche a aplicação PDI antiga (ou termine um processo «pdi-backend» residual — reiniciar o computador também resolve) e volte a abrir esta aplicação.",
+    it: "Chiudere la vecchia app PDI (o terminare un processo «pdi-backend» residuo — anche un riavvio del computer va bene), poi riaprire questa app.",
+    ja: "古い PDI アプリを終了する（残っている「pdi-backend」プロセスを終了する、またはコンピューターを再起動しても構いません）か、このアプリを開き直してください。",
+    zh: "退出旧的 PDI 应用（或结束残留的“pdi-backend”进程 — 重启电脑同样有效），然后重新打开本应用。",
+    hi: "पुराने PDI ऐप को बंद करें (या बचे हुए “pdi-backend” प्रोसेस को समाप्त करें — कंप्यूटर पुनरारंभ करना भी काम करता है), फिर यह ऐप दोबारा खोलें।",
+    ar: "أغلق تطبيق PDI الأقدم (أو أنهِ عملية «pdi-backend» المتبقية — وإعادة تشغيل الحاسوب تفي بالغرض أيضًا)، ثم أعد فتح هذا التطبيق.",
+  },
+  "vg.dismiss": {
+    en: "Dismiss", es: "Descartar", fr: "Fermer", de: "Ausblenden",
+    pt: "Dispensar", it: "Chiudere", ja: "閉じる", zh: "关闭",
+    hi: "हटाएँ", ar: "إخفاء",
+  },
   "gd.title": {
     en: "Guiding", es: "Guía", fr: "Guidage", de: "Anleitung",
     pt: "Orientação", it: "Guida", ja: "案内", zh: "指引",
