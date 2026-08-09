@@ -4,6 +4,60 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.60.7] — 2026-08-09
+
+### A screen that imports the translator is not a translated screen
+
+Every localization round in this console picked its next screen off the list
+in `console_untranslated.txt`, worst count first. That ordering carried an
+assumption nothing had ever checked: that a screen already *through* a round
+is done with.
+
+    asked     does this screen import the translator
+    mattered  does this screen still hold English
+
+Eight of the console's files import `t` from `../l10n`. Six held no English.
+Two had held some since 0.48.3, the round that claimed them: `Continuity.tsx`
+with ten strings and `Custody.tsx` with five, both on the finished side of the
+ledger for twelve releases.
+
+Six of Continuity's ten were strings the table **already held** in all ten
+languages — `Name`, `Role`, `Read`, `Set`, `What can I open?` and the sentence
+about a grant opening nothing, under `co.name.ph`, `co.role.ph`, `co.read`,
+`co.set`, `co.whatopen` and `co.nothing.readable`. The screen had the key and
+typed the word anyway. Not a missing translation: one already written, already
+paid for, and never asked for.
+
+`test_a_screen_that_imports_the_translator_holds_no_english` holds the claim
+from here — a screen that asks the table for a word may not also hard-code
+one. It failed on the round it was written, naming both files and all fifteen
+strings, which is how it was known to work before either was fixed.
+
+Records, Problems, Settings, Tenants and ProblemNotice went with them: 44 more
+strings, and seven of those were English a table already held. Four are the
+shells' own wordings, copied rather than written again so the desktop and the
+phone keep saying one thing.
+
+Console English 91 → 32.
+
+### The strings no reader counts
+
+The ratchet reads JSX text, `placeholder` and `title`. It does not read a
+string literal inside a JSX expression, and a great deal of this console's
+English lives there — a button's busy label, the whole offline-posture block
+in Settings, six outcome sentences in a module-level map in Problems. Never
+counted, always read. They are translated here too, which is why the rows
+added far exceed the 59 the ratchet moved. `Problems.tsx`'s `OUTCOME` map
+holds keys now rather than sentences: a module-level constant cannot ask for a
+language.
+
+### Fixed
+
+- `const t = await api.createTenant(…)` in `Tenants.tsx` shadowed the
+  translator the moment the screen was wired. `npx tsc --noEmit` caught it on
+  the first run; reading did not. Second occurrence of that shape in three
+  rounds.
+
 ## [0.60.6] — 2026-08-09
 
 ### A word boundary is a claim about a language

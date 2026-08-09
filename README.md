@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.60.6** ([changelog](CHANGELOG.md) ·
+**Current release: v0.60.7** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -200,6 +200,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.60.7** | **A screen that imports the translator is not a translated screen** — two screens had been counted as localized since 0.48.3 while still holding fifteen English strings, six of them already in the table under keys the screen was importing `t` to reach. A guard now holds the claim; five more screens localized. 91 → 32. The type checker caught a second `const t = …` shadowing the translator |
 | **0.60.6** | **A word boundary is a claim about a language** — Positions and Bridges localized, and the reader grading the work was wrong a third time: it asked for a letter-space-letter, so `Role &amp; industry`, `Human-in-the-loop` and twelve more were English nothing counted. 154 → 168 → 91. The drift guard caught *Bind* colliding with *Connect*; a seventh screen-grep now follows the key |
 | **0.60.5** | **Carriers and Exchange, on the criterion of decisions before descriptions** — the console side of the courier's surface, and the screen where nothing has an undo. 225 → 154 across 87 rows. The type checker caught a `map((t) => …)` shadowing the translator; the drift guard caught 7 wordings disagreeing with the shells; two guards that greped English now follow the key |
 | **0.60.4** | **The reader was a quarter blind, and both rounds were graded against it** — this console's English was measured by a regex that rejected any run containing a newline, an interpolation, or a lowercase first letter: 233 strings against the 177 it reported. The extractor QRME and JIM use is ported, the ceiling re-baselined honestly, and `VersionGuard` — invisible in all six of its strings — wired |
