@@ -4,6 +4,86 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.60.6] — 2026-08-09
+
+### A word boundary is a claim about a language
+
+Positions and Bridges — the two remaining screens of the four that held 141 of
+this console's English — are localized in all ten languages, and the reader
+that grades the work turned out to be wrong for the third time in this arc.
+
+**The reader, again.** 0.60.4 replaced a regex that rejected any run containing
+a newline, an interpolation or a lowercase first letter. What survived that fix
+was the phrase test underneath it: a string counted as English if it matched
+`[A-Za-z]\s[A-Za-z]` — a letter, a space, a letter. Four headings on the very
+screen this round localizes have no such run anywhere in them:
+
+    Role &amp; industry
+    Decision-making &amp; oversight
+    Bottlenecks &amp; obsolescence
+    Human-in-the-loop
+
+In the first three every space sits beside an HTML entity, so the character
+before it is `;` and the one after is `&`. The fourth has no space at all. So
+did `Re-verify`, `publish — out`, `hard — gone`, `soft — recoverable`,
+`Keys &amp; Retention` twice, and `append-only · SHA-256 hash-chained`.
+
+      asked     is there a space with a letter on both sides
+      mattered  does this read as more than one word
+
+Fourteen strings, hidden in the direction that makes a ratchet look satisfied.
+`_PHRASE` decodes entities first — the reader sees the `&` the browser draws,
+not the `&amp;` the source stores — then looks for two runs of letters joined
+by anything that is not `/`, `_` or `.`. Those three are excluded on purpose,
+and each excludes a real string in this console: a path
+(`POST /profiles/{id}/chat → 500`), an identifier (`PDI_ADMIN_TOKEN`) and a
+filename (`report.pdf`). `test_the_reader_reads_more_than_a_space` asserts both
+halves, so a later simplification cannot quietly re-blind it.
+
+      154 → 168   the reader getting honest
+      168 →  91   Positions and Bridges
+
+**Positions** is the longest form in the product. It asks an operator to
+describe their own working life — what they manage, what they are accountable
+for, which of their tasks have gone stale — and returns an assistant blueprint
+built from the answers. A misread question there does not make a confusing
+screen; it makes a blueprint for a role nobody holds. Its option lists are
+translated too, though no reader counts them, because a heading in Spanish
+above eight English chips is a half-answer. The chip *values* stay English keys
+on the wire, which is exactly why the words are free to move.
+
+**Bridges** is the opposite kind of screen: mostly prose, and the prose is a
+promise. Two paragraphs state what the vault will *not* do — a contribution
+listing is a count and a set of keys and never contents, and everything a bound
+robot sends in is sealed under the tenant's key like anything else. A promise
+about custody only counts if the person it is made to can read it.
+
+Three things the work turned up that reading would not have:
+
+- `test_the_desktop_and_the_phone_say_the_same_thing` named three rows where a
+  new console wording disagreed with a shell's for the same English. The
+  shells' *Bind* — `Verbinden` / `Collega` / `接続` / `जोड़ें` / `ربط` — collides
+  with what this screen had picked for *Connect*, which is a real collision:
+  two different acts on one screen, one word. **Bind** takes the shells'
+  wording, and **Connect** moves.
+- `test_the_contributions_listing_is_a_count_not_contents` went red because it
+  greped the screen for `never contents`, which had just moved into the table.
+  Seventh of this file's fourteen screen-greps to be followed to the key. The
+  remaining seven go blind the round their screen is localized, as designed.
+- One row was decided rather than translated: `bri.source.ph` is the
+  placeholder `jim-mini`, a product's own name and the same word in ten
+  languages. It gets a row so the record shows a decision, not an oversight.
+
+The sibling products do not share this defect. Their console readers record
+each string verbatim in both directions rather than counting phrases, so there
+is no phrase test in them to be wrong.
+
+Confirmed by injection, four ways: narrowing `_is_english` back to `_WORDS`
+fails naming `Role & industry`; widening it to accept any joiner fails naming
+`report.pdf`; putting one heading back in English raises the count to 92 above
+the 91 ceiling; and dropping the `bri.held` key from the screen fails saying
+the screen no longer asks for it.
+
 ## [0.60.5] — 2026-08-09
 
 ### Carriers and Exchange, on the criterion of decisions before descriptions

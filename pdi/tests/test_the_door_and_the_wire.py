@@ -330,8 +330,16 @@ def test_the_reseal_reports_what_it_could_not_touch():
 
 
 def test_the_contributions_listing_is_a_count_not_contents():
+    """`GET /contributions` answers with a count and a set of keys, and the
+    screen says that is deliberate rather than leaving a reader to assume
+    the contents are somewhere else on the page. Followed to the table at
+    0.60.6 — the seventh of this file's fourteen screen-greps to go through
+    `_says()`, on the round its screen was localized, which is when each of
+    them goes blind."""
     flat = " ".join(_screen("Bridges.tsx").split())
-    assert "never contents" in flat
+    problems = _says(flat, "bri.held", "never contents")
+    assert not problems, ("a count, not contents:\n    "
+                          + "\n    ".join(problems))
 
 
 def test_the_guide_screen_keeps_both_of_its_refusals():

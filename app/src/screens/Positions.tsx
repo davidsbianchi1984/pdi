@@ -1,25 +1,25 @@
 import { useEffect, useState } from "react";
 import { api, Blueprint, PositionIntake } from "../api";
+import { deviceLanguage, fill, Lang, t } from "../l10n";
 import { useSession } from "../store";
 
 // The AI Integration & Role-Mapping Questionnaire, condensed to the signals the
 // builder acts on. Industry-agnostic — the operator types their own industry.
-const CAP_OPTIONS = [
-  ["task_tracking", "Real-time task tracking"],
-  ["doc_drafting", "Document drafting & data entry"],
-  ["report_generation", "Routine report generation"],
-  ["compliance_logging", "Compliance logging & checklists"],
-  ["scheduling", "Employee scheduling suggestions"],
-  ["maintenance_alerts", "Maintenance & incident alerts"],
-  ["log_summaries", "Daily activity-log summaries"],
-  ["decision_support", "Decision suggestions in your style"],
-] as const;
+// The keys are what the builder acts on; the words are what the operator
+// reads. Keeping them apart is why a Spanish console can send `staffing`.
+const CAP_OPTIONS = ["task_tracking", "doc_drafting", "report_generation",
+  "compliance_logging", "scheduling", "maintenance_alerts", "log_summaries",
+  "decision_support"] as const;
 
 const DECISION_SCOPE = ["routes", "staffing", "incident", "contracts", "budget"];
 const MANAGES = ["scheduling", "timekeeping", "dispatch", "inventory"];
+const OVERSIGHT = ["frontline", "administrative", "supervisory", "executive"];
+const TONES = ["directive", "neutral", "casual", "analytical"];
+const INTERACTIONS = ["voice", "text", "hybrid"];
 
-function Chips({ options, value, onChange }: {
+function Chips({ options, value, onChange, label }: {
   options: readonly string[]; value: string[]; onChange: (v: string[]) => void;
+  label: (o: string) => string;
 }) {
   const toggle = (o: string) =>
     onChange(value.includes(o) ? value.filter((x) => x !== o) : [...value, o]);
@@ -28,7 +28,7 @@ function Chips({ options, value, onChange }: {
       {options.map((o) => (
         <button key={o} type="button"
           className={"chip" + (value.includes(o) ? " on" : "")}
-          onClick={() => toggle(o)}>{o}</button>
+          onClick={() => toggle(o)}>{label(o)}</button>
       ))}
     </div>
   );
@@ -36,6 +36,7 @@ function Chips({ options, value, onChange }: {
 
 export function Positions({ go }: { go: (t: "tenants") => void }) {
   const { session } = useSession();
+  const lang = (session.language as Lang) ?? deviceLanguage();
   const [ids, setIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [bp, setBp] = useState<Blueprint | null>(null);
@@ -71,10 +72,11 @@ export function Positions({ go }: { go: (t: "tenants") => void }) {
   if (!session.tenantToken) {
     return (
       <div className="screen">
-        <header className="screen-head"><h2>Positions</h2></header>
+        <header className="screen-head"><h2>{t("pos.title", lang)}</h2></header>
         <div className="card">
-          <p className="muted">No tenant selected — create or select one first.</p>
-          <button className="primary" onClick={() => go("tenants")}>Go to Tenants</button>
+          <p className="muted">{t("pos.notenant", lang)}</p>
+          <button className="primary" onClick={() => go("tenants")}>
+            {t("pos.gotenants", lang)}</button>
         </div>
       </div>
     );
@@ -110,25 +112,25 @@ export function Positions({ go }: { go: (t: "tenants") => void }) {
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Positions</h2>
+        <h2>{t("pos.title", lang)}</h2>
         <span className="muted small">
-          AI Integration &amp; Role-Mapping · answers sealed in the vault · {session.tenantName}
+          {fill("pos.sub", lang, { name: session.tenantName ?? "" })}
         </span>
       </header>
 
       <div className="card">
-        <h3>Role &amp; industry</h3>
+        <h3>{t("pos.role", lang)}</h3>
         <div className="grid2">
-          <label>Industry<input value={industry} onChange={(e) => setIndustry(e.target.value)} /></label>
-          <label>Job title<input value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} /></label>
-          <label>Department<input value={department} onChange={(e) => setDepartment(e.target.value)} /></label>
-          <label>Oversight level
+          <label>{t("pos.industry", lang)}<input value={industry} onChange={(e) => setIndustry(e.target.value)} /></label>
+          <label>{t("pos.jobtitle", lang)}<input value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} /></label>
+          <label>{t("pos.department", lang)}<input value={department} onChange={(e) => setDepartment(e.target.value)} /></label>
+          <label>{t("pos.oversight", lang)}
             <select value={roleType} onChange={(e) => setRoleType(e.target.value)}>
-              {["frontline", "administrative", "supervisory", "executive"].map((o) =>
-                <option key={o} value={o}>{o}</option>)}
+              {OVERSIGHT.map((o) =>
+                <option key={o} value={o}>{t("pos.oversight." + o, lang)}</option>)}
             </select>
           </label>
-          <label>Staff managed
+          <label>{t("pos.staff", lang)}
             <input type="number" value={managesStaff}
               onChange={(e) => setManagesStaff(Number(e.target.value) || 0)} />
           </label>
@@ -136,99 +138,102 @@ export function Positions({ go }: { go: (t: "tenants") => void }) {
       </div>
 
       <div className="card">
-        <h3>Daily workflow</h3>
-        <span className="muted small">What this role manages day-to-day</span>
-        <Chips options={MANAGES} value={manages} onChange={setManages} />
+        <h3>{t("pos.workflow", lang)}</h3>
+        <span className="muted small">{t("pos.workflow.sub", lang)}</span>
+        <Chips options={MANAGES} value={manages} onChange={setManages}
+               label={(o) => t("pos.manages." + o, lang)} />
         <label className="check">
           <input type="checkbox" checked={documentsIncidents}
             onChange={(e) => setDocumentsIncidents(e.target.checked)} />
-          Documents incidents / maintenance
+          {t("pos.incidents", lang)}
         </label>
         <label className="check">
           <input type="checkbox" checked={manualTasks}
             onChange={(e) => setManualTasks(e.target.checked)} />
-          Has manual report / data-entry tasks
+          {t("pos.manual", lang)}
         </label>
       </div>
 
       <div className="card">
-        <h3>Decision-making &amp; oversight</h3>
-        <span className="muted small">Decisions this role owns (high-stakes ones stay human-in-the-loop)</span>
-        <Chips options={DECISION_SCOPE} value={scope} onChange={setScope} />
+        <h3>{t("pos.decisions", lang)}</h3>
+        <span className="muted small">{t("pos.decisions.sub", lang)}</span>
+        <Chips options={DECISION_SCOPE} value={scope} onChange={setScope}
+               label={(o) => t("pos.scope." + o, lang)} />
         <label className="check">
           <input type="checkbox" checked={complianceAccountable}
             onChange={(e) => setComplianceAccountable(e.target.checked)} />
-          Accountable for safety / regulatory compliance
+          {t("pos.compliance", lang)}
         </label>
       </div>
 
       <div className="card">
-        <h3>Bottlenecks &amp; obsolescence</h3>
-        <span className="muted small">Framed as tasks to automate — never people</span>
-        <label>Redundant tasks (comma-separated)
+        <h3>{t("pos.bottlenecks", lang)}</h3>
+        <span className="muted small">{t("pos.bottlenecks.sub", lang)}</span>
+        <label>{t("pos.redundant", lang)}
           <input value={redundant} onChange={(e) => setRedundant(e.target.value)} /></label>
-        <label>Outdated tasks (comma-separated)
+        <label>{t("pos.outdated", lang)}
           <input value={outdated} onChange={(e) => setOutdated(e.target.value)} /></label>
       </div>
 
       <div className="card">
-        <h3>AI adoption &amp; personalization</h3>
-        <span className="muted small">Assistant capabilities the operator wants</span>
+        <h3>{t("pos.adoption", lang)}</h3>
+        <span className="muted small">{t("pos.adoption.sub", lang)}</span>
         <div className="chips">
-          {CAP_OPTIONS.map(([k, label]) => (
+          {CAP_OPTIONS.map((k) => (
             <button key={k} type="button"
               className={"chip" + (wants.includes(k) ? " on" : "")}
               onClick={() => setWants(wants.includes(k) ? wants.filter((x) => x !== k) : [...wants, k])}
-              title={label}>{label}</button>
+              title={t("pos.cap." + k, lang)}>{t("pos.cap." + k, lang)}</button>
           ))}
         </div>
         <div className="grid2">
-          <label>Tone
+          <label>{t("pos.tone", lang)}
             <select value={tone} onChange={(e) => setTone(e.target.value)}>
-              {["directive", "neutral", "casual", "analytical"].map((o) =>
-                <option key={o} value={o}>{o}</option>)}
+              {TONES.map((o) =>
+                <option key={o} value={o}>{t("pos.tone." + o, lang)}</option>)}
             </select>
           </label>
-          <label>Interaction
+          <label>{t("pos.interaction", lang)}
             <select value={interaction} onChange={(e) => setInteraction(e.target.value)}>
-              {["voice", "text", "hybrid"].map((o) => <option key={o} value={o}>{o}</option>)}
+              {INTERACTIONS.map((o) =>
+                <option key={o} value={o}>{t("pos.interaction." + o, lang)}</option>)}
             </select>
           </label>
         </div>
         <label className="check">
           <input type="checkbox" checked={summarizeLogs}
             onChange={(e) => setSummarizeLogs(e.target.checked)} />
-          Summarize the daily activity log
+          {t("pos.summarize", lang)}
         </label>
         <label className="check">
           <input type="checkbox" checked={learnStyle}
             onChange={(e) => setLearnStyle(e.target.checked)} />
-          Learn my decision-making style (suggest, never take, actions)
+          {t("pos.learnstyle", lang)}
         </label>
         <label className="check">
           <input type="checkbox" checked={comfortable}
             onChange={(e) => setComfortable(e.target.checked)} />
-          Comfortable with phased automation
+          {t("pos.comfortable", lang)}
         </label>
         <label className="check">
           <input type="checkbox" checked={reskilling}
             onChange={(e) => setReskilling(e.target.checked)} />
-          Interested in reskilling / repositioning
+          {t("pos.reskilling", lang)}
         </label>
-        <button className="primary" onClick={build}>Build assistant blueprint</button>
+        <button className="primary" onClick={build}>{t("pos.build", lang)}</button>
         {error && <div className="error">⚠ {error}</div>}
       </div>
 
-      {bp && <BlueprintCard bp={bp} />}
+      {bp && <BlueprintCard bp={bp} lang={lang} />}
 
       <div className="card">
-        <h3>Saved positions <span className="muted small">({ids.length})</span></h3>
-        {ids.length === 0 && <div className="muted">None yet.</div>}
+        <h3>{t("pos.saved", lang)} <span className="muted small">({ids.length})</span></h3>
+        {ids.length === 0 && <div className="muted">{t("pos.none", lang)}</div>}
         <ul className="keylist">
           {ids.map((id) => (
             <li key={id}>
               <span className="mono">🧭 {id}</span>
-              <button onClick={() => load(id)}>Open</button>
+              <button onClick={() => load(id)}>{t("pos.open", lang)}</button>
             </li>
           ))}
         </ul>
@@ -237,17 +242,17 @@ export function Positions({ go }: { go: (t: "tenants") => void }) {
   );
 }
 
-function BlueprintCard({ bp }: { bp: Blueprint }) {
+function BlueprintCard({ bp, lang }: { bp: Blueprint; lang: Lang }) {
   const pct = Math.round(bp.automation.opportunity_score * 100);
   return (
     <div className="card">
-      <h3>Assistant blueprint</h3>
+      <h3>{t("pos.blueprint", lang)}</h3>
       <div className="muted small">
         {bp.role.job_title} · {bp.industry} · {bp.role.oversight_level} ·
         {" "}{bp.assistant.tone} / {bp.assistant.interaction}
       </div>
 
-      <h4>Capabilities</h4>
+      <h4>{t("pos.capabilities", lang)}</h4>
       <ul className="keylist">
         {bp.assistant.capabilities.map((c) => (
           <li key={c.key}>
@@ -257,16 +262,18 @@ function BlueprintCard({ bp }: { bp: Blueprint }) {
         ))}
       </ul>
 
-      <h4>Automation opportunity <span className="muted small">({pct}%)</span></h4>
+      <h4>{t("pos.opportunity", lang)} <span className="muted small">({pct}%)</span></h4>
       <div className="meter"><span style={{ width: `${pct}%` }} /></div>
       {bp.automation.opportunities.length > 0 && (
-        <p className="muted small">Tasks: {bp.automation.opportunities.join(", ")}</p>
+        <p className="muted small">
+          {fill("pos.tasks", lang,
+                { list: bp.automation.opportunities.join(", ") })}</p>
       )}
       <p className="muted small">{bp.automation.note}</p>
 
-      <h4>Human-in-the-loop</h4>
+      <h4>{t("pos.hil", lang)}</h4>
       {bp.human_in_loop.required.length === 0
-        ? <p className="muted small">None flagged.</p>
+        ? <p className="muted small">{t("pos.hil.none", lang)}</p>
         : <ul className="keylist">
             {bp.human_in_loop.required.map((r) => <li key={r}><span>🔒 {r}</span></li>)}
           </ul>}
@@ -274,14 +281,14 @@ function BlueprintCard({ bp }: { bp: Blueprint }) {
 
       {bp.reskilling.interested && bp.reskilling.suggested_paths.length > 0 && (
         <>
-          <h4>Reskilling paths</h4>
+          <h4>{t("pos.paths", lang)}</h4>
           <ul className="keylist">
             {bp.reskilling.suggested_paths.map((p) => <li key={p}><span>↗ {p}</span></li>)}
           </ul>
         </>
       )}
 
-      <h4>Assistant system-prompt</h4>
+      <h4>{t("pos.spec", lang)}</h4>
       <pre className="mono cyan">{bp.assistant_spec}</pre>
     </div>
   );

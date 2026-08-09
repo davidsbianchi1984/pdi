@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, ConnectorRow, RobotModel, Row } from "../api";
+import { deviceLanguage, fill, Lang, t } from "../l10n";
 import { useSession } from "../store";
 
 /**
@@ -19,6 +20,7 @@ import { useSession } from "../store";
  */
 export function Bridges() {
   const { session } = useSession();
+  const lang = (session.language as Lang) ?? deviceLanguage();
   const [connectors, setConnectors] = useState<ConnectorRow[]>([]);
   const [catalog, setCatalog] = useState<Row | null>(null);
   const [models, setModels] = useState<RobotModel[]>([]);
@@ -63,38 +65,38 @@ export function Bridges() {
 
   if (!token) {
     return <div className="screen"><p className="muted center">
-      Select a tenant first.</p></div>;
+      {t("bri.pick", lang)}</p></div>;
   }
 
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Bridges</h2>
-        <span className="muted small">what reaches into this vault</span>
+        <h2>{t("bri.title", lang)}</h2>
+        <span className="muted small">{t("bri.sub", lang)}</span>
       </header>
 
       {error && <div className="error">⚠ {error}</div>}
       {said && <div className="muted small">{said}</div>}
 
       <div className="card">
-        <h3>Connected accounts</h3>
+        <h3>{t("bri.accounts", lang)}</h3>
         <div className="row">
-          <label>Platform
+          <label>{t("bri.platform", lang)}
             <input value={platform} placeholder="mastodon"
                    onChange={(e) => setPlatform(e.target.value)} />
           </label>
-          <label>Handle
+          <label>{t("bri.handle", lang)}
             <input value={handle} placeholder="@ops"
                    onChange={(e) => setHandle(e.target.value)} />
           </label>
           {/* Labelled because a refusal has to name the field the way the
               form does, and the field-label record declines to invent a
               word for a control nobody has labelled. */}
-          <label>Direction
+          <label>{t("bri.direction", lang)}
             <select value={direction}
                     onChange={(e) => setDirection(e.target.value)}>
-              <option value="publish">publish — out</option>
-              <option value="collect">collect — in</option>
+              <option value="publish">{t("bri.dir.publish", lang)}</option>
+              <option value="collect">{t("bri.dir.collect", lang)}</option>
             </select>
           </label>
           <button className="primary" disabled={busy || !platform.trim()}
@@ -102,12 +104,13 @@ export function Bridges() {
                     await api.addConnector({ platform: platform.trim(),
                       direction, handle: handle.trim() || undefined }, token!);
                     setHandle("");
-                  })}>Connect</button>
+                  })}>{t("bri.connect", lang)}</button>
         </div>
         <p className="muted small">
-          {Object.keys((catalog?.providers ?? {}) as object).length ||
-            ((catalog?.providers ?? []) as unknown[]).length}{" "}
-          providers catalogued, each with the directions it can be asked for.
+          {fill("bri.providers", lang, {
+            n: Object.keys((catalog?.providers ?? {}) as object).length ||
+               ((catalog?.providers ?? []) as unknown[]).length,
+          })}
         </p>
         {connectors.map((c) => (
           <div key={c.id}
@@ -125,44 +128,45 @@ export function Bridges() {
                       onClick={() => run(async () => {
                         setBeacon(await api.connectorBeacon(c.id, token!));
                         setQr(await api.connectorQr(c.id, token!));
-                      })}>Its code</button>
+                      })}>{t("bri.itscode", lang)}</button>
               {c.direction === "publish" ? (
                 <>
-                  <input value={post} placeholder="Say something"
+                  <input value={post} placeholder={t("bri.say.ph", lang)}
                          onChange={(e) => setPost(e.target.value)} />
                   <button disabled={busy || !post.trim()}
                           onClick={() => run(async () => {
                             await api.publishFromConnector(c.id,
                               { content: post.trim() }, token!);
                             setPost("");
-                          })}>Publish</button>
+                          })}>{t("bri.publish", lang)}</button>
                 </>
               ) : (
                 <button disabled={busy}
                         onClick={() => run(() => api.ingestToConnector(
                           c.id, [{ content: "an item from elsewhere" }],
-                          token!))}>Ingest</button>
+                          token!))}>{t("bri.ingest", lang)}</button>
               )}
               <button disabled={busy}
                       onClick={() => run(() =>
-                        api.removeConnector(c.id, token!))}>Disconnect</button>
+                        api.removeConnector(c.id, token!))}>
+                {t("bri.disconnect", lang)}</button>
             </div>
           </div>
         ))}
         {beacon && <p className="muted small">{JSON.stringify(beacon)}</p>}
         {qr && (
-          <img alt="the connector's code"
+          <img alt={t("bri.code.alt", lang)}
                src={"data:image/svg+xml;utf8," + encodeURIComponent(qr)}
                style={{ width: 150, height: 150 }} />
         )}
       </div>
 
       <div className="card">
-        <h3>Robots</h3>
+        <h3>{t("bri.robots", lang)}</h3>
         <div className="row">
-          <label>Model
+          <label>{t("bri.model", lang)}
             <select value={model} onChange={(e) => setModel(e.target.value)}>
-              <option value="">Pick a model…</option>
+              <option value="">{t("bri.model.pick", lang)}</option>
               {models.map((m) => (
                 <option key={m.model} value={m.model}>
                   {m.label}{m.maker ? ` — ${m.maker}` : ""}
@@ -170,20 +174,16 @@ export function Bridges() {
               ))}
             </select>
           </label>
-          <input value={robotName} placeholder="Hall NEO"
+          <input value={robotName} placeholder={t("bri.robot.ph", lang)}
                  onChange={(e) => setRobotName(e.target.value)} />
           <button className="primary" disabled={busy || !model}
                   onClick={() => run(async () => {
                     await api.bindRobot({ model,
                       name: robotName.trim() || undefined }, token!);
                     setRobotName("");
-                  })}>Bind</button>
+                  })}>{t("bri.bind", lang)}</button>
         </div>
-        <p className="muted small">
-          The model has to be one the catalogue knows — an unknown one is a
-          404 rather than a row nobody can act on. Everything a bound robot
-          sends in is sealed under this tenant's key like anything else.
-        </p>
+        <p className="muted small">{t("bri.robots.note", lang)}</p>
         {robots.map((r) => (
           <div key={String(r.id)} className="row"
                style={{ padding: "8px 0", borderBottom: "1px solid var(--line)" }}>
@@ -194,30 +194,31 @@ export function Bridges() {
             <button disabled={busy}
                     onClick={() => run(async () => {
                       setData(await api.robotData(String(r.id), token!));
-                    })}>What it has sent</button>
+                    })}>{t("bri.sent", lang)}</button>
             <button disabled={busy}
                     onClick={() => run(() => api.robotIngest(String(r.id),
                       { kind: "observation",
                         content: btoa("a reading from the floor") }, token!))}>
-              Send something in
+              {t("bri.sendin", lang)}
             </button>
             <button disabled={busy}
                     onClick={() => run(() =>
-                      api.unbindRobot(String(r.id), token!))}>Unbind</button>
+                      api.unbindRobot(String(r.id), token!))}>
+              {t("bri.unbind", lang)}</button>
           </div>
         ))}
         {data && <p className="muted small">{JSON.stringify(data)}</p>}
       </div>
 
       <div className="card">
-        <h3>What the other products contributed</h3>
+        <h3>{t("bri.contributed", lang)}</h3>
         <div className="row">
-          <label>Source
-            <input value={source} placeholder="jim-mini"
+          <label>{t("bri.source", lang)}
+            <input value={source} placeholder={t("bri.source.ph", lang)}
                    onChange={(e) => setSource(e.target.value)} />
           </label>
-          <label>Reference
-            <input value={ref} placeholder="a reference to withdraw by"
+          <label>{t("bri.ref", lang)}
+            <input value={ref} placeholder={t("bri.ref.ph", lang)}
                    onChange={(e) => setRef(e.target.value)} />
           </label>
           <button className="primary" disabled={busy || !source.trim()}
@@ -225,18 +226,16 @@ export function Bridges() {
                     const c = await api.contribute({ source: source.trim(),
                       kind: "outcome", payload: { helped: true },
                       ref: ref.trim() || undefined }, token!);
-                    setSaid(`Sealed as ${c.key}`);
-                  })}>Contribute one</button>
+                    setSaid(fill("bri.sealed", lang, { key: c.key }));
+                  })}>{t("bri.contribute", lang)}</button>
           <button disabled={busy || !ref.trim()}
                   onClick={() => run(() =>
                     api.withdrawContribution(ref.trim(), token!))}>
-            Withdraw by reference
+            {t("bri.withdraw", lang)}
           </button>
         </div>
         <p className="muted small">
-          {contributions?.count ?? 0} held. The listing is a count and a set
-          of keys — never contents. A vault holding a thing is not the same
-          as a vault showing it to whoever asks for the list.
+          {fill("bri.held", lang, { n: contributions?.count ?? 0 })}
         </p>
         {(contributions?.keys ?? []).slice(0, 12).map((k) => (
           <div key={k} className="muted small" style={{ padding: "3px 0" }}>
@@ -246,18 +245,16 @@ export function Bridges() {
       </div>
 
       <div className="card">
-        <h3>Something to look at</h3>
+        <h3>{t("bri.look", lang)}</h3>
         <button disabled={busy}
                 onClick={() => run(async () => {
                   const r = await api.seedDemo(admin);
-                  setSaid(`Seeded ${String(r.name)} — `
-                    + `${String(r.records)} records. `
-                    + `${String(r.note ?? "")}`);
-                })}>Seed a demo tenant</button>
-        <p className="muted small">
-          A tenant with records, a bound robot and something ingested, so the
-          rest of this console has something true to draw.
-        </p>
+                  setSaid(fill("bri.seeded", lang, {
+                    name: String(r.name), n: String(r.records),
+                    note: String(r.note ?? ""),
+                  }));
+                })}>{t("bri.seed", lang)}</button>
+        <p className="muted small">{t("bri.seed.note", lang)}</p>
       </div>
     </div>
   );

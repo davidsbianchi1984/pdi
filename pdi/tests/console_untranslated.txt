@@ -19,6 +19,8 @@
 #     0.60.4   177 → 233   **the reader, not the console** — see below
 #     0.60.4   233 → 225   VersionGuard, which the old reader saw none of
 #     0.60.5   225 → 154   Carriers and Exchange
+#     0.60.6   154 → 168   **the reader again** — see below
+#     0.60.6   168 →  91   Positions and Bridges
 #
 # ## The one rise in this record, and why it is not a regression
 #
@@ -94,14 +96,17 @@
 #
 # Worst first, by the count in each file:
 #
-#     Positions.tsx    35        Settings.tsx      7
-#     Bridges.tsx      29        Tenants.tsx       7
-#     Exchange.tsx     27        Overview.tsx      5
-#     Carriers.tsx     24        the rest         23
-#     Records.tsx      11
-#     Continuity.tsx    9        (its remaining rows are server-rendered)
+#     Records.tsx      12        ProblemNotice.tsx   6
+#     Continuity.tsx   10        Audit.tsx           6
+#     Problems.tsx      9        Operations.tsx      6
+#     Settings.tsx      9        Custody.tsx         5
+#     Tenants.tsx       8        VaultLight.tsx      4
+#     Keys.tsx          7        App.tsx             2
+#     Overview.tsx      7
 #
-# ceiling: 154
+# Continuity's remaining rows are server-rendered.
+#
+# ceiling: 91
 #
 # ## 0.60.5, and the criterion for what went next
 #
@@ -132,4 +137,66 @@
 #     two tables saying one English in two Spanishes is one product making two
 #     claims to one reader.
 
-console: 154
+#
+# ## 0.60.6 — the second rise, and what a word boundary is a claim about
+#
+# The reader that got honest at 0.60.4 was still asking one question wrong. It
+# counted a string as English if it matched `[A-Za-z]\s[A-Za-z]` — a letter, a
+# space, a letter — or was a single capitalised word. Four headings on the very
+# screen this round localizes have neither:
+#
+#     Role &amp; industry
+#     Decision-making &amp; oversight
+#     Bottlenecks &amp; obsolescence
+#     Human-in-the-loop
+#
+# Every space in the first three sits beside an HTML entity, so the character
+# before it is `;` and the character after it is `&`. The fourth has no space at
+# all. All four are English a person reads off the screen, and none of them was
+# ever counted. So were `Re-verify`, `publish — out`, `hard — gone`, `soft —
+# recoverable`, `Keys &amp; Retention` (twice) and `append-only · SHA-256
+# hash-chained`.
+#
+#     asked     is there a space with a letter on both sides
+#     mattered  does this read as more than one word
+#
+# Fourteen strings, and this is the third time in this arc that the measurement
+# was the bug: `>\s*([A-Z][^<>{}\n]{2,})\s*<` at 0.60.4, three separate
+# regexes over one source before that, and now a word boundary that only knows
+# about spaces. Each time the fix raised the number before any work lowered it,
+# which is the only order that is honest.
+#
+# `_PHRASE` decodes entities first — the reader sees the `&` the browser draws,
+# not the `&amp;` the source stores — and then looks for two runs of letters
+# joined by anything that is not `/`, `_` or `.`. Those three are excluded
+# deliberately, and each excludes a real string in this console: a path
+# (`POST /profiles/{id}/chat → 500`), an identifier (`PDI_ADMIN_TOKEN`) and a
+# filename (`report.pdf`). `test_the_reader_reads_more_than_a_space` holds both
+# halves — the four headings must count, the three non-sentences must not — so
+# a later simplification of the pattern cannot quietly re-blind it.
+#
+# ## What went with it, and why these two
+#
+# Positions and Bridges were the two remaining screens of the four that held 141
+# strings between them, and they are opposite kinds of screen.
+#
+# **Positions** is the longest form in the product. It asks an operator to
+# describe their own working life — what they manage, what they are accountable
+# for, which of their tasks have gone stale — and hands back an assistant
+# blueprint built from the answers. A misread question there does not produce a
+# confusing screen; it produces a blueprint for a role nobody holds. Its option
+# lists are translated too, though no reader counts them: a heading in Spanish
+# above eight English chips is a half-answer, and the chip *values* stay English
+# keys on the wire, which is the whole reason the words can move.
+#
+# **Bridges** is the opposite — mostly prose, and the prose is a promise. Two
+# paragraphs say what the vault will *not* do: a contribution listing is a count
+# and a set of keys and never contents, and everything a bound robot sends in is
+# sealed under the tenant's key like anything else. A promise about custody only
+# counts if the person it is made to can read it.
+#
+# One row was decided rather than translated. `bri.source.ph` is the placeholder
+# `jim-mini` — a product's own name, the same word in all ten languages. It has
+# a row so that the record shows a decision instead of an oversight.
+
+console: 91

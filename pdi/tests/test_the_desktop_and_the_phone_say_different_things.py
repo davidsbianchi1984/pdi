@@ -110,6 +110,7 @@ make sure a zero here always comes with the reason.
 
 from __future__ import annotations
 
+import html
 import json
 import re
 import subprocess
@@ -262,6 +263,28 @@ _HOLE = re.compile(r"\{[^}]*\}")
 #: rest of this audit uses, because a lone token is as often an API value as
 #: a word and a rule that raises a ratcheted count under-counts on purpose.
 _WORDS = re.compile(r"[A-Za-z]\s[A-Za-z]|^[A-Z][a-z]{2,}$")
+#: Two words joined by something other than a space, which `_WORDS` cannot
+#: see because it asks for whitespace between two letters. Widened at 0.60.6
+#: after the reader was found blind to four headings on the screen this
+#: release localizes: `Role &amp; industry`, `Decision-making &amp;
+#: oversight`, `Bottlenecks &amp; obsolescence`, `Human-in-the-loop`. Each
+#: is English a person reads, and each has no letter-space-letter anywhere
+#: in it — the gap always falls beside an entity or a hyphen.
+#:
+#:     asked     is there a space with a letter on both sides
+#:     mattered  does this read as more than one word
+#:
+#: `/`, `_` and `.` are excluded from the joiner because they mark the three
+#: things this reader must not count: a path (`POST /profiles/{id}/chat`),
+#: an identifier (`PDI_ADMIN_TOKEN`) and a filename (`report.pdf`). Entities
+#: are decoded first, so the reader sees the `&` the browser draws rather
+#: than the `&amp;` the source stores.
+_PHRASE = re.compile(r"[A-Za-z]{2,}[^A-Za-z0-9/_.]+[A-Za-z]{2,}")
+
+
+def _is_english(s: str) -> bool:
+    s = html.unescape(s)
+    return bool(_WORDS.search(s) or _PHRASE.search(s))
 
 
 #: The extractor QRME and JIM both moved to, ported here at 0.60.4.
@@ -313,12 +336,12 @@ def _console_english() -> int:
         found = set()
         for s in text_nodes.get(rel, []):
             s = _HOLE.sub("", s).strip()
-            if _WORDS.search(s):
+            if _is_english(s):
                 found.add(s)
         for pat in _JSX:
             for s in pat.findall(source):
                 s = _HOLE.sub("", s).strip()
-                if _WORDS.search(s):
+                if _is_english(s):
                     found.add(s)
         total += len(found)
     return total
@@ -405,6 +428,33 @@ def test_the_reader_reads_more_than_the_regex_did():
         f"sees {regex_total} — if those have converged, either the console "
         "has been rewritten into shapes the regex can read, or the reader "
         "has quietly gone back to being one")
+
+
+def test_the_reader_reads_more_than_a_space():
+    """0.60.6's finding, and the third time in this arc that the reader was
+    the defect.
+
+    Both halves are asserted, because a pattern wide enough to see the
+    headings is also wide enough to start counting paths and identifiers,
+    and a ratchet that counts `PDI_ADMIN_TOKEN` as a sentence is as wrong as
+    one that misses `Role & industry`.
+    """
+    reads = ["Role &amp; industry", "Decision-making &amp; oversight",
+             "Bottlenecks &amp; obsolescence", "Human-in-the-loop",
+             "Re-verify", "publish — out", "hard — gone",
+             "Keys &amp; Retention", "append-only · SHA-256 hash-chained"]
+    for s in reads:
+        assert _is_english(s), (
+            f"{s!r} is English a person reads off this console and the "
+            "reader cannot see it — which is how fourteen strings sat "
+            "outside a ratchet that looked satisfied")
+
+    not_sentences = ["report.pdf", "PDI_ADMIN_TOKEN",
+                     "POST /profiles/&#123;id&#125;/chat → 500"]
+    for s in not_sentences:
+        assert not _is_english(s), (
+            f"{s!r} is a filename, an identifier or a path — counting it "
+            "would inflate the backlog with rows no translation can fix")
 
 
 def test_every_console_row_is_complete_in_every_language():
