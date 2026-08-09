@@ -4,6 +4,35 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.60.2] — 2026-08-09
+
+### The compiler was in the room the whole time and nothing listened
+
+`native.yml` had been failing on a trigger nothing in the release loop ever
+reached. It fires on any branch push now. iOS and Android came green first;
+Windows took four rounds.
+
+    asked     do the shells read the members they name
+    mattered  do the shells compile
+
+- `TenantExport` declares a `Dictionary<string, List<Dictionary<...>>>` in a
+  file that never imported `System.Collections.Generic`, and `AuditPage`
+  handles four `RoutedEventArgs` in a file that imported
+  `Microsoft.UI.Xaml.Controls` and `.Navigation` but not the namespace those
+  two live under
+- `OfflineStatus` built its URI from a `_base` field the class does not have,
+  and `ExportEverything` called a `Get` helper that exists in the QRME shell
+  and not in this one
+- `OnExportEverything` reported through a `ShowStatus` this page has never
+  had; the success line goes to `AdminStatus` and the failure to
+  `ShowAdminError`, the way every other handler on the page does
+- `Send<T>` required a token, and the offline posture is the one public route
+  here — it takes an empty one now and leaves the header off, because a
+  bearer header carrying nothing is a worse answer than no header
+- Both C# record readers end a record where C# does: at `);`, or at `)`
+  before a body. Found in QRME, where it reported one record's fields against
+  its neighbour's name
+
 ## [0.60.1] — 2026-08-09
 
 ### The sweep this product's history did not need, and one reason it has it anyway

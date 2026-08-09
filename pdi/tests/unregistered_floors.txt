@@ -49,6 +49,7 @@
 # ever audit.
 #
 # ceiling: 52
+
 test_a_binding_is_not_a_door.py:134: len(found) > 20
 test_a_form_that_asks_for_it_has_a_label_for_it.py:121: controls > 2000
 test_a_native_binding_is_not_a_door_either.py:181: n > 20
@@ -72,17 +73,17 @@ test_the_key_the_server_never_sends.py:221: len(vocabulary) >= 500
 test_the_keys_the_android_client_reads.py:359: len(reads) >= 16
 test_the_keys_the_android_client_reads.py:360: sum((len(k) for _, k in reads)) >= 28
 test_the_keys_the_android_client_reads.py:383: len(driven) >= 14
-test_the_member_that_isnt_there.py:271: len(_declared(lang, REPO / decl)) >= 5
 test_the_member_that_isnt_there.py:280: len(keys) >= 12
 test_the_member_that_isnt_there.py:281: len(used) >= 8
+test_the_member_that_isnt_there.py:271: len(_declared(lang, REPO / decl)) >= 5
 test_the_readme_says_what_shipped.py:127: len(_rows()) >= 40
 test_the_readme_says_what_shipped.py:130: len(_released()) >= 40
 test_the_refusal_names_the_field_on_the_form.py:106: len(found) >= 90
 test_the_refusal_that_handed_the_body_back.py:163: len(found) > 30
 test_the_refusal_that_handed_the_body_back.py:167: reached > 25
 test_the_refusal_that_handed_the_body_back.py:289: len(i18n._VALIDATION) >= 10
-test_the_shape_the_client_expects.py:299: len(_bindings()) >= 15
-test_the_shape_the_client_expects.py:308: len(driven) >= 10
+test_the_shape_the_client_expects.py:301: len(_bindings()) >= 15
+test_the_shape_the_client_expects.py:310: len(driven) >= 10
 test_the_shape_the_console_expects.py:402: len(shapes) >= 30
 test_the_shape_the_console_expects.py:403: sum((len(f) for f in shapes.values())) >= 215
 test_the_shape_the_console_expects.py:404: len(_gets()) >= 55
