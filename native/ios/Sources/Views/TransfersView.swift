@@ -5,6 +5,8 @@ import SwiftUI
 /// in from a counterparty (one-shot submit token), with an "act as sender"
 /// form to exercise the loop end to end.
 struct TransfersView: View {
+    @EnvironmentObject var state: AppState
+
     enum Direction: String, CaseIterable {
         case outbound = "Outbound", intake = "Intake"
 

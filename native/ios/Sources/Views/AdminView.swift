@@ -5,6 +5,7 @@ import SwiftUI
 /// memory. Rotation re-seals every record immediately; retire deletes
 /// non-active versions (safe only after a reseal).
 struct AdminCard: View {
+    @EnvironmentObject var state: AppState
     @State private var adminToken = ""
     @State private var info: KeysInfo?
     @State private var status: String?
@@ -105,7 +106,7 @@ extension AdminCard {
         Task {
             do {
                 let all = try await ApiClient.shared.exportEverything(
-                    token: AppState.shared.token ?? "")
+                    token: state.token ?? "")
                 let rows = all.tables.values.reduce(0) { $0 + $1.count }
                 held = "\(all.tables.count) table(s), \(rows) row(s) — \(all.note)"
             } catch {
