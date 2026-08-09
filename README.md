@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.60.0** ([changelog](CHANGELOG.md) ·
+**Current release: v0.60.1** ([changelog](CHANGELOG.md) ·
 [release notes](RELEASE_NOTES.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
@@ -200,6 +200,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.60.1** | **The sweep this product's history did not need, and one reason it has it anyway** — `cascade()` has read the schema since before 0.59.9, so the orphan class the siblings are cleaning up was never created here. `python -m pdi.orphans` lands anyway: a wipe removes the `tenants` row from the *caller* rather than the cascade, and one of those two callers is a scheduled sweep nobody reads. `audit` is kept and `bequests` retired, both borrowed from the cascade. Plus the member guard, which read `AppState.Current.X` only when a page spelled it out — next door that widening found 38 broken reaches; this tree came back clean |
 | **0.60.0** | **An export is measured against the schema too** — `/snapshot` is the disaster-recovery export and is ciphertext-only on purpose, so nothing answered *what do you hold about us*: hosting history, bequests, beacons and the paperwork on file were not available to the tenant they describe. `GET /export` now answers, derived from the schema, redacting credentials **and** the sealed bytes that belong in the snapshot |
 | **0.59.9** | **An erase is measured against the schema, not a list somebody wrote** — this vault already derived its wipe from the schema and was the only one of the three that did; both siblings carried hand-written lists and left forty-odd tables standing. The behaviour was right and unguarded, so the round that carried it next door also wrote it down here: plant a row in every tenant-scoped table, wipe, and look |
 | **0.59.8** | **The check that covered one client of four** — 0.59.7 asked whether the shape a screen declares is the shape its route answers with, and asked it of the console alone. The three shells decode the same answers into their own types, and a wrong one there throws the same way. Extended to all four clients (console 116 · iOS 31 · Android 24 · Windows 20); no disagreements, and the reach is now a record that cannot go down, because a reader that stops matching reports agreement |
@@ -757,6 +758,30 @@ section), **desktop** (`python -m pdi desktop`, the Electron app on this
 PC), **packaged installer** (`.dmg`/`.exe`/`.AppImage` from the releases
 page — no toolchain needed), or **headless API** (`python -m pdi serve`).
 Same backend, same data, same token checks in every form.
+
+### Maintenance: rows a wipe could not finish
+
+`cascade()` has read the schema since before 0.59.9, so this vault never
+accumulated the orphan class the siblings' one-off sweep is cleaning up. The
+residue this command exists for is a different one: a wipe is a loop over
+sixty-some tables, and the `tenants` row is removed by the **caller** rather
+than by the cascade — deliberately, because the retention sweep and the
+operator's wipe hold different locks on it. Two callers, one of which runs on
+a schedule with nobody reading the result. If either lands the tenant's
+removal and not the rest, every route 404s and nothing looks at what is left.
+
+```bash
+python -m pdi.orphans            # count them, change nothing
+python -m pdi.orphans --json     # the same survey, machine-readable
+python -m pdi.orphans --apply    # clear them
+```
+
+**Dry by default.** The scope is the cascade's own reader, so `audit` is kept
+— the chain is the proof a wipe happened — and `bequests` is **retired rather
+than deleted**, using the cascade's own `SET` clause: an heir presenting a
+grant should be told *revoked*, not met with silence. A row counts as an
+orphan only when its `tenant_id` names a tenant not in `tenants`; rows with a
+NULL or empty subject are left alone.
 
 `python -m pdi phone` builds the console if it's missing (first run installs the
 npm dependencies too), prints the phone URL **with a QR code right in the

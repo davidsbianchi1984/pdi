@@ -4,6 +4,70 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.60.1] — 2026-08-09
+
+### The sweep this product's history did not need, and one reason it has it anyway
+
+The siblings gained a maintenance command this round because their cascades
+used to run off hand-written lists: every erase before 0.59.9 left forty-odd
+tables standing, and those rows are still sitting in every deployment that has
+been running since. That is not this product's history — `cascade()` has read
+the schema since before then, and the residue those two are cleaning up was
+never created here.
+
+It is here anyway for two reasons, and the second is about me rather than the
+code.
+
+A wipe is a loop over sixty-some tables, and the `tenants` row is removed by
+the **caller** rather than by the cascade — deliberately, because the retention
+sweep and the operator's wipe hold different locks on it. Two callers, one of
+which runs on a schedule with nobody reading the result. If either ever lands
+the tenant's removal and not the rest, nothing in the running product will
+look at what is left: the tenant is gone, so every route 404s.
+
+    asked     does the wipe clear every table
+    mattered  what is left when one did not finish
+
+And `guard_divergences.txt` records a guard carried by two products and
+missing from the third, on a ceiling that only shrinks. It exists because
+fixes stop travelling exactly when somebody decides the third product does not
+need this one — which is what I had decided, in a paragraph, until the record
+counted it.
+
+### Added
+
+- `python -m pdi.orphans` — dry by default, `--apply` to act, `--json` for the
+  survey machine-readable. Scope is `vault.tenant_scoped_tables()` minus
+  `vault.WIPE_KEEPS`, borrowed from the cascade rather than restated.
+- `audit` is kept, for the reason it is always kept: the chain is the proof a
+  wipe happened, and a sweep that tidied it away would be erasing the evidence
+  of the thing it is cleaning up after.
+- `bequests` is **retired, not deleted**, using the cascade's own `SET` clause.
+  An heir on the other side is holding a grant; erasing the row makes their
+  credential fail with silence, and retiring it makes the same credential fail
+  with *revoked*. That decision was made by an earlier round and a cleanup
+  command is not the place to overturn it.
+- `test_what_the_old_cascade_left_behind.py`, whose sharp property is **does
+  it leave a living tenant alone**.
+
+### Fixed
+
+- `test_the_member_that_isnt_there.py` reads `AppState.Current.X` and
+  `ApiClient.Shared.X` off the desktop pages to catch the compile errors no
+  toolchain on this machine can catch. It matched only the full spelling, so a
+  page that put the singleton in a local first — `var st = AppState.Current;`
+  then `st.Uid` — was read as reaching for nothing at all, and the row's floor
+  stayed comfortably met on the call sites it could still see. Next door that
+  widening found thirty-eight broken reaches across two files, one of them a
+  whole screen that had never compiled. This tree came back clean, which is
+  worth having asserted rather than assumed.
+- Aliases are expanded **only** when the name is bound to that singleton and
+  nothing else anywhere in the file. The first cut rewrote whole files and
+  reported twenty-eight perfectly real members as missing — a page says
+  `var s = AppState.Current;` in one handler and `mine.Select(s => …)` in
+  another, and this reader has no scopes. A guard that reports defects that
+  are not there is one nobody reads.
+
 ## [0.60.0] — 2026-08-09
 
 ### An export is measured against the schema too — and drops the credentials
