@@ -1,7 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.60.7** ([changelog](CHANGELOG.md) ·
-[release notes](RELEASE_NOTES.md)) — one of three products
+**Current release: v0.60.7** ([changelog](CHANGELOG.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
 together, so one number names one combination of all three.
