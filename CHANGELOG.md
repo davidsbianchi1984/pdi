@@ -4,6 +4,52 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.60.8] - 2026-08-10
+
+### The console reads in ten languages
+
+Keys, Overview, Audit, Operations, VaultLight and App -- the last thirty-two
+strings. `console_untranslated.txt` reaches **0** and its first line changes
+from `backlog` to `floor`, which is a different claim: a backlog of zero says
+nothing is left to do, a floor of zero says nothing may be added.
+
+`VaultLight`'s English lived entirely in `aria-label` and `title` -- invisible
+to everybody except the reader who most depends on it.
+
+    asked     does this screen look translated
+    mattered  does the screen reader read it in the reader's language
+
+`test_the_reader_reads_more_than_the_regex_did` flipped direction, and the flip
+is the finding. At zero the honest extractor sees none while the regex it
+replaced still reports six -- every one the word `Promise`, caught out of
+`=> Promise<...>`. It was never only under-counting prose; it was counting
+syntax as prose. The assertion is now inequality rather than a direction.
+
+### A release checklist that names its fields
+
+0.60.7 was bumped from a prose list that named Android's two version fields and
+left iOS's unnamed, and a build code shares no characters with the marketing
+version it belongs to. `release_fields.txt` replaces it: byte-identical in all
+three products, thirteen rows, each naming its file, field, shape and locator.
+Three guards read it, including one that fails when a native shell carries a
+version no row names.
+
+Its first run found `cloudgw/api.py`, a separate deployable on its own version
+that no release bumps -- which a list of *files to edit* cannot express.
+
+### The release body had three sources and no reader
+
+412 of 530 published releases across the three products carried the same prose,
+one identical body spanning 134 tags from `app-v0.24.0`, still claiming *414
+tests passing*. `RELEASE_NOTES.md` was last written for v0.24.0 and
+`sync-release-notes.yml` published it over every curated body since.
+
+Both are deleted. `release-integrity.yml` replaces them as a reader rather than
+a writer: it strips GitHub's generated sections and asserts the remaining prose
+is not empty, not the v0.24.0 sentinel, and not byte-identical to the previous
+release's. It runs on the tag and is **not** a merge gate -- a release body does
+not exist until the tag is pushed.
+
 ## [0.60.7] — 2026-08-09
 
 ### A screen that imports the translator is not a translated screen

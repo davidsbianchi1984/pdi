@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.60.7** ([changelog](CHANGELOG.md)) — one of three products
+**Current release: v0.60.8** ([changelog](CHANGELOG.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
 together, so one number names one combination of all three.
@@ -199,6 +199,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.60.8** | **The console reads in ten languages** -- the last six screens; `console_untranslated.txt` reaches 0 and becomes a floor rather than a backlog. A release checklist naming every version field replaces the prose list a bump was driven from. `RELEASE_NOTES.md` and its sync workflow deleted after 412 of 530 releases proved to carry one frozen v0.24.0 body; a reader replaces the writer |
 | **0.60.7** | **A screen that imports the translator is not a translated screen** — two screens had been counted as localized since 0.48.3 while still holding fifteen English strings, six of them already in the table under keys the screen was importing `t` to reach. A guard now holds the claim; five more screens localized. 91 → 32. The type checker caught a second `const t = …` shadowing the translator |
 | **0.60.6** | **A word boundary is a claim about a language** — Positions and Bridges localized, and the reader grading the work was wrong a third time: it asked for a letter-space-letter, so `Role &amp; industry`, `Human-in-the-loop` and twelve more were English nothing counted. 154 → 168 → 91. The drift guard caught *Bind* colliding with *Connect*; a seventh screen-grep now follows the key |
 | **0.60.5** | **Carriers and Exchange, on the criterion of decisions before descriptions** — the console side of the courier's surface, and the screen where nothing has an undo. 225 → 154 across 87 rows. The type checker caught a `map((t) => …)` shadowing the translator; the drift guard caught 7 wordings disagreeing with the shells; two guards that greped English now follow the key |
