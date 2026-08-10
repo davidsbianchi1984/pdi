@@ -1,6 +1,6 @@
 # PDI (Private Data Infrastructure) Terms of Service
 
-*Version 1.0 — effective 2026-07-24. Served by the API at `GET /terms`.
+*Version 1.1 — effective 2026-08-10. Served by the API at `GET /terms`.
 PDI is business-to-business infrastructure: the "Customer" is the
 organization whose tenant is provisioned, and these Terms bind the
 Customer and every system and user it connects. The version in force is
@@ -10,6 +10,23 @@ launch.*
 
 **By requesting a tenant, holding a tenant token, or sending data to the
 Service, the Customer agrees to these Terms.**
+
+## Beta status
+
+The Service is currently a **beta**. That means, concretely:
+
+- It is offered for testing and evaluation. Features may change, break, or
+  be removed without notice, and availability is not guaranteed.
+- **Your data may be lost.** Backups are best-effort; the beta may be reset
+  or migrated. Do not make the Service the only home of anything you cannot
+  afford to lose.
+- **No fees are charged during the beta.** Plans that display a future
+  price are free while the beta runs; the displayed price is the intended
+  charge after the beta ends, and no charge will begin without notice and
+  your renewed agreement.
+- The operator may suspend or end the beta, or any tester's access, at any
+  time. Where practical, reasonable notice will be given before data is
+  removed.
 
 ## 1. The Service
 
@@ -115,3 +132,16 @@ by counsel]`
 *Related: the Business Associate Agreement template
 (docs/baa-template.md, machine-enforced per §3), the enterprise posture
 (docs/enterprise.md), and the operations guide (docs/operations.md).*
+
+## Accessibility commitment
+
+Ability is not a gate to this Service. Every feature is usable by text
+alone — nothing requires hearing or speech — and voice interaction is an
+additional input path, never a requirement. The operator maintains an
+active accessibility program driving screen-reader, keyboard-only,
+reduced-motion and related support to complete, with gaps recorded as
+tracked work. If a disability — named anywhere or not — stands between
+you and any part of the Service, say so through the Service's help
+surface; such reports are treated as sensitive and become tracked work.
+Nothing in these Terms limits rights you hold under applicable
+accessibility law.

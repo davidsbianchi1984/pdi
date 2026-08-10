@@ -119,3 +119,18 @@ def test_local_development_still_gets_an_ephemeral_key(tmp_path, monkeypatch):
     sealed = crypto.seal("a note", aad="ten_1")
     assert crypto.open_(sealed, aad="ten_1") == "a note"
     pdi_db.reset()
+
+def test_health_says_whether_signup_needs_a_key(client):
+    """The siblings' signup screens read a `signup_key` flag from /health to
+    know whether to ask for an invite key before collecting a form that would
+    end in a 403.
+
+    This vault has no signup to gate: accounts here are tenants, minted by
+    the operator's admin token, never self-served. So its /health advertises
+    no such flag — a field that could never be true would only teach a
+    console to render a door onto a wall. The decision is carried under the
+    shared name so the three suites keep asking the same question and this
+    product's answer stays written down.
+    """
+    body = client.get("/health").json()
+    assert "signup_key" not in body
