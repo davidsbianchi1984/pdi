@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { api, type KeyVersion, type RetentionPolicy } from "../api";
 import { useSession } from "../store";
+import { deviceLanguage, Lang, t } from "../l10n";
 
 export function Overview({ go }: { go: (t: "tenants" | "keys" | "audit") => void }) {
   const { session } = useSession();
+  const lang = (session.language as Lang) ?? deviceLanguage();
   const [health, setHealth] = useState<string>("…");
   const [keys, setKeys] = useState<KeyVersion[]>([]);
   const [ret, setRet] = useState<RetentionPolicy | null>(null);
@@ -29,7 +31,7 @@ export function Overview({ go }: { go: (t: "tenants" | "keys" | "audit") => void
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Overview</h2>
+        <h2>{t("ov.title", lang)}</h2>
         <span className={"dot-online" + (health === "ok" ? "" : " off")}>● {health === "ok" ? "Vault online" : health}</span>
       </header>
       {error && <div className="error">⚠ {error}</div>}
@@ -44,25 +46,25 @@ export function Overview({ go }: { go: (t: "tenants" | "keys" | "audit") => void
       </div>
 
       <div className="card">
-        <h3>Retention — up to forever</h3>
+        <h3>{t("ov.retention", lang)}</h3>
         {ret ? (
           ret.record_retention.length ? (
             <table className="tbl">
-              <thead><tr><th>tenant</th><th>record retention</th></tr></thead>
+              <thead><tr><th>tenant</th><th>{t("ov.recordret", lang)}</th></tr></thead>
               <tbody>
                 {ret.record_retention.map((r) => (
                   <tr key={r.tenant_id}><td>{r.name}</td><td className="cyan">{r.retention}</td></tr>
                 ))}
               </tbody>
             </table>
-          ) : <div className="muted">No tenants yet.</div>
+          ) : <div className="muted">{t("ov.none", lang)}</div>
         ) : <div className="muted">Loading…</div>}
       </div>
 
       <div className="actions">
-        <button onClick={() => go("tenants")}>Tenants</button>
-        <button onClick={() => go("keys")}>Keys &amp; Retention</button>
-        <button onClick={() => go("audit")}>Audit</button>
+        <button onClick={() => go("tenants")}>{t("tn.title", lang)}</button>
+        <button onClick={() => go("keys")}>{t("ky.title", lang)}</button>
+        <button onClick={() => go("audit")}>{t("au.title", lang)}</button>
       </div>
     </div>
   );

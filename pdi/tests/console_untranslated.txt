@@ -1,4 +1,4 @@
-# status: backlog — 1 row
+# status: floor — 1 row
 #
 # English on PDI's desktop console. Checked by
 # test_the_desktop_and_the_phone_say_different_things.py, and ratcheted in both
@@ -23,6 +23,7 @@
 #     0.60.6   168 →  91   Positions and Bridges
 #      (next)    91 →  76   Continuity and Custody — *finished* this time
 #      (next)    76 →  32   Records, Problems, Settings, Tenants, ProblemNotice
+#      (next)    32 →   0   Keys, Overview, Audit, Operations, VaultLight, App
 #
 # ## The one rise in this record, and why it is not a regression
 #
@@ -98,16 +99,15 @@
 #
 # Worst first, by the count in each file:
 #
-#     Keys.tsx          7        Operations.tsx      6
-#     Overview.tsx      7        VaultLight.tsx      4
-#     Audit.tsx         6        App.tsx             2
+# Nothing. The list is empty, which is why the first line of this file now
+# reads **floor** rather than backlog: there is no backlog left to work down,
+# and the only direction the number can move is up. It may not.
 #
-# Seven screens came off this list in the round below. The prose still visible
-# on Continuity that no key covers is server-rendered — it arrives already in
-# the reader's language, or does not, at the backend's discretion rather than
-# the console's.
+# The prose still visible on Continuity that no key covers is server-rendered —
+# it arrives already in the reader's language, or does not, at the backend's
+# discretion rather than the console's.
 #
-# ceiling: 32
+# ceiling: 0
 #
 # ## 0.60.5, and the criterion for what went next
 #
@@ -299,4 +299,32 @@
 # `transfers.map((t) => …)` in Exchange — which is why the method says to drive
 # it rather than read it.
 
-console: 32
+console: 0
+
+# ## 0 — the last six, and what a floor of zero is a claim about
+#
+# Keys, Overview, Audit, Operations, VaultLight and App. Thirty-two strings,
+# and five of them were English a table already held: `cu.versions` for the key
+# list, and the shells' `tab.overview` and `tab.audit`, whose wordings are
+# copied rather than written again for the third round running.
+#
+# `app.sub` was decided rather than assumed. *Private Data Infrastructure* is
+# what `PDI` stands for, and a reader who cannot read English gets nothing from
+# it — so the description moves and the acronym does not, the same split every
+# product in this estate makes between a name and a sentence.
+#
+# `VaultLight` is the screen this round nearly left half-done, and it is worth
+# recording why. Its English lives entirely in `aria-label` and `title`, which
+# is to say it is invisible to everybody except the reader who most depends on
+# it. Three of its four strings went in the first pass and the fourth — the
+# `aria-label` on the status container itself — was found by re-measuring
+# rather than by reading the file again.
+#
+#     asked     does this screen look translated
+#     mattered  does the screen reader read it in the reader's language
+#
+# A floor of zero is a stronger claim than a backlog of zero would be. A
+# backlog says *nothing left to do*; a floor says *nothing may be added*. Every
+# new screen from here arrives with its strings in the table or it arrives red,
+# and `test_a_screen_that_imports_the_translator_holds_no_english` holds the
+# other half: a screen may not be wired and unfinished at the same time.

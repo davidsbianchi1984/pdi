@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "./api";
+import { deviceLanguage, Lang, t } from "./l10n";
+import { useSession } from "./store";
 
 /**
  * The vault's light, always on screen — the sibling of QRME's agent
@@ -15,6 +17,8 @@ const POLL_MS = 15000;
 const MIN_KEY = "pdi.lights.min";
 
 export function VaultLight() {
+  const { session } = useSession();
+  const lang = (session.language as Lang) ?? deviceLanguage();
   const [health, setHealth] = useState<{ status: string;
     version?: string } | null>(null);
   const [unreachable, setUnreachable] = useState(false);
@@ -37,8 +41,8 @@ export function VaultLight() {
     return (
       <button className="vl-dot vl-dot-off"
               onClick={load}
-              aria-label="The vault light can't reach the backend — press to retry"
-              title="The vault light can't reach the backend — press to retry" />
+              aria-label={t("vl.unreachable", lang)}
+              title={t("vl.unreachable", lang)} />
     );
   }
 
@@ -55,12 +59,12 @@ export function VaultLight() {
     return (
       <button className="vl-dot" style={{ background: color }}
               onClick={() => setMinimized(false)}
-              aria-label="Show the vault light" title="Vault light" />
+              aria-label={t("vl.show", lang)} title={t("vl.title", lang)} />
     );
   }
 
   return (
-    <div className="vault-light" role="status" aria-label="Vault light"
+    <div className="vault-light" role="status" aria-label={t("vl.title", lang)}
          style={{ borderColor: color }}>
       <span className="vl-lamp" style={{ background: color }} />
       <span className="vl-text">
@@ -68,7 +72,7 @@ export function VaultLight() {
         {health.version ? ` · v${health.version}` : ""}
       </span>
       <button className="vl-min" onClick={() => setMinimized(true)}
-              aria-label="Minimize the vault light">–</button>
+              aria-label={t("vl.min", lang)}>–</button>
     </div>
   );
 }

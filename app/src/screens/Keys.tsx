@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { api, type KeyVersion, type RetentionPolicy } from "../api";
 import { useSession } from "../store";
+import { deviceLanguage, Lang, t } from "../l10n";
 
 export function Keys() {
   const { session } = useSession();
+  const lang = (session.language as Lang) ?? deviceLanguage();
   const [keys, setKeys] = useState<KeyVersion[]>([]);
   const [ret, setRet] = useState<RetentionPolicy | null>(null);
   const [busy, setBusy] = useState(false);
@@ -56,21 +58,21 @@ export function Keys() {
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Keys &amp; Retention</h2>
-        <span className="muted small">envelope encryption · retention up to forever</span>
+        <h2>{t("ky.title", lang)}</h2>
+        <span className="muted small">{t("ky.sub", lang)}</span>
       </header>
       {error && <div className="error">⚠ {error}</div>}
       {msg && <div className="ok-note">{msg}</div>}
 
       <div className="card">
-        <h3>Key versions <span className="muted small">({keys[0]?.provider || "envelope"})</span></h3>
+        <h3>{t("cu.versions", lang)} <span className="muted small">({keys[0]?.provider || "envelope"})</span></h3>
         <table className="tbl">
           <thead><tr><th>version</th><th>state</th><th>created</th></tr></thead>
           <tbody>
             {keys.map((k) => (
               <tr key={k.version}>
                 <td className="mono">v{k.version}</td>
-                <td>{k.active ? <span className="cyan">active</span> : <span className="muted">retired-able</span>}</td>
+                <td>{k.active ? <span className="cyan">active</span> : <span className="muted">{t("ky.retirable", lang)}</span>}</td>
                 <td className="muted small">{k.created_at.slice(0, 19).replace("T", " ")}</td>
               </tr>
             ))}
@@ -82,8 +84,8 @@ export function Keys() {
       </div>
 
       <div className="card">
-        <h3>Retention</h3>
-        <div className="muted small">Recovery window: <span className="cyan">{ret?.recovery_window}</span></div>
+        <h3>{t("ky.retention", lang)}</h3>
+        <div className="muted small">{t("ky.window", lang)} <span className="cyan">{ret?.recovery_window}</span></div>
         {ret?.record_retention.map((r) => (
           <div className="row-inline" key={r.tenant_id}>
             <span>{r.name}</span>
@@ -94,7 +96,7 @@ export function Keys() {
             </select>
           </div>
         ))}
-        <button onClick={sweep}>Run retention sweep</button>
+        <button onClick={sweep}>{t("ky.sweep", lang)}</button>
       </div>
     </div>
   );

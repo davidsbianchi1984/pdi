@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSession } from "./store";
+import { deviceLanguage, Lang, t } from "./l10n";
 import { ProblemNotice } from "./ProblemNotice";
 import { VersionGuard } from "./VersionGuard";
 import { VaultLight } from "./VaultLight";
@@ -38,6 +39,7 @@ const NAV: { id: Tab; label: string; icon: string }[] = [
 
 export function App() {
   const { session } = useSession();
+  const lang = (session.language as Lang) ?? deviceLanguage();
   const [tab, setTab] = useState<Tab>("overview");
   return (
     <div className="app">
@@ -47,7 +49,7 @@ export function App() {
           <span className="orb" />
           <div>
             <div className="brand-name">PDI</div>
-            <div className="brand-sub">Private Data Infrastructure</div>
+            <div className="brand-sub">{t("app.sub", lang)}</div>
           </div>
         </div>
         <nav>
@@ -68,7 +70,7 @@ export function App() {
               <span className="dot-online">●</span> {session.tenantName}
             </>
           ) : (
-            <span className="muted small">no tenant selected</span>
+            <span className="muted small">{t("app.notenant", lang)}</span>
           )}
         </div>
       </aside>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, OperationsEntry, ProvenanceOut } from "../api";
 import { useSession } from "../store";
+import { deviceLanguage, Lang, t } from "../l10n";
 
 // The operations journal: coordination records QRME sealed into this
 // tenant's vault, readable in place. A view, never a side door — every
@@ -8,6 +9,7 @@ import { useSession } from "../store";
 // audit chain carries these reads like any others.
 export function Operations() {
   const { session } = useSession();
+  const lang = (session.language as Lang) ?? deviceLanguage();
   const [entries, setEntries] = useState<OperationsEntry[]>([]);
   const [proof, setProof] = useState<Record<string, ProvenanceOut>>({});
   const [note, setNote] = useState("");
@@ -22,22 +24,20 @@ export function Operations() {
 
   if (!session.tenantToken) {
     return <div className="screen"><p className="muted center">
-      Select a tenant first — the journal opens with the tenant's own token.</p></div>;
+      {t("op.pick", lang)}</p></div>;
   }
 
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Operations</h2>
-        <span className="muted small">coordination plans QRME sealed here — every read audited</span>
+        <h2>{t("op.title", lang)}</h2>
+        <span className="muted small">{t("op.sub", lang)}</span>
       </header>
 
       {entries.length === 0 && (
         <div className="card">
           <p className="muted center">
-            Nothing yet. When QRME's departments coordinate with the tandem
-            configured, each joint plan seals into this vault and appears
-            here.
+            {t("op.none", lang)}
           </p>
         </div>
       )}
@@ -54,12 +54,12 @@ export function Operations() {
               api.provenance(e.key, session.tenantToken!)
                 .then((p) => setProof((x) => ({ ...x, [e.key]: p })))
                 .catch((err) => setError((err as Error).message))
-            }>Prove it</button>
+            }>{t("op.prove", lang)}</button>
           )}
           {proof[e.key] && (
             <p className="muted small">
               {proof[e.key].origin} · {proof[e.key].sealed.cipher.split(" (")[0]} ·{" "}
-              {proof[e.key].audit.count} audited event(s) · chain{" "}
+              {proof[e.key].audit.count} {t("op.events", lang)}{" "}
               {proof[e.key].chain.intact === false ? "BROKEN" : "intact"}
             </p>
           )}

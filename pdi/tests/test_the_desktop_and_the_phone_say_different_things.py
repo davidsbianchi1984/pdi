@@ -487,11 +487,25 @@ def test_the_reader_reads_more_than_the_regex_did():
                 if _WORDS.search(hit):
                     found.add(hit)
         regex_total += len(found)
-    assert _console_english() > regex_total, (
-        f"the extractor sees {_console_english()} and the regex it replaced "
-        f"sees {regex_total} — if those have converged, either the console "
-        "has been rewritten into shapes the regex can read, or the reader "
-        "has quietly gone back to being one")
+    # The direction of this comparison flipped when the console reached zero,
+    # and the flip is itself the finding. While English remained, the honest
+    # extractor necessarily saw *more* than the regex, which was blind to three
+    # quarters of the shapes. With the console fully wired the extractor
+    # correctly sees none — and the regex still reports six, every one of them
+    # the word `Promise` caught out of `=> Promise<…>` by a pattern that cannot
+    # tell a type parameter from a sentence.
+    #
+    #     asked     does the extractor see more than the regex
+    #     mattered  are these two readers still different
+    #
+    # So the assertion is inequality rather than a direction. A future round
+    # that swaps the extractor back for the regex makes both report six and
+    # fails here; a round that lets English back onto the console fails the
+    # ceiling above. Neither can be read as progress.
+    assert _console_english() != regex_total, (
+        f"the extractor and the regex it replaced both see {regex_total} — "
+        "either the reader has quietly gone back to being a regex, or the "
+        "console has been rewritten into the shapes that regex can read")
 
 
 def test_the_reader_reads_more_than_a_space():

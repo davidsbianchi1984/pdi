@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, type AuditEntry } from "../api";
 import { useSession } from "../store";
+import { deviceLanguage, Lang, t } from "../l10n";
 
 const CAT_COLOR: Record<string, string> = {
   data: "cyan", key: "amber", retention: "amber", tenant: "green",
@@ -9,6 +10,7 @@ const CAT_COLOR: Record<string, string> = {
 
 export function Audit() {
   const { session } = useSession();
+  const lang = (session.language as Lang) ?? deviceLanguage();
   const [entries, setEntries] = useState<AuditEntry[]>([]);
   const [chain, setChain] = useState<{ intact: boolean; entries: number } | null>(null);
   // What each `action` string means, and how long entries are kept. The
@@ -39,18 +41,18 @@ export function Audit() {
   return (
     <div className="screen">
       <header className="screen-head">
-        <h2>Audit</h2>
-        <span className="muted small">append-only · SHA-256 hash-chained</span>
+        <h2>{t("au.title", lang)}</h2>
+        <span className="muted small">{t("au.sub", lang)}</span>
       </header>
 
-      {!session.tenantToken && <div className="card"><p className="muted">Select a tenant to view its audit entries.</p></div>}
+      {!session.tenantToken && <div className="card"><p className="muted">{t("au.pick", lang)}</p></div>}
       {error && <div className="error">⚠ {error}</div>}
 
       {schema && (
         <div className="card">
           <div className="row">
             <span className="muted small" style={{ flex: 1 }}>
-              {schema.actions.length} recorded actions · retention{" "}
+              {schema.actions.length} {t("au.actions", lang)}{" "}
               {schema.retention}
             </span>
             <button onClick={() => setGlossary((g) => !g)}>
@@ -74,8 +76,8 @@ export function Audit() {
 
       {chain && (
         <div className={"verify-banner " + (chain.intact ? "ok" : "bad")}>
-          {chain.intact ? "✓ Chain intact" : "✗ Chain broken"} — {chain.entries} entries verified
-          <button onClick={refresh}>Re-verify</button>
+          {chain.intact ? "✓ Chain intact" : "✗ Chain broken"} — {chain.entries} {t("au.verified", lang)}
+          <button onClick={refresh}>{t("au.reverify", lang)}</button>
         </div>
       )}
 
