@@ -4,6 +4,48 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.60.9] - 2026-08-10
+
+### 412 release bodies rebuilt, and the record that counts what is wrong
+
+Every release that inherited the frozen v0.24.0 body now carries notes rebuilt
+from its own CHANGELOG entry. `stale_release_bodies.txt` reaches a ceiling of
+**0** with one release kept deliberately: `app-v0.24.0`, whose body *is* the
+v0.24.0 notes and is correct for it.
+
+    asked     how many rows are left
+    mattered  how many releases are still wrong
+
+The kept release moved out of the count rather than out of the file, under a
+`# kept:` line carrying its reason. A deliberate decision belongs where the
+next reader will see it, not inside a guard as an exemption.
+
+### Three checks that reported success while doing nothing
+
+Each was found by driving the thing rather than reading it, and each is
+recorded in the file it belongs to.
+
+The first staleness test looked for `414 tests passing` anywhere in a body.
+That count is PDI's, so the sweep read zero stale in the two products where a
+hundred and twelve remained — and it matched any note that *quoted* the phrase,
+failing a correct release for describing the defect it fixed. Staleness is
+decided by how the prose opens now.
+
+The backfill then walked the record rather than the releases. The record is a
+file on a branch and the releases are on GitHub, so the two drift the moment a
+batch lands. Three runs spent their limit rewriting releases repaired two
+batches earlier and never reached the last eleven. It reads each release before
+writing now, which makes it idempotent.
+
+The record guard's header pattern required `rows` and the record reached
+`1 row`. It crashed at the moment its subject was finished.
+
+### Settled
+
+`generate_release_notes` does nothing to a body that is already set. 0.60.8 was
+published with its curated body, the build ran, and the body came back intact.
+The comment in the release workflow said this was unresolved; it no longer is.
+
 ## [0.60.8] - 2026-08-10
 
 ### The console reads in ten languages
