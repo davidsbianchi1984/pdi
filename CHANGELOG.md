@@ -4,6 +4,13 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.62.0] - 2026-08-11
+
+### Version alignment
+
+The three products are cut together, so one number names one combination
+of all three. JIM's phones reached parity with its console — eleven rounds in one branch: every backend route gained a door on iOS, Android and Windows (the doorless ledgers close at the four by-design rows), the voice pair landed on all three shells with the device's own voice as fallback, Android learned to say PATCH through a test-pinned override, and the most-touched screens swapped their English for the ten-language tables. No PDI code changed; nothing new crosses into the vault.
+
 ## [0.61.1] - 2026-08-11
 
 ### Added
