@@ -4,6 +4,43 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.61.1] - 2026-08-11
+
+### Added
+
+- **Ability is not a gate.** An accessibility statement with a door under it,
+  on every client. The console's new **Accessibility** tab names the needs
+  this product is built for (blind, deaf, mute, motor, cognitive, dyslexia,
+  motion sensitivity) and says, for anything the list misses, that the gap is
+  in the list and not in the person. Under the statement sits a
+  three-question report form: what were you trying to do, what stood in the
+  way, what would help. `POST /access/reports` takes those answers with **no
+  tenant token** — reporting that the vault shut you out must not require
+  the token it may have shut you out of — and the `access_reports` table has
+  no identity column to fill. Reports are read back by `GET /access/reports`
+  under the admin token alone. The iOS, Android and Windows shells carry the
+  same statement and the same form. Screen 57, console-guide lesson,
+  assistant directions and ten-language copy throughout.
+- **The sidebar speaks the visitor's language.** The console's fifteen tab
+  names — the first thing a screen reader meets — come from the l10n table
+  in all ten languages, closing the last hardcoded English in the frame. The
+  guard measures the sidebar against the `Tab` type itself rather than a
+  floor.
+- **A ledger of known gaps that only shrinks.** `pdi/tests/a11y_backlog.txt`
+  opened this release with two admitted barriers and closes it at zero, each
+  closure held by a test — one shared across the three products, taking the
+  common guard manifest to 461. The ceiling ratchet means a new gap can only
+  enter by a visible, deliberate edit.
+- **The console honours `prefers-reduced-motion`** and sets the document's
+  language attribute to the visitor's language — enforced by
+  `test_ability_is_not_a_gate.py` rather than promised.
+
+### Changed
+
+- **Terms 1.2.** Version 1.1 said the beta is a beta and free means free for
+  now; 1.2 adds the accessibility commitment in the same
+  no-claims-without-behavior voice, naming the real door.
+
 ## [0.61.0] - 2026-08-10
 
 ### Fixed
@@ -6188,6 +6225,7 @@ product of the three-product suite — the storage layer that
   release workflow.
 
 [Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.16.0...HEAD
+[0.61.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.61.1
 [0.19.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.19.1
 [0.19.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.19.0
 [0.18.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.18.0

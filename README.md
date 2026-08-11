@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.61.0** ([changelog](CHANGELOG.md)) — one of three products
+**Current release: v0.61.1** ([changelog](CHANGELOG.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
 together, so one number names one combination of all three.
@@ -227,6 +227,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.61.1** | **Ability is not a gate** — an accessibility statement with a door under it: an Accessibility tab on the console and all three shells, three questions with no tenant token (reporting that the vault shut you out must not require the token it may have shut you out of) and no identity column to fill, read only under the admin token. The sidebar's fifteen tab names finally speak all ten languages — the last hardcoded English in the frame. The known-gaps ledger opened at two rows and closes at zero, every closure held by a test, and Terms 1.2 says only what is true |
 | **0.61.0** | **The console the policy blanked** — pdisystems.net went live and served a dark, empty page: the nonce Content-Security-Policy meant for the server-rendered pages was stamped on the console bundle no nonce can reach. A policy of its own for `/app`, the bare domain now lands on the console, and the release-bodies sweep survives its first honest run — a script that could not parse, then a fetch that silently lost releases, both repaired and guarded |
 | **0.60.9** | **412 release bodies rebuilt** — every release that inherited the frozen v0.24.0 body now carries notes from its own CHANGELOG entry; the record reaches a ceiling of 0 with `app-v0.24.0` kept deliberately. Three checks that reported success while doing nothing are fixed: a sentinel that was one product's number, a backfill that trusted the record over the releases, and a guard that crashed when its count reached one |
 | **0.60.8** | **The console reads in ten languages** -- the last six screens; `console_untranslated.txt` reaches 0 and becomes a floor rather than a backlog. A release checklist naming every version field replaces the prose list a bump was driven from. `RELEASE_NOTES.md` and its sync workflow deleted after 412 of 530 releases proved to carry one frozen v0.24.0 body; a reader replaces the writer |
