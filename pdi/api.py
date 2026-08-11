@@ -247,8 +247,16 @@ def create_app() -> FastAPI:
         # backend answering the port is its own — the sibling products
         # learned this the hard way (a stale backend from an older install
         # answers /health perfectly well and then serves an older API).
+        # The footsteps: how many tenants hold a vault here. An aggregate,
+        # not a roster — no name, email or id rides with the number. It
+        # lives on /health rather than a route of its own because every
+        # client already reads /health at launch for the version check,
+        # so the count arrives through a door that already exists.
+        footsteps = db.connect().execute(
+            "SELECT COUNT(*) FROM tenants").fetchone()[0]
         return {"status": "ok", "version": app.version,
-                "console": mobile.console_dir() is not None}
+                "console": mobile.console_dir() is not None,
+                "footsteps": footsteps}
 
     # -- run it from your phone ---------------------------------------------
 

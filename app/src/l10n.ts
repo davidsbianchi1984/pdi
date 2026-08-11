@@ -51,6 +51,14 @@ export function deviceLanguage(): Lang {
 }
 
 const CHROME: Table = {
+  // The footsteps chip in the corner. The same two rows stand verbatim in
+  // the sibling consoles — one wording, one translation.
+  "steps.count": {
+    en: "{n} footsteps here", es: "{n} pasos por aquí", fr: "{n} pas par ici", de: "{n} Fußspuren hier", pt: "{n} passos por aqui", it: "{n} passi qui", ja: "ここに{n}の足あと", zh: "这里有 {n} 个足迹", hi: "यहाँ {n} क़दमों के निशान", ar: "{n} أثر أقدام هنا",
+  },
+  "steps.tip": {
+    en: "How many people hold accounts here", es: "Cuántas personas tienen cuenta aquí", fr: "Combien de personnes ont un compte ici", de: "Wie viele Menschen hier ein Konto haben", pt: "Quantas pessoas têm conta aqui", it: "Quante persone hanno un account qui", ja: "ここにアカウントを持つ人の数", zh: "这里有多少人持有账户", hi: "यहाँ कितने लोगों के खाते हैं", ar: "كم شخصًا يملك حسابًا هنا",
+  },
   // -- the version banner ------------------------------------------------
   //
   // Wired at 0.60.4, and the reason the reader changed. Every string on this

@@ -27,6 +27,18 @@ def test_health(client):
     assert client.get("/health").json()["status"] == "ok"
 
 
+def test_the_footsteps_count_tenants(client):
+    """The counter in the corner: how many tenants hold a vault here.
+
+    An aggregate, never a roster — the payload carries the number and
+    nothing else about anybody.
+    """
+    before = client.get("/health").json()["footsteps"]
+    new_tenant(client)
+    joined = 1
+    assert client.get("/health").json()["footsteps"] == before + joined
+
+
 def test_data_endpoints_require_tenant_token(client):
     assert client.get("/records/x").status_code == 401
     assert client.put("/records", json={"key": "x", "value": "y"}).status_code == 401

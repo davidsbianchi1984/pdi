@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "./store";
 import { deviceLanguage, Lang, t } from "./l10n";
 import { ProblemNotice } from "./ProblemNotice";
+import { Footsteps } from "./Footsteps";
 import { VersionGuard } from "./VersionGuard";
 import { VaultLight } from "./VaultLight";
 import { Overview } from "./screens/Overview";
@@ -53,6 +54,7 @@ export function App() {
   return (
     <div className="app">
       <VersionGuard />
+      <Footsteps />
       <aside className="sidebar">
         <div className="brand">
           <span className="orb" />

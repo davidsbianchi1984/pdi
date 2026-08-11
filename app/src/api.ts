@@ -412,7 +412,8 @@ export const api = {
     local_destinations_allowed: string; guarantees: string[];
     cloud_attached?: boolean;
   }>("/offline/status"),
-  health: () => req<{ status: string; version?: string }>("/health"),
+  health: () => req<{ status: string; version?: string;
+                      footsteps?: number }>("/health"),
 
   // How to open this console on a phone: its URL on the local network.
   pair: () => req<PairInfo>("/pair"),
