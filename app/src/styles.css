@@ -18,9 +18,12 @@ code, .mono, pre { font-family: ui-monospace, Menlo, monospace; }
 .cyan { color: var(--cyan); } .amber { color: var(--amber); } .green { color: var(--green); }
 .muted { color: var(--t2); } .small { font-size: 12px; } .center { text-align: center; padding: 30px; }
 
-.app { display: grid; grid-template-columns: 232px 1fr; height: 100%; }
+/* 100dvh where the browser has it — see the phone block below; browsers
+   without dvh keep 100%. */
+.app { display: grid; grid-template-columns: 232px 1fr; height: 100%; height: 100dvh; }
 .sidebar { background: linear-gradient(180deg, #161038, #0e0a26); border-right: 1px solid var(--line);
-  padding: 20px 14px; display: flex; flex-direction: column; }
+  padding: 20px 14px; display: flex; flex-direction: column;
+  overflow-y: auto; min-height: 0; }
 .brand { display: flex; gap: 10px; align-items: center; margin-bottom: 22px; padding: 0 6px; }
 .brand-name { font-weight: 800; letter-spacing: 0.5px; }
 .brand-sub { font-size: 10px; color: var(--t3); }
@@ -34,7 +37,7 @@ nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
   border-radius: 10px; background: rgba(255,255,255,0.04); }
 .dot-online { color: var(--green); font-size: 12px; } .dot-online.off { color: var(--red); }
 
-.content { overflow-y: auto; padding: 30px 34px; }
+.content { overflow-y: auto; padding: 30px 34px; min-height: 0; min-width: 0; }
 .screen { max-width: 760px; }
 .screen-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; }
 .screen-head h2 { margin: 0; font-size: 22px; letter-spacing: -0.3px; }
