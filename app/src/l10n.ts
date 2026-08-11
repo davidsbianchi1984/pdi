@@ -3760,6 +3760,86 @@ const CHROME: Table = {
     ja: "テナント未選択", zh: "未选择租户",
     hi: "कोई टेनेंट चयनित नहीं", ar: "لم يُختر أي مستأجر",
   },
+  // The sidebar itself. These were the last hardcoded English words in the
+  // frame — the tab names a screen reader spoke wrong to nine of the ten
+  // audiences — closed as a recorded a11y backlog row.
+  "nav.overview": {
+    en: "Overview", es: "Resumen", fr: "Vue d'ensemble", de: "Überblick",
+    pt: "Visão geral", it: "Panoramica", ja: "概要", zh: "概览",
+    hi: "अवलोकन", ar: "نظرة عامة",
+  },
+  "nav.tenants": {
+    en: "Tenants", es: "Inquilinos", fr: "Locataires", de: "Mandanten",
+    pt: "Inquilinos", it: "Tenant", ja: "テナント", zh: "租户",
+    hi: "टेनेंट", ar: "المستأجرون",
+  },
+  "nav.records": {
+    en: "Vault", es: "Bóveda", fr: "Coffre", de: "Tresor",
+    pt: "Cofre", it: "Caveau", ja: "ボールト", zh: "保险库",
+    hi: "वॉल्ट", ar: "الخزنة",
+  },
+  "nav.exchange": {
+    en: "Exchange", es: "Intercambio", fr: "Échange", de: "Austausch",
+    pt: "Intercâmbio", it: "Scambio", ja: "交換", zh: "交换",
+    hi: "विनिमय", ar: "التبادل",
+  },
+  "nav.carriers": {
+    en: "Carriers", es: "Portadores", fr: "Porteurs", de: "Träger",
+    pt: "Portadores", it: "Vettori", ja: "キャリア", zh: "载体",
+    hi: "वाहक", ar: "الحاملات",
+  },
+  "nav.bridges": {
+    en: "Bridges", es: "Puentes", fr: "Ponts", de: "Brücken",
+    pt: "Pontes", it: "Ponti", ja: "ブリッジ", zh: "桥接",
+    hi: "सेतु", ar: "الجسور",
+  },
+  "nav.operations": {
+    en: "Operations", es: "Operaciones", fr: "Opérations", de: "Vorgänge",
+    pt: "Operações", it: "Operazioni", ja: "運用記録", zh: "运营",
+    hi: "संचालन", ar: "العمليات",
+  },
+  "nav.continuity": {
+    en: "Continuity", es: "Continuidad", fr: "Continuité", de: "Kontinuität",
+    pt: "Continuidade", it: "Continuità", ja: "継承", zh: "延续",
+    hi: "निरंतरता", ar: "الاستمرارية",
+  },
+  "nav.positions": {
+    en: "Positions", es: "Ubicaciones", fr: "Emplacements", de: "Standorte",
+    pt: "Localizações", it: "Posizioni", ja: "配置", zh: "位置",
+    hi: "स्थितियाँ", ar: "المواضع",
+  },
+  "nav.keys": {
+    en: "Keys & Retention", es: "Claves y retención", fr: "Clés et rétention",
+    de: "Schlüssel & Aufbewahrung", pt: "Chaves e retenção",
+    it: "Chiavi e conservazione", ja: "鍵と保持", zh: "密钥与保留",
+    hi: "कुंजियाँ और प्रतिधारण", ar: "المفاتيح والاحتفاظ",
+  },
+  "nav.custody": {
+    en: "Custody", es: "Custodia", fr: "Garde", de: "Verwahrung",
+    pt: "Custódia", it: "Custodia", ja: "管理責任", zh: "托管",
+    hi: "अभिरक्षा", ar: "الوصاية",
+  },
+  "nav.audit": {
+    en: "Audit", es: "Auditoría", fr: "Audit", de: "Prüfung",
+    pt: "Auditoria", it: "Audit", ja: "監査", zh: "审计",
+    hi: "ऑडिट", ar: "التدقيق",
+  },
+  "nav.guiding": {
+    en: "Guiding", es: "Guía", fr: "Guidage", de: "Anleitung",
+    pt: "Guia", it: "Guida", ja: "ガイド", zh: "向导",
+    hi: "मार्गदर्शन", ar: "الإرشاد",
+  },
+  "nav.access": {
+    en: "Accessibility", es: "Accesibilidad", fr: "Accessibilité",
+    de: "Barrierefreiheit", pt: "Acessibilidade", it: "Accessibilità",
+    ja: "アクセシビリティ", zh: "无障碍", hi: "सुलभता",
+    ar: "إمكانية الوصول",
+  },
+  "nav.settings": {
+    en: "Settings", es: "Ajustes", fr: "Réglages", de: "Einstellungen",
+    pt: "Definições", it: "Impostazioni", ja: "設定", zh: "设置",
+    hi: "सेटिंग्स", ar: "الإعدادات",
+  },
 };
 
 /** `t("gd.title", lang)` — the key itself if the row is missing, which is

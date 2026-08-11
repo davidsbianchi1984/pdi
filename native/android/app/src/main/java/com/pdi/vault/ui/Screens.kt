@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -401,6 +402,16 @@ fun AccessCard(vm: VaultViewModel) {
         Text(L10n.t("ns.acc", vm.language), color = Pdi.Txt, fontSize = 16.sp,
             fontWeight = FontWeight.Bold)
         Text(L10n.t("ns.acc.lead", vm.language), color = Pdi.T2, fontSize = 12.sp)
+        // The per-need statement the console makes, not just its form.
+        Text(L10n.t("ns.acc.needs.title", vm.language), color = Pdi.Txt,
+            fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        listOf("blind", "deaf", "mute", "motor", "cognitive",
+            "dyslexia", "motion").forEach { need ->
+            Text("• " + L10n.t("ns.acc.needs.$need", vm.language),
+                color = Pdi.T2, fontSize = 12.sp)
+        }
+        Text(L10n.t("ns.acc.needs.more", vm.language), color = Pdi.T2,
+            fontSize = 12.sp, fontStyle = FontStyle.Italic)
         labeledField("", doing, L10n.t("ns.acc.doing.ph", vm.language)) { doing = it }
         labeledField("", wall, L10n.t("ns.acc.wall.ph", vm.language)) { wall = it }
         labeledField("", help, L10n.t("ns.acc.help.ph", vm.language)) { help = it }

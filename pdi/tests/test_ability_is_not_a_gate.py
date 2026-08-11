@@ -104,3 +104,68 @@ def test_the_a11y_backlog_only_shrinks():
         "added without raising the ceiling in the same deliberate edit")
     for row in rows:
         assert ": " in row, f"a backlog row names no surface: {row!r}"
+
+
+def test_the_sidebar_speaks_the_visitors_language():
+    """A struck backlog row, held shut: the sidebar's tab names come from
+    the l10n table like everything they lead to — every tab, every
+    supported language — so a screen reader pronounces them in the
+    language the page declares instead of English with a wrong lang tag."""
+    app_src = (CONSOLE / "App.tsx").read_text(encoding="utf-8")
+    assert "label:" not in app_src.split("const NAV")[1].split("];")[0], (
+        "App.tsx NAV grew a hardcoded label again")
+    assert "t(`nav.${n.id}`" in app_src, (
+        "the sidebar stopped reading its labels from the l10n table")
+    l10n_src = (CONSOLE / "l10n.ts").read_text(encoding="utf-8")
+    tabs = re.findall(r'\{ id: "(\w+)", icon:', app_src)
+    # Measured against the Tab type in the same file rather than a floor:
+    # the scan cannot quietly stop matching without disagreeing with the
+    # type that declares every tab.
+    declared = re.findall(r'"(\w+)"',
+                          app_src.split("type Tab =")[1].split(";")[0])
+    assert declared and sorted(tabs) == sorted(declared), (
+        "the NAV scan and the Tab type disagree")
+    langs = ["en", "es", "fr", "de", "pt", "it", "ja", "zh", "hi", "ar"]
+    for tab in tabs:
+        m = re.search(r'"nav\.%s": \{(.*?)\n  \},' % tab, l10n_src, re.S)
+        assert m, f"l10n.ts lacks nav.{tab}"
+        for lang in langs:
+            assert re.search(r"\b%s: \"" % lang, m.group(1)), (
+                f"nav.{tab} lacks {lang}")
+
+
+def test_the_shells_carry_the_statement():
+    """A struck backlog row, held shut: the phones and the desktop carry
+    the same per-need statement the console makes — every named need, in
+    every supported language — not just the report form under a lead."""
+    needs = ["title", "blind", "deaf", "mute", "motor", "cognitive",
+             "dyslexia", "motion", "more"]
+    langs = ["en", "es", "fr", "de", "pt", "it", "ja", "zh", "hi", "ar"]
+    l10n_files = [
+        REPO / "native" / "ios" / "Sources" / "L10n.swift",
+        REPO / "native" / "android" / "app" / "src" / "main" / "java"
+             / "com" / "pdi" / "vault" / "L10n.kt",
+        REPO / "native" / "windows" / "L10n.cs",
+    ]
+    for path in l10n_files:
+        src = path.read_text(encoding="utf-8")
+        for need in needs:
+            key_line = next((line for line in src.splitlines()
+                             if f"ns.acc.needs.{need}" in line), None)
+            assert key_line, f"{path.name} lacks ns.acc.needs.{need}"
+            for lang in langs:
+                assert f'"{lang}"' in key_line, (
+                    f"{path.name} ns.acc.needs.{need} lacks {lang}")
+    views = [
+        REPO / "native" / "ios" / "Sources" / "Views" / "AccessView.swift",
+        REPO / "native" / "android" / "app" / "src" / "main" / "java"
+             / "com" / "pdi" / "vault" / "ui" / "Screens.kt",
+        REPO / "native" / "windows" / "Views" / "OverviewPage.xaml.cs",
+    ]
+    for path in views:
+        src = path.read_text(encoding="utf-8")
+        assert "ns.acc.needs.title" in src and "ns.acc.needs.more" in src, (
+            f"{path.name} shows the form without the statement")
+        for need in ["blind", "deaf", "mute", "motor", "cognitive",
+                     "dyslexia", "motion"]:
+            assert need in src, f"{path.name} dropped the need {need!r}"

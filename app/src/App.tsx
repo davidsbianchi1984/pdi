@@ -21,22 +21,25 @@ import { Guiding } from "./screens/Guiding";
 import { Access } from "./screens/Access";
 
 type Tab = "overview" | "tenants" | "records" | "exchange" | "carriers" | "bridges" | "operations" | "continuity" | "positions" | "keys" | "custody" | "audit" | "guiding" | "access" | "settings";
-const NAV: { id: Tab; label: string; icon: string }[] = [
-  { id: "overview", label: "Overview", icon: "▦" },
-  { id: "tenants", label: "Tenants", icon: "👥" },
-  { id: "records", label: "Vault", icon: "🔒" },
-  { id: "exchange", label: "Exchange", icon: "📦" },
-  { id: "carriers", label: "Carriers", icon: "🏷" },
-  { id: "bridges", label: "Bridges", icon: "🔌" },
-  { id: "operations", label: "Operations", icon: "📓" },
-  { id: "continuity", label: "Continuity", icon: "🕯" },
-  { id: "positions", label: "Positions", icon: "🧭" },
-  { id: "keys", label: "Keys & Retention", icon: "🗝" },
-  { id: "custody", label: "Custody", icon: "⚖" },
-  { id: "audit", label: "Audit", icon: "✓" },
-  { id: "guiding", label: "Guiding", icon: "🧑‍🏫" },
-  { id: "access", label: "Accessibility", icon: "♿" },
-  { id: "settings", label: "Settings", icon: "⚙" },
+// Labels live in l10n.ts as `nav.{id}` — the sidebar reads in the visitor's
+// language like everything it leads to, so a screen reader pronounces the
+// tab names in the language the page declares.
+const NAV: { id: Tab; icon: string }[] = [
+  { id: "overview", icon: "▦" },
+  { id: "tenants", icon: "👥" },
+  { id: "records", icon: "🔒" },
+  { id: "exchange", icon: "📦" },
+  { id: "carriers", icon: "🏷" },
+  { id: "bridges", icon: "🔌" },
+  { id: "operations", icon: "📓" },
+  { id: "continuity", icon: "🕯" },
+  { id: "positions", icon: "🧭" },
+  { id: "keys", icon: "🗝" },
+  { id: "custody", icon: "⚖" },
+  { id: "audit", icon: "✓" },
+  { id: "guiding", icon: "🧑‍🏫" },
+  { id: "access", icon: "♿" },
+  { id: "settings", icon: "⚙" },
 ];
 
 export function App() {
@@ -66,7 +69,7 @@ export function App() {
               onClick={() => setTab(n.id)}
             >
               <span className="nav-icon">{n.icon}</span>
-              {n.label}
+              {t(`nav.${n.id}`, lang)}
             </button>
           ))}
         </nav>
