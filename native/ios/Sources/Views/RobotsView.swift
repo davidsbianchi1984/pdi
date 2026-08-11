@@ -15,19 +15,19 @@ struct RobotsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text("Robots").font(.title2.bold()).foregroundStyle(Theme.txt)
-                Text("What your robots see stays sealed — every intake is encrypted at rest and hash-chained in the audit log.")
+                Text(L10n.t("tab.robots", state.language)).font(.title2.bold()).foregroundStyle(Theme.txt)
+                Text(L10n.t("nrob.sub", state.language))
                     .font(.footnote).foregroundStyle(Theme.t2)
 
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Bind a robot").font(.headline).foregroundStyle(Theme.txt)
+                    Text(L10n.t("nrob.bind", state.language)).font(.headline).foregroundStyle(Theme.txt)
                     Picker("", selection: $chosen) {
                         ForEach(catalog, id: \.model) {
                             Text("\($0.label) · \($0.maker)").tag($0.model)
                         }
                     }.pickerStyle(.menu).tint(Theme.brandA)
                     Button(action: bind) {
-                        HStack { if busy { ProgressView().tint(.white) }; Text("Bind").bold() }
+                        HStack { if busy { ProgressView().tint(.white) }; Text(L10n.t("nrob.bind.go", state.language)).bold() }
                             .frame(maxWidth: .infinity).padding(.vertical, 12)
                             .background(Theme.brand).foregroundStyle(.white)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -41,23 +41,23 @@ struct RobotsView: View {
                         HStack {
                             Text(r.name).font(.subheadline.bold()).foregroundStyle(Theme.txt)
                             Spacer()
-                            Text("\(keysByRobot[r.id] ?? r.collected ?? 0) sealed")
+                            Text(L10n.t("nrob.count", state.language).replacingOccurrences(of: "{n}", with: "\(keysByRobot[r.id] ?? r.collected ?? 0)"))
                                 .font(.caption).foregroundStyle(Theme.green)
                         }
                         HStack(spacing: 8) {
-                            sealButton("Seal map", r, "map", "{\"rooms\": 5}")
-                            sealButton("Snapshot", r, "snapshot", "camera still")
-                            sealButton("Sensor log", r, "sensor_log", "steps & doors")
+                            sealButton(L10n.t("nrob.map", state.language), r, "map", "{\"rooms\": 5}")
+                            sealButton(L10n.t("nrob.snap", state.language), r, "snapshot", "camera still")
+                            sealButton(L10n.t("nrob.log", state.language), r, "sensor_log", "steps & doors")
                         }
                     }.card()
                 }
 
                 if let lastKey {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Sealed").font(.headline).foregroundStyle(Theme.txt)
+                        Text(L10n.t("nrob.sealed", state.language)).font(.headline).foregroundStyle(Theme.txt)
                         Text(lastKey).font(.system(.caption, design: .monospaced))
                             .foregroundStyle(Theme.t2)
-                        Text("Read it (audited) via Vault → the key above.")
+                        Text(L10n.t("nrob.read", state.language))
                             .font(.caption).foregroundStyle(Theme.t3)
                     }.card()
                 }

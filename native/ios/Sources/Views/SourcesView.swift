@@ -57,21 +57,21 @@ private struct ConnectorsSection: View {
             VStack(alignment: .leading, spacing: 16) {
                 Text(L10n.t("tab.connectors", state.language))
                     .font(.title2.bold()).foregroundStyle(Theme.txt)
-                Text("Link a platform account. Collected content is sealed into the vault; every ingest is hash-chained in the audit log.")
+                Text(L10n.t("ncon.sub", state.language))
                     .font(.footnote).foregroundStyle(Theme.t2)
 
                 VStack(alignment: .leading, spacing: 10) {
                     Picker("", selection: $platform) {
                         ForEach(platforms, id: \.self) { Text($0.capitalized).tag($0) }
                     }.pickerStyle(.menu).tint(Theme.brandA)
-                    TextField("handle (optional)", text: $handle)
+                    TextField(L10n.t("nacc.handle", state.language), text: $handle)
                         .foregroundStyle(Theme.txt).textInputAutocapitalization(.never)
                         .padding(10).background(Theme.scrBot)
                         .clipShape(RoundedRectangle(cornerRadius: 11))
                         .overlay(RoundedRectangle(cornerRadius: 11).stroke(Theme.line, lineWidth: 1))
                     HStack(spacing: 8) {
-                        connectButton("Connect to collect", "collect")
-                        connectButton("Connect to publish", "publish")
+                        connectButton(L10n.t("ncon.collect", state.language), "collect")
+                        connectButton(L10n.t("ncon.publish", state.language), "publish")
                     }
                 }.card()
 
@@ -89,11 +89,11 @@ private struct ConnectorsSection: View {
                         }
                         HStack(spacing: 8) {
                             if c.direction == "collect" {
-                                smallButton("Ingest sample") { ingest(c) }
+                                smallButton(L10n.t("ncon.ingest", state.language)) { ingest(c) }
                             } else {
-                                smallButton("Publish update") { publish(c) }
+                                smallButton(L10n.t("ncon.update", state.language)) { publish(c) }
                             }
-                            Button("Disconnect") { revoke(c) }
+                            Button(L10n.t("ncon.disconnect", state.language)) { revoke(c) }
                                 .font(.caption).foregroundStyle(Theme.red)
                         }
                     }.card()

@@ -98,7 +98,7 @@ private struct OutboundSection: View {
                         Text("→ \(t.recipient) · \(t.programs.map { $0.uppercased() }.joined(separator: " "))")
                             .font(.caption).foregroundStyle(Theme.t2)
                         if let exp = t.expires_at {
-                            Text("retained until \(exp)").font(.caption2).foregroundStyle(Theme.t3)
+                            Text(L10n.t("ntr.retained", state.language).replacingOccurrences(of: "{date}", with: exp)).font(.caption2).foregroundStyle(Theme.t3)
                         }
                         if t.status != "revoked" {
                             Button(L10n.t("ntr.revoke", state.language)) { revoke(t) }

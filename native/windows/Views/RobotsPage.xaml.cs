@@ -8,11 +8,29 @@ namespace PdiVault.Views;
 
 public sealed partial class RobotsPage : Page
 {
-    public record RobotRow(string Id, string Name, string Sealed);
+    public record RobotRow(string Id, string Name, string Sealed)
+    {
+        public string MapLabel => L10n.T("nrob.map");
+        public string SnapLabel => L10n.T("nrob.snap");
+        public string LogLabel => L10n.T("nrob.log");
+        public string KeysLabel => L10n.T("nrob.keys");
+    }
 
     private RobotSpec[] _catalog = Array.Empty<RobotSpec>();
 
-    public RobotsPage() => InitializeComponent();
+    public RobotsPage()
+    {
+        InitializeComponent();
+        TitleText.Text = L10n.T("tab.robots");
+        SubText.Text = L10n.T("nrob.sub");
+        ModelBox.Header = L10n.T("nrob.bind");
+        BindButton.Content = L10n.T("nrob.bind.go");
+        ResultTitle.Text = L10n.T("nrob.sealed");
+        ResultRead.Text = L10n.T("nrob.read");
+        KeysTitle.Text = L10n.T("nrob.keys");
+        KeysEmpty.Text = L10n.T("nrob.none");
+        KeysRead.Text = L10n.T("nrob.readone");
+    }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
@@ -36,7 +54,7 @@ public sealed partial class RobotsPage : Page
         {
             var robots = await ApiClient.Shared.Robots(s.Token!);
             RobotsList.ItemsSource = robots.Select(r =>
-                new RobotRow(r.Id, r.Name, $"{r.Collected} sealed")).ToList();
+                new RobotRow(r.Id, r.Name, L10n.T("nrob.count").Replace("{n}", r.Collected.ToString()))).ToList();
         }
         catch (Exception ex) { ShowError(ex.Message); }
     }

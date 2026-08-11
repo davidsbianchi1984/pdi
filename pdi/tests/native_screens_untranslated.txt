@@ -71,6 +71,30 @@
 #     asked     is this literal English
 #     mattered  is this literal something a translator should touch
 
-ios: 65
-android: 59
-windows: 69
+# **0.62.x — the screens behind the tabs speak.** The whole surface in one
+# round rather than a bite: the vault, the audit chain, the robots, the
+# connectors, the admin card, the feedback card and the problem-reporting
+# notice now read from the ten-language tables on all three shells, and the
+# Windows pages moved their wording out of XAML attributes into the
+# code-behind so it can be re-read when the language changes.
+#
+# The rows arrived checked, the way the split-wordings file said they would
+# have to: where one shell already held a row the others hardcoded (the
+# Android admin and record keys, the Windows problem-reporting and
+# so-far rows), the existing row was copied verbatim and asked everywhere,
+# rather than minted again. Where the console already said the same English
+# (Disconnect, Platform, Snapshot, Hide, Seal record), the native rows carry
+# the console's translations verbatim. The one wording that differed between
+# shells — iOS's "written to a tamper-evident audit chain" against the other
+# two's "hash-chained in the audit log" — was unified rather than translated
+# twice.
+#
+# What stays, named: `provider:`/`v…` version fragments (identifier prose a
+# reader treats as data), the transfer arrow line and filename fallback
+# (format fragments whose letters are variable names), the Welcome server
+# URL default, and the extractor's own truncations of interpolated strings.
+# A floor with names, not a backlog with a number.
+
+ios: 6
+android: 5
+windows: 1

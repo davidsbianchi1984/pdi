@@ -24,7 +24,7 @@
             <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="12">
-                    <PasswordBox x:Name="TokenBox" PlaceholderText="pdi_…" />
+                    <PasswordBox x:Name="TokenBox" />
                     <TextBox x:Name="BaseBox" Text="http://127.0.0.1:8000" />
                     <!-- Only a vault under customer custody needs this.
                          Leaving it blank on such a vault is what every

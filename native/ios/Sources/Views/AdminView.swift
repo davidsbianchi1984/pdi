@@ -14,31 +14,31 @@ struct AdminCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Admin · Key management").font(.headline).foregroundStyle(Theme.txt)
-            Text("Requires the deployment's admin token (PDI_ADMIN_TOKEN) — not the tenant token. Kept in memory only, never stored.")
+            Text(L10n.t("nadm.title", state.language)).font(.headline).foregroundStyle(Theme.txt)
+            Text(L10n.t("nadm.req", state.language))
                 .font(.caption).foregroundStyle(Theme.t2)
-            SecureField("admin token", text: $adminToken)
+            SecureField(L10n.t("nadm.token", state.language), text: $adminToken)
                 .foregroundStyle(Theme.txt)
                 .padding(10).background(Theme.scrBot)
                 .clipShape(RoundedRectangle(cornerRadius: 11))
                 .overlay(RoundedRectangle(cornerRadius: 11).stroke(Theme.line, lineWidth: 1))
 
             HStack(spacing: 8) {
-                Button("Load versions") { load() }
+                Button(L10n.t("nadm.versions", state.language)) { load() }
                     .font(.caption.bold()).foregroundStyle(.white)
                     .padding(.horizontal, 12).padding(.vertical, 8)
                     .background(Theme.brandA).clipShape(Capsule())
-                Button("Rotate key") { rotate() }
+                Button(L10n.t("nadm.rotate", state.language)) { rotate() }
                     .font(.caption.bold()).foregroundStyle(.white)
                     .padding(.horizontal, 12).padding(.vertical, 8)
                     .background(Theme.amber).clipShape(Capsule())
                     .disabled(info == nil)
-                Button("Retire old") { retire() }
+                Button(L10n.t("nadm.retire", state.language)) { retire() }
                     .font(.caption.bold()).foregroundStyle(Theme.red)
                     .disabled(info == nil)
             }
 
-            Button("What do you hold about us") { exportAll() }
+            Button(L10n.t("nadm.dsr", state.language)) { exportAll() }
                 .font(.caption.bold()).foregroundStyle(.white)
                 .padding(.horizontal, 12).padding(.vertical, 8)
                 .background(Theme.brand).clipShape(Capsule())
@@ -82,7 +82,7 @@ struct AdminCard: View {
         Task {
             do {
                 info = try await ApiClient.shared.rotateKey(adminToken: adminToken)
-                status = "Rotated — every record re-sealed under the new version."
+                status = L10n.t("nadm.rotated", state.language)
             } catch { self.error = error.localizedDescription }
         }
     }

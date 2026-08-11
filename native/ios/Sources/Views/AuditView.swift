@@ -10,9 +10,9 @@ struct AuditView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text("Audit").font(.title2.bold()).foregroundStyle(Theme.txt)
+                Text(L10n.t("tab.audit", state.language)).font(.title2.bold()).foregroundStyle(Theme.txt)
                 ProblemReportingCard()
-                Text("Every vault action is hash-chained. Verify recomputes the whole chain.")
+                Text(L10n.t("naud.desc", state.language))
                     .font(.footnote).foregroundStyle(Theme.t2)
 
                 HStack(spacing: 10) {
@@ -20,9 +20,9 @@ struct AuditView: View {
                         .font(.system(size: 28))
                         .foregroundStyle(intact == false ? Theme.red : Theme.green)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(loading ? "Verifying…" : (intact == true ? "Chain intact" : "Chain broken"))
+                        Text(loading ? L10n.t("naud.verifying", state.language) : (intact == true ? L10n.t("naud.intact", state.language) : L10n.t("naud.broken", state.language)))
                             .font(.headline).foregroundStyle(Theme.txt)
-                        Text("\(entries.count) recorded events").font(.caption).foregroundStyle(Theme.t2)
+                        Text(L10n.t("naud.events", state.language).replacingOccurrences(of: "{n}", with: "\(entries.count)")).font(.caption).foregroundStyle(Theme.t2)
                     }
                     Spacer()
                 }.card()

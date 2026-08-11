@@ -156,17 +156,17 @@ def _files_swept() -> int:
 #: assertion now reads its number from here, which is what takes it out of the
 #: unregistered backlog.
 RATCHETS: tuple[Ratchet, ...] = (
-    Ratchet("l10n.asked.ios", 38, _l10n("ios", "asked"),
+    Ratchet("l10n.asked.ios", 120, _l10n("ios", "asked"),
             "screens on the iPhone that call the localizer"),
-    Ratchet("l10n.asked.android", 48, _l10n("android", "asked"),
+    Ratchet("l10n.asked.android", 125, _l10n("android", "asked"),
             "screens on Android that call the localizer"),
-    Ratchet("l10n.asked.windows", 42, _l10n("windows", "asked"),
+    Ratchet("l10n.asked.windows", 130, _l10n("windows", "asked"),
             "screens on the desktop that call the localizer"),
-    Ratchet("l10n.held.ios", 40, _l10n("ios", "held"),
+    Ratchet("l10n.held.ios", 130, _l10n("ios", "held"),
             "rows in the iPhone's own L10n table"),
-    Ratchet("l10n.held.android", 50, _l10n("android", "held"),
+    Ratchet("l10n.held.android", 135, _l10n("android", "held"),
             "rows in Android's own L10n table"),
-    Ratchet("l10n.held.windows", 45, _l10n("windows", "held"),
+    Ratchet("l10n.held.windows", 140, _l10n("windows", "held"),
             "rows in the desktop's own L10n table"),
     Ratchet("route.calls.console", 95, _calls("console"),
             "call sites the route audit reads out of the console"),

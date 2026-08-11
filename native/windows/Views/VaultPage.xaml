@@ -7,16 +7,16 @@
 
     <ScrollViewer>
         <StackPanel MaxWidth="640" Spacing="14" Padding="28" HorizontalAlignment="Left">
-            <TextBlock Text="Vault" FontSize="22" FontWeight="Bold" Foreground="{StaticResource PdiTxtBrush}" />
-            <TextBlock Text="Store a value — it is sealed at rest with AES-256-GCM."
+            <TextBlock x:Name="TitleText" FontSize="22" FontWeight="Bold" Foreground="{StaticResource PdiTxtBrush}" />
+            <TextBlock x:Name="SubText"
                        Foreground="{StaticResource PdiT2Brush}" FontSize="13" TextWrapping="Wrap" />
 
             <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="10">
-                    <TextBox x:Name="KeyBox" Header="Key" PlaceholderText="e.g. ssn" />
-                    <TextBox x:Name="ValueBox" Header="Value" PlaceholderText="plaintext to seal" />
-                    <Button x:Name="SealButton" Content="Seal record" HorizontalAlignment="Stretch"
+                    <TextBox x:Name="KeyBox" />
+                    <TextBox x:Name="ValueBox" />
+                    <Button x:Name="SealButton" HorizontalAlignment="Stretch"
                             Height="44" Foreground="White" Click="OnSeal">
                         <Button.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
@@ -30,7 +30,7 @@
 
             <TextBlock x:Name="ErrorText" Foreground="{StaticResource PdiRed}" FontSize="13"
                        TextWrapping="Wrap" Visibility="Collapsed" />
-            <TextBlock x:Name="Empty" Text="No records yet — seal one above."
+            <TextBlock x:Name="Empty"
                        Foreground="{StaticResource PdiT2Brush}" FontSize="13" Visibility="Collapsed" />
 
             <ItemsControl x:Name="RecordsList">
@@ -43,12 +43,12 @@
                                     <TextBlock Text="{Binding Key}" FontWeight="Bold"
                                                Foreground="{StaticResource PdiTxtBrush}" VerticalAlignment="Center" />
                                     <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-                                        <Button Content="ⓘ Provenance" Tag="{Binding Key}" Click="OnProvenance"
+                                        <Button Content="{Binding ProvLabel}" Tag="{Binding Key}" Click="OnProvenance"
                                                 Background="Transparent" FontSize="12"
                                                 Foreground="{StaticResource PdiBrandABrush}" />
-                                        <Button Content="Reveal" Tag="{Binding Key}" Click="OnReveal"
+                                        <Button Content="{Binding RevealLabel}" Tag="{Binding Key}" Click="OnReveal"
                                                 Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
-                                        <Button Content="Delete" Tag="{Binding Key}" Click="OnDelete"
+                                        <Button Content="{Binding DeleteLabel}" Tag="{Binding Key}" Click="OnDelete"
                                                 Background="Transparent" Foreground="{StaticResource PdiRed}" />
                                     </StackPanel>
                                 </Grid>

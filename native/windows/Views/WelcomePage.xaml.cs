@@ -36,6 +36,7 @@ public sealed partial class WelcomePage : Page
         Title.Text = L10n.T("wel.title", lang);
         Sub.Text = L10n.T("wel.sub", lang);
         TokenBox.Header = L10n.T("wel.token", lang);
+        TokenBox.PlaceholderText = L10n.T("nacc.id.ph", lang);
         BaseBox.Header = L10n.T("wel.server", lang);
         TenantKeyBox.Header = L10n.T("wel.tenantkey", lang);
         TenantKeyBox.PlaceholderText = L10n.T("wel.tenantkey.ph", lang);

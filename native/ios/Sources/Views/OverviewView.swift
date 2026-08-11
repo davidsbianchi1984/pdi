@@ -16,20 +16,20 @@ struct OverviewView: View {
                 HStack(spacing: 8) {
                     Circle().fill(Theme.green).frame(width: 8, height: 8)
                     OfflinePostureCard()
-                    Text("Vault unlocked").font(.caption.bold()).foregroundStyle(Theme.green)
+                    Text(L10n.t("nov.unlocked", state.language)).font(.caption.bold()).foregroundStyle(Theme.green)
                 }
-                Text("Your vault").font(.title.bold()).foregroundStyle(Theme.txt)
-                Text("Records are sealed at rest; every access is written to a tamper-evident audit chain.")
+                Text(L10n.t("nov.title", state.language)).font(.title.bold()).foregroundStyle(Theme.txt)
+                Text(L10n.t("nov.sealed", state.language))
                     .font(.subheadline).foregroundStyle(Theme.t2)
 
                 HStack(spacing: 12) {
                     stat(L10n.t("nrec.t.records", state.language), loading ? "—" : "\(count ?? 0)", Theme.brandA)
-                    stat(L10n.t("tab.audit", state.language), loading ? "—" : (intact == true ? "Intact" : "Broken"),
+                    stat(L10n.t("tab.audit", state.language), loading ? "—" : (intact == true ? L10n.t("nov.intact", state.language) : L10n.t("nov.broken", state.language)),
                          intact == false ? Theme.red : Theme.green)
                 }
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Token").font(.headline).foregroundStyle(Theme.txt)
+                    Text(L10n.t("nov.token", state.language)).font(.headline).foregroundStyle(Theme.txt)
                     Text(masked(state.token ?? "")).font(.system(.subheadline, design: .monospaced))
                         .foregroundStyle(Theme.t2)
                     Text(state.baseURL).font(.caption).foregroundStyle(Theme.t3)
@@ -38,7 +38,7 @@ struct OverviewView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(L10n.t("wel.language", state.language))
                         .font(.headline).foregroundStyle(Theme.txt)
-                    Text("PDI's explanatory notes arrive in this language; sealed data is untouched.")
+                    Text(L10n.t("nov.notes", state.language))
                         .font(.caption).foregroundStyle(Theme.t2)
                     Picker("", selection: $language) {
                         ForEach(languages, id: \.code) { l in
@@ -50,9 +50,9 @@ struct OverviewView: View {
                     .onChange(of: language) { _ in applyLanguage() }
                     Toggle(isOn: $preTranslate) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Pre-translate notes")
+                            Text(L10n.t("nov.pretrans", state.language))
                                 .font(.subheadline).foregroundStyle(Theme.txt)
-                            Text("Off keeps English notes; sealed data is never touched either way.")
+                            Text(L10n.t("nov.pretrans.off", state.language))
                                 .font(.caption2).foregroundStyle(Theme.t2)
                         }
                     }

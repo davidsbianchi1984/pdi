@@ -41,7 +41,7 @@ struct WelcomeView: View {
 
                 VStack(alignment: .leading, spacing: 14) {
                     field(L10n.t("wel.token", lang)) {
-                        SecureField("pdi_…", text: $token).textFieldStyle(.plain).foregroundStyle(Theme.txt)
+                        SecureField(L10n.t("nacc.id.ph", lang), text: $token).textFieldStyle(.plain).foregroundStyle(Theme.txt)
                             .textInputAutocapitalization(.never).autocorrectionDisabled()
                     }
                     field(L10n.t("wel.server", lang)) {

@@ -14,6 +14,14 @@ public sealed partial class AuditPage : Page
     public AuditPage()
     {
         InitializeComponent();
+        TitleText.Text = L10n.T("tab.audit");
+        DescText.Text = L10n.T("naud.desc");
+        StatusText.Text = L10n.T("naud.verifying");
+        CountText.Text = L10n.T("naud.events").Replace("{n}", "0");
+        ProblemsTitle.Text = L10n.T("prb.title");
+        ProblemsYes.Content = L10n.T("prb.send");
+        ProblemsNo.Content = L10n.T("prb.donot");
+        ProblemsSwitch.Header = L10n.T("prb.toggle");
         ProblemsPreviewButton.Content = L10n.T("prb.show");
         // The card reads three stored choices, so it has to be told when
         // the page appears rather than only when a button is pressed.
@@ -27,14 +35,14 @@ public sealed partial class AuditPage : Page
         try
         {
             var v = await ApiClient.Shared.AuditVerify(s.Token!);
-            StatusText.Text = v.Intact ? "Chain intact" : "Chain broken";
+            StatusText.Text = v.Intact ? L10n.T("naud.intact") : L10n.T("naud.broken");
         }
         catch (Exception ex) { StatusText.Text = ex.Message; }
 
         try
         {
             var entries = await ApiClient.Shared.AuditEntries(s.Token!);
-            CountText.Text = $"{entries.Length} recorded events";
+            CountText.Text = L10n.T("naud.events").Replace("{n}", entries.Length.ToString());
             EntriesList.ItemsSource = entries
                 .OrderByDescending(x => x.Seq).Take(30)
                 .Select(x => new EntryRow(x.Seq, x.Action, x.Ref, x.Category)).ToList();
@@ -112,8 +120,7 @@ public sealed partial class AuditPage : Page
         var owed = Problems.Report()["problems"]
             as List<Dictionary<string, object>> ?? new();
         ProblemsPreview.Text = owed.Count == 0
-            ? "Nothing is owed. Either nothing has failed, or everything that "
-              + "has was already reported."
+            ? L10n.T("prb.owed.none")
             : string.Join("\n", owed.Select(r =>
                 $"{r["op"]} → {r["status"]}  ×{r["count"]}  {r["day"]}"));
         ProblemsPreview.Visibility = Visibility.Visible;

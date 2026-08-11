@@ -15,22 +15,22 @@ struct ImproveCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Help us improve").font(.headline).foregroundStyle(Theme.txt)
-            Text("Tell us how to make PDI better — an idea, a rough edge, a bug, or what you love. It goes straight to the team.")
+            Text(L10n.t("nfb.title", state.language)).font(.headline).foregroundStyle(Theme.txt)
+            Text(L10n.t("nfb.sub", state.language))
                 .font(.caption).foregroundStyle(Theme.t2)
 
             Picker("", selection: $category) {
                 ForEach(categories, id: \.self) { Text($0.capitalized).tag($0) }
             }.pickerStyle(.segmented)
 
-            TextField("What's on your mind?", text: $message, axis: .vertical)
+            TextField(L10n.t("nfb.msg.ph", state.language), text: $message, axis: .vertical)
                 .lineLimit(2...5).foregroundStyle(Theme.txt)
                 .padding(10).background(Theme.scrBot)
                 .clipShape(RoundedRectangle(cornerRadius: 11))
                 .overlay(RoundedRectangle(cornerRadius: 11).stroke(Theme.line, lineWidth: 1))
 
             HStack(spacing: 6) {
-                Text("Rating").font(.caption).foregroundStyle(Theme.t2)
+                Text(L10n.t("nfb.rating", state.language)).font(.caption).foregroundStyle(Theme.t2)
                 ForEach(1...5, id: \.self) { n in
                     Button { rating = (rating == n ? 0 : n) } label: {
                         Image(systemName: n <= rating ? "star.fill" : "star")
@@ -39,7 +39,7 @@ struct ImproveCard: View {
                 }
             }
 
-            Button("Send feedback") { send() }
+            Button(L10n.t("nfb.send", state.language)) { send() }
                 .font(.caption.bold()).foregroundStyle(.white)
                 .padding(.horizontal, 12).padding(.vertical, 9)
                 .background(Theme.brandA).clipShape(Capsule())
@@ -49,12 +49,12 @@ struct ImproveCard: View {
 
             if let st, st.total > 0 {
                 Divider().overlay(Theme.line)
-                Text("So far: " + categories.compactMap { c in
+                Text(L10n.t("fb.sofar", state.language).replacingOccurrences(of: "{list}", with: categories.compactMap { c in
                     (st.tally[c] ?? 0) > 0 ? "\(st.tally[c]!) \(c)" : nil
-                }.joined(separator: " · "))
+                }.joined(separator: " · ")))
                     .font(.caption2).foregroundStyle(Theme.t3)
                 if !st.mine.isEmpty {
-                    Text("Yours").font(.caption.bold()).foregroundStyle(Theme.txt)
+                    Text(L10n.t("nfb.yours", state.language)).font(.caption.bold()).foregroundStyle(Theme.txt)
                     ForEach(st.mine.prefix(4)) { f in
                         HStack {
                             Text("[\(f.category)] \(f.message)")
@@ -83,7 +83,7 @@ struct ImproveCard: View {
                     token: token, category: category,
                     message: message.trimmingCharacters(in: .whitespaces),
                     rating: rating == 0 ? nil : rating)
-                status = "Thank you — sent."
+                status = L10n.t("fb.thanks", state.language)
                 message = ""; rating = 0
             } catch { status = error.localizedDescription }
             await load()

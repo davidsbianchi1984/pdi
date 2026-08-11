@@ -152,7 +152,7 @@ fun WelcomeScreen(vm: VaultViewModel) {
             error?.let { Text(it, color = Pdi.Red, fontSize = 13.sp) }
             // The portability door: counts and table names on the phone; the
             // document itself is what the console downloads.
-            BrandButton("What do you hold about us", enabled = true) {
+            BrandButton(L10n.t("nadm.dsr", lang), enabled = true) {
                 vm.call({ ApiClient.exportEverything(vm.token ?: "") }) { r ->
                     r.onSuccess { (tables, rows) ->
                         held = "$tables table(s), $rows row(s)"
@@ -206,28 +206,28 @@ fun OverviewScreen(vm: VaultViewModel) {
     screenScroll {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Box(Modifier.size(8.dp).clip(CircleShape).background(Pdi.Green))
-            Text("Vault unlocked", color = Pdi.Green, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("nov.unlocked", vm.language), color = Pdi.Green, fontSize = 12.sp, fontWeight = FontWeight.Bold)
         }
-        Text("Your vault", color = Pdi.Txt, fontSize = 28.sp, fontWeight = FontWeight.Bold)
-        Text("Records are sealed at rest; every access is hash-chained in the audit log.",
+        Text(L10n.t("nov.title", vm.language), color = Pdi.Txt, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("nov.sealed", vm.language),
             color = Pdi.T2, fontSize = 14.sp)
 
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             statCard(Modifier.weight(1f), L10n.t("nrec.t.records", vm.language), if (!loaded) "—" else (count ?: 0).toString(), Pdi.BrandA)
             statCard(Modifier.weight(1f), L10n.t("tab.audit", vm.language),
-                if (!loaded) "—" else if (intact == false) "Broken" else "Intact",
+                if (!loaded) "—" else if (intact == false) L10n.t("nov.broken", vm.language) else L10n.t("nov.intact", vm.language),
                 if (intact == false) Pdi.Red else Pdi.Green)
         }
 
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("Token", color = Pdi.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("nov.token", vm.language), color = Pdi.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             Text(masked(vm.token ?: ""), color = Pdi.T2, fontSize = 13.sp)
             Text(vm.baseURL, color = Pdi.T3, fontSize = 12.sp)
         }
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(L10n.t("wel.language", vm.language), color = Pdi.Txt, fontSize = 16.sp,
                  fontWeight = FontWeight.Bold)
-            Text("PDI's explanatory notes arrive in this language; sealed data is untouched.",
+            Text(L10n.t("nov.notes", vm.language),
                 color = Pdi.T2, fontSize = 12.sp)
             languages.chunked(3).forEach { row ->
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -252,8 +252,8 @@ fun OverviewScreen(vm: VaultViewModel) {
             }
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text("Pre-translate notes", color = Pdi.Txt, fontSize = 13.sp)
-                    Text("Off keeps English notes; sealed data is never touched either way.",
+                    Text(L10n.t("nov.pretrans", vm.language), color = Pdi.Txt, fontSize = 13.sp)
+                    Text(L10n.t("nov.pretrans.off", vm.language),
                         color = Pdi.T2, fontSize = 10.sp)
                 }
                 Switch(
@@ -326,11 +326,9 @@ fun AdminCard(vm: VaultViewModel) {
     var error by remember { mutableStateOf<String?>(null) }
 
     Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("Admin · Key management", color = Pdi.Txt, fontSize = 16.sp,
+        Text(L10n.t("nadm.title", vm.language), color = Pdi.Txt, fontSize = 16.sp,
             fontWeight = FontWeight.Bold)
-        Text("Requires the deployment's admin token (PDI_ADMIN_TOKEN) — not the tenant " +
-             "token. Kept in memory only, never stored. Rotation re-seals every record; " +
-             "retire deletes non-active versions (safe only after a reseal).",
+        Text(L10n.t("nadm.req", vm.language) + " " + L10n.t("nadm.req.more", vm.language),
             color = Pdi.T2, fontSize = 12.sp)
         labeledField(L10n.t("nadm.token", vm.language), adminToken, "…") { adminToken = it }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -345,7 +343,7 @@ fun AdminCard(vm: VaultViewModel) {
                     error = null; status = null
                     vm.call({ ApiClient.rotateKey(adminToken) }) { r ->
                         r.onSuccess { info = it
-                            status = "Rotated — every record re-sealed under the new version." }
+                            status = L10n.t("nadm.rotated", vm.language) }
                          .onFailure { error = it.message }
                     }
                 }
@@ -459,8 +457,8 @@ fun ImproveCard(vm: VaultViewModel) {
     LaunchedEffect(Unit) { reload() }
 
     Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("Help us improve", color = Pdi.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-        Text("Tell us how to make PDI better — an idea, a rough edge, a bug, or what you love. It goes straight to the team.",
+        Text(L10n.t("nfb.title", vm.language), color = Pdi.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("nfb.sub", vm.language),
             color = Pdi.T2, fontSize = 12.sp)
         categories.chunked(3).forEach { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -479,7 +477,7 @@ fun ImproveCard(vm: VaultViewModel) {
         }
         labeledField("", message, L10n.t("nfb.msg.ph", vm.language)) { message = it }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("Rating", color = Pdi.T2, fontSize = 12.sp)
+            Text(L10n.t("nfb.rating", vm.language), color = Pdi.T2, fontSize = 12.sp)
             (1..5).forEach { n ->
                 Text(if (n <= rating) "★" else "☆",
                     color = if (n <= rating) Pdi.Amber else Pdi.T3, fontSize = 20.sp,
@@ -491,17 +489,17 @@ fun ImproveCard(vm: VaultViewModel) {
                 ApiClient.submitImprovement(vm.token!!, category, message.trim(),
                     if (rating == 0) null else rating)
             }) {
-                thanks = "Thank you — sent."; message = ""; rating = 0; reload()
+                thanks = L10n.t("fb.thanks", vm.language); message = ""; rating = 0; reload()
             }
         }
         thanks?.let { Text(it, color = Pdi.Green, fontSize = 12.sp) }
         state?.takeIf { it.total > 0 }?.let { st ->
             HorizontalDivider(color = Pdi.Line)
-            Text("So far: " + categories.mapNotNull { c ->
+            Text(L10n.t("fb.sofar", vm.language).replace("{list}", categories.mapNotNull { c ->
                 st.tally[c]?.takeIf { it > 0 }?.let { "$it $c" }
-            }.joinToString(" · "), color = Pdi.T3, fontSize = 10.sp)
+            }.joinToString(" · ")), color = Pdi.T3, fontSize = 10.sp)
             if (st.mine.isNotEmpty()) {
-                Text("Yours", color = Pdi.Txt, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(L10n.t("nfb.yours", vm.language), color = Pdi.Txt, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 st.mine.take(4).forEach { f ->
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("[${f.category}] ${f.message}", color = Pdi.T2, fontSize = 10.sp,
@@ -538,8 +536,8 @@ fun VaultScreen(vm: VaultViewModel) {
     LaunchedEffect(Unit) { reload() }
 
     screenScroll {
-        Text("Vault", color = Pdi.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        Text("Store a value — it is sealed at rest with AES-256-GCM.", color = Pdi.T2, fontSize = 13.sp)
+        Text(L10n.t("tab.vault", vm.language), color = Pdi.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("nrec.sub", vm.language), color = Pdi.T2, fontSize = 13.sp)
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             labeledField(L10n.t("nrec.key", vm.language), newKey, L10n.t("nrec.key.ph", vm.language)) { newKey = it }
             labeledField(L10n.t("nrec.value", vm.language), newValue, L10n.t("nrec.value.ph", vm.language)) { newValue = it }
@@ -557,7 +555,7 @@ fun VaultScreen(vm: VaultViewModel) {
         when {
             keys == null -> CircularProgressIndicator(color = Pdi.BrandA, modifier = Modifier.size(22.dp))
             keys!!.isEmpty() -> Column(Modifier.card()) {
-                Text("No records yet — seal one above.", color = Pdi.T2, fontSize = 13.sp)
+                Text(L10n.t("nrec.none", vm.language), color = Pdi.T2, fontSize = 13.sp)
             }
             else -> keys!!.forEach { key ->
                 Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -569,7 +567,7 @@ fun VaultScreen(vm: VaultViewModel) {
                             else vm.call({ ApiClient.record(vm.token!!, key) }) { r ->
                                 r.getOrNull()?.let { revealed = revealed + (key to it.value) }
                             }
-                        }) { Text(if (revealed.containsKey(key)) "Hide" else "Reveal", color = Pdi.BrandA, fontSize = 12.sp) }
+                        }) { Text(if (revealed.containsKey(key)) L10n.t("nrec.hide", vm.language) else L10n.t("nrec.reveal", vm.language), color = Pdi.BrandA, fontSize = 12.sp) }
                         TextButton(onClick = {
                             if (provenance.containsKey(key)) provenance = provenance - key
                             else vm.call({ ApiClient.provenance(vm.token!!, key) }) { r ->
@@ -580,7 +578,7 @@ fun VaultScreen(vm: VaultViewModel) {
                             vm.call({ ApiClient.deleteRecord(vm.token!!, key) }) { _ ->
                                 revealed = revealed - key; reload()
                             }
-                        }) { Text("Delete", color = Pdi.Red, fontSize = 12.sp) }
+                        }) { Text(L10n.t("nrec.delete", vm.language), color = Pdi.Red, fontSize = 12.sp) }
                     }
                     revealed[key]?.let { v ->
                         Text(v, color = Pdi.T2, fontSize = 12.sp,
@@ -591,13 +589,13 @@ fun VaultScreen(vm: VaultViewModel) {
                         Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(9.dp))
                             .background(Pdi.ScrBot).padding(10.dp),
                             verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            Text("Origin: ${p.origin}", color = Pdi.Txt, fontSize = 11.sp)
+                            Text(L10n.t("nrec.origin", vm.language).replace("{x}", p.origin), color = Pdi.Txt, fontSize = 11.sp)
                             Text(p.cipher, color = Pdi.T2, fontSize = 10.sp)
                             Text(p.boundTo, color = Pdi.T2, fontSize = 10.sp)
-                            Text("Sealed ${p.createdAt} · ${p.ciphertextBytes} ciphertext bytes",
+                            Text(L10n.t("nrec.sealedline", vm.language).replace("{date}", p.createdAt).replace("{n}", "${p.ciphertextBytes}"),
                                 color = Pdi.T3, fontSize = 10.sp)
-                            Text("${p.auditCount} audit event(s) · chain " +
-                                if (p.chainIntact) "intact ✓" else "BROKEN",
+                            Text(L10n.t("nrec.auditline", vm.language).replace("{n}", "${p.auditCount}")
+                                .replace("{status}", if (p.chainIntact) L10n.t("nrec.chain.ok", vm.language) else L10n.t("nrec.chain.bad", vm.language)),
                                 color = if (p.chainIntact) Pdi.Green else Pdi.Red,
                                 fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         }
@@ -620,14 +618,14 @@ fun AuditScreen(vm: VaultViewModel) {
     }
     screenScroll {
         Text(L10n.t("tab.audit", vm.language), color = Pdi.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        ProblemReportingCard()
-        Text("Every vault action is hash-chained. Verify recomputes the whole chain.",
+        ProblemReportingCard(vm.language)
+        Text(L10n.t("naud.desc", vm.language),
             color = Pdi.T2, fontSize = 13.sp)
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                when (intact) { null -> "Verifying…"; true -> "Chain intact"; else -> "Chain broken" },
+                when (intact) { null -> L10n.t("naud.verifying", vm.language); true -> L10n.t("naud.intact", vm.language); else -> L10n.t("naud.broken", vm.language) },
                 color = if (intact == false) Pdi.Red else Pdi.Green, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            Text("${entries?.size ?: 0} recorded events", color = Pdi.T2, fontSize = 12.sp)
+            Text(L10n.t("naud.events", vm.language).replace("{n}", "${entries?.size ?: 0}"), color = Pdi.T2, fontSize = 12.sp)
         }
         when {
             entries == null -> CircularProgressIndicator(color = Pdi.BrandA, modifier = Modifier.size(22.dp))
@@ -684,12 +682,12 @@ fun RobotsScreen(vm: VaultViewModel) {
     }
 
     screenScroll {
-        Text("Robots", color = Pdi.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        Text("What your robots see stays sealed — every intake is encrypted at rest and hash-chained in the audit log.",
+        Text(L10n.t("tab.robots", vm.language), color = Pdi.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("nrob.sub", vm.language),
             color = Pdi.T2, fontSize = 13.sp)
 
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Bind a robot", color = Pdi.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(L10n.t("nrob.bind", vm.language), color = Pdi.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             catalog.chunked(2).forEach { row ->
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     row.forEach { s ->
@@ -719,24 +717,24 @@ fun RobotsScreen(vm: VaultViewModel) {
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(rob.name, color = Pdi.Txt, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                    Text("${rob.collected} sealed", color = Pdi.Green, fontSize = 12.sp)
+                    Text(L10n.t("nrob.count", vm.language).replace("{n}", "${rob.collected}"), color = Pdi.Green, fontSize = 12.sp)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     TextButton(onClick = { seal(rob, "map", "{\"rooms\": 5}") }) {
-                        Text("Seal map", color = Pdi.BrandA, fontSize = 12.sp) }
+                        Text(L10n.t("nrob.map", vm.language), color = Pdi.BrandA, fontSize = 12.sp) }
                     TextButton(onClick = { seal(rob, "snapshot", "camera still") }) {
-                        Text("Snapshot", color = Pdi.BrandA, fontSize = 12.sp) }
+                        Text(L10n.t("nrob.snap", vm.language), color = Pdi.BrandA, fontSize = 12.sp) }
                     TextButton(onClick = { seal(rob, "sensor_log", "steps & doors") }) {
-                        Text("Sensor log", color = Pdi.BrandA, fontSize = 12.sp) }
+                        Text(L10n.t("nrob.log", vm.language), color = Pdi.BrandA, fontSize = 12.sp) }
                 }
                 TextButton(onClick = { showKeys(rob) }) {
-                    Text("Sealed keys", color = Pdi.BrandA, fontSize = 12.sp) }
+                    Text(L10n.t("nrob.keys", vm.language), color = Pdi.BrandA, fontSize = 12.sp) }
                 keys[rob.id]?.let { ks ->
                     if (ks.isEmpty()) {
-                        Text("Nothing sealed yet.", color = Pdi.T3, fontSize = 11.sp)
+                        Text(L10n.t("nrob.none", vm.language), color = Pdi.T3, fontSize = 11.sp)
                     } else {
                         ks.forEach { Text(it, color = Pdi.T2, fontSize = 11.sp) }
-                        Text("Read one (audited) via Vault → the key above.",
+                        Text(L10n.t("nrob.readone", vm.language),
                             color = Pdi.T3, fontSize = 11.sp)
                     }
                 }
@@ -745,9 +743,9 @@ fun RobotsScreen(vm: VaultViewModel) {
 
         lastKey?.let { key ->
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("Sealed", color = Pdi.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(L10n.t("nrob.sealed", vm.language), color = Pdi.Txt, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Text(key, color = Pdi.T2, fontSize = 11.sp)
-                Text("Read it (audited) via Vault → the key above.", color = Pdi.T3, fontSize = 11.sp)
+                Text(L10n.t("nrob.read", vm.language), color = Pdi.T3, fontSize = 11.sp)
             }
         }
     }
@@ -852,7 +850,7 @@ private fun OutboundPanel(vm: VaultViewModel) {
                 }
                 Text("→ ${t.recipient} · ${t.programs.joinToString(" ") { it.uppercase() }}",
                     color = Pdi.T2, fontSize = 12.sp)
-                t.expiresAt?.let { Text("retained until $it", color = Pdi.T3, fontSize = 11.sp) }
+                t.expiresAt?.let { Text(L10n.t("ntr.retained", vm.language).replace("{date}", it), color = Pdi.T3, fontSize = 11.sp) }
                 if (t.status != "revoked") {
                     TextButton(onClick = {
                         vm.call({ ApiClient.revokeTransfer(vm.token!!, t.id) }) { reload() }
@@ -1001,9 +999,9 @@ fun SourcesScreen(vm: VaultViewModel) {
     var seg by remember { mutableIntStateOf(0) }
     Column(Modifier.fillMaxSize()) {
         TabRow(selectedTabIndex = seg, containerColor = Pdi.Card, contentColor = Pdi.BrandA) {
-            listOf("Robots", "Connectors").forEachIndexed { i, t ->
+            listOf("tab.robots", "tab.connectors").forEachIndexed { i, t ->
                 Tab(selected = seg == i, onClick = { seg = i },
-                    text = { Text(t, fontSize = 13.sp) })
+                    text = { Text(L10n.t(t, vm.language), fontSize = 13.sp) })
             }
         }
         Box(Modifier.weight(1f)) {
@@ -1036,8 +1034,8 @@ private fun ConnectorsPanel(vm: VaultViewModel) {
     }
 
     screenScroll {
-        Text("Connectors", color = Pdi.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        Text("Link a platform account. Collected content is sealed into the vault; every ingest is hash-chained in the audit log.",
+        Text(L10n.t("tab.connectors", vm.language), color = Pdi.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("ncon.sub", vm.language),
             color = Pdi.T2, fontSize = 13.sp)
 
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1058,9 +1056,9 @@ private fun ConnectorsPanel(vm: VaultViewModel) {
             labeledField(L10n.t("nacc.handle", vm.language), handle, L10n.t("nacc.handle.ph", vm.language)) { handle = it }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextButton(onClick = { connect("collect") }) {
-                    Text("Connect to collect", color = Pdi.BrandA, fontSize = 13.sp) }
+                    Text(L10n.t("ncon.collect", vm.language), color = Pdi.BrandA, fontSize = 13.sp) }
                 TextButton(onClick = { connect("publish") }) {
-                    Text("Connect to publish", color = Pdi.BrandA, fontSize = 13.sp) }
+                    Text(L10n.t("ncon.publish", vm.language), color = Pdi.BrandA, fontSize = 13.sp) }
             }
         }
         error?.let { Text(it, color = Pdi.Red, fontSize = 13.sp) }
@@ -1081,7 +1079,7 @@ private fun ConnectorsPanel(vm: VaultViewModel) {
                                 r.onSuccess { status = "sealed one item from ${c.platform}" }
                                  .onFailure { error = it.message }
                             }
-                        }) { Text("Ingest sample", color = Pdi.BrandA, fontSize = 12.sp) }
+                        }) { Text(L10n.t("ncon.ingest", vm.language), color = Pdi.BrandA, fontSize = 12.sp) }
                     else
                         TextButton(onClick = {
                             vm.call({ ApiClient.connectorPublish(vm.token!!, c.id,
@@ -1089,10 +1087,10 @@ private fun ConnectorsPanel(vm: VaultViewModel) {
                                 r.onSuccess { status = "published to ${c.platform}" }
                                  .onFailure { error = it.message }
                             }
-                        }) { Text("Publish update", color = Pdi.BrandA, fontSize = 12.sp) }
+                        }) { Text(L10n.t("ncon.update", vm.language), color = Pdi.BrandA, fontSize = 12.sp) }
                     TextButton(onClick = {
                         vm.call({ ApiClient.revokeConnector(vm.token!!, c.id) }) { reload() }
-                    }) { Text("Disconnect", color = Pdi.Red, fontSize = 12.sp) }
+                    }) { Text(L10n.t("ncon.disconnect", vm.language), color = Pdi.Red, fontSize = 12.sp) }
                 }
             }
         }
@@ -1119,7 +1117,7 @@ private fun ConnectorsPanel(vm: VaultViewModel) {
  *    with a bright Yes and a grey No has made the choice already.
  */
 @Composable
-fun ProblemReportingCard() {
+fun ProblemReportingCard(lang: String) {
     var answered by remember { mutableStateOf(Problems.noticeAnswered()) }
     var sending by remember { mutableStateOf(Problems.sendingEnabled()) }
     var showing by remember { mutableStateOf(false) }
@@ -1131,19 +1129,15 @@ fun ProblemReportingCard() {
 
     Card(colors = CardDefaults.cardColors(containerColor = Pdi.Card)) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("When something breaks", style = MaterialTheme.typography.titleSmall)
+            Text(L10n.t("prb.title", lang), style = MaterialTheme.typography.titleSmall)
 
             if (Problems.collectorUrl().isEmpty()) {
                 // Not a failure and not a thing to hide: this build has no
                 // address compiled in, so there is nothing to consent to.
-                Text("This build reports nowhere. Failures are counted on this " +
-                     "device and never leave it.",
+                Text(L10n.t("prb.nowhere", lang),
                      style = MaterialTheme.typography.bodySmall)
             } else if (!answered) {
-                Text("This app can send a count of what failed — the operation " +
-                     "and the HTTP status, the day, and how many times. Not " +
-                     "what you typed, not who you are, not which profile. " +
-                     "Nothing that identifies you or anyone else.",
+                Text(L10n.t("prb.can", lang),
                      style = MaterialTheme.typography.bodySmall)
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedButton(onClick = {
@@ -1153,14 +1147,14 @@ fun ProblemReportingCard() {
                         // just agreed watches the buffer drain, instead of
                         // being told something happened later.
                         scope.launch(Dispatchers.IO) { Problems.send() }
-                    }) { Text("Send counts") }
+                    }) { Text(L10n.t("prb.send", lang)) }
                     OutlinedButton(onClick = {
                         Problems.answerNotice(false); answered = true; sending = false
-                    }) { Text("Do not send") }
+                    }) { Text(L10n.t("prb.donot", lang)) }
                 }
             } else {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Send failure counts", Modifier.weight(1f),
+                    Text(L10n.t("prb.toggle", lang), Modifier.weight(1f),
                          style = MaterialTheme.typography.bodyMedium)
                     Switch(checked = sending, onCheckedChange = {
                         sending = it; Problems.setSending(it)
@@ -1169,13 +1163,12 @@ fun ProblemReportingCard() {
             }
 
             TextButton(onClick = { showing = !showing }) {
-                Text(if (showing) "Hide what would be sent"
-                     else "Show what would be sent")
+                Text(if (showing) L10n.t("prb.hide", lang)
+                     else L10n.t("prb.show", lang))
             }
             if (showing) {
                 if (owed.isEmpty()) {
-                    Text("Nothing is owed. Either nothing has failed, or " +
-                         "everything that has was already reported.",
+                    Text(L10n.t("prb.owed.none", lang),
                          style = MaterialTheme.typography.bodySmall)
                 } else {
                     owed.forEach { r ->

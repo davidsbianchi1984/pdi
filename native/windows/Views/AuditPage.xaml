@@ -7,16 +7,16 @@
 
     <ScrollViewer>
         <StackPanel MaxWidth="640" Spacing="14" Padding="28" HorizontalAlignment="Left">
-            <TextBlock Text="Audit" FontSize="22" FontWeight="Bold" Foreground="{StaticResource PdiTxtBrush}" />
-            <TextBlock Text="Every vault action is hash-chained. Verify recomputes the whole chain."
+            <TextBlock x:Name="TitleText" FontSize="22" FontWeight="Bold" Foreground="{StaticResource PdiTxtBrush}" />
+            <TextBlock x:Name="DescText"
                        Foreground="{StaticResource PdiT2Brush}" FontSize="13" TextWrapping="Wrap" />
 
             <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="4">
-                    <TextBlock x:Name="StatusText" Text="Verifying…" FontWeight="Bold" FontSize="16"
+                    <TextBlock x:Name="StatusText" FontWeight="Bold" FontSize="16"
                                Foreground="{StaticResource PdiGreenBrush}" />
-                    <TextBlock x:Name="CountText" Text="0 recorded events"
+                    <TextBlock x:Name="CountText"
                                Foreground="{StaticResource PdiT2Brush}" FontSize="12" />
                 </StackPanel>
             </Border>
@@ -54,15 +54,15 @@
             <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="8">
-                    <TextBlock Text="When something breaks" FontWeight="Bold" FontSize="16"
+                    <TextBlock x:Name="ProblemsTitle" FontWeight="Bold" FontSize="16"
                                Foreground="{StaticResource PdiTxtBrush}" />
                     <TextBlock x:Name="ProblemsExplain" FontSize="12" TextWrapping="Wrap"
                                Foreground="{StaticResource PdiT2Brush}" />
                     <StackPanel x:Name="ProblemsAsk" Orientation="Horizontal" Spacing="10">
-                        <Button x:Name="ProblemsYes" Content="Send counts" Click="OnProblemsYes" />
-                        <Button x:Name="ProblemsNo" Content="Do not send" Click="OnProblemsNo" />
+                        <Button x:Name="ProblemsYes" Click="OnProblemsYes" />
+                        <Button x:Name="ProblemsNo" Click="OnProblemsNo" />
                     </StackPanel>
-                    <ToggleSwitch x:Name="ProblemsSwitch" Header="Send failure counts"
+                    <ToggleSwitch x:Name="ProblemsSwitch"
                                   Toggled="OnProblemsToggled" Visibility="Collapsed" />
                     <HyperlinkButton x:Name="ProblemsPreviewButton"
                                      Click="OnProblemsPreview" />

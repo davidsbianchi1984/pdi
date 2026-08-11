@@ -19,6 +19,30 @@ public sealed partial class OverviewPage : Page
     public OverviewPage()
     {
         InitializeComponent();
+        UnlockedText.Text = L10n.T("nov.unlocked");
+        VaultTitle.Text = L10n.T("nov.title");
+        SealedText.Text = L10n.T("nov.sealed");
+        RecordsLabel.Text = L10n.T("nrec.t.records");
+        AuditLabel.Text = L10n.T("tab.audit");
+        TokenLabel.Text = L10n.T("nov.token");
+        NotesText.Text = L10n.T("nov.notes");
+        PreTranslateToggle.Header = L10n.T("nov.pretrans");
+        PreTranslateToggle.OnContent = L10n.T("nov.mode.on");
+        PreTranslateToggle.OffContent = L10n.T("nov.mode.off");
+        ImproveTitle.Text = L10n.T("nfb.title");
+        ImproveSub.Text = L10n.T("nfb.sub");
+        ImproveCategory.Header = L10n.T("nfb.category");
+        ImproveMessage.PlaceholderText = L10n.T("nfb.msg.ph");
+        ImproveRating.Header = L10n.T("nfb.rating.opt");
+        ImproveSend.Content = L10n.T("nfb.send");
+        ImproveMineHeader.Text = L10n.T("nfb.yours");
+        AdminTitle.Text = L10n.T("nadm.title");
+        AdminReq.Text = L10n.T("nadm.req") + " " + L10n.T("nadm.req.more");
+        AdminTokenBox.Header = L10n.T("nadm.token");
+        AdminDsr.Content = L10n.T("nadm.dsr");
+        AdminLoad.Content = L10n.T("nadm.versions");
+        RotateButton.Content = L10n.T("nadm.rotate");
+        RetireButton.Content = L10n.T("nadm.retire");
         LanguageHead.Text = L10n.T("wel.language");
         // `action.refresh` has been in the table, translated into ten
         // languages, since chrome localization landed — and the only
@@ -135,7 +159,7 @@ public sealed partial class OverviewPage : Page
         try
         {
             var v = await ApiClient.Shared.AuditVerify(s.Token!);
-            AuditValue.Text = v.Intact ? "Intact" : "Broken";
+            AuditValue.Text = v.Intact ? L10n.T("nov.intact") : L10n.T("nov.broken");
         }
         catch { AuditValue.Text = "—"; }
         try

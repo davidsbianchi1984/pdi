@@ -7,15 +7,15 @@
 
     <ScrollViewer>
         <StackPanel MaxWidth="640" Spacing="14" Padding="28" HorizontalAlignment="Left">
-            <TextBlock Text="Robots" FontSize="22" FontWeight="Bold" Foreground="{StaticResource PdiTxtBrush}" />
-            <TextBlock Text="What your robots see stays sealed — every intake is encrypted at rest and hash-chained in the audit log."
+            <TextBlock x:Name="TitleText" FontSize="22" FontWeight="Bold" Foreground="{StaticResource PdiTxtBrush}" />
+            <TextBlock x:Name="SubText"
                        Foreground="{StaticResource PdiT2Brush}" FontSize="13" TextWrapping="Wrap" />
 
             <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="10">
-                    <ComboBox x:Name="ModelBox" Header="Bind a robot" HorizontalAlignment="Stretch" />
-                    <Button x:Name="BindButton" Content="Bind" HorizontalAlignment="Stretch"
+                    <ComboBox x:Name="ModelBox" HorizontalAlignment="Stretch" />
+                    <Button x:Name="BindButton" HorizontalAlignment="Stretch"
                             Height="42" Foreground="White" Click="OnBind">
                         <Button.Background>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
@@ -43,13 +43,13 @@
                                                Foreground="{StaticResource PdiGreenBrush}" FontSize="12" />
                                 </Grid>
                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Button Content="Seal map" Tag="{Binding Id}" Click="OnSealMap"
+                                    <Button Content="{Binding MapLabel}" Tag="{Binding Id}" Click="OnSealMap"
                                             Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
-                                    <Button Content="Snapshot" Tag="{Binding Id}" Click="OnSealSnapshot"
+                                    <Button Content="{Binding SnapLabel}" Tag="{Binding Id}" Click="OnSealSnapshot"
                                             Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
-                                    <Button Content="Sensor log" Tag="{Binding Id}" Click="OnSealSensor"
+                                    <Button Content="{Binding LogLabel}" Tag="{Binding Id}" Click="OnSealSensor"
                                             Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
-                                    <Button Content="Sealed keys" Tag="{Binding Id}" Click="OnShowKeys"
+                                    <Button Content="{Binding KeysLabel}" Tag="{Binding Id}" Click="OnShowKeys"
                                             Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
                                 </StackPanel>
                             </StackPanel>
@@ -62,11 +62,11 @@
                     BorderBrush="{StaticResource PdiLineBrush}" BorderThickness="1" CornerRadius="16"
                     Padding="16" Visibility="Collapsed">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="Sealed" FontWeight="Bold" FontSize="16"
+                    <TextBlock x:Name="ResultTitle" FontWeight="Bold" FontSize="16"
                                Foreground="{StaticResource PdiTxtBrush}" />
                     <TextBlock x:Name="KeyText" FontFamily="Consolas" FontSize="12"
                                Foreground="{StaticResource PdiT2Brush}" TextWrapping="Wrap" />
-                    <TextBlock Text="Read it (audited) via Vault → the key above."
+                    <TextBlock x:Name="ResultRead"
                                Foreground="{StaticResource PdiT2Brush}" FontSize="12" />
                 </StackPanel>
             </Border>
@@ -75,9 +75,9 @@
                     BorderBrush="{StaticResource PdiLineBrush}" BorderThickness="1" CornerRadius="16"
                     Padding="16" Visibility="Collapsed">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="Sealed keys" FontWeight="Bold" FontSize="16"
+                    <TextBlock x:Name="KeysTitle" FontWeight="Bold" FontSize="16"
                                Foreground="{StaticResource PdiTxtBrush}" />
-                    <TextBlock x:Name="KeysEmpty" Text="Nothing sealed yet."
+                    <TextBlock x:Name="KeysEmpty"
                                Foreground="{StaticResource PdiT2Brush}" FontSize="12"
                                Visibility="Collapsed" />
                     <ItemsControl x:Name="KeysList">
@@ -88,7 +88,7 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <TextBlock Text="Read one (audited) via Vault → the key above."
+                    <TextBlock x:Name="KeysRead"
                                Foreground="{StaticResource PdiT2Brush}" FontSize="12" />
                 </StackPanel>
             </Border>

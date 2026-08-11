@@ -18,6 +18,9 @@ public sealed partial class ConnectorsPage : Page
             Collect ? Visibility.Visible : Visibility.Collapsed;
         public Visibility PublishVisibility =>
             Collect ? Visibility.Collapsed : Visibility.Visible;
+        public string IngestLabel => L10n.T("ncon.ingest");
+        public string UpdateLabel => L10n.T("ncon.update");
+        public string DisconnectLabel => L10n.T("ncon.disconnect");
     }
 
     private static readonly string[] Platforms =
@@ -34,6 +37,12 @@ public sealed partial class ConnectorsPage : Page
         // In code rather than XAML: a XAML literal cannot be re-read when the
         // language changes, and this heading was the English one.
         TitleText.Text = L10n.T("tab.connectors");
+        SubText.Text = L10n.T("ncon.sub");
+        PlatformBox.Header = L10n.T("ncon.platform");
+        HandleBox.Header = L10n.T("nacc.handle");
+        HandleBox.PlaceholderText = L10n.T("nacc.handle.ph");
+        CollectButton.Content = L10n.T("ncon.collect");
+        PublishButton.Content = L10n.T("ncon.publish");
     }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)

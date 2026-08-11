@@ -213,7 +213,7 @@ def test_the_watermark_advances_by_amount_and_not_by_a_flag():
 NOTICE = (
     ("ios", "native/ios/Sources/Views/ProblemReportingCard.swift",
      "native/ios/Sources/Views/AuditView.swift", "ProblemReportingCard()"),
-    ("android", "native/android/app/src/main/java/com/pdi/vault/ui/Screens.kt", "native/android/app/src/main/java/com/pdi/vault/ui/Screens.kt", "ProblemReportingCard()"),
+    ("android", "native/android/app/src/main/java/com/pdi/vault/ui/Screens.kt", "native/android/app/src/main/java/com/pdi/vault/ui/Screens.kt", "ProblemReportingCard(vm.language)"),
     ("windows", "native/windows/Views/AuditPage.xaml.cs", "native/windows/Views/AuditPage.xaml", "ProblemsExplain"),
 )
 
@@ -271,15 +271,27 @@ def test_neither_answer_is_the_pre_picked_one(shell, card, host, call):
         mattered  do the two answers differ in emphasis
     """
     body = _code(REPO / card) + _code(REPO / host)
+    # The card looks the answers up since the round that localized it, so the
+    # card is asked for the lookup and the table is asked for the words.
+    # Matching the English in the card would now match nothing; matching the
+    # key alone would pass with the table saying anything at all — and this is
+    # the card that asks for consent. The sibling products settled this shape
+    # in the rounds that localized their copies of the same card.
+    for key in ("prb.send", "prb.donot"):
+        assert key in body, (
+            f"{shell}'s card does not look up {key!r} — a consent answer has "
+            "to come from the table, in the reader's language")
+    table = _code(REPO / "native/ios/Sources/L10n.swift")
     for wording in ("Send counts", "Do not send"):
-        assert wording in body, (
-            f"{shell}'s card is missing the {wording!r} answer")
+        assert wording in table, (
+            f"{wording!r} has left the shells' table, so {shell}'s card looks "
+            "up a key that resolves to nothing")
 
     # Everything on the line that declares each answer — the style it is given
     # and nothing belonging to anything else.
     lines = body.splitlines()
     marks = [i for i, line in enumerate(lines)
-             if "Send counts" in line or "Do not send" in line
+             if "prb.send" in line or "prb.donot" in line
              or "ProblemsYes" in line or "ProblemsNo" in line]
     # Two lines, not one: Swift puts the style on a wrapped modifier below the
     # label, and a one-line window missed exactly the injection this test was

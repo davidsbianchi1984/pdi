@@ -15,17 +15,17 @@ struct VaultView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text("Vault").font(.title2.bold()).foregroundStyle(Theme.txt)
-                Text("Store a value — it is sealed at rest with AES-256-GCM.")
+                Text(L10n.t("tab.vault", state.language)).font(.title2.bold()).foregroundStyle(Theme.txt)
+                Text(L10n.t("nrec.sub", state.language))
                     .font(.footnote).foregroundStyle(Theme.t2)
 
                 VStack(alignment: .leading, spacing: 10) {
-                    field("Key") { TextField("e.g. ssn", text: $newKey).foregroundStyle(Theme.txt)
+                    field(L10n.t("nrec.key", state.language)) { TextField(L10n.t("nrec.key.ph", state.language), text: $newKey).foregroundStyle(Theme.txt)
                         .textInputAutocapitalization(.never).autocorrectionDisabled() }
-                    field("Value") { TextField("plaintext to seal", text: $newValue, axis: .vertical)
+                    field(L10n.t("nrec.value", state.language)) { TextField(L10n.t("nrec.value.ph", state.language), text: $newValue, axis: .vertical)
                         .lineLimit(1...3).foregroundStyle(Theme.txt) }
                     Button(action: put) {
-                        HStack { if busy { ProgressView().tint(.white) }; Text("Seal record").bold() }
+                        HStack { if busy { ProgressView().tint(.white) }; Text(L10n.t("nrec.seal", state.language)).bold() }
                             .frame(maxWidth: .infinity).padding(.vertical, 12)
                             .background(Theme.brand).foregroundStyle(.white)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -37,7 +37,7 @@ struct VaultView: View {
                 if loading {
                     ProgressView().tint(Theme.brandA).frame(maxWidth: .infinity)
                 } else if keys.isEmpty {
-                    Text("No records yet — seal one above.").font(.footnote).foregroundStyle(Theme.t2).card()
+                    Text(L10n.t("nrec.none", state.language)).font(.footnote).foregroundStyle(Theme.t2).card()
                 } else {
                     ForEach(keys, id: \.self) { key in
                         VStack(alignment: .leading, spacing: 8) {
@@ -45,9 +45,9 @@ struct VaultView: View {
                                 Image(systemName: "key.fill").font(.caption).foregroundStyle(Theme.brandA)
                                 Text(key).font(.subheadline.bold()).foregroundStyle(Theme.txt)
                                 Spacer()
-                                Button(revealed[key] == nil ? "Reveal" : "Hide") { toggle(key) }
+                                Button(revealed[key] == nil ? L10n.t("nrec.reveal", state.language) : L10n.t("nrec.hide", state.language)) { toggle(key) }
                                     .font(.caption).foregroundStyle(Theme.brandA)
-                                Button(provenance[key] == nil ? "Provenance" : "ⓘ Hide") {
+                                Button(provenance[key] == nil ? L10n.t("nrec.prov", state.language) : "ⓘ " + L10n.t("nrec.hide", state.language)) {
                                     toggleProvenance(key)
                                 }
                                     .font(.caption).foregroundStyle(Theme.brandA)
@@ -64,13 +64,13 @@ struct VaultView: View {
                             }
                             if let p = provenance[key] {
                                 VStack(alignment: .leading, spacing: 3) {
-                                    Text("Origin: \(p.origin)")
+                                    Text(L10n.t("nrec.origin", state.language).replacingOccurrences(of: "{x}", with: p.origin))
                                         .font(.caption).foregroundStyle(Theme.txt)
                                     Text(p.sealed.cipher).font(.caption2).foregroundStyle(Theme.t2)
                                     Text(p.sealed.bound_to).font(.caption2).foregroundStyle(Theme.t2)
-                                    Text("Sealed \(p.sealed.created_at) · \(p.sealed.ciphertext_bytes) ciphertext bytes")
+                                    Text(L10n.t("nrec.sealedline", state.language).replacingOccurrences(of: "{date}", with: p.sealed.created_at).replacingOccurrences(of: "{n}", with: "\(p.sealed.ciphertext_bytes)"))
                                         .font(.caption2).foregroundStyle(Theme.t3)
-                                    Text("\(p.audit.count) audit event(s) · chain \(p.chain.intact ? "intact ✓" : "BROKEN")")
+                                    Text(L10n.t("nrec.auditline", state.language).replacingOccurrences(of: "{n}", with: "\(p.audit.count)").replacingOccurrences(of: "{status}", with: p.chain.intact ? L10n.t("nrec.chain.ok", state.language) : L10n.t("nrec.chain.bad", state.language)))
                                         .font(.caption2.bold())
                                         .foregroundStyle(p.chain.intact ? Theme.green : Theme.red)
                                 }

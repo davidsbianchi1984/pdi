@@ -9,11 +9,11 @@
         <StackPanel MaxWidth="640" Spacing="14" Padding="28" HorizontalAlignment="Left">
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <Ellipse Width="9" Height="9" Fill="{StaticResource PdiGreenBrush}" VerticalAlignment="Center" />
-                <TextBlock Text="Vault unlocked" Foreground="{StaticResource PdiGreenBrush}"
+                <TextBlock x:Name="UnlockedText" Foreground="{StaticResource PdiGreenBrush}"
                            FontWeight="Bold" FontSize="12" />
             </StackPanel>
-            <TextBlock Text="Your vault" FontSize="28" FontWeight="Bold" Foreground="{StaticResource PdiTxtBrush}" />
-            <TextBlock Text="Records are sealed at rest; every access is hash-chained in the audit log."
+            <TextBlock x:Name="VaultTitle" FontSize="28" FontWeight="Bold" Foreground="{StaticResource PdiTxtBrush}" />
+            <TextBlock x:Name="SealedText"
                        Foreground="{StaticResource PdiT2Brush}" FontSize="14" TextWrapping="Wrap" />
             <Button x:Name="RefreshButton" Click="OnRefresh"
                     Background="Transparent" FontSize="12"
@@ -43,7 +43,7 @@
                     <StackPanel Spacing="4">
                         <TextBlock x:Name="RecordsValue" Text="—" FontSize="22" FontWeight="Bold"
                                    Foreground="{StaticResource PdiBrandABrush}" />
-                        <TextBlock Text="Records" Foreground="{StaticResource PdiT2Brush}" FontSize="12" />
+                        <TextBlock x:Name="RecordsLabel" Foreground="{StaticResource PdiT2Brush}" FontSize="12" />
                     </StackPanel>
                 </Border>
                 <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
@@ -51,7 +51,7 @@
                     <StackPanel Spacing="4">
                         <TextBlock x:Name="AuditValue" Text="—" FontSize="22" FontWeight="Bold"
                                    Foreground="{StaticResource PdiGreenBrush}" />
-                        <TextBlock Text="Audit" Foreground="{StaticResource PdiT2Brush}" FontSize="12" />
+                        <TextBlock x:Name="AuditLabel" Foreground="{StaticResource PdiT2Brush}" FontSize="12" />
                     </StackPanel>
                 </Border>
             </StackPanel>
@@ -59,7 +59,7 @@
             <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="6">
-                    <TextBlock Text="Token" FontWeight="Bold" FontSize="16" Foreground="{StaticResource PdiTxtBrush}" />
+                    <TextBlock x:Name="TokenLabel" FontWeight="Bold" FontSize="16" Foreground="{StaticResource PdiTxtBrush}" />
                     <TextBlock x:Name="TokenText" FontFamily="Consolas" Foreground="{StaticResource PdiT2Brush}" />
                     <TextBlock x:Name="BaseText" FontSize="12" Foreground="{StaticResource PdiT2Brush}" />
                 </StackPanel>
@@ -69,13 +69,11 @@
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="6">
                     <TextBlock x:Name="LanguageHead" FontWeight="Bold" FontSize="16" Foreground="{StaticResource PdiTxtBrush}" />
-                    <TextBlock Text="PDI's explanatory notes arrive in this language; sealed data is untouched."
+                    <TextBlock x:Name="NotesText"
                                FontSize="12" TextWrapping="Wrap" Foreground="{StaticResource PdiT2Brush}" />
                     <ComboBox x:Name="LanguageBox" HorizontalAlignment="Stretch"
                               SelectionChanged="OnLanguagePicked" />
-                    <ToggleSwitch x:Name="PreTranslateToggle" Header="Pre-translate notes"
-                                  OnContent="Translated notes in every response"
-                                  OffContent="English notes kept"
+                    <ToggleSwitch x:Name="PreTranslateToggle"
                                   IsOn="True" Toggled="OnModeToggled" />
                 </StackPanel>
             </Border>
@@ -83,21 +81,21 @@
             <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="10">
-                    <TextBlock Text="Help us improve" FontWeight="Bold" FontSize="16"
+                    <TextBlock x:Name="ImproveTitle" FontWeight="Bold" FontSize="16"
                                Foreground="{StaticResource PdiTxtBrush}" />
-                    <TextBlock Text="Tell us how to make PDI better — an idea, a rough edge, a bug, or what you love. It goes straight to the team."
+                    <TextBlock x:Name="ImproveSub"
                                Foreground="{StaticResource PdiT2Brush}" FontSize="12" TextWrapping="Wrap" />
-                    <ComboBox x:Name="ImproveCategory" Header="Category" HorizontalAlignment="Stretch" />
-                    <TextBox x:Name="ImproveMessage" PlaceholderText="What's on your mind?"
+                    <ComboBox x:Name="ImproveCategory" HorizontalAlignment="Stretch" />
+                    <TextBox x:Name="ImproveMessage"
                              TextWrapping="Wrap" AcceptsReturn="True" Height="80" />
-                    <ComboBox x:Name="ImproveRating" Header="Rating (optional)" HorizontalAlignment="Stretch" />
-                    <Button Content="Send feedback" Click="OnSendImprovement"
+                    <ComboBox x:Name="ImproveRating" HorizontalAlignment="Stretch" />
+                    <Button x:Name="ImproveSend" Click="OnSendImprovement"
                             Background="{StaticResource PdiBrandABrush}" Foreground="White" FontSize="12" />
                     <TextBlock x:Name="ImproveThanks" Foreground="{StaticResource PdiGreenBrush}" FontSize="12"
                                TextWrapping="Wrap" Visibility="Collapsed" />
                     <TextBlock x:Name="ImproveTally" Foreground="{StaticResource PdiT2Brush}" FontSize="11"
                                TextWrapping="Wrap" Visibility="Collapsed" />
-                    <TextBlock x:Name="ImproveMineHeader" Text="Yours" FontWeight="Bold" FontSize="12"
+                    <TextBlock x:Name="ImproveMineHeader" FontWeight="Bold" FontSize="12"
                                Foreground="{StaticResource PdiTxtBrush}" Visibility="Collapsed" />
                     <ItemsControl x:Name="ImproveMine">
                         <ItemsControl.ItemTemplate>
@@ -150,21 +148,21 @@
             <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="10">
-                    <TextBlock Text="Admin · Key management" FontWeight="Bold" FontSize="16"
+                    <TextBlock x:Name="AdminTitle" FontWeight="Bold" FontSize="16"
                                Foreground="{StaticResource PdiTxtBrush}" />
-                    <TextBlock Text="Requires the deployment's admin token (PDI_ADMIN_TOKEN) — not the tenant token. Kept in memory only, never stored. Rotation re-seals every record; retire deletes non-active versions (safe only after a reseal)."
+                    <TextBlock x:Name="AdminReq"
                                Foreground="{StaticResource PdiT2Brush}" FontSize="12" TextWrapping="Wrap" />
-                    <PasswordBox x:Name="AdminTokenBox" Header="Admin token" />
+                    <PasswordBox x:Name="AdminTokenBox" />
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <!-- The portability door: counts on the desktop
                              shell, the document itself in the console. -->
-                        <Button Content="What do you hold about us"
+                        <Button x:Name="AdminDsr"
                                 Click="OnExportEverything" />
-                        <Button Content="Load versions" Click="OnLoadKeys"
+                        <Button x:Name="AdminLoad" Click="OnLoadKeys"
                                 Background="{StaticResource PdiBrandABrush}" Foreground="White" FontSize="12" />
-                        <Button x:Name="RotateButton" Content="Rotate key" Click="OnRotateKey" IsEnabled="False"
+                        <Button x:Name="RotateButton" Click="OnRotateKey" IsEnabled="False"
                                 Background="{StaticResource PdiBrandABrush}" Foreground="White" FontSize="12" />
-                        <Button x:Name="RetireButton" Content="Retire old" Click="OnRetireKeys" IsEnabled="False"
+                        <Button x:Name="RetireButton" Click="OnRetireKeys" IsEnabled="False"
                                 Background="Transparent" FontSize="12"
                                 Foreground="{StaticResource PdiRedBrush}" />
                     </StackPanel>

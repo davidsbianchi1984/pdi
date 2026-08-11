@@ -19,11 +19,25 @@ public sealed partial class VaultPage : Page
             string.IsNullOrEmpty(Value) ? Visibility.Collapsed : Visibility.Visible;
         public Visibility ProvenanceVisibility =>
             string.IsNullOrEmpty(ProvenanceText) ? Visibility.Collapsed : Visibility.Visible;
+        public string ProvLabel => "ⓘ " + L10n.T("nrec.prov");
+        public string RevealLabel => L10n.T("nrec.reveal");
+        public string DeleteLabel => L10n.T("nrec.delete");
     }
 
     private List<RecordRow> _rows = new();
 
-    public VaultPage() => InitializeComponent();
+    public VaultPage()
+    {
+        InitializeComponent();
+        TitleText.Text = L10n.T("tab.vault");
+        SubText.Text = L10n.T("nrec.sub");
+        KeyBox.Header = L10n.T("nrec.key");
+        KeyBox.PlaceholderText = L10n.T("nrec.key.ph");
+        ValueBox.Header = L10n.T("nrec.value");
+        ValueBox.PlaceholderText = L10n.T("nrec.value.ph");
+        SealButton.Content = L10n.T("nrec.seal");
+        Empty.Text = L10n.T("nrec.none");
+    }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
@@ -76,10 +90,11 @@ public sealed partial class VaultPage : Page
         {
             var p = await ApiClient.Shared.Provenance(AppState.Current.Token!, key);
             row.ProvenanceText =
-                $"Origin: {p.Origin}\n{p.Sealed.Cipher}\n{p.Sealed.BoundTo}\n" +
-                $"Sealed {p.Sealed.CreatedAt} · {p.Sealed.CiphertextBytes} ciphertext bytes\n" +
-                $"{p.Audit.Count} audit event(s) · chain " +
-                (p.Chain.Intact ? "intact ✓" : "BROKEN");
+                L10n.T("nrec.origin").Replace("{x}", p.Origin) + $"\n{p.Sealed.Cipher}\n{p.Sealed.BoundTo}\n" +
+                L10n.T("nrec.sealedline").Replace("{date}", p.Sealed.CreatedAt)
+                    .Replace("{n}", p.Sealed.CiphertextBytes.ToString()) + "\n" +
+                L10n.T("nrec.auditline").Replace("{n}", p.Audit.Count.ToString())
+                    .Replace("{status}", p.Chain.Intact ? L10n.T("nrec.chain.ok") : L10n.T("nrec.chain.bad"));
             Render();
         }
         catch (Exception ex) { ShowError(ex.Message); }
