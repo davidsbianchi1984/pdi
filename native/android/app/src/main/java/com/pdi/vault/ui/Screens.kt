@@ -1072,7 +1072,7 @@ private fun ConnectorsPanel(vm: VaultViewModel) {
                     c.handle?.let { Text("@$it", color = Pdi.T3, fontSize = 12.sp) }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (c.direction == "collect")
+                    if (c.direction == "collect") {
                         TextButton(onClick = {
                             vm.call({ ApiClient.connectorIngest(vm.token!!, c.id,
                                 "sample post from ${c.platform}") }) { r ->
@@ -1080,6 +1080,15 @@ private fun ConnectorsPanel(vm: VaultViewModel) {
                                  .onFailure { error = it.message }
                             }
                         }) { Text(L10n.t("ncon.ingest", vm.language), color = Pdi.BrandA, fontSize = 12.sp) }
+                        val h = c.handle
+                        if (h != null && h.isNotEmpty())
+                            TextButton(onClick = {
+                                vm.call({ ApiClient.connectorScrape(vm.token!!, c.id) }) { r ->
+                                    r.onSuccess { status = "fetched ${c.platform} — the page is sealed in the vault" }
+                                     .onFailure { error = it.message }
+                                }
+                            }) { Text(L10n.t("ncon.scrape", vm.language), color = Pdi.BrandA, fontSize = 12.sp) }
+                    }
                     else
                         TextButton(onClick = {
                             vm.call({ ApiClient.connectorPublish(vm.token!!, c.id,

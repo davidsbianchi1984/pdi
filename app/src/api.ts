@@ -717,6 +717,8 @@ export const api = {
   ingestToConnector: (cid: string, items: Row[], token: string) =>
     req<Row>(`/connectors/${cid}/ingest`,
       { method: "POST", body: { items }, token }),
+  scrapeConnector: (cid: string, token: string) =>
+    req<Row>(`/connectors/${cid}/scrape`, { method: "POST", token }),
   publishFromConnector: (cid: string, body: { content: string;
                                               topic?: string },
                          token: string) =>

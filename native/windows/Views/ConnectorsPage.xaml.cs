@@ -18,7 +18,11 @@ public sealed partial class ConnectorsPage : Page
             Collect ? Visibility.Visible : Visibility.Collapsed;
         public Visibility PublishVisibility =>
             Collect ? Visibility.Collapsed : Visibility.Visible;
+        public bool HasHandle { get; init; }
+        public Visibility ScrapeVisibility =>
+            Collect && HasHandle ? Visibility.Visible : Visibility.Collapsed;
         public string IngestLabel => L10n.T("ncon.ingest");
+        public string ScrapeLabel => L10n.T("ncon.scrape");
         public string UpdateLabel => L10n.T("ncon.update");
         public string DisconnectLabel => L10n.T("ncon.disconnect");
     }
@@ -63,6 +67,7 @@ public sealed partial class ConnectorsPage : Page
                 Id = c.Id,
                 Title = $"{Cap(c.Platform)} · {c.Direction}",
                 Handle = c.Handle is { } h ? $"@{h}" : "",
+                HasHandle = !string.IsNullOrEmpty(c.Handle),
                 Collect = c.Direction == "collect",
             }).ToList();
         }
@@ -98,6 +103,20 @@ public sealed partial class ConnectorsPage : Page
             await ApiClient.Shared.ConnectorIngest(
                 s.Token!, cid, $"sample post from {conn?.Platform}");
             ShowStatus($"sealed one item from {conn?.Platform}");
+        }
+        catch (Exception ex) { ShowError(ex.Message); }
+    }
+
+    private async void OnScrape(object sender, RoutedEventArgs e)
+    {
+        if ((sender as Button)?.Tag is not string cid) return;
+        var conn = _conns.FirstOrDefault(c => c.Id == cid);
+        var s = AppState.Current;
+        try
+        {
+            await ApiClient.Shared.ConnectorScrape(s.Token!, cid);
+            ShowStatus($"fetched {conn?.Platform} — the page is sealed in the vault");
+            await Reload();
         }
         catch (Exception ex) { ShowError(ex.Message); }
     }

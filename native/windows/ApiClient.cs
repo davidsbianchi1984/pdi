@@ -530,6 +530,12 @@ public sealed class ApiClient
         return SendNoContent(req, token);
     }
 
+    public Task ConnectorScrape(string token, string cid)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/connectors/{cid}/scrape");
+        return SendNoContent(req, token);
+    }
+
     public Task ConnectorPublish(string token, string cid, string content)
     {
         var req = new HttpRequestMessage(HttpMethod.Post, $"/connectors/{cid}/publish")

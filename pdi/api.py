@@ -501,6 +501,29 @@ def create_app() -> FastAPI:
             raise HTTPException(409, "connector has been revoked")
         return connectors.ingest(tenant, row, [i.model_dump() for i in body.items])
 
+    @app.post("/connectors/{cid}/scrape", status_code=201)
+    def scrape_connector(cid: str, tenant: dict = Depends(_writer)) -> dict:
+        row = _connector_or_404(cid, tenant)
+        if row["direction"] != "collect":
+            raise HTTPException(409, "this connector is for publishing, not collecting")
+        if row["status"] != "active":
+            raise HTTPException(409, "connector has been revoked")
+        if offline.enabled():
+            raise HTTPException(
+                409, "this deployment is offline — nothing leaves this machine, "
+                     "so the page cannot be fetched. Paste the content into "
+                     "ingest instead.")
+        try:
+            return connectors.fetch_page(tenant, row)
+        except LookupError as e:
+            raise HTTPException(400, str(e))
+        except offline.LeftTheHost as e:
+            raise HTTPException(409, str(e))
+        except ValueError as e:
+            raise HTTPException(502, str(e))
+        except Exception as e:                                # noqa: BLE001
+            raise HTTPException(502, f"could not fetch — {e.__class__.__name__}: {e}")
+
     @app.post("/connectors/{cid}/publish", status_code=201)
     def publish_connector(cid: str, body: ConnectorPublish,
                          tenant: dict = Depends(_writer)) -> dict:

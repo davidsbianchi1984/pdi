@@ -2497,6 +2497,9 @@ const CHROME: Table = {
     pt: "Publicar", it: "Pubblica", ja: "発信", zh: "发布",
     hi: "प्रकाशित करें", ar: "نشر",
   },
+  "bri.scrape": {
+    en: "Fetch the page", es: "Traer la página", fr: "Récupérer la page", de: "Die Seite holen", pt: "Buscar a página", it: "Recupera la pagina", ja: "ページを取得", zh: "抓取页面", hi: "पेज लाएँ", ar: "جلب الصفحة",
+  },
   "bri.ingest": {
     en: "Ingest", es: "Recoger", fr: "Ingérer", de: "Aufnehmen",
     pt: "Recolher", it: "Acquisisci", ja: "取り込む", zh: "收取",

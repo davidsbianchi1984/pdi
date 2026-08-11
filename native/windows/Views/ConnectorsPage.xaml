@@ -46,6 +46,9 @@
                                     <Button Content="{Binding IngestLabel}" Tag="{Binding Id}" Click="OnIngest"
                                             Visibility="{Binding IngestVisibility}"
                                             Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
+                                    <Button Content="{Binding ScrapeLabel}" Tag="{Binding Id}" Click="OnScrape"
+                                            Visibility="{Binding ScrapeVisibility}"
+                                            Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
                                     <Button Content="{Binding UpdateLabel}" Tag="{Binding Id}" Click="OnPublish"
                                             Visibility="{Binding PublishVisibility}"
                                             Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />

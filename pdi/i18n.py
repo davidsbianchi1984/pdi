@@ -1158,6 +1158,17 @@ def refuse(request, status: int, content, headers: dict | None = None):
 #: languages. What is not here is recorded in
 #: `pdi/tests/refusals_untranslated.txt` and ratcheted.
 _REFUSALS: dict[str, dict[str, str]] = {
+    'this deployment is offline — nothing leaves this machine, so the page cannot be fetched. Paste the content into ingest instead.': {
+        'es': 'este despliegue está sin conexión: nada sale de esta máquina, así que la página no puede traerse. Pega el contenido en ingerir en su lugar.',
+        'fr': "ce déploiement est hors ligne — rien ne quitte cette machine, la page ne peut donc pas être récupérée. Collez plutôt le contenu dans l'ingestion.",
+        'de': 'diese Installation ist offline — nichts verlässt diesen Rechner, also kann die Seite nicht geholt werden. Füge den Inhalt stattdessen in die Aufnahme ein.',
+        'pt': 'esta instalação está offline — nada sai desta máquina, então a página não pode ser buscada. Cole o conteúdo na ingestão em vez disso.',
+        'it': 'questa installazione è offline — nulla esce da questa macchina, quindi la pagina non può essere recuperata. Incolla invece il contenuto nell\'acquisizione.',
+        'ja': 'この環境はオフラインです — このマシンから何も出ないため、ページを取得できません。代わりに内容を取り込みに貼り付けてください。',
+        'zh': '此部署处于离线状态 — 任何内容都不会离开这台机器，因此无法抓取页面。请改为将内容粘贴到摄取中。',
+        'hi': 'यह परिनियोजन ऑफ़लाइन है — इस मशीन से कुछ बाहर नहीं जाता, इसलिए पेज नहीं लाया जा सकता। इसके बजाय सामग्री को इनजेस्ट में चिपकाएँ।',
+        'ar': 'هذا النشر دون اتصال — لا شيء يغادر هذا الجهاز، لذا لا يمكن جلب الصفحة. الصق المحتوى في الإدخال بدلًا من ذلك.',
+    },
     'say what you were trying to do and what stood in the way': {
         'es': 'di qué intentabas hacer y qué se interpuso',
         'fr': "dites ce que vous essayiez de faire et ce qui s'y est opposé",

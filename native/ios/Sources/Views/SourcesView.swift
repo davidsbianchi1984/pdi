@@ -90,6 +90,9 @@ private struct ConnectorsSection: View {
                         HStack(spacing: 8) {
                             if c.direction == "collect" {
                                 smallButton(L10n.t("ncon.ingest", state.language)) { ingest(c) }
+                                if let h = c.handle, !h.isEmpty {
+                                    smallButton(L10n.t("ncon.scrape", state.language)) { scrape(c) }
+                                }
                             } else {
                                 smallButton(L10n.t("ncon.update", state.language)) { publish(c) }
                             }
@@ -143,6 +146,16 @@ private struct ConnectorsSection: View {
                 try await ApiClient.shared.connectorIngest(
                     token: token, cid: c.id, content: "sample post from \(c.platform)")
                 status = "sealed one item from \(c.platform)"
+            } catch { self.error = error.localizedDescription }
+        }
+    }
+
+    private func scrape(_ c: SocialConn) {
+        guard let token = state.token else { return }
+        Task {
+            do {
+                try await ApiClient.shared.connectorScrape(token: token, cid: c.id)
+                status = "fetched \(c.platform) — the page is sealed in the vault"
             } catch { self.error = error.localizedDescription }
         }
     }

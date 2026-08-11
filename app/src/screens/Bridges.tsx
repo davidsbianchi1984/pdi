@@ -141,10 +141,17 @@ export function Bridges() {
                           })}>{t("bri.publish", lang)}</button>
                 </>
               ) : (
-                <button disabled={busy}
-                        onClick={() => run(() => api.ingestToConnector(
-                          c.id, [{ content: "an item from elsewhere" }],
-                          token!))}>{t("bri.ingest", lang)}</button>
+                <>
+                  <button disabled={busy}
+                          onClick={() => run(() => api.ingestToConnector(
+                            c.id, [{ content: "an item from elsewhere" }],
+                            token!))}>{t("bri.ingest", lang)}</button>
+                  {c.handle ? (
+                    <button disabled={busy}
+                            onClick={() => run(() => api.scrapeConnector(
+                              c.id, token!))}>{t("bri.scrape", lang)}</button>
+                  ) : null}
+                </>
               )}
               <button disabled={busy}
                       onClick={() => run(() =>

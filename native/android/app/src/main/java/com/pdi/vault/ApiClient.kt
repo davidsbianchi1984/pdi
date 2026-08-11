@@ -429,6 +429,10 @@ object ApiClient {
         request("/connectors/$cid/ingest", "POST", JSONObject().put("items", items), token)
     }
 
+    suspend fun connectorScrape(token: String, cid: String) {
+        request("/connectors/$cid/scrape", "POST", JSONObject(), token)
+    }
+
     suspend fun connectorPublish(token: String, cid: String, content: String) {
         request("/connectors/$cid/publish", "POST",
             JSONObject().put("content", content), token)

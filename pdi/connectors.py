@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import json
 
-from . import db, vault
+from . import db, scrape, vault
 
 _PLATFORM_URL = {
     "instagram": "https://instagram.com/{h}",
@@ -108,6 +108,30 @@ def ingest(tenant: dict, row: dict, items: list[dict]) -> dict:
     return {"connector": row["id"], "platform": row["platform"],
             "sealed": len(keys), "keys": keys,
             "note": "collected items are encrypted at rest in the vault"}
+
+
+def fetch_page(tenant: dict, row: dict) -> dict:
+    """Visit the connector's public page and seal what a browser would show.
+
+    The ingest door seals what the tenant pastes; this one goes to the
+    address the connector has carried since it was made and seals the title,
+    the metadata bio and the visible text as one vault record, with the URL
+    and the fetch time written in.
+    """
+    if not row["handle"] or row["platform"] not in _PLATFORM_URL:
+        raise LookupError(
+            "no public address to visit — reconnect with the account's handle")
+    url = _PLATFORM_URL[row["platform"]].format(h=row["handle"])
+    page = scrape.extract(scrape.fetch(url))
+    parts = [p for p in (page["description"], page["text"]) if p]
+    if not (page["title"] or parts):
+        raise ValueError(f"{url} answered with nothing readable")
+    body = "\n\n".join(([page["title"]] if page["title"] else []) + parts)
+    body += f"\n\nFetched from {url} at {db.utcnow()}"
+    out = ingest(tenant, row, [{"content": body, "ref": url}])
+    out["url"] = url
+    out["title"] = page["title"]
+    return out
 
 
 def publish(row: dict, content: str, topic: str | None) -> dict:

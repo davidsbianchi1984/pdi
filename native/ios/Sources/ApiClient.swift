@@ -445,6 +445,12 @@ actor ApiClient {
                                       token: token)
     }
 
+    func connectorScrape(token: String, cid: String) async throws {
+        struct Ok: Decodable {}
+        let _: Ok = try await request("/connectors/\(cid)/scrape", method: "POST",
+                                      token: token)
+    }
+
     func connectorPublish(token: String, cid: String, content: String) async throws {
         struct Ok: Decodable {}
         let _: Ok = try await request("/connectors/\(cid)/publish", method: "POST",
