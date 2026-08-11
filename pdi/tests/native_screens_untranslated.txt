@@ -71,7 +71,7 @@
 #     asked     is this literal English
 #     mattered  is this literal something a translator should touch
 
-# **0.62.x — the screens behind the tabs speak.** The whole surface in one
+# **0.63.0 — the screens behind the tabs speak.** The whole surface in one
 # round rather than a bite: the vault, the audit chain, the robots, the
 # connectors, the admin card, the feedback card and the problem-reporting
 # notice now read from the ten-language tables on all three shells, and the

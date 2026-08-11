@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.62.0** ([changelog](CHANGELOG.md)) — one of three products
+**Current release: v0.63.0** ([changelog](CHANGELOG.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
 together, so one number names one combination of all three.
@@ -227,6 +227,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.63.0** | **The screens behind the tabs speak, and the imported link is visited** — the vault, audit chain, robots, connectors, admin and feedback surfaces read from the ten-language tables on all three shells, Windows wording moving out of XAML attributes so a language change can re-read it (untranslated ratchet 65/59/69 → 6/5/1, a floor with names); `POST /connectors/{cid}/scrape` seals what a public page shows anybody as one encrypted record with the URL and fetch time written in, refusing offline before any socket opens; and the console fits the phone it runs on — grid tracks clamp, the app height tracks `100dvh`, the sidebar scrolls on its own |
 | **0.62.0** | **Cut in step** — JIM's phones reached parity with its console — eleven rounds in one branch: every backend route gained a door on iOS, Android and Windows (the doorless ledgers close at the four by-design rows), the voice pair landed on all three shells with the device's own voice as fallback, Android learned to say PATCH through a test-pinned override, and the most-touched screens swapped their English for the ten-language tables. No PDI code changed; nothing new crosses into the vault. |
 | **0.61.1** | **Ability is not a gate** — an accessibility statement with a door under it: an Accessibility tab on the console and all three shells, three questions with no tenant token (reporting that the vault shut you out must not require the token it may have shut you out of) and no identity column to fill, read only under the admin token. The sidebar's fifteen tab names finally speak all ten languages — the last hardcoded English in the frame. The known-gaps ledger opened at two rows and closes at zero, every closure held by a test, and Terms 1.2 says only what is true |
 | **0.61.0** | **The console the policy blanked** — pdisystems.net went live and served a dark, empty page: the nonce Content-Security-Policy meant for the server-rendered pages was stamped on the console bundle no nonce can reach. A policy of its own for `/app`, the bare domain now lands on the console, and the release-bodies sweep survives its first honest run — a script that could not parse, then a fetch that silently lost releases, both repaired and guarded |

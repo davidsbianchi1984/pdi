@@ -4,6 +4,45 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.63.0] - 2026-08-11
+
+### Added
+
+- **The screens behind the tabs speak.** The vault, the audit chain, the
+  robots, the connectors, the admin card, the feedback card and the
+  problem-reporting notice now read from the ten-language tables on all
+  three shells, and the Windows pages moved their wording out of XAML
+  attributes into the code-behind so it can be re-read when the language
+  changes. The untranslated ratchet falls from 65/59/69 to 6/5/1 — what
+  stays is a floor with names, not a backlog with a number. The consent
+  drawer is asked by key rather than matched by wording, so the localized
+  card still finds its answers, and where the console already said the
+  same English the native rows carry the console's translations verbatim.
+- **The imported link, finally visited.** A `collect` connector has
+  carried the account's public address since the day it was made, and the
+  ingest door only ever sealed what the tenant pasted.
+  `POST /connectors/{cid}/scrape` goes to the address and seals what a
+  browser would show anybody — the title, the metadata bio, the visible
+  text — as one encrypted vault record with the URL and fetch time
+  written in. An offline deployment refuses before any socket opens (the
+  gate lives inside the fetcher itself, so a second caller added tomorrow
+  inherits the check); a connector without a handle is told so; publish
+  connectors do not scrape. Doors on the console and all three shells,
+  and the three refusal tests share their names with the sibling
+  products' copies of the same door.
+
+### Fixed
+
+- **The console fits the phone it runs on.** Two layout defects, one
+  root: a grid item refuses to shrink below its content, so the content
+  pane grew past its track, the app overflowed the viewport, and the page
+  itself half-scrolled instead of the pane. `min-height` and `min-width`
+  zero let the tracks clamp; the app height tracks `100dvh` where the
+  browser has it, so the bottom row sits above the URL bar; and the
+  sidebar scrolls on its own where a landscape phone gets the desktop
+  column. The same defect was in all three consoles and is fixed in all
+  three.
+
 ## [0.62.0] - 2026-08-11
 
 ### Version alignment
