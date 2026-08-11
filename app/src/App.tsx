@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "./store";
 import { deviceLanguage, Lang, t } from "./l10n";
 import { ProblemNotice } from "./ProblemNotice";
@@ -18,8 +18,9 @@ import { Exchange } from "./screens/Exchange";
 import { Custody } from "./screens/Custody";
 import { Bridges } from "./screens/Bridges";
 import { Guiding } from "./screens/Guiding";
+import { Access } from "./screens/Access";
 
-type Tab = "overview" | "tenants" | "records" | "exchange" | "carriers" | "bridges" | "operations" | "continuity" | "positions" | "keys" | "custody" | "audit" | "guiding" | "settings";
+type Tab = "overview" | "tenants" | "records" | "exchange" | "carriers" | "bridges" | "operations" | "continuity" | "positions" | "keys" | "custody" | "audit" | "guiding" | "access" | "settings";
 const NAV: { id: Tab; label: string; icon: string }[] = [
   { id: "overview", label: "Overview", icon: "▦" },
   { id: "tenants", label: "Tenants", icon: "👥" },
@@ -34,6 +35,7 @@ const NAV: { id: Tab; label: string; icon: string }[] = [
   { id: "custody", label: "Custody", icon: "⚖" },
   { id: "audit", label: "Audit", icon: "✓" },
   { id: "guiding", label: "Guiding", icon: "🧑‍🏫" },
+  { id: "access", label: "Accessibility", icon: "♿" },
   { id: "settings", label: "Settings", icon: "⚙" },
 ];
 
@@ -41,6 +43,10 @@ export function App() {
   const { session } = useSession();
   const lang = (session.language as Lang) ?? deviceLanguage();
   const [tab, setTab] = useState<Tab>("overview");
+  // The document's own language attribute, so a screen reader pronounces
+  // the page in the language it is actually written in — index.html ships
+  // lang="en" and the app renders ten languages under it.
+  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
   return (
     <div className="app">
       <VersionGuard />
@@ -89,6 +95,7 @@ export function App() {
         {tab === "custody" && <Custody />}
         {tab === "bridges" && <Bridges />}
         {tab === "guiding" && <Guiding />}
+        {tab === "access" && <Access />}
         {tab === "settings" && <Settings />}
       </main>
       {/* Part of the shell, on every screen — the vault's one light,

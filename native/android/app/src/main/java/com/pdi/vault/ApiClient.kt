@@ -33,6 +33,8 @@ data class KeyVersion(val version: Int, val active: Boolean, val createdAt: Stri
 data class KeysInfo(val provider: String, val versions: List<KeyVersion>)
 data class ImproveItem(val category: String, val message: String, val status: String)
 data class ImproveState(val mine: List<ImproveItem>, val tally: Map<String, Int>, val total: Int)
+data class AccessReportRow(val doing: String, val wall: String, val help: String?,
+                           val lang: String, val createdAt: String)
 
 class ApiException(message: String) : Exception(message)
 
@@ -219,6 +221,30 @@ object ApiClient {
         val body = JSONObject().put("category", category).put("message", message)
         if (rating != null) body.put("rating", rating)
         request("/improve", "POST", body, token)
+    }
+
+    /** The accessibility door: tokenless on purpose — reporting that the
+     *  vault shut you out must not require the tenant token it may have
+     *  shut you out of. The words stay on the deployment. */
+    suspend fun sendAccessReport(doing: String, wall: String, help: String?,
+                                 lang: String): String {
+        val body = JSONObject().put("doing", doing).put("wall", wall)
+            .put("lang", lang)
+        help?.takeIf { it.isNotBlank() }?.let { body.put("help", it) }
+        return JSONObject(request("/access/reports", "POST", body))
+            .optString("status", "received")
+    }
+
+    /** Admin-token read — the deployment's operator, never a tenant. */
+    suspend fun accessReports(adminToken: String): List<AccessReportRow> {
+        val o = JSONObject(request("/access/reports", token = adminToken))
+        val arr = o.optJSONArray("reports")
+        return (0 until (arr?.length() ?: 0)).map { i ->
+            val r = arr!!.getJSONObject(i)
+            AccessReportRow(r.optString("doing", ""), r.optString("wall", ""),
+                r.optString("help", "").takeIf { it.isNotBlank() },
+                r.optString("lang", ""), r.optString("created_at", ""))
+        }
     }
 
     suspend fun improvements(token: String): ImproveState {

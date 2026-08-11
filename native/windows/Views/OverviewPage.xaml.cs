@@ -29,6 +29,58 @@ public sealed partial class OverviewPage : Page
         ImproveCategory.SelectedIndex = 0;
         ImproveRating.ItemsSource = new[] { "—", "1", "2", "3", "4", "5" };
         ImproveRating.SelectedIndex = 0;
+        AccHead.Text = L10n.T("ns.acc");
+        AccLead.Text = L10n.T("ns.acc.lead");
+        AccDoing.PlaceholderText = L10n.T("ns.acc.doing.ph");
+        AccWall.PlaceholderText = L10n.T("ns.acc.wall.ph");
+        AccHelp.PlaceholderText = L10n.T("ns.acc.help.ph");
+        AccSend.Content = L10n.T("ns.acc.send");
+        AccReviewerBox.PlaceholderText = L10n.T("ns.acc.token.ph");
+        AccLoad.Content = L10n.T("ns.acc.load");
+        AccEmpty.Text = L10n.T("ns.acc.none");
+    }
+
+    // The accessibility door: tokenless on purpose — reporting that the
+    // vault shut you out must not require the tenant token it may have
+    // shut you out of.
+    private async void OnSendAccessReport(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var doing = AccDoing.Text.Trim();
+        var wall = AccWall.Text.Trim();
+        if (doing.Length == 0 || wall.Length == 0) return;
+        try
+        {
+            await ApiClient.Shared.SendAccessReport(
+                doing, wall, AccHelp.Text.Trim(), AppState.Current.Language);
+            AccDoing.Text = ""; AccWall.Text = ""; AccHelp.Text = "";
+            AccThanks.Text = L10n.T("ns.acc.sent");
+            AccThanks.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+        }
+        catch (System.Exception ex)
+        {
+            AccThanks.Text = ex.Message;
+            AccThanks.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+        }
+    }
+
+    private async void OnLoadAccessReports(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        try
+        {
+            var st = await ApiClient.Shared.AccessReports(AccReviewerBox.Password.Trim());
+            AccEmpty.Visibility = st.Total == 0
+                ? Microsoft.UI.Xaml.Visibility.Visible
+                : Microsoft.UI.Xaml.Visibility.Collapsed;
+            AccReportsList.ItemsSource = st.Reports.Take(6).Select(r => new ImproveRow(
+                $"{r.Doing} — {r.Wall}"
+                + (r.Help is { Length: > 0 } h ? $" ({h})" : "")
+                + $" · {r.Lang} · {r.CreatedAt}")).ToList();
+        }
+        catch (System.Exception ex)
+        {
+            AccThanks.Text = ex.Message;
+            AccThanks.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+        }
     }
 
     protected override async void OnNavigatedTo(NavigationEventArgs e)

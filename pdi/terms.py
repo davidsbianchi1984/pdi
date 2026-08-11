@@ -10,7 +10,7 @@ recorded and enforced by :mod:`pdi.baa`.
 
 from __future__ import annotations
 
-TERMS_VERSION = "1.1"
+TERMS_VERSION = "1.2"
 DOCUMENT = "docs/terms.md"
 
 KEY_POINTS = [
@@ -18,8 +18,9 @@ KEY_POINTS = [
     "fees are charged while the beta runs — displayed plan prices begin "
     "only after the beta, with notice and renewed agreement.",
     "Ability is not a gate: everything works by text alone, voice is "
-    "optional, and anything that stands in your way, reported through "
-    "the help surface, becomes tracked work.",
+    "optional, and anything that stands in your way can be reported from "
+    "the Accessibility tab — no token, no diagnosis — where it becomes "
+    "tracked work.",
     "PDI is encrypted data-custody infrastructure, not advice; its "
     "compliance tooling supports your program but does not make you "
     "compliant.",

@@ -267,6 +267,7 @@ fun OverviewScreen(vm: VaultViewModel) {
         }
         OfflinePostureCard(vm)
         ImproveCard(vm)
+        AccessCard(vm)
         AdminCard(vm)
         OutlinedButton(onClick = { vm.signOut() }, modifier = Modifier.fillMaxWidth(),
             border = androidx.compose.foundation.BorderStroke(1.dp, Pdi.Line)) {
@@ -381,6 +382,55 @@ fun AdminCard(vm: VaultViewModel) {
 
 private fun masked(t: String): String =
     if (t.length > 8) t.take(6) + "…" + t.takeLast(4) else "••••"
+
+/** Ability is not a gate: the accessibility report door. Three questions,
+ *  none a diagnosis, sent with no token — reporting that the vault shut
+ *  you out must not require the tenant token it may have shut you out of.
+ *  The admin row reads them back with the deployment's own token. */
+@Composable
+fun AccessCard(vm: VaultViewModel) {
+    var doing by remember { mutableStateOf("") }
+    var wall by remember { mutableStateOf("") }
+    var help by remember { mutableStateOf("") }
+    var thanks by remember { mutableStateOf<String?>(null) }
+    var reviewer by remember { mutableStateOf("") }
+    var reports by remember { mutableStateOf<List<AccessReportRow>?>(null) }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("ns.acc", vm.language), color = Pdi.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        Text(L10n.t("ns.acc.lead", vm.language), color = Pdi.T2, fontSize = 12.sp)
+        labeledField("", doing, L10n.t("ns.acc.doing.ph", vm.language)) { doing = it }
+        labeledField("", wall, L10n.t("ns.acc.wall.ph", vm.language)) { wall = it }
+        labeledField("", help, L10n.t("ns.acc.help.ph", vm.language)) { help = it }
+        BrandButton(L10n.t("ns.acc.send", vm.language),
+            enabled = doing.isNotBlank() && wall.isNotBlank()) {
+            vm.call({ ApiClient.sendAccessReport(doing.trim(), wall.trim(),
+                help.trim(), vm.language) }) {
+                thanks = L10n.t("ns.acc.sent", vm.language)
+                doing = ""; wall = ""; help = ""
+            }
+        }
+        thanks?.let { Text(it, color = Pdi.Green, fontSize = 12.sp) }
+        labeledField("", reviewer, L10n.t("ns.acc.token.ph", vm.language)) { reviewer = it }
+        BrandButton(L10n.t("ns.acc.load", vm.language)) {
+            vm.call({ ApiClient.accessReports(reviewer.trim()) }) { r ->
+                reports = r.getOrNull()
+            }
+        }
+        reports?.let { rs ->
+            if (rs.isEmpty())
+                Text(L10n.t("ns.acc.none", vm.language), color = Pdi.T3, fontSize = 11.sp)
+            else rs.take(6).forEach { r ->
+                Text(r.doing, color = Pdi.Txt, fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold)
+                Text(r.wall, color = Pdi.T2, fontSize = 11.sp)
+                r.help?.let { h -> Text(h, color = Pdi.T2, fontSize = 11.sp) }
+                Text("${r.lang} · ${r.createdAt}", color = Pdi.T3, fontSize = 10.sp)
+            }
+        }
+    }
+}
 
 @Composable
 fun ImproveCard(vm: VaultViewModel) {

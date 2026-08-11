@@ -257,6 +257,18 @@ LESSONS: tuple[dict, ...] = (
               "nothing kept.",
          screens=(56,),
          click="Scan the QR and watch the same session open on a phone."),
+    dict(key="access", chapter="Running it", title="Ability is not a gate",
+         what="The accessibility statement and its report door. If how a "
+              "body or mind works stands between somebody and this vault, "
+              "that is a defect in the vault — the statement lists who is "
+              "expected here, and the form asks three questions and no "
+              "diagnosis: what were you trying to do, what stood in the "
+              "way, what would help. It sends no token, the words stay on "
+              "this deployment, and the admin token reads them back — an "
+              "accepted report becomes a row in a backlog that only "
+              "shrinks.",
+         screens=(57,),
+         click="Send a report, then load it back with the admin token."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(lesson["chapter"] for lesson in LESSONS))

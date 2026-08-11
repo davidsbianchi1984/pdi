@@ -783,4 +783,24 @@ export const api = {
   suggestImprovement: (body: { category?: string; message: string;
                                rating?: string }, token: string) =>
     req<Row>("/improve", { method: "POST", body, token }),
+
+  // The accessibility door. The POST is deliberately tokenless — reporting
+  // that the vault shut you out must not require a tenant token — and the
+  // GET takes the deployment's admin token: reports are read by whoever
+  // stands for the deployment.
+  sendAccessReport: (body: { doing: string; wall: string; help?: string;
+                             lang?: string }) =>
+    req<{ id: string; status: string; note: string }>(
+      "/access/reports", { method: "POST", body }),
+  accessReports: (adminToken: string) =>
+    req<AccessReports>("/access/reports", { token: adminToken }),
+};
+
+/** Accessibility reports, for the deployment's operator. Three answers in
+ *  the writer's own words and language — never a name, never a diagnosis:
+ *  the table they come from has no submitter column to select. */
+export type AccessReports = {
+  reports: { id: string; lang: string; doing: string; wall: string;
+             help: string | null; status: string; created_at: string }[];
+  total: number;
 };

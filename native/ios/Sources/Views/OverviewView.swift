@@ -62,6 +62,8 @@ struct OverviewView: View {
 
                 ImproveCard()
 
+                AccessCard()
+
                 AdminCard()
 
                 Button(L10n.t("action.sign_out", state.language)) { state.signOut() }

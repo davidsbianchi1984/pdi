@@ -1,6 +1,6 @@
 # PDI (Private Data Infrastructure) Terms of Service
 
-*Version 1.1 — effective 2026-08-10. Served by the API at `GET /terms`.
+*Version 1.2 — effective 2026-08-10. Served by the API at `GET /terms`.
 PDI is business-to-business infrastructure: the "Customer" is the
 organization whose tenant is provisioned, and these Terms bind the
 Customer and every system and user it connects. The version in force is
@@ -137,11 +137,14 @@ by counsel]`
 
 Ability is not a gate to this Service. Every feature is usable by text
 alone — nothing requires hearing or speech — and voice interaction is an
-additional input path, never a requirement. The operator maintains an
-active accessibility program driving screen-reader, keyboard-only,
-reduced-motion and related support to complete, with gaps recorded as
-tracked work. If a disability — named anywhere or not — stands between
-you and any part of the Service, say so through the Service's help
-surface; such reports are treated as sensitive and become tracked work.
-Nothing in these Terms limits rights you hold under applicable
-accessibility law.
+additional input path, never a requirement. Interface images carry text
+descriptions, no step is timed, and reduced-motion preferences are
+honoured; the operator maintains an active accessibility program driving
+screen-reader, keyboard-only and related support to complete, with gaps
+recorded as tracked work. If a disability — named anywhere or not —
+stands between you and any part of the Service, report it from the
+Service's Accessibility tab, which requires no token, asks three
+questions and no diagnosis, and keeps your words on the deployment that
+received them (never relayed to any shared error collector). Such
+reports are treated as sensitive and become tracked work. Nothing in
+these Terms limits rights you hold under applicable accessibility law.

@@ -142,6 +142,22 @@ public record ImproveState(
     [property: JsonPropertyName("tally")] System.Collections.Generic.Dictionary<string, int> Tally,
     [property: JsonPropertyName("total")] int Total);
 
+public record AccessReceipt(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("status")] string Status,
+    [property: JsonPropertyName("note")] string? Note);
+
+public record AccessReportRow(
+    [property: JsonPropertyName("doing")] string Doing,
+    [property: JsonPropertyName("wall")] string Wall,
+    [property: JsonPropertyName("help")] string? Help,
+    [property: JsonPropertyName("lang")] string Lang,
+    [property: JsonPropertyName("created_at")] string CreatedAt);
+
+public record AccessReportsState(
+    [property: JsonPropertyName("reports")] AccessReportRow[] Reports,
+    [property: JsonPropertyName("total")] int Total);
+
 /// <summary>
 /// Async client for the PDI vault backend. Every call carries the tenant bearer
 /// token (`pdi_...`), issued out of band and pasted at sign-in. Windows reaches
@@ -384,6 +400,28 @@ public sealed class ApiClient
 
     public Task<ImproveState> Improvements(string token) =>
         Send<ImproveState>(new HttpRequestMessage(HttpMethod.Get, "/improve"), token);
+
+    // The accessibility door: tokenless on purpose — reporting that the
+    // vault shut you out must not require the tenant token it may have
+    // shut you out of. The words stay on the deployment.
+    public async Task<string> SendAccessReport(string doing, string wall,
+                                               string? help, string lang)
+    {
+        object body = help is { Length: > 0 } h
+            ? new { doing, wall, help = h, lang }
+            : new { doing, wall, lang };
+        var req = new HttpRequestMessage(HttpMethod.Post, "/access/reports")
+        {
+            Content = JsonContent.Create(body),
+        };
+        await Send<AccessReceipt>(req);
+        return "received";
+    }
+
+    // Admin-token read — the deployment's operator, never a tenant.
+    public Task<AccessReportsState> AccessReports(string adminToken) =>
+        Send<AccessReportsState>(
+            new HttpRequestMessage(HttpMethod.Get, "/access/reports"), adminToken);
 
     // -- robots as vault-backed data sources --
 

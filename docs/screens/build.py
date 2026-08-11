@@ -1607,6 +1607,22 @@ SCREENS = [
         dict(icon="person", color="green", k="Sign out",
              s="tokens dropped, nothing kept"),
     ]),
+    # 57: ability is not a gate. The statement, the behavior behind it, and
+    # the report door. The form sends no token — reporting that the vault
+    # shut you out must not require the tenant token it may have shut you
+    # out of — and its three questions are the cards; none is a diagnosis.
+    dict(num=57, title="Ability Is Not A Gate",
+         sub="Say what stood in the way",
+         accent="green", tab=0, cards=[
+        dict(icon="person", color="green", k="Works by text alone",
+             s="voice optional, nothing timed"),
+        dict(icon="grid", color="brand", k="No name, no diagnosis",
+             s="doing, the wall, what would help"),
+        dict(icon="lock", color="silver", k="Stays on this deployment",
+             s="never relayed anywhere"),
+        dict(icon="link", color="amber", k="Becomes tracked work",
+             s="a ledger that only shrinks"),
+    ]),
 ]
 
 

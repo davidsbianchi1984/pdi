@@ -126,6 +126,13 @@ struct ImproveState: Decodable {
     let total: Int
 }
 
+struct AccessReceipt: Decodable { let id: String; let status: String; let note: String? }
+struct AccessReportRow: Decodable, Identifiable {
+    let id: String; let lang: String; let doing: String; let wall: String
+    let help: String?; let status: String; let created_at: String
+}
+struct AccessReportsState: Decodable { let reports: [AccessReportRow]; let total: Int }
+
 struct KeyVersion: Decodable, Identifiable {
     let version: Int
     let active: Bool
@@ -300,6 +307,21 @@ actor ApiClient {
 
     func improvements(token: String) async throws -> ImproveState {
         try await request("/improve", token: token)
+    }
+
+    /// The accessibility door: tokenless on purpose — reporting that the
+    /// vault shut you out must not require the tenant token it may have
+    /// shut you out of. The words stay on the deployment.
+    func sendAccessReport(doing: String, wall: String, help: String?,
+                          lang: String) async throws -> AccessReceipt {
+        var body: [String: Any] = ["doing": doing, "wall": wall, "lang": lang]
+        if let help, !help.isEmpty { body["help"] = help }
+        return try await request("/access/reports", method: "POST", body: body)
+    }
+
+    /// Admin-token read — the deployment's operator, never a tenant.
+    func accessReports(adminToken: String) async throws -> AccessReportsState {
+        try await request("/access/reports", token: adminToken)
     }
 
     // MARK: Admin — key management (PDI_ADMIN_TOKEN, never the tenant token)

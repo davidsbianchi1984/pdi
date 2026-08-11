@@ -388,6 +388,22 @@ CREATE TABLE IF NOT EXISTS console_tutorial (
     done_at    TEXT NOT NULL,
     PRIMARY KEY (learner_id, lesson)
 );
+
+-- Accessibility reports: what somebody was trying to do, what stood in the
+-- way, and what would have helped — in their own words, in their own
+-- language. Deliberately narrower than feedback: there is no submitter
+-- column at all, because a report about ability must not require disclosing
+-- anything about the body that wrote it. No pdi_key either — this IS the
+-- vault product, so there is no second place to seal to.
+CREATE TABLE IF NOT EXISTS access_reports (
+    id         TEXT PRIMARY KEY,
+    lang       TEXT NOT NULL DEFAULT 'en',
+    doing      TEXT NOT NULL,           -- what the person was trying to do
+    wall       TEXT NOT NULL,           -- what stood in the way
+    help       TEXT,                    -- what would help, if they said
+    status     TEXT NOT NULL DEFAULT 'received',  -- received | accepted | built
+    created_at TEXT NOT NULL
+);
 """
 
 _local = threading.local()

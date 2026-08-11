@@ -32,6 +32,7 @@ from .models import (AppCollect, AppConnect, AppInvoke, BAARecordIn,
                      ConnectorCreate, ConnectorIngest, ConnectorPublish,
                      ConsoleAsk, ContributionIn, CustomerKeyAdopt, GuideMark,
                      DockConfig, HostingChoice,
+                     AccessReportSubmit,
                      DeploymentCreate, FeedbackSubmit, GateRing, IntakeCreate,
                      IntakeSubmit, LanguageChoice, PositionIntake,
                      TranslateRequest, RecordPut, RetentionSet, RobotBind,
@@ -1419,6 +1420,47 @@ def create_app() -> FastAPI:
                 tally[row["category"]] = row["n"]
         return {"mine": mine, "tally": tally, "total": sum(tally.values()),
                 "categories": list(_IMPROVE_CATEGORIES)}
+
+    # -- ability is not a gate: the accessibility door -----------------------
+    # Three questions and none is a diagnosis. Deliberately account-free and
+    # unlinked: the table has no submitter column, because a report about
+    # ability must not become a record about a body. The vault product needs
+    # no pdi_key column — there is no second place to seal to; the row is
+    # already on the deployment it describes, and it is never relayed to the
+    # shared problems collector.
+
+    @app.post("/access/reports", status_code=201)
+    def submit_access_report(body: AccessReportSubmit) -> dict:
+        """File an accessibility report — no account, no diagnosis."""
+        doing = body.doing.strip()
+        wall = body.wall.strip()
+        if not doing or not wall:
+            raise HTTPException(
+                422, "say what you were trying to do and what stood in the way")
+        lang = body.lang if body.lang in i18n.SUPPORTED else "en"
+        conn = db.connect()
+        rid = db.new_id("acc")
+        conn.execute(
+            "INSERT INTO access_reports (id, lang, doing, wall, help,"
+            " status, created_at) VALUES (?,?,?,?,?,'received',?)",
+            (rid, lang, doing, wall, (body.help or "").strip() or None,
+             db.utcnow()))
+        conn.commit()
+        return {"id": rid, "status": "received",
+                "note": "thank you — this becomes tracked work, and it "
+                        "stays on this deployment"}
+
+    @app.get("/access/reports")
+    def read_access_reports(request: Request,
+                            authorization: str = Header(default="")) -> dict:
+        """Every report, newest first — for the deployment's operator."""
+        _admin(request, authorization)
+        conn = db.connect()
+        reports = [dict(r) for r in conn.execute(
+            "SELECT id, lang, doing, wall, help, status, created_at"
+            " FROM access_reports"
+            " ORDER BY created_at DESC, rowid DESC").fetchall()]
+        return {"reports": reports, "total": len(reports)}
 
     # -- the pane in the corner ---------------------------------------------
 
