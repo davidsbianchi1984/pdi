@@ -4,6 +4,22 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.68.0] - 2026-08-12
+
+### Version alignment
+
+No PDI code changed this round. QRME gained the memory door (what a
+persona actually holds about you, and forgetting one named thing), the
+steering lock (dials that hold still against everyone until the owner
+turns the key), character-card import (chara_card_v2/v3, with harness
+instructions withheld by name), and rehearsal rooms whose transcript
+never enters the relationship's memory. JIM gained meal-photo logging
+sealed like clinical captures, the weekly letter composed only from what
+was logged, interview drills from a local bank, and money-guardian
+statement drops plus written aggregator bank-link consents — the
+statement files landing in this vault. The three products are cut
+together, so one number names one combination of all three.
+
 ## [0.67.0] - 2026-08-12
 
 ### Version alignment
