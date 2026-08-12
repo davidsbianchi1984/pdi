@@ -4,6 +4,23 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.64.0] - 2026-08-12
+
+### Added
+
+- **The footsteps.** A counter in the console's top-right corner: how
+  many tenants hold a vault here, as an aggregate — no name, email or
+  id rides with the number. It travels on `/health`, the request every
+  client already makes at launch for the version handshake, so it cost
+  no new route and no new door. The sibling products carry the same
+  chip in the same corner in the same ten-language wording.
+
+### Changed
+
+- **The footsteps chip shrank to a footprint** — just the mark and the
+  number, the sentence in the tooltip — after the first, wordier
+  version sat on top of a screen in the sibling product.
+
 ## [0.63.0] - 2026-08-11
 
 ### Added
