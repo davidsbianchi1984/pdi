@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.65.0** ([changelog](CHANGELOG.md)) — one of three products
+**Current release: v0.66.0** ([changelog](CHANGELOG.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
 together, so one number names one combination of all three.
@@ -227,6 +227,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.66.0** | **Cut in step** — no PDI code changed; JIM-mini's coach became an offline add-and-norm stack over stored knowledge and current readings, with a jampacked pack, deposits from paid model turns, and a curriculum JIM studies on one press |
 | **0.65.0** | **Cut in step** — no PDI code changed; QRME's standing rooms learned to be one place instead of a stamp, its lobby's join pitch gained the door it promised, and its friend faces open the friend's page |
 | **0.64.0** | **The footsteps show** — a counter rides `/health` into the console's top-right corner: how many tenants hold a vault here, as an aggregate in ten languages, no name or id riding with the number, no new route and no new door — and it shrank to a footprint the same evening on a field report from the sibling product |
 | **0.63.0** | **The screens behind the tabs speak, and the imported link is visited** — the vault, audit chain, robots, connectors, admin and feedback surfaces read from the ten-language tables on all three shells, Windows wording moving out of XAML attributes so a language change can re-read it (untranslated ratchet 65/59/69 → 6/5/1, a floor with names); `POST /connectors/{cid}/scrape` seals what a public page shows anybody as one encrypted record with the URL and fetch time written in, refusing offline before any socket opens; and the console fits the phone it runs on — grid tracks clamp, the app height tracks `100dvh`, the sidebar scrolls on its own |
