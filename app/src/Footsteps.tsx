@@ -30,10 +30,14 @@ export function Footsteps() {
 
   const lang = (session.language as Lang) ?? deviceLanguage();
 
+  // Just the mark and the number — the sentence lives in the tooltip. The
+  // chip shares a corner with real screens (the sibling's chat wardrobe
+  // box sat right under the first, wordier version), so it stays small
+  // enough to never block anything.
   return (
-    <div className="footsteps" title={t("steps.tip", lang)}>
-      <span aria-hidden="true">👣</span>{" "}
-      {fill("steps.count", lang, { n: count })}
+    <div className="footsteps"
+         title={`${fill("steps.count", lang, { n: count })} — ${t("steps.tip", lang)}`}>
+      <span aria-hidden="true">👣</span> {count}
     </div>
   );
 }
