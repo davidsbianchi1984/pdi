@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.66.0** ([changelog](CHANGELOG.md)) — one of three products
+**Current release: v0.67.0** ([changelog](CHANGELOG.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
 together, so one number names one combination of all three.
@@ -227,6 +227,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.67.0** | **Cut in step** — no PDI code changed; QRME's licences now carry real substance under a manifest and organizations lease specialists, JIM's tandem sends the triggering vitals across the handoff, collected rooms are scanned for hazards, and a minor's consent became the guardian's own verified click |
 | **0.66.0** | **Cut in step** — no PDI code changed; JIM-mini's coach became an offline add-and-norm stack over stored knowledge and current readings, with a jampacked pack, deposits from paid model turns, and a curriculum JIM studies on one press |
 | **0.65.0** | **Cut in step** — no PDI code changed; QRME's standing rooms learned to be one place instead of a stamp, its lobby's join pitch gained the door it promised, and its friend faces open the friend's page |
 | **0.64.0** | **The footsteps show** — a counter rides `/health` into the console's top-right corner: how many tenants hold a vault here, as an aggregate in ten languages, no name or id riding with the number, no new route and no new door — and it shrank to a footprint the same evening on a field report from the sibling product |

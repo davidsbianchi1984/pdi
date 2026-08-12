@@ -4,6 +4,20 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.67.0] - 2026-08-12
+
+### Version alignment
+
+No PDI code changed this round. QRME's finetune and clone licences now
+carry the profile's substance under a manifest of what crossed and what
+stayed, organizations lease licensed specialists as revocable departments,
+portraits move at a tempo their own history sets, and personas remember the
+room between turns. JIM's tandem sends the triggering vitals across the
+Guardian→QRME handoff, collected rooms are scanned by a referenced hazard
+table, and a minor's consent became the guardian's own verified click. The
+three products are cut together, so one number names one combination of all
+three.
+
 ## [0.66.0] - 2026-08-12
 
 ### Version alignment
