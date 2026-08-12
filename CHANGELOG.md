@@ -21,6 +21,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   number, the sentence in the tooltip — after the first, wordier
   version sat on top of a screen in the sibling product.
 
+### Fixed
+
+- **The guard that only existed where the bug never was.** The
+  `</script>` hardening of `_js` shipped in 0.63.0 in all three
+  products; the test holding it existed in none. It stands in all three
+  suites now and enters the shared manifest.
+
 ## [0.63.0] - 2026-08-11
 
 ### Added

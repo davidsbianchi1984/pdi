@@ -19,24 +19,12 @@ import re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 README = os.path.join(ROOT, "README.md")
-GALLERY = os.path.join(ROOT, "docs", "gallery.md")
 SCREENS = os.path.join(ROOT, "docs", "screens")
 
 
 def _readme() -> str:
-    """The gallery page and the README, together.
-
-    The tour moved whole to docs/gallery.md so the front page reads as a
-    front page; the README keeps a curated handful. The guards hold the
-    pair: a screen is shown if either page shows it, every reference on
-    either page must resolve, and the sequence is the gallery page's —
-    because that is the tour.
-    """
-    out = []
-    for path in (GALLERY, README):
-        with open(path, encoding="utf-8") as fh:
-            out.append(fh.read())
-    return "\n".join(out)
+    with open(README, encoding="utf-8") as fh:
+        return fh.read()
 
 
 def _on_disk() -> set[str]:
@@ -56,14 +44,14 @@ def test_the_stated_screen_count_is_the_real_one():
 def test_every_referenced_screen_exists():
     """A broken image is invisible to whoever wrote it — it renders as a small
     box on somebody else's machine."""
-    referenced = set(re.findall(r"(?:docs/)?screens/([\w\-.]+\.svg)", _readme()))
+    referenced = set(re.findall(r"docs/screens/([\w\-.]+\.svg)", _readme()))
     missing = sorted(referenced - _on_disk())
     assert not missing, ("the README points at screens not on disk:\n  "
                          + "\n  ".join(missing))
 
 
 def test_every_screen_is_shown_somewhere():
-    referenced = set(re.findall(r"(?:docs/)?screens/([\w\-.]+\.svg)", _readme()))
+    referenced = set(re.findall(r"docs/screens/([\w\-.]+\.svg)", _readme()))
     unshown = sorted(_on_disk() - referenced)
     assert not unshown, ("screens exist that the README never shows:\n  "
                          + "\n  ".join(unshown))
@@ -73,7 +61,7 @@ def test_the_gallery_skips_no_number():
     """Adding a screen to a full three-wide row is how a number stops appearing
     while every file still exists and every link still resolves."""
     numbers: list[int] = []
-    for name in re.findall(r"(?:docs/)?screens/([\w\-.]+\.svg)", _readme()):
+    for name in re.findall(r"docs/screens/([\w\-.]+\.svg)", _readme()):
         head = name.split("-", 1)[0]
         if head.isdigit() and int(head) not in numbers:
             numbers.append(int(head))
