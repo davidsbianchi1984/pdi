@@ -4,6 +4,55 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.70.0] - 2026-08-13
+
+### Fixed
+
+- **The vault light sat on the menu.** From the beta, on a phone: "It seems
+  to be blocking the PDI menus" — the status pill covering Overview, Tenants
+  and half of Bridges, and then, minimized, a 40px disc doing the same. Both
+  halves had been correct alone: the light is fixed 22px from the bottom,
+  which is page margin on a desktop, and the sidebar becomes a bottom bar on
+  a phone. Everything fixed to the bottom of the viewport now clears the bar,
+  and the minimized light is a 22px dot at 0.75 opacity — small enough to be
+  what minimizing means.
+- **The light spoke English on a console that translates everything else.**
+  Eleven strings across six screens — *vault answering*, *online*,
+  *delivered*, *chain intact* and the rest — hard-coded beside code that
+  imports the translator. All eleven are table rows in ten languages now,
+  every site selecting the result rather than the key.
+- **The apology for a failed route is in the reader's language.** The
+  catch-all is a middleware — `@app.exception_handler(Exception)` sits
+  outside the CORS layer, so a 500 raised there comes back without the
+  header and the console reads it as unreachable — and being a middleware,
+  no guard was asking it anything. `i18n.SERVER_ERROR` is a named constant
+  translated like every other refusal.
+- The README claimed `pdi/hosting.py` had 16 tests; it has 25.
+
+### Added
+
+- **The reports come home.** `POST /v1/problems` on this backend, with
+  `GET /v1/problems` behind `PDI_PROBLEMS_KEY` or the backend's own machine.
+  Rows fold into counters; nothing is stored as a report.
+- **Custody is not ownership, in writing.** The terms said the Customer owns
+  its data and the hosting page said who is awake at 3am; nothing said that
+  PDI's holding confers nothing, or that the statutory rights of the people
+  the records are *about* survive both. A new key point on `GET /terms`,
+  clause 2.1a in `docs/terms.md`, and a closing line on the hosting
+  guidance. **Terms version 1.2 → 1.3.**
+- The doorless backlog on all three shells reaches zero: the sticker family,
+  the operator's tenant surface, what outlives a tenant, the posture family,
+  exchange details and the builder, BYOK custody, and the guide with its
+  pane and translator.
+
+### Changed
+
+- `scripts/jsx-text.mjs` reads string literals in child position, so a
+  sentence chosen at render time is text to the audit as well as to the
+  reader. The tabs-untranslated ratchet reads 0/0/0 on all three shells.
+- The three-repo guard estate: `shared_guards.txt` 469 → 489,
+  `guard_divergences.txt` 136 → 121, both byte-identical in the three repos.
+
 ## [0.68.0] - 2026-08-12
 
 ### Version alignment
@@ -6346,7 +6395,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.16.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.70.0...HEAD
+[0.70.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.70.0
 [0.61.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.61.1
 [0.19.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.19.1
 [0.19.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.19.0
