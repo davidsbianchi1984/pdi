@@ -276,9 +276,19 @@ def test_the_three_orphans_found_screens():
 
 def test_the_audit_screen_can_say_what_an_action_means():
     """A log whose vocabulary is undocumented in the one place it is read is
-    a log somebody has to guess at during an incident."""
+    a log somebody has to guess at during an incident.
+
+    The last grepped-English check in this file, red on the round the
+    glossary toggle started reading its words out of the table — the 0.48.2
+    lesson above arriving one guard late. Followed to the key now, and both
+    ways the toggle can read, because a reader who opens the glossary has to
+    be able to close it in their own language too.
+    """
     flat = " ".join(_screen("Audit.tsx").split())
-    assert "What do these mean?" in flat
+    problems = (_says(flat, "au.glossary.show", "What do these mean?")
+                + _says(flat, "au.glossary.hide", "Hide what they mean"))
+    assert not problems, ("the audit vocabulary:\n    "
+                          + "\n    ".join(problems))
 
 
 def test_nothing_paged_is_told_apart_from_nothing_could_be():
