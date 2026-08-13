@@ -14,6 +14,7 @@ public sealed partial class RobotsPage : Page
         public string SnapLabel => L10n.T("nrob.snap");
         public string LogLabel => L10n.T("nrob.log");
         public string KeysLabel => L10n.T("nrob.keys");
+        public string UnbindLabel => L10n.T("bri.unbind");
     }
 
     private RobotSpec[] _catalog = Array.Empty<RobotSpec>();
@@ -113,6 +114,21 @@ public sealed partial class RobotsPage : Page
             var r = await ApiClient.Shared.Ingest(s.Token!, rid, kind, content);
             KeyText.Text = r.Key;
             ResultCard.Visibility = Visibility.Visible;
+            await Reload();
+        }
+        catch (Exception ex) { ShowError(ex.Message); }
+    }
+
+    // Unbinding revokes the robot's standing; what it already sealed
+    // stays in the vault under tenant control — the wire says so itself.
+    private async void OnUnbind(object sender, RoutedEventArgs e)
+    {
+        if ((sender as Button)?.Tag is not string rid) return;
+        var s = AppState.Current;
+        ErrorText.Visibility = Visibility.Collapsed;
+        try
+        {
+            await ApiClient.Shared.UnbindRobot(s.Token!, rid);
             await Reload();
         }
         catch (Exception ex) { ShowError(ex.Message); }

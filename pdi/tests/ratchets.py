@@ -166,7 +166,7 @@ RATCHETS: tuple[Ratchet, ...] = (
             "rows in the iPhone's own L10n table"),
     Ratchet("l10n.held.android", 220, _l10n("android", "held"),
             "rows in Android's own L10n table"),
-    Ratchet("l10n.held.windows", 140, _l10n("windows", "held"),
+    Ratchet("l10n.held.windows", 230, _l10n("windows", "held"),
             "rows in the desktop's own L10n table"),
     Ratchet("route.calls.console", 95, _calls("console"),
             "call sites the route audit reads out of the console"),

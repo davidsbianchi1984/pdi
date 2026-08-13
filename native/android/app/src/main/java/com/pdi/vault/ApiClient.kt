@@ -406,6 +406,56 @@ object ApiClient {
         }
     }
 
+    // ---- the key itself: whose hands it is in ----
+
+    suspend fun tenantKey(token: String): String =
+        JSONObject(request("/key", token = token)).optString("note")
+
+    suspend fun setTenantKey(token: String, provider: String,
+                             key: String?): String {
+        val body = JSONObject().put("provider", provider)
+        if (!key.isNullOrBlank()) body.put("key", key)
+        return JSONObject(request("/key", "PUT", body, token))
+            .optString("note")
+    }
+
+    /** Hands the tenant back to deployment custody. A 409 if it never
+     *  left, which the operator needs told rather than shown as a
+     *  failure. */
+    suspend fun surrenderTenantKey(token: String): String =
+        JSONObject(request("/key", "DELETE", token = token))
+            .optString("note")
+
+    suspend fun resealUnderNewKey(adminToken: String): String {
+        val o = JSONObject(request("/keys/reseal", "POST", token = adminToken))
+        return "v${o.optInt("active_version")} \u00b7 " +
+            "${o.optInt("resealed")} \u00b7 " +
+            "${o.optInt("customer_managed_skipped")}"
+    }
+
+    suspend fun revokeToken(adminToken: String, minted: String): String =
+        request("/tokens/$minted", "DELETE", token = adminToken)
+
+    // ---- connectors: the catalog, and each connection's own code ----
+
+    suspend fun connectorCatalog(): Int {
+        val o = JSONObject(request("/connectors/catalog"))
+        o.keys().forEach { k ->
+            o.optJSONArray(k)?.let { return it.length() }
+            o.optJSONObject(k)?.let { return it.length() }
+        }
+        return o.length()
+    }
+
+    suspend fun connectorBeacon(token: String, cid: String): String =
+        request("/connectors/$cid/beacon", token = token)
+
+    fun connectorQrUrl(cid: String): String =
+        java.net.URL("$base/connectors/$cid/qr.svg").toString()
+
+    suspend fun unbindRobot(token: String, rid: String): String =
+        request("/robots/$rid", "DELETE", token = token)
+
     // ---- exchange details: one transfer, one intake, their chains ----
 
     suspend fun transferOne(token: String, tid: String): String =

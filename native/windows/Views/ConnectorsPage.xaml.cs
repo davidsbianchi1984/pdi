@@ -24,6 +24,7 @@ public sealed partial class ConnectorsPage : Page
         public string IngestLabel => L10n.T("ncon.ingest");
         public string ScrapeLabel => L10n.T("ncon.scrape");
         public string UpdateLabel => L10n.T("ncon.update");
+        public string BeaconLabel => L10n.T("bri.itscode");
         public string DisconnectLabel => L10n.T("ncon.disconnect");
     }
 
@@ -54,6 +55,13 @@ public sealed partial class ConnectorsPage : Page
         PlatformBox.ItemsSource = Platforms.ToList();
         PlatformBox.SelectedIndex = 0;
         await Reload();
+        try
+        {
+            var n = await ApiClient.Shared.ConnectorCatalog();
+            CatalogText.Text = L10n.T("bri.pick") + " · " + n;
+            CatalogText.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowError(ex.Message); }
     }
 
     private async System.Threading.Tasks.Task Reload()
@@ -143,6 +151,23 @@ public sealed partial class ConnectorsPage : Page
         {
             await ApiClient.Shared.RevokeConnector(s.Token!, cid);
             await Reload();
+        }
+        catch (Exception ex) { ShowError(ex.Message); }
+    }
+
+    // The connection's own code: the presence page's QR, plus the first
+    // line of what the beacon actually says about it on the wire.
+    private async void OnBeacon(object sender, RoutedEventArgs e)
+    {
+        if ((sender as Button)?.Tag is not string cid) return;
+        var s = AppState.Current;
+        try
+        {
+            var body = await ApiClient.Shared.ConnectorBeacon(s.Token!, cid);
+            var head = body.Length > 120 ? body[..120] : body;
+            BeaconText.Text = L10n.T("qr.addr") + " "
+                + ApiClient.Shared.ConnectorQrUrl(cid) + " · " + head;
+            BeaconText.Visibility = Visibility.Visible;
         }
         catch (Exception ex) { ShowError(ex.Message); }
     }

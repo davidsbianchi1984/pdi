@@ -222,6 +222,9 @@
                                Foreground="{StaticResource PdiTxtBrush}" />
                     <TextBlock x:Name="TnMintedNote" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
                                Foreground="{StaticResource PdiT2Brush}" />
+                    <Button x:Name="TnRevokeButton" Click="OnRevokeMinted"
+                            Background="Transparent" FontSize="12" Visibility="Collapsed"
+                            Foreground="{StaticResource PdiRedBrush}" />
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <TextBox x:Name="TnRetentionBox" Width="160" />
                         <Button x:Name="TnRetentionButton" Click="OnSetTenantRetention"
@@ -429,6 +432,37 @@
                     <TextBlock x:Name="PsSaved" FontSize="11"
                                Foreground="{StaticResource PdiT2Brush}" />
                     <TextBlock x:Name="PsError" Foreground="{StaticResource PdiRedBrush}" FontSize="12"
+                               TextWrapping="Wrap" Visibility="Collapsed" />
+                </StackPanel>
+            </Border>
+
+            <!-- The key itself: whose hands it is in. -->
+            <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="10">
+                    <TextBlock x:Name="CkTitle" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource PdiTxtBrush}" />
+                    <PasswordBox x:Name="CkKeyBox" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="CkHoldButton" Click="OnKeyHold"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiBrandABrush}" />
+                        <Button x:Name="CkKmsButton" Click="OnKeyKms"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiBrandABrush}" />
+                        <Button x:Name="CkHandbackButton" Click="OnKeyHandback"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiRedBrush}" />
+                    </StackPanel>
+                    <TextBlock x:Name="CkNote" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource PdiT2Brush}" />
+                    <PasswordBox x:Name="CkAdminBox" />
+                    <Button x:Name="CkResealButton" Click="OnReseal"
+                            Background="Transparent" FontSize="12"
+                            Foreground="{StaticResource PdiBrandABrush}" />
+                    <TextBlock x:Name="CkResealLine" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource PdiT2Brush}" />
+                    <TextBlock x:Name="CkError" Foreground="{StaticResource PdiRedBrush}" FontSize="12"
                                TextWrapping="Wrap" Visibility="Collapsed" />
                 </StackPanel>
             </Border>

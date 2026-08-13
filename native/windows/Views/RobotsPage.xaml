@@ -51,6 +51,8 @@
                                             Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
                                     <Button Content="{Binding KeysLabel}" Tag="{Binding Id}" Click="OnShowKeys"
                                             Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
+                                    <Button Content="{Binding UnbindLabel}" Tag="{Binding Id}" Click="OnUnbind"
+                                            Background="Transparent" Foreground="{StaticResource PdiRed}" />
                                 </StackPanel>
                             </StackPanel>
                         </Border>

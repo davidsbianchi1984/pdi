@@ -48,6 +48,14 @@ struct RobotsView: View {
                             sealButton(L10n.t("nrob.map", state.language), r, "map", "{\"rooms\": 5}")
                             sealButton(L10n.t("nrob.snap", state.language), r, "snapshot", "camera still")
                             sealButton(L10n.t("nrob.log", state.language), r, "sensor_log", "steps & doors")
+                            Button(L10n.t("bri.unbind", state.language)) {
+                                Task {
+                                    _ = try? await ApiClient.shared.unbindRobot(
+                                        rid: r.id, token: state.token ?? "")
+                                    await load()
+                                }
+                            }
+                            .font(.caption2).foregroundStyle(Theme.red)
                         }
                     }.card()
                 }

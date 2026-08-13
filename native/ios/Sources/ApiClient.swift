@@ -511,6 +511,68 @@ actor ApiClient {
         }
     }
 
+    // MARK: the key itself — whose hands it is in
+
+    func tenantKey(token: String) async throws -> TenantKeyOut {
+        try await request("/key", token: token)
+    }
+
+    func setTenantKey(provider: String, key: String?,
+                      token: String) async throws -> TenantKeyOut {
+        var body: [String: Any] = ["provider": provider]
+        if let key, !key.isEmpty { body["key"] = key }
+        return try await request("/key", method: "PUT", body: body,
+                                 token: token)
+    }
+
+    /// Hands the tenant back to deployment custody. A 409 if it never left,
+    /// which the operator needs told rather than shown as a failure.
+    func surrenderTenantKey(token: String) async throws -> TenantKeyOut {
+        try await request("/key", method: "DELETE", token: token)
+    }
+
+    func resealUnderNewKey(adminToken: String) async throws -> ResealOut {
+        try await request("/keys/reseal", method: "POST", token: adminToken)
+    }
+
+    func revokeToken(_ minted: String, adminToken: String) async throws -> Ok {
+        try await request("/tokens/\(minted)", method: "DELETE",
+                          token: adminToken)
+    }
+
+    // MARK: connectors — the catalog, and each connection's own code
+
+    /// Parsed by hand: the catalog is a map of platforms, and the door is
+    /// the fetch.
+    func connectorCatalog() async throws -> Int {
+        var req = URLRequest(url: base.appendingPathComponent("/connectors/catalog"))
+        req.setValue(L10n.deviceLanguage, forHTTPHeaderField: "accept-language")
+        let (data, _) = try await URLSession.shared.data(for: req)
+        let obj = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
+        for value in obj?.values ?? [String: Any]().values {
+            if let list = value as? [Any] { return list.count }
+            if let map = value as? [String: Any] { return map.count }
+        }
+        return obj?.count ?? 0
+    }
+
+    func connectorBeacon(cid: String, token: String) async throws -> Data {
+        var req = URLRequest(url: base.appendingPathComponent(
+            "/connectors/\(cid)/beacon"))
+        req.setValue(L10n.deviceLanguage, forHTTPHeaderField: "accept-language")
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "authorization")
+        let (data, _) = try await URLSession.shared.data(for: req)
+        return data
+    }
+
+    func connectorQrUrl(cid: String) -> URL {
+        base.appendingPathComponent("/connectors/\(cid)/qr.svg")
+    }
+
+    func unbindRobot(rid: String, token: String) async throws -> Ok {
+        try await request("/robots/\(rid)", method: "DELETE", token: token)
+    }
+
     // MARK: exchange details — one transfer, one intake, and their chains
 
     func transferOne(tid: String, token: String) async throws -> Transfer {
@@ -911,6 +973,19 @@ actor ApiClient {
 }
 
 struct HealthOut: Decodable { let status: String }
+
+struct TenantKeyOut: Decodable {
+    let provider: String
+    let customer_managed: Bool
+    let operator_can_decrypt: Bool
+    let note: String
+}
+
+struct ResealOut: Decodable {
+    let active_version: Int
+    let resealed: Int
+    let customer_managed_skipped: Int
+}
 
 struct ReceivedFileOut: Decodable {
     let filename: String?

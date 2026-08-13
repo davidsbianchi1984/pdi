@@ -194,6 +194,16 @@ struct TenantsAdminCard: View {
                     .textSelection(.enabled)
                 Text(L10n.t("cu.minted.note", state.language))
                     .font(.caption2).foregroundStyle(Theme.t2)
+                Button(L10n.t("cu.revoke", state.language)) {
+                    act {
+                        _ = try await ApiClient.shared.revokeToken(
+                            minted, adminToken: adminToken)
+                        self.minted = nil
+                        status = L10n.t("cu.revoked", state.language)
+                    }
+                }
+                .font(.caption2).foregroundStyle(Theme.red)
+                .disabled(busy)
             }
             HStack(spacing: 8) {
                 TextField(L10n.t("ky.retention", state.language), text: $retention)
@@ -875,6 +885,80 @@ struct PositionsCard: View {
                 id: firstId, token: state.token ?? "") {
                 line = "\(b.id) · \(b.industry)"
             }
+        }
+    }
+}
+
+// MARK: the key itself — whose hands it is in
+
+/// Customer custody of the tenant key: adopt a held key, move to KMS, hand
+/// back to deployment custody, and reseal everything under a fresh version.
+/// The note rendered below is the wire's own sentence about who can decrypt.
+struct KeyCustodyCard: View {
+    @EnvironmentObject var state: AppState
+    @State private var customerKey = ""
+    @State private var adminToken = ""
+    @State private var note: String?
+    @State private var resealLine: String?
+    @State private var error: String?
+    @State private var busy = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(L10n.t("cu.hold", state.language))
+                .font(.headline).foregroundStyle(Theme.txt)
+            SecureField(L10n.t("cu.key.ph", state.language), text: $customerKey)
+                .foregroundStyle(Theme.txt)
+            HStack(spacing: 10) {
+                Button(L10n.t("cu.hold", state.language)) {
+                    act { note = try await ApiClient.shared.setTenantKey(
+                        provider: "held", key: customerKey,
+                        token: state.token ?? "").note }
+                }
+                .disabled(busy || customerKey.isEmpty)
+                Button(L10n.t("cu.kms", state.language)) {
+                    act { note = try await ApiClient.shared.setTenantKey(
+                        provider: "kms", key: nil,
+                        token: state.token ?? "").note }
+                }
+                Button(L10n.t("cu.handback", state.language)) {
+                    act { note = try await ApiClient.shared.surrenderTenantKey(
+                        token: state.token ?? "").note }
+                }.foregroundStyle(Theme.red)
+            }
+            .font(.caption2).foregroundStyle(Theme.brandA)
+            .disabled(busy)
+            if let note {
+                Text(note).font(.caption2).foregroundStyle(Theme.t2)
+            }
+            SecureField(L10n.t("nadm.token", state.language), text: $adminToken)
+                .foregroundStyle(Theme.txt)
+            Button(L10n.t("cu.reseal", state.language)) {
+                act {
+                    let r = try await ApiClient.shared.resealUnderNewKey(
+                        adminToken: adminToken)
+                    resealLine = "v\(r.active_version) · \(r.resealed) · \(r.customer_managed_skipped)"
+                }
+            }
+            .font(.caption2).foregroundStyle(Theme.brandA)
+            .disabled(busy || adminToken.isEmpty)
+            if let resealLine {
+                Text(L10n.t("cu.reseal.note", state.language) + " " + resealLine)
+                    .font(.caption2).foregroundStyle(Theme.t2)
+            }
+            if let error { Text(error).font(.caption).foregroundStyle(Theme.red) }
+        }
+        .card()
+        .task { note = try? await ApiClient.shared.tenantKey(
+            token: state.token ?? "").note }
+    }
+
+    private func act(_ work: @escaping () async throws -> Void) {
+        busy = true; error = nil
+        Task {
+            do { try await work() }
+            catch { self.error = error.localizedDescription }
+            busy = false
         }
     }
 }

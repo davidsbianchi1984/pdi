@@ -110,6 +110,14 @@ public sealed partial class OverviewPage : Page
         PsTitleBox.PlaceholderText = L10n.T("pos.jobtitle");
         PsBuildButton.Content = L10n.T("pos.build");
         PsOpenButton.Content = L10n.T("pos.open");
+        CkTitle.Text = L10n.T("cu.hold");
+        CkKeyBox.PlaceholderText = L10n.T("cu.key.ph");
+        CkHoldButton.Content = L10n.T("cu.hold");
+        CkKmsButton.Content = L10n.T("cu.kms");
+        CkHandbackButton.Content = L10n.T("cu.handback");
+        CkAdminBox.PlaceholderText = L10n.T("nadm.token");
+        CkResealButton.Content = L10n.T("cu.reseal");
+        TnRevokeButton.Content = L10n.T("cu.revoke");
         LanguageHead.Text = L10n.T("wel.language");
         // `action.refresh` has been in the table, translated into ten
         // languages, since chrome localization landed — and the only
@@ -188,6 +196,12 @@ public sealed partial class OverviewPage : Page
         try { await ReloadContinuity(); } catch (Exception ex) { ShowCtError(ex.Message); }
         try { await ReloadPosture(); } catch (Exception ex) { ShowPoError(ex.Message); }
         try { await ReloadPositions(); } catch (Exception ex) { ShowPsError(ex.Message); }
+        try
+        {
+            ShowCkNote((await ApiClient.Shared.TenantKey(
+                AppState.Current.Token!)).Note);
+        }
+        catch (Exception ex) { ShowCkError(ex.Message); }
     }
 
     private async void OnRefresh(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) =>
@@ -795,8 +809,86 @@ public sealed partial class OverviewPage : Page
             TnMinted.Visibility = Visibility.Visible;
             TnMintedNote.Text = L10n.T("cu.minted.note");
             TnMintedNote.Visibility = Visibility.Visible;
+            TnRevokeButton.Visibility = Visibility.Visible;
         }
         catch (Exception ex) { ShowTnError(ex.Message); }
+    }
+
+    private async void OnRevokeMinted(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await ApiClient.Shared.RevokeToken(
+                TnAdminTokenBox.Password, TnMinted.Text.Trim());
+            TnMinted.Visibility = Visibility.Collapsed;
+            TnRevokeButton.Visibility = Visibility.Collapsed;
+            TnMintedNote.Text = L10n.T("cu.revoked");
+        }
+        catch (Exception ex) { ShowTnError(ex.Message); }
+    }
+
+    // The key itself: whose hands it is in. The note rendered under the
+    // buttons is the wire's own sentence about who can decrypt.
+    private async void OnKeyHold(object sender, RoutedEventArgs e)
+    {
+        var key = CkKeyBox.Password.Trim();
+        if (key.Length == 0) return;
+        try
+        {
+            var custody = await ApiClient.Shared.SetTenantKey(
+                AppState.Current.Token!, "held", key);
+            ApiClient.Shared.HoldKey(key);
+            ShowCkNote(custody.Note);
+        }
+        catch (Exception ex) { ShowCkError(ex.Message); }
+    }
+
+    private async void OnKeyKms(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var custody = await ApiClient.Shared.SetTenantKey(
+                AppState.Current.Token!, "kms", null);
+            ShowCkNote(custody.Note);
+        }
+        catch (Exception ex) { ShowCkError(ex.Message); }
+    }
+
+    private async void OnKeyHandback(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var custody = await ApiClient.Shared.SurrenderTenantKey(
+                AppState.Current.Token!);
+            ApiClient.Shared.HoldKey(null);
+            ShowCkNote(custody.Note);
+        }
+        catch (Exception ex) { ShowCkError(ex.Message); }
+    }
+
+    private async void OnReseal(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var r = await ApiClient.Shared.ResealUnderNewKey(CkAdminBox.Password);
+            CkResealLine.Text = L10n.T("cu.reseal.note")
+                + $" v{r.ActiveVersion} · {r.Resealed} · {r.CustomerManagedSkipped}";
+            CkResealLine.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowCkError(ex.Message); }
+    }
+
+    private void ShowCkNote(string note)
+    {
+        CkError.Visibility = Visibility.Collapsed;
+        CkNote.Text = note;
+        CkNote.Visibility = Visibility.Visible;
+    }
+
+    private void ShowCkError(string message)
+    {
+        CkError.Text = message;
+        CkError.Visibility = Visibility.Visible;
     }
 
     private async void OnSetTenantRetention(object sender, RoutedEventArgs e)

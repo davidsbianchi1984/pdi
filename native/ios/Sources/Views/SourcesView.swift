@@ -44,6 +44,8 @@ private struct ConnectorsSection: View {
     @State private var platform = "instagram"
     @State private var handle = ""
     @State private var conns: [SocialConn] = []
+    @State private var catalogLine: String?
+    @State private var beaconLine: String?
     @State private var status: String?
     @State private var error: String?
     @EnvironmentObject var state: AppState
@@ -78,6 +80,13 @@ private struct ConnectorsSection: View {
                 if let error { Text(error).font(.footnote).foregroundStyle(Theme.red) }
                 if let status { Text(status).font(.caption).foregroundStyle(Theme.green) }
 
+                if let catalogLine {
+                    Text(L10n.t("bri.pick", state.language) + " " + catalogLine)
+                        .font(.caption2).foregroundStyle(Theme.t2)
+                }
+                if let beaconLine {
+                    Text(beaconLine).font(.caption2).foregroundStyle(Theme.t2)
+                }
                 ForEach(conns, id: \.id) { c in
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
@@ -96,6 +105,7 @@ private struct ConnectorsSection: View {
                             } else {
                                 smallButton(L10n.t("ncon.update", state.language)) { publish(c) }
                             }
+                            smallButton(L10n.t("bri.itscode", state.language)) { beacon(c) }
                             Button(L10n.t("ncon.disconnect", state.language)) { revoke(c) }
                                 .font(.caption).foregroundStyle(Theme.red)
                         }
@@ -123,6 +133,9 @@ private struct ConnectorsSection: View {
     private func load() async {
         guard let token = state.token else { return }
         conns = (try? await ApiClient.shared.connectors(token: token)) ?? []
+        if let n = try? await ApiClient.shared.connectorCatalog() {
+            catalogLine = "\(n)"
+        }
     }
 
     private func connect(_ direction: String) {
@@ -175,6 +188,21 @@ private struct ConnectorsSection: View {
         guard let token = state.token else { return }
         Task {
             try? await ApiClient.shared.revokeConnector(token: token, cid: c.id)
+        }
+    }
+
+    // Each connection's own code: the beacon's words plus the address of
+    // the image a browser or printer fetches.
+    private func beacon(_ c: SocialConn) {
+        guard let token = state.token else { return }
+        Task {
+            if let data = try? await ApiClient.shared.connectorBeacon(
+                cid: c.id, token: token) {
+                let body = String(data: data, encoding: .utf8) ?? ""
+                beaconLine = L10n.t("qr.addr", state.language) + " "
+                    + ApiClient.shared.connectorQrUrl(cid: c.id).absoluteString
+                    + " · " + String(body.prefix(120))
+            }
             await load()
         }
     }

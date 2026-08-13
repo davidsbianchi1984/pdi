@@ -678,6 +678,33 @@ public sealed class ApiClient
         return await res.Content.ReadAsStringAsync();
     }
 
+    // ---- the key itself: whose hands it is in ----
+
+    public Task<TenantKeyOut> TenantKey(string token) =>
+        Send<TenantKeyOut>(new HttpRequestMessage(HttpMethod.Get, "/key"), token);
+
+    public Task<TenantKeyOut> SetTenantKey(string token, string provider,
+                                           string? key) =>
+        Send<TenantKeyOut>(new HttpRequestMessage(HttpMethod.Put, "/key")
+        {
+            Content = JsonContent.Create(new
+            {
+                provider,
+                key = string.IsNullOrEmpty(key) ? null : key,
+            }),
+        }, token);
+
+    /// <summary>Hands the tenant back to deployment custody. The customer
+    /// key rides in <c>x-tenant-key</c> via <c>Dispatch</c>: the records must
+    /// be opened to be re-sealed, which is the guarantee working.</summary>
+    public Task<TenantKeyOut> SurrenderTenantKey(string token) =>
+        Send<TenantKeyOut>(new HttpRequestMessage(HttpMethod.Delete, "/key"),
+            token);
+
+    public Task<ResealOut> ResealUnderNewKey(string adminToken) =>
+        Send<ResealOut>(new HttpRequestMessage(HttpMethod.Post, "/keys/reseal"),
+            adminToken);
+
     // ---- contributions, the snapshot, and the custody ops ----
 
     public async Task<int> Contributions(string token) =>
@@ -767,6 +794,10 @@ public sealed class ApiClient
         {
             Content = JsonContent.Create(new { role }),
         }, adminToken);
+
+    public Task RevokeToken(string adminToken, string minted) =>
+        SendNoContent(new HttpRequestMessage(HttpMethod.Delete,
+            $"/tokens/{minted}"), adminToken);
 
     public Task<RetentionOut> SetTenantRetention(string adminToken, string tid,
                                                  string retention) =>
@@ -1041,6 +1072,10 @@ public sealed class ApiClient
     public Task<RobotData> RobotKeys(string token, string rid) =>
         Send<RobotData>(new HttpRequestMessage(HttpMethod.Get, $"/robots/{rid}/data"), token);
 
+    public Task<OkOut> UnbindRobot(string token, string rid) =>
+        Send<OkOut>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/robots/{rid}"), token);
+
     // -- compliance-grade secure transfers --
 
     public Task<CompliancePrograms> Programs(string token) =>
@@ -1137,6 +1172,39 @@ public sealed class ApiClient
     public Task RevokeConnector(string token, string cid) =>
         SendNoContent(new HttpRequestMessage(HttpMethod.Delete, $"/connectors/{cid}"), token);
 
+    /// <summary>The connected-apps catalog. Parsed by hand: the reply is a
+    /// map of platform families, and the door is the fetch.</summary>
+    public async Task<int> ConnectorCatalog()
+    {
+        var res = await Dispatch(
+            new HttpRequestMessage(HttpMethod.Get, "/connectors/catalog"));
+        var root = JsonDocument.Parse(
+            await res.Content.ReadAsStringAsync()).RootElement;
+        var total = 0;
+        foreach (var prop in root.EnumerateObject())
+        {
+            if (prop.Value.ValueKind == JsonValueKind.Array)
+                total += prop.Value.GetArrayLength();
+            else
+                total += 1;
+        }
+        return total;
+    }
+
+    public async Task<string> ConnectorBeacon(string token, string cid)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Get,
+            $"/connectors/{cid}/beacon");
+        req.Headers.Add("authorization", $"Bearer {token}");
+        var res = await Dispatch(req);
+        return await res.Content.ReadAsStringAsync();
+    }
+
+    public string ConnectorQrUrl(string cid) =>
+        new Uri(_http.BaseAddress!,
+                new HttpRequestMessage(HttpMethod.Get,
+                    $"/connectors/{cid}/qr.svg").RequestUri!).ToString();
+
     /// <summary>The sender's side: authenticated by the one-shot
     /// X-Submit-Token, not the tenant bearer.</summary>
     public async Task SubmitIntake(string iid, string submitToken,
@@ -1168,6 +1236,17 @@ public sealed class ApiClient
         }
     }
 }
+
+public record TenantKeyOut(
+    [property: JsonPropertyName("provider")] string Provider,
+    [property: JsonPropertyName("customer_managed")] bool CustomerManaged,
+    [property: JsonPropertyName("operator_can_decrypt")] bool OperatorCanDecrypt,
+    [property: JsonPropertyName("note")] string Note);
+
+public record ResealOut(
+    [property: JsonPropertyName("active_version")] int ActiveVersion,
+    [property: JsonPropertyName("resealed")] int Resealed,
+    [property: JsonPropertyName("customer_managed_skipped")] int CustomerManagedSkipped);
 
 public record OfflinePosture(
     [property: JsonPropertyName("offline")] bool Offline,

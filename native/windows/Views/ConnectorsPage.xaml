@@ -10,6 +10,8 @@
             <TextBlock x:Name="TitleText" FontSize="22" FontWeight="Bold" Foreground="{StaticResource PdiTxtBrush}" />
             <TextBlock x:Name="SubText"
                        Foreground="{StaticResource PdiT2Brush}" FontSize="13" TextWrapping="Wrap" />
+            <TextBlock x:Name="CatalogText" Foreground="{StaticResource PdiT2Brush}" FontSize="12"
+                       TextWrapping="Wrap" Visibility="Collapsed" />
 
             <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">
@@ -29,6 +31,8 @@
                        TextWrapping="Wrap" Visibility="Collapsed" />
             <TextBlock x:Name="StatusText" Foreground="{StaticResource PdiGreenBrush}" FontSize="12"
                        Visibility="Collapsed" />
+            <TextBlock x:Name="BeaconText" Foreground="{StaticResource PdiT2Brush}" FontSize="11"
+                       TextWrapping="Wrap" IsTextSelectionEnabled="True" Visibility="Collapsed" />
 
             <ItemsControl x:Name="ConnsList">
                 <ItemsControl.ItemTemplate>
@@ -50,6 +54,9 @@
                                             Visibility="{Binding ScrapeVisibility}"
                                             Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
                                     <Button Content="{Binding UpdateLabel}" Tag="{Binding Id}" Click="OnPublish"
+                                            Visibility="{Binding PublishVisibility}"
+                                            Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
+                                    <Button Content="{Binding BeaconLabel}" Tag="{Binding Id}" Click="OnBeacon"
                                             Visibility="{Binding PublishVisibility}"
                                             Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
                                     <Button Content="{Binding DisconnectLabel}" Tag="{Binding Id}" Click="OnRevoke"

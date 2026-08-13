@@ -276,6 +276,7 @@ fun OverviewScreen(vm: VaultViewModel) {
         ContinuityCard(vm)
         PostureCard(vm)
         PositionsCard(vm)
+        KeyCustodyCard(vm)
         OutlinedButton(onClick = { vm.signOut() }, modifier = Modifier.fillMaxWidth(),
             border = androidx.compose.foundation.BorderStroke(1.dp, Pdi.Line)) {
             Text(L10n.t("action.sign_out", vm.language), color = Pdi.T2)
@@ -320,6 +321,63 @@ fun OfflinePostureCard(vm: VaultViewModel) {
                 }
             }
         }
+    }
+}
+
+/** Customer custody of the tenant key: adopt a held key, move to KMS,
+ *  hand back to deployment custody, and reseal under a fresh version.
+ *  The note rendered is the wire's own sentence about who can decrypt. */
+@Composable
+fun KeyCustodyCard(vm: VaultViewModel) {
+    var customerKey by remember { mutableStateOf("") }
+    var adminToken by remember { mutableStateOf("") }
+    var note by remember { mutableStateOf<String?>(null) }
+    var resealLine by remember { mutableStateOf<String?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.tenantKey(vm.token!!) }) { r -> note = r.getOrNull() }
+    }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("cu.hold", vm.language), color = Pdi.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        labeledField(L10n.t("cu.key.ph", vm.language), customerKey,
+            L10n.t("cu.key.ph", vm.language)) { customerKey = it }
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            SmallAction(L10n.t("cu.hold", vm.language)) {
+                if (customerKey.isNotBlank()) {
+                    vm.call({ ApiClient.setTenantKey(vm.token!!, "held",
+                        customerKey.trim()) }) { r ->
+                        r.onSuccess { note = it }.onFailure { error = it.message }
+                    }
+                }
+            }
+            SmallAction(L10n.t("cu.kms", vm.language)) {
+                vm.call({ ApiClient.setTenantKey(vm.token!!, "kms", null) }) { r ->
+                    r.onSuccess { note = it }.onFailure { error = it.message }
+                }
+            }
+            SmallAction(L10n.t("cu.handback", vm.language)) {
+                vm.call({ ApiClient.surrenderTenantKey(vm.token!!) }) { r ->
+                    r.onSuccess { note = it }.onFailure { error = it.message }
+                }
+            }
+        }
+        note?.let { Text(it, color = Pdi.T2, fontSize = 11.sp) }
+        labeledField(L10n.t("nadm.token", vm.language), adminToken, "…") { adminToken = it }
+        SmallAction(L10n.t("cu.reseal", vm.language)) {
+            if (adminToken.isNotBlank()) {
+                vm.call({ ApiClient.resealUnderNewKey(adminToken) }) { r ->
+                    r.onSuccess { resealLine = it }.onFailure { error = it.message }
+                }
+            }
+        }
+        resealLine?.let {
+            Text(L10n.t("cu.reseal.note", vm.language) + " " + it,
+                color = Pdi.T2, fontSize = 11.sp)
+        }
+        error?.let { Text(it, color = Pdi.Red, fontSize = 12.sp) }
     }
 }
 
@@ -718,6 +776,7 @@ fun TenantsAdminCard(vm: VaultViewModel) {
     var effDate by remember { mutableStateOf("") }
     var made by remember { mutableStateOf<TenantMadeK?>(null) }
     var minted by remember { mutableStateOf<String?>(null) }
+    var mintedNote by remember { mutableStateOf<String?>(null) }
     var baa by remember { mutableStateOf<BaaK?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
 
@@ -772,10 +831,19 @@ fun TenantsAdminCard(vm: VaultViewModel) {
                 }
             }
         }
-        minted?.let {
-            Text(it, color = Pdi.Txt, fontSize = 10.sp)
+        minted?.let { tokenShown ->
+            Text(tokenShown, color = Pdi.Txt, fontSize = 10.sp)
             Text(L10n.t("cu.minted.note", vm.language), color = Pdi.T2, fontSize = 10.sp)
+            SmallAction(L10n.t("cu.revoke", vm.language)) {
+                vm.call({ ApiClient.revokeToken(adminToken, tokenShown) }) { r ->
+                    r.onSuccess {
+                        minted = null
+                        mintedNote = L10n.t("cu.revoked", vm.language)
+                    }.onFailure { error = it.message }
+                }
+            }
         }
+        mintedNote?.let { Text(it, color = Pdi.T2, fontSize = 10.sp) }
         Row(verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Box(Modifier.weight(1f)) {
@@ -1349,6 +1417,9 @@ fun RobotsScreen(vm: VaultViewModel) {
                         Text(L10n.t("nrob.snap", vm.language), color = Pdi.BrandA, fontSize = 12.sp) }
                     TextButton(onClick = { seal(rob, "sensor_log", "steps & doors") }) {
                         Text(L10n.t("nrob.log", vm.language), color = Pdi.BrandA, fontSize = 12.sp) }
+                    TextButton(onClick = {
+                        vm.call({ ApiClient.unbindRobot(vm.token!!, rob.id) }) { reload() }
+                    }) { Text(L10n.t("bri.unbind", vm.language), color = Pdi.Red, fontSize = 12.sp) }
                 }
                 TextButton(onClick = { showKeys(rob) }) {
                     Text(L10n.t("nrob.keys", vm.language), color = Pdi.BrandA, fontSize = 12.sp) }
@@ -1891,9 +1962,16 @@ private fun ConnectorsPanel(vm: VaultViewModel) {
     var conns by remember { mutableStateOf<List<SocialConn>>(emptyList()) }
     var status by remember { mutableStateOf<String?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
+    var catalogLine by remember { mutableStateOf<String?>(null) }
+    var beaconLine by remember { mutableStateOf<String?>(null) }
 
     fun reload() { vm.call({ ApiClient.connectors(vm.token!!) }) { r -> conns = r.getOrDefault(emptyList()) } }
-    LaunchedEffect(Unit) { reload() }
+    LaunchedEffect(Unit) {
+        reload()
+        vm.call({ ApiClient.connectorCatalog() }) { r ->
+            catalogLine = r.getOrNull()?.toString()
+        }
+    }
 
     fun connect(direction: String) {
         error = null; status = null
@@ -1933,6 +2011,11 @@ private fun ConnectorsPanel(vm: VaultViewModel) {
         }
         error?.let { Text(it, color = Pdi.Red, fontSize = 13.sp) }
         status?.let { Text(it, color = Pdi.Green, fontSize = 12.sp) }
+        catalogLine?.let {
+            Text(L10n.t("bri.pick", vm.language) + " " + it,
+                color = Pdi.T2, fontSize = 11.sp)
+        }
+        beaconLine?.let { Text(it, color = Pdi.T2, fontSize = 10.sp) }
 
         conns.forEach { c ->
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -1967,6 +2050,17 @@ private fun ConnectorsPanel(vm: VaultViewModel) {
                                  .onFailure { error = it.message }
                             }
                         }) { Text(L10n.t("ncon.update", vm.language), color = Pdi.BrandA, fontSize = 12.sp) }
+                    // Each connection's own code: the beacon's words plus
+                    // the address of the image a browser fetches.
+                    TextButton(onClick = {
+                        vm.call({ ApiClient.connectorBeacon(vm.token!!, c.id) }) { r ->
+                            r.onSuccess { body ->
+                                beaconLine = L10n.t("qr.addr", vm.language) + " " +
+                                    ApiClient.connectorQrUrl(c.id) + " \u00b7 " +
+                                    body.take(120)
+                            }.onFailure { error = it.message }
+                        }
+                    }) { Text(L10n.t("bri.itscode", vm.language), color = Pdi.BrandA, fontSize = 12.sp) }
                     TextButton(onClick = {
                         vm.call({ ApiClient.revokeConnector(vm.token!!, c.id) }) { reload() }
                     }) { Text(L10n.t("ncon.disconnect", vm.language), color = Pdi.Red, fontSize = 12.sp) }
