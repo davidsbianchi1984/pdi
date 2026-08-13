@@ -511,6 +511,63 @@ actor ApiClient {
         }
     }
 
+    // MARK: posture — where the vault lives, and whether it is up
+
+    func health() async throws -> HealthOut {
+        try await request("/health")
+    }
+
+    /// Parsed by hand rather than declared: the reply is a map keyed by
+    /// mode id, and a record nested under an arbitrary-key map is a shape
+    /// the wire guard rightly refuses to vouch for.
+    func hostingModes() async throws -> [(id: String, label: String)] {
+        var req = URLRequest(url: base.appendingPathComponent("/hosting"))
+        req.setValue(L10n.deviceLanguage, forHTTPHeaderField: "accept-language")
+        let (data, _) = try await URLSession.shared.data(for: req)
+        let obj = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
+        let modes = obj?["modes"] as? [String: [String: Any]] ?? [:]
+        return modes.map { entry in
+            let title = (entry.value["title"] as? String) ?? entry.key
+            let price = (entry.value["price"] as? String) ?? ""
+            return (id: entry.key, label: "\(title) · \(price)")
+        }.sorted { $0.id < $1.id }
+    }
+
+    func hosting(tid: String, token: String) async throws -> HostingModeOut {
+        try await request("/hosting/\(tid)", token: token)
+    }
+
+    func hostingHistory(tid: String, token: String) async throws -> HostingHistoryOut {
+        try await request("/hosting/\(tid)/history", token: token)
+    }
+
+    func setHosting(tid: String, mode: String,
+                    token: String) async throws -> Ok {
+        try await request("/hosting/\(tid)", method: "PUT",
+                          body: ["mode": mode], token: token)
+    }
+
+    func recordDeployment(token: String) async throws -> Ok {
+        try await request("/deployments", method: "POST",
+                          body: ["name": "new site", "option": "colocation"],
+                          token: token)
+    }
+
+    func operations(token: String) async throws -> OperationsOut {
+        try await request("/operations", token: token)
+    }
+
+    func auditSchema() async throws -> AuditSchemaOut {
+        try await request("/audit/schema")
+    }
+
+    /// The tenant's own standing, which is a smaller shape than the
+    /// operator's BAA record: executed, since when, and the refusal note
+    /// when nothing is on file. Names live on the admin route only.
+    func baaStatus(token: String) async throws -> BaaStandingOut {
+        try await request("/baa", token: token)
+    }
+
     // MARK: continuity — bequests, and what outlives the tenant
 
     func bequests(token: String) async throws -> [BequestOut] {
@@ -798,6 +855,39 @@ actor ApiClient {
         base.appendingPathComponent("/pair/qr.svg")
     }
 }
+
+struct HealthOut: Decodable { let status: String }
+
+struct BaaStandingOut: Decodable {
+    let executed: Bool
+    let effective_date: String?
+    let note: String?
+}
+
+struct HostingModeOut: Decodable {
+    let title: String
+    let price: String
+    let means: String
+    let free_because: String?
+    let we_are_responsible_for: [String]
+    let you_are_responsible_for: [String]
+    let mode: String?
+}
+
+struct HistoryRow: Decodable { let mode: String?; let at: String? }
+struct HostingHistoryOut: Decodable { let history: [HistoryRow] }
+
+struct OperationsEntryOut: Decodable { let key: String; let updated_at: String }
+struct OperationsOut: Decodable {
+    let entries: [OperationsEntryOut]
+    let note: String
+}
+
+struct AuditSchemaOut: Decodable {
+    let actions: [AuditActionOut]
+    let retention: String
+}
+struct AuditActionOut: Decodable { let action: String; let category: String }
 
 struct BequestOut: Decodable {
     let id: String

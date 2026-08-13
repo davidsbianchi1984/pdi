@@ -667,3 +667,139 @@ struct ContinuityCard: View {
         }
     }
 }
+
+// MARK: posture — where the vault lives, and whether it is up
+
+/// The deployment's own account of itself: health, the hosting mode it is
+/// in and could move to, what went out through operations, the audit
+/// vocabulary, and whether the paperwork is on file.
+struct PostureCard: View {
+    @EnvironmentObject var state: AppState
+    @State private var healthLine: String?
+    @State private var modes: [(id: String, label: String)] = []
+    @State private var mine: HostingModeOut?
+    @State private var historyCount: Int?
+    @State private var tid = ""
+    @State private var opsLine: String?
+    @State private var schemaLine: String?
+    @State private var baaLine: String?
+    @State private var status: String?
+    @State private var error: String?
+    @State private var busy = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(L10n.t("ov.health", state.language))
+                .font(.headline).foregroundStyle(Theme.txt)
+            if let healthLine {
+                Text(healthLine).font(.caption2).foregroundStyle(Theme.t2)
+            }
+
+            Text(L10n.t("cu.where", state.language))
+                .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+            TextField(L10n.t("adm.tenant.ph", state.language), text: $tid)
+                .foregroundStyle(Theme.txt)
+            HStack(spacing: 8) {
+                Button(L10n.t("cu.where", state.language)) { readMine() }
+                Button(L10n.t("cu.deploy", state.language)) {
+                    act { _ = try await ApiClient.shared.recordDeployment(
+                        token: state.token ?? "") }
+                }
+            }
+            .font(.caption2).foregroundStyle(Theme.brandA)
+            .disabled(busy)
+            if let mine {
+                Text("\(mine.title) — \(mine.means) · \(mine.price)")
+                    .font(.caption2).foregroundStyle(Theme.t2)
+                if let why = mine.free_because {
+                    Text(L10n.t("cu.free", state.language) + " " + why)
+                        .font(.caption2).foregroundStyle(Theme.t2)
+                }
+                Text(L10n.t("cu.we", state.language) + " "
+                     + mine.we_are_responsible_for.joined(separator: ", "))
+                    .font(.caption2).foregroundStyle(Theme.t2)
+                Text(L10n.t("cu.you", state.language) + " "
+                     + mine.you_are_responsible_for.joined(separator: ", "))
+                    .font(.caption2).foregroundStyle(Theme.t2)
+            }
+            if let historyCount {
+                Text("\(historyCount)").font(.caption2).foregroundStyle(Theme.t2)
+            }
+            // Moving is one press per mode the deployment offers, priced on
+            // the button the way the console prices it.
+            ForEach(modes, id: \.id) { mode in
+                Button(mode.label) {
+                    act { _ = try await ApiClient.shared.setHosting(
+                        tid: tid, mode: mode.id, token: state.token ?? "") }
+                }
+                .font(.caption2).foregroundStyle(Theme.brandA)
+                .disabled(busy || tid.isEmpty)
+            }
+
+            Text(L10n.t("op.title", state.language))
+                .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+            if let opsLine {
+                Text(opsLine).font(.caption2).foregroundStyle(Theme.t2)
+            }
+            if let schemaLine {
+                Text(L10n.t("au.actions", state.language) + " " + schemaLine)
+                    .font(.caption2).foregroundStyle(Theme.t2)
+            }
+            HStack(spacing: 8) {
+                Button(L10n.t("cu.onfile", state.language)) {
+                    act {
+                        let baa = try await ApiClient.shared.baaStatus(
+                            token: state.token ?? "")
+                        baaLine = baa.executed
+                            ? (baa.effective_date ?? "✓")
+                            : (baa.note ?? L10n.t("cu.no", state.language))
+                    }
+                }
+            }
+            .font(.caption2).foregroundStyle(Theme.brandA)
+            .disabled(busy)
+            if let baaLine {
+                Text(baaLine).font(.caption2).foregroundStyle(Theme.t2)
+            }
+
+            if let status { Text(status).font(.caption).foregroundStyle(Theme.green) }
+            if let error { Text(error).font(.caption).foregroundStyle(Theme.red) }
+        }
+        .card()
+        .task { await load() }
+    }
+
+    private func load() async {
+        if let h = try? await ApiClient.shared.health() {
+            healthLine = h.status
+        }
+        modes = (try? await ApiClient.shared.hostingModes()) ?? []
+        if let s = try? await ApiClient.shared.auditSchema() {
+            schemaLine = "\(s.actions.count) · \(s.retention)"
+        }
+        guard let token = state.token else { return }
+        if let ops = try? await ApiClient.shared.operations(token: token) {
+            opsLine = ops.entries.isEmpty
+                ? L10n.t("op.none", state.language)
+                : L10n.t("op.events", state.language) + " \(ops.entries.count)"
+        }
+    }
+
+    private func readMine() {
+        guard let token = state.token, !tid.isEmpty else { return }
+        act {
+            mine = try await ApiClient.shared.hosting(tid: tid, token: token)
+            historyCount = try await ApiClient.shared.hostingHistory(
+                tid: tid, token: token).history.count
+        }
+    }
+
+    private func act(_ work: @escaping () async throws -> Void) {
+        busy = true; error = nil; status = nil
+        Task {
+            do { try await work() }
+            catch { self.error = error.localizedDescription }
+            busy = false
+        }
+    }
+}

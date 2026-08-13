@@ -7,8 +7,6 @@
 DELETE /key
 DELETE /robots/{rid}
 DELETE /tokens/{token}
-GET /audit/schema
-GET /baa
 GET /connectors/catalog
 GET /connectors/{cid}/beacon
 GET /connectors/{cid}/qr.svg
@@ -20,14 +18,9 @@ GET /dock/faces
 GET /dock/where/{face}
 GET /dock/{tenant_id}
 GET /dock/{tenant_id}/face/{name}
-GET /health
-GET /hosting
-GET /hosting/{tenant_id}
-GET /hosting/{tenant_id}/history
 GET /intakes/{iid}
 GET /intakes/{iid}/custody
 GET /key
-GET /operations
 GET /positions
 GET /positions/{position_id}
 GET /transfers/{tid}
@@ -35,11 +28,9 @@ GET /transfers/{tid}/custody
 POST /console/ask
 POST /console/guide/done
 POST /console/guide/start
-POST /deployments
 POST /keys/reseal
 POST /positions
 POST /transfers/{tid}/receive
 POST /translate
 PUT /dock/{tenant_id}
-PUT /hosting/{tenant_id}
 PUT /key

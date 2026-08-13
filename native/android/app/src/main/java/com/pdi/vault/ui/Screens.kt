@@ -274,6 +274,7 @@ fun OverviewScreen(vm: VaultViewModel) {
         TenantsAdminCard(vm)
         GateCard(vm)
         ContinuityCard(vm)
+        PostureCard(vm)
         OutlinedButton(onClick = { vm.signOut() }, modifier = Modifier.fillMaxWidth(),
             border = androidx.compose.foundation.BorderStroke(1.dp, Pdi.Line)) {
             Text(L10n.t("action.sign_out", vm.language), color = Pdi.T2)
@@ -318,6 +319,110 @@ fun OfflinePostureCard(vm: VaultViewModel) {
                 }
             }
         }
+    }
+}
+
+/** The deployment's own account of itself: health, the hosting mode it
+ *  is in and could move to, what went out through operations, the audit
+ *  vocabulary, and whether the paperwork is on file. */
+@Composable
+fun PostureCard(vm: VaultViewModel) {
+    var healthLine by remember { mutableStateOf<String?>(null) }
+    var modes by remember { mutableStateOf<List<HostingModeK>>(emptyList()) }
+    var mine by remember { mutableStateOf<HostingModeK?>(null) }
+    var historyCount by remember { mutableStateOf<Int?>(null) }
+    var tid by remember { mutableStateOf("") }
+    var opsLine by remember { mutableStateOf<String?>(null) }
+    var schemaLine by remember { mutableStateOf<String?>(null) }
+    var baaLine by remember { mutableStateOf<String?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.health() }) { r -> healthLine = r.getOrNull() }
+        vm.call({ ApiClient.hostingModes() }) { r ->
+            modes = r.getOrDefault(emptyList())
+        }
+        vm.call({ ApiClient.auditSchema() }) { r -> schemaLine = r.getOrNull() }
+        vm.call({ ApiClient.operations(vm.token!!) }) { r ->
+            r.onSuccess { n ->
+                opsLine = if (n == 0) L10n.t("op.none", vm.language)
+                    else L10n.t("op.events", vm.language) + " $n"
+            }
+        }
+    }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("ov.health", vm.language), color = Pdi.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        healthLine?.let { Text(it, color = Pdi.T2, fontSize = 11.sp) }
+
+        Text(L10n.t("cu.where", vm.language), color = Pdi.Txt,
+            fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        labeledField(L10n.t("adm.tenant.ph", vm.language), tid,
+            L10n.t("adm.tenant.ph", vm.language)) { tid = it }
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            SmallAction(L10n.t("cu.where", vm.language)) {
+                if (tid.isNotBlank()) {
+                    vm.call({ ApiClient.hosting(vm.token!!, tid.trim()) }) { r ->
+                        r.onSuccess { mine = it }.onFailure { error = it.message }
+                    }
+                    vm.call({ ApiClient.hostingHistory(vm.token!!, tid.trim()) }) { r ->
+                        historyCount = r.getOrNull()
+                    }
+                }
+            }
+            SmallAction(L10n.t("cu.deploy", vm.language)) {
+                vm.call({ ApiClient.recordDeployment(vm.token!!) }) { r ->
+                    r.onFailure { error = it.message }
+                }
+            }
+        }
+        mine?.let { m ->
+            Text("${m.title} \u2014 ${m.means} \u00b7 ${m.price}",
+                color = Pdi.T2, fontSize = 11.sp)
+            if (m.freeBecause.isNotEmpty()) {
+                Text(L10n.t("cu.free", vm.language) + " " + m.freeBecause,
+                    color = Pdi.T2, fontSize = 11.sp)
+            }
+            Text(L10n.t("cu.we", vm.language) + " " + m.we,
+                color = Pdi.T2, fontSize = 10.sp)
+            Text(L10n.t("cu.you", vm.language) + " " + m.you,
+                color = Pdi.T2, fontSize = 10.sp)
+        }
+        historyCount?.let { Text(it.toString(), color = Pdi.T3, fontSize = 10.sp) }
+        // Moving is one press per mode the deployment offers, priced on the
+        // button the way the console prices it.
+        modes.chunked(2).forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                row.forEach { m ->
+                    SmallAction("${m.title} \u00b7 ${m.price}") {
+                        if (tid.isNotBlank()) {
+                            vm.call({ ApiClient.setHosting(vm.token!!,
+                                tid.trim(), m.id) }) { r ->
+                                r.onFailure { error = it.message }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Text(L10n.t("op.title", vm.language), color = Pdi.Txt,
+            fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        opsLine?.let { Text(it, color = Pdi.T2, fontSize = 11.sp) }
+        schemaLine?.let {
+            Text(L10n.t("au.actions", vm.language) + " " + it,
+                color = Pdi.T2, fontSize = 11.sp)
+        }
+        SmallAction(L10n.t("cu.onfile", vm.language)) {
+            vm.call({ ApiClient.baaStatus(vm.token!!) }) { r ->
+                r.onSuccess { line ->
+                    baaLine = line.ifEmpty { L10n.t("cu.no", vm.language) }
+                }.onFailure { error = it.message }
+            }
+        }
+        baaLine?.let { Text(it, color = Pdi.T2, fontSize = 11.sp) }
+        error?.let { Text(it, color = Pdi.Red, fontSize = 12.sp) }
     }
 }
 

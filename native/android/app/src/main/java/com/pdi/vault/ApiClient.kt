@@ -19,6 +19,10 @@ data class RobotSpec(val model: String, val label: String, val maker: String)
 data class Robot(val id: String, val model: String, val name: String, val status: String?, val collected: Int)
 data class IngestResult(val sealed: Boolean, val key: String)
 data class ComplianceProgram(val key: String, val label: String)
+data class HostingModeK(val id: String, val title: String,
+                        val price: String, val means: String,
+                        val freeBecause: String, val we: String,
+                        val you: String)
 data class BequestK(val id: String, val grantee: String,
                     val condition: String, val prefixes: List<String>,
                     val activated: Boolean, val revoked: Boolean,
@@ -400,6 +404,67 @@ object ApiClient {
             val o = arr.getJSONObject(i)
             ComplianceProgram(o.getString("key"), o.getString("label"))
         }
+    }
+
+    // ---- posture: where the vault lives, and whether it is up ----
+
+    suspend fun health(): String =
+        JSONObject(request("/health")).optString("status")
+
+    suspend fun hostingModes(): List<HostingModeK> {
+        val o = JSONObject(request("/hosting")).optJSONObject("modes")
+            ?: return emptyList()
+        return o.keys().asSequence().map { id ->
+            val m = o.getJSONObject(id)
+            HostingModeK(id, m.optString("title"), m.optString("price"),
+                m.optString("means"), m.optString("free_because"),
+                joined(m, "we_are_responsible_for"),
+                joined(m, "you_are_responsible_for"))
+        }.toList()
+    }
+
+    suspend fun hosting(token: String, tid: String): HostingModeK {
+        val m = JSONObject(request("/hosting/$tid", token = token))
+        return HostingModeK(m.optString("mode"), m.optString("title"),
+            m.optString("price"), m.optString("means"),
+            m.optString("free_because"),
+            joined(m, "we_are_responsible_for"),
+            joined(m, "you_are_responsible_for"))
+    }
+
+    suspend fun hostingHistory(token: String, tid: String): Int =
+        JSONObject(request("/hosting/$tid/history", token = token))
+            .optJSONArray("history")?.length() ?: 0
+
+    suspend fun setHosting(token: String, tid: String, mode: String): String =
+        request("/hosting/$tid", "PUT", JSONObject().put("mode", mode), token)
+
+    suspend fun recordDeployment(token: String): String =
+        request("/deployments", "POST", JSONObject().put("name", "new site")
+            .put("option", "colocation"), token)
+
+    suspend fun operations(token: String): Int =
+        JSONObject(request("/operations", token = token))
+            .optJSONArray("entries")?.length() ?: 0
+
+    suspend fun auditSchema(): String {
+        val o = JSONObject(request("/audit/schema"))
+        return "${o.optJSONArray("actions")?.length() ?: 0} \u00b7 " +
+            o.optString("retention")
+    }
+
+    /** The tenant's own standing — executed, since when, and the refusal
+     *  note when nothing is on file. Names live on the admin route only. */
+    suspend fun baaStatus(token: String): String {
+        val o = JSONObject(request("/baa", token = token))
+        return if (o.optBoolean("executed"))
+            o.optString("effective_date", "\u2713")
+        else o.optString("note")
+    }
+
+    private fun joined(o: JSONObject, name: String): String {
+        val a = o.optJSONArray(name) ?: return ""
+        return (0 until a.length()).joinToString(", ") { a.getString(it) }
     }
 
     // ---- continuity: bequests, and what outlives the tenant ----

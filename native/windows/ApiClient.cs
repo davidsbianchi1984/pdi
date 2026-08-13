@@ -91,6 +91,45 @@ public record ComplianceProgram(
 public record CompliancePrograms(
     [property: JsonPropertyName("programs")] ComplianceProgram[] Programs);
 
+public record BaaStandingOut(
+    [property: JsonPropertyName("executed")] bool Executed,
+    [property: JsonPropertyName("effective_date")] string? EffectiveDate,
+    [property: JsonPropertyName("note")] string? Note);
+
+public record HealthOut(
+    [property: JsonPropertyName("status")] string Status);
+
+public record HostingModeOut(
+    [property: JsonPropertyName("title")] string Title,
+    [property: JsonPropertyName("price")] string Price,
+    [property: JsonPropertyName("means")] string Means,
+    [property: JsonPropertyName("free_because")] string? FreeBecause,
+    [property: JsonPropertyName("we_are_responsible_for")] string[] We,
+    [property: JsonPropertyName("you_are_responsible_for")] string[] You,
+    [property: JsonPropertyName("mode")] string? Mode);
+
+public record HostingModesOut(
+    [property: JsonPropertyName("modes")] System.Collections.Generic.Dictionary<string, HostingModeOut> Modes);
+
+public record HistoryRowOut([property: JsonPropertyName("mode")] string? Mode);
+
+public record HostingHistoryOut(
+    [property: JsonPropertyName("history")] HistoryRowOut[] History);
+
+public record OperationsEntryOut([property: JsonPropertyName("key")] string Key);
+
+public record OperationsOut(
+    [property: JsonPropertyName("entries")] OperationsEntryOut[] Entries,
+    [property: JsonPropertyName("note")] string Note);
+
+public record AuditActionOut(
+    [property: JsonPropertyName("action")] string Action,
+    [property: JsonPropertyName("category")] string Category);
+
+public record AuditSchemaOut(
+    [property: JsonPropertyName("actions")] AuditActionOut[] Actions,
+    [property: JsonPropertyName("retention")] string Retention);
+
 public record BequestRow(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("grantee_name")] string GranteeName,
@@ -469,6 +508,50 @@ public sealed class ApiClient
     public Task<RecordProvenance> Provenance(string token, string key) =>
         Send<RecordProvenance>(new HttpRequestMessage(
             HttpMethod.Get, $"/provenance/{key}"), token);
+
+    // ---- posture: where the vault lives, and whether it is up ----
+
+    public Task<HealthOut> Health() =>
+        Send<HealthOut>(new HttpRequestMessage(HttpMethod.Get, "/health"));
+
+    public Task<HostingModesOut> HostingModes() =>
+        Send<HostingModesOut>(new HttpRequestMessage(HttpMethod.Get, "/hosting"));
+
+    public Task<HostingModeOut> Hosting(string token, string tid) =>
+        Send<HostingModeOut>(new HttpRequestMessage(HttpMethod.Get,
+            $"/hosting/{tid}"), token);
+
+    public async Task<int> HostingHistory(string token, string tid) =>
+        (await Send<HostingHistoryOut>(new HttpRequestMessage(HttpMethod.Get,
+            $"/hosting/{tid}/history"), token)).History.Length;
+
+    public Task<OkOut> SetHosting(string token, string tid, string mode) =>
+        Send<OkOut>(new HttpRequestMessage(HttpMethod.Put, $"/hosting/{tid}")
+        {
+            Content = JsonContent.Create(new { mode }),
+        }, token);
+
+    public Task<OkOut> RecordDeployment(string token) =>
+        Send<OkOut>(new HttpRequestMessage(HttpMethod.Post, "/deployments")
+        {
+            Content = JsonContent.Create(new { name = "new site", option = "colocation" }),
+        }, token);
+
+    public async Task<int> Operations(string token) =>
+        (await Send<OperationsOut>(new HttpRequestMessage(HttpMethod.Get,
+            "/operations"), token)).Entries.Length;
+
+    public async Task<string> AuditSchema()
+    {
+        var s = await Send<AuditSchemaOut>(new HttpRequestMessage(
+            HttpMethod.Get, "/audit/schema"));
+        return $"{s.Actions.Length} · {s.Retention}";
+    }
+
+    // The tenant's own standing, which is a smaller shape than the
+    // operator's BAA record: names live on the admin route only.
+    public Task<BaaStandingOut> BaaStatus(string token) =>
+        Send<BaaStandingOut>(new HttpRequestMessage(HttpMethod.Get, "/baa"), token);
 
     // ---- continuity: bequests, and what outlives the tenant ----
 

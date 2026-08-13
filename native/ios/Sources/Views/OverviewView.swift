@@ -68,6 +68,7 @@ struct OverviewView: View {
                 TenantsAdminCard()
                 GateCard()
                 ContinuityCard()
+                PostureCard()
 
                 Button(L10n.t("action.sign_out", state.language)) { state.signOut() }
                     .font(.subheadline).foregroundStyle(Theme.t2)

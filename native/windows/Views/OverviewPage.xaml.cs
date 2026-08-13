@@ -98,6 +98,13 @@ public sealed partial class OverviewPage : Page
         CtWindowButton.Content = L10n.T("ky.window");
         CtSweepButton.Content = L10n.T("ky.sweep");
         CtSeedButton.Content = L10n.T("bri.seed");
+        PoTitle.Text = L10n.T("ov.health");
+        PoWhereHead.Text = L10n.T("cu.where");
+        PoTidBox.PlaceholderText = L10n.T("adm.tenant.ph");
+        PoWhereButton.Content = L10n.T("cu.where");
+        PoDeployButton.Content = L10n.T("cu.deploy");
+        PoOpsHead.Text = L10n.T("op.title");
+        PoBaaButton.Content = L10n.T("cu.onfile");
         LanguageHead.Text = L10n.T("wel.language");
         // `action.refresh` has been in the table, translated into ten
         // languages, since chrome localization landed — and the only
@@ -174,6 +181,7 @@ public sealed partial class OverviewPage : Page
         await Load();
         await ReloadGate();
         try { await ReloadContinuity(); } catch (Exception ex) { ShowCtError(ex.Message); }
+        try { await ReloadPosture(); } catch (Exception ex) { ShowPoError(ex.Message); }
     }
 
     private async void OnRefresh(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) =>
@@ -335,6 +343,107 @@ public sealed partial class OverviewPage : Page
     }
 
     private string[] _heirKeys = Array.Empty<string>();
+
+    private void ShowPoError(string message)
+    {
+        PoError.Text = message;
+        PoError.Visibility = Visibility.Visible;
+    }
+
+    private async System.Threading.Tasks.Task ReloadPosture()
+    {
+        var s = AppState.Current;
+        try
+        {
+            var h = await ApiClient.Shared.Health();
+            PoHealth.Text = h.Status;
+        }
+        catch (Exception ex) { PoHealth.Text = ex.Message; }
+        try { PoSchemaLine.Text = L10n.T("au.actions") + " " + await ApiClient.Shared.AuditSchema(); }
+        catch { /* schema is decoration when unreachable */ }
+        try
+        {
+            var modes = await ApiClient.Shared.HostingModes();
+            PoModes.Children.Clear();
+            // Moving is one press per mode the deployment offers, priced on
+            // the button the way the console prices it.
+            foreach (var pair in modes.Modes.OrderBy(m => m.Key))
+            {
+                var id = pair.Key;
+                var move = new Button
+                {
+                    Content = $"{pair.Value.Title} · {pair.Value.Price}",
+                    FontSize = 11,
+                    Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                        Microsoft.UI.Colors.Transparent),
+                };
+                move.Click += async (_, _) =>
+                {
+                    var tid = PoTidBox.Text.Trim();
+                    if (s.Token is null || tid.Length == 0) return;
+                    try { await ApiClient.Shared.SetHosting(s.Token!, tid, id); }
+                    catch (Exception ex) { ShowPoError(ex.Message); }
+                };
+                PoModes.Children.Add(move);
+            }
+        }
+        catch (Exception ex) { ShowPoError(ex.Message); }
+        if (s.Token is null) return;
+        try
+        {
+            var n = await ApiClient.Shared.Operations(s.Token!);
+            PoOpsLine.Text = n == 0 ? L10n.T("op.none")
+                : L10n.T("op.events") + " " + n;
+        }
+        catch { /* operations needs a signed-in tenant */ }
+    }
+
+    private async void OnHostingRead(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        var tid = PoTidBox.Text.Trim();
+        if (s.Token is null || tid.Length == 0) return;
+        try
+        {
+            var mine = await ApiClient.Shared.Hosting(s.Token!, tid);
+            var count = await ApiClient.Shared.HostingHistory(s.Token!, tid);
+            PoMine.Children.Clear();
+            PoMine.Children.Add(GateLine(
+                $"{mine.Title} — {mine.Means} · {mine.Price}", "PdiT2Brush"));
+            if (mine.FreeBecause is { Length: > 0 } why)
+                PoMine.Children.Add(GateLine(L10n.T("cu.free") + " " + why, "PdiT2Brush"));
+            PoMine.Children.Add(GateLine(
+                L10n.T("cu.we") + " " + string.Join(", ", mine.We), "PdiT2Brush"));
+            PoMine.Children.Add(GateLine(
+                L10n.T("cu.you") + " " + string.Join(", ", mine.You), "PdiT2Brush"));
+            PoMine.Children.Add(GateLine(count.ToString(), "PdiT2Brush"));
+        }
+        catch (Exception ex) { ShowPoError(ex.Message); }
+    }
+
+    private async void OnRecordDeployment(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Token is null) return;
+        try { await ApiClient.Shared.RecordDeployment(s.Token!); }
+        catch (Exception ex) { ShowPoError(ex.Message); }
+    }
+
+    private async void OnBaaStatus(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Token is null) return;
+        try
+        {
+            var baa = await ApiClient.Shared.BaaStatus(s.Token!);
+            PoBaaLine.Text = baa.Executed
+                ? (baa.EffectiveDate ?? "✓")
+                : (baa.Note ?? L10n.T("cu.no"));
+            PoBaaLine.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowPoError(ex.Message); }
+    }
+
 
     private void ShowCtError(string message)
     {
