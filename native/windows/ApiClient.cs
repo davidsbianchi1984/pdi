@@ -234,7 +234,7 @@ public sealed class ApiClient
         [property: JsonPropertyName("app_version")] string AppVersion,
         [property: JsonPropertyName("platform")] string Platform,
         [property: JsonPropertyName("op")] string Op,
-        [property: JsonPropertyName("status")] int Status,
+        [property: JsonPropertyName("status_code")] int StatusCode,
         [property: JsonPropertyName("day")] string Day,
         [property: JsonPropertyName("count")] int Count);
     public record ProblemRowsResponse(

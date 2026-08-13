@@ -122,7 +122,7 @@ public sealed partial class AuditPage : Page
             ProblemsServerRows.Text = r.Rows.Length == 0
                 ? L10n.T("prob.none")
                 : string.Join("\n", r.Rows.Select(row =>
-                    $"{row.Op}  {row.Status}  ×{row.Count}  " +
+                    $"{row.Op}  {row.StatusCode}  ×{row.Count}  " +
                     $"{row.Source} {row.AppVersion} · {row.Platform} · {row.Day}"));
         }
         catch (Exception ex) { ProblemsServerRows.Text = ex.Message; }
