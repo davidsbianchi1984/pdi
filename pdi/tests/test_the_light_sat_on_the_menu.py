@@ -69,11 +69,24 @@ def _braced(text: str, head: str) -> str:
 
 
 def _mobile_block() -> str:
+    """Every block written at the breakpoint, joined.
+
+    A stylesheet may open the same media query more than once — the corner
+    widgets in two of these consoles are styled in a block of their own at
+    the bottom of the file, on purpose, so that the cascade gives them the
+    win. Reading only the first block would measure a rule that a later one
+    overrides and call it the answer.
+    """
     css = _stylesheet()
     assert _MOBILE_HEAD in css, (
         "the mobile media query is gone from styles.css, so this guard is "
         "reading nothing — find the breakpoint and re-point it")
-    return _braced(css, _MOBILE_HEAD)
+    blocks, rest = [], css
+    while _MOBILE_HEAD in rest:
+        body = _braced(rest, _MOBILE_HEAD)
+        blocks.append(body)
+        rest = rest.split(_MOBILE_HEAD + body + "}", 1)[1]
+    return "\n".join(blocks)
 
 
 def _base() -> str:
