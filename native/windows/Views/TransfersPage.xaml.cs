@@ -22,6 +22,9 @@ public sealed partial class TransfersPage : Page
         // the last one. The label rides on the row instead.
         public string RevokeLabel => L10n.T("ntr.revoke");
         public string CheckLinkLabel => L10n.T("ntr.reciplink");
+        public string RefreshLabel => L10n.T("car.refresh");
+        public string ChainLabel => L10n.T("car.chain");
+        public string ReceiveLabel => L10n.T("exc.asrecipient");
     }
 
     private string _disclose = "blind";
@@ -148,6 +151,43 @@ public sealed partial class TransfersPage : Page
         }
         catch (Exception ex) { ShowError(ex.Message); }
         finally { CreateButton.IsEnabled = true; }
+    }
+
+    private async void OnTransferRefresh(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string tid }) return;
+        var s = AppState.Current;
+        if (s.Token is null) return;
+        try { await ApiClient.Shared.TransferOne(s.Token!, tid); await Reload(); }
+        catch (Exception ex) { ShowError(ex.Message); }
+    }
+
+    private async void OnTransferChain(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string tid }) return;
+        var s = AppState.Current;
+        if (s.Token is null) return;
+        try
+        {
+            var chain = await ApiClient.Shared.TransferCustody(s.Token!, tid);
+            ShowError(L10n.T(chain.AuditChainIntact ? "car.verifies" : "car.notverify")
+                + $" · {chain.ChainOfCustody.Length}");
+        }
+        catch (Exception ex) { ShowError(ex.Message); }
+    }
+
+    // The recipient's act, with the one-shot token this screen just minted.
+    private async void OnTransferReceive(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string tid }) return;
+        var receiveToken = TokenText.Text.Trim();
+        if (receiveToken.Length == 0 || receiveToken == "—") return;
+        try
+        {
+            var f = await ApiClient.Shared.ReceiveTransfer(tid, receiveToken);
+            ShowError(f.Filename ?? "file");
+        }
+        catch (Exception ex) { ShowError(ex.Message); }
     }
 
     // Resolve the recipient's page before the link goes into an email — a
@@ -392,6 +432,8 @@ public sealed partial class TransfersPage : Page
         public string FileText { get; init; } = "";
         public bool Submitted { get; init; }
         public bool Open { get; init; }
+        public string RefreshLabel => L10n.T("car.refresh");
+        public string ChainLabel => L10n.T("car.chain");
         public Visibility ReadVisibility =>
             Submitted ? Visibility.Visible : Visibility.Collapsed;
         public Visibility CloseVisibility =>
@@ -464,6 +506,29 @@ public sealed partial class TransfersPage : Page
         }
         catch (Exception ex) { ShowIntakeError(ex.Message); }
         finally { RequestButton.IsEnabled = true; }
+    }
+
+    private async void OnIntakeRefresh(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string iid }) return;
+        var s = AppState.Current;
+        if (s.Token is null) return;
+        try { await ApiClient.Shared.IntakeOne(s.Token!, iid); await ReloadIntakes(); }
+        catch (Exception ex) { ShowIntakeError(ex.Message); }
+    }
+
+    private async void OnIntakeChain(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string iid }) return;
+        var s = AppState.Current;
+        if (s.Token is null) return;
+        try
+        {
+            var chain = await ApiClient.Shared.IntakeCustody(s.Token!, iid);
+            ShowIntakeError(L10n.T(chain.AuditChainIntact ? "car.verifies" : "car.notverify")
+                + $" · {chain.ChainOfCustody.Length}");
+        }
+        catch (Exception ex) { ShowIntakeError(ex.Message); }
     }
 
     private async void OnReadIntake(object sender, RoutedEventArgs e)

@@ -803,3 +803,78 @@ struct PostureCard: View {
         }
     }
 }
+
+// MARK: positions — the assistant builder, on the phone
+
+/// A position built from two answers, listed, and opened — the console's
+/// whole intake is optional by design, so the smallest honest intake is an
+/// industry and a job title.
+struct PositionsCard: View {
+    @EnvironmentObject var state: AppState
+    @State private var industry = ""
+    @State private var jobTitle = ""
+    @State private var line: String?
+    @State private var savedLine: String?
+    @State private var firstId: String?
+    @State private var error: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(L10n.t("pos.build", state.language))
+                .font(.headline).foregroundStyle(Theme.txt)
+            TextField(L10n.t("pos.industry", state.language), text: $industry)
+                .foregroundStyle(Theme.txt)
+            TextField(L10n.t("pos.jobtitle", state.language), text: $jobTitle)
+                .foregroundStyle(Theme.txt)
+            HStack(spacing: 10) {
+                Button(L10n.t("pos.build", state.language)) { build() }
+                    .disabled(industry.isEmpty)
+                Button(L10n.t("pos.open", state.language)) { openFirst() }
+                    .disabled(firstId == nil)
+            }
+            .font(.caption2).foregroundStyle(Theme.brandA)
+            if let line {
+                Text(L10n.t("pos.blueprint", state.language) + " " + line)
+                    .font(.caption2).foregroundStyle(Theme.t2)
+            }
+            if let savedLine {
+                Text(savedLine).font(.caption2).foregroundStyle(Theme.t2)
+            }
+            if let error { Text(error).font(.caption).foregroundStyle(Theme.red) }
+        }
+        .card()
+        .task { await list() }
+    }
+
+    private func list() async {
+        guard let token = state.token else { return }
+        if let saved = try? await ApiClient.shared.listPositions(token: token) {
+            savedLine = saved.count == 0
+                ? L10n.t("pos.none", state.language)
+                : L10n.t("pos.saved", state.language) + " \(saved.count)"
+            firstId = saved.ids.first
+        }
+    }
+
+    private func build() {
+        Task {
+            do {
+                let b = try await ApiClient.shared.buildPosition(
+                    industry: industry, jobTitle: jobTitle,
+                    token: state.token ?? "")
+                line = "\(b.id) · \(b.industry)"
+                await list()
+            } catch { self.error = error.localizedDescription }
+        }
+    }
+
+    private func openFirst() {
+        guard let firstId else { return }
+        Task {
+            if let b = try? await ApiClient.shared.getPosition(
+                id: firstId, token: state.token ?? "") {
+                line = "\(b.id) · \(b.industry)"
+            }
+        }
+    }
+}

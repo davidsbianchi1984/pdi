@@ -511,6 +511,60 @@ actor ApiClient {
         }
     }
 
+    // MARK: exchange details — one transfer, one intake, and their chains
+
+    func transferOne(tid: String, token: String) async throws -> Transfer {
+        try await request("/transfers/\(tid)", token: token)
+    }
+
+    func transferCustody(tid: String, token: String) async throws -> CustodyChainOut {
+        try await request("/transfers/\(tid)/custody", token: token)
+    }
+
+    /// The recipient's act. Not the tenant's token — the one-shot receive
+    /// token is the whole credential, riding as its own header the way the
+    /// intake submit already does.
+    func receiveTransfer(tid: String,
+                         receiveToken: String) async throws -> ReceivedFileOut {
+        var req = URLRequest(url: base.appendingPathComponent(
+            "/transfers/\(tid)/receive"))
+        req.httpMethod = "POST"
+        req.setValue(L10n.deviceLanguage, forHTTPHeaderField: "accept-language")
+        req.setValue(receiveToken, forHTTPHeaderField: "x-receive-token")
+        let (data, resp) = try await URLSession.shared.data(for: req)
+        guard let http = resp as? HTTPURLResponse,
+              (200..<300).contains(http.statusCode) else {
+            throw ApiError.http("the receive token did not open it")
+        }
+        return try JSONDecoder().decode(ReceivedFileOut.self, from: data)
+    }
+
+    func intakeOne(iid: String, token: String) async throws -> Intake {
+        try await request("/intakes/\(iid)", token: token)
+    }
+
+    func intakeCustody(iid: String, token: String) async throws -> CustodyChainOut {
+        try await request("/intakes/\(iid)/custody", token: token)
+    }
+
+    // MARK: positions — the assistant builder
+
+    func buildPosition(industry: String, jobTitle: String,
+                       token: String) async throws -> BlueprintOut {
+        try await request("/positions", method: "POST",
+                          body: ["industry": industry,
+                                 "role": ["job_title": jobTitle]],
+                          token: token)
+    }
+
+    func listPositions(token: String) async throws -> PositionsListOut {
+        try await request("/positions", token: token)
+    }
+
+    func getPosition(id: String, token: String) async throws -> BlueprintOut {
+        try await request("/positions/\(id)", token: token)
+    }
+
     // MARK: posture — where the vault lives, and whether it is up
 
     func health() async throws -> HealthOut {
@@ -857,6 +911,14 @@ actor ApiClient {
 }
 
 struct HealthOut: Decodable { let status: String }
+
+struct ReceivedFileOut: Decodable {
+    let filename: String?
+    let content: String?
+}
+
+struct BlueprintOut: Decodable { let id: String; let industry: String }
+struct PositionsListOut: Decodable { let count: Int; let ids: [String] }
 
 struct BaaStandingOut: Decodable {
     let executed: Bool

@@ -91,6 +91,18 @@ public record ComplianceProgram(
 public record CompliancePrograms(
     [property: JsonPropertyName("programs")] ComplianceProgram[] Programs);
 
+public record ReceivedFileOut(
+    [property: JsonPropertyName("filename")] string? Filename,
+    [property: JsonPropertyName("content")] string? Content);
+
+public record BlueprintOut(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("industry")] string Industry);
+
+public record PositionsListOut(
+    [property: JsonPropertyName("count")] int Count,
+    [property: JsonPropertyName("ids")] string[] Ids);
+
 public record BaaStandingOut(
     [property: JsonPropertyName("executed")] bool Executed,
     [property: JsonPropertyName("effective_date")] string? EffectiveDate,
@@ -508,6 +520,62 @@ public sealed class ApiClient
     public Task<RecordProvenance> Provenance(string token, string key) =>
         Send<RecordProvenance>(new HttpRequestMessage(
             HttpMethod.Get, $"/provenance/{key}"), token);
+
+    // ---- exchange details: one transfer, one intake, their chains ----
+
+    public Task<Transfer> TransferOne(string token, string tid) =>
+        Send<Transfer>(new HttpRequestMessage(HttpMethod.Get,
+            $"/transfers/{tid}"), token);
+
+    public Task<CustodyChainOut> TransferCustody(string token, string tid) =>
+        Send<CustodyChainOut>(new HttpRequestMessage(HttpMethod.Get,
+            $"/transfers/{tid}/custody"), token);
+
+    // The recipient's act — the one-shot receive token is the whole
+    // credential, riding as its own header the way the submit does.
+    public Task<ReceivedFileOut> ReceiveTransfer(string tid, string receiveToken)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post,
+            $"/transfers/{tid}/receive");
+        req.Headers.TryAddWithoutValidation("x-receive-token", receiveToken);
+        return Send<ReceivedFileOut>(req);
+    }
+
+    public Task<Intake> IntakeOne(string token, string iid) =>
+        Send<Intake>(new HttpRequestMessage(HttpMethod.Get,
+            $"/intakes/{iid}"), token);
+
+    public Task<CustodyChainOut> IntakeCustody(string token, string iid) =>
+        Send<CustodyChainOut>(new HttpRequestMessage(HttpMethod.Get,
+            $"/intakes/{iid}/custody"), token);
+
+    // ---- positions: the assistant builder ----
+
+    public async Task<string> BuildPosition(string token, string industry,
+                                            string jobTitle)
+    {
+        var made = await Send<BlueprintOut>(
+            new HttpRequestMessage(HttpMethod.Post, "/positions")
+            {
+                Content = JsonContent.Create(new
+                {
+                    industry,
+                    role = new { job_title = jobTitle },
+                }),
+            }, token);
+        return $"{made.Id} · {made.Industry}";
+    }
+
+    public Task<PositionsListOut> ListPositions(string token) =>
+        Send<PositionsListOut>(new HttpRequestMessage(HttpMethod.Get,
+            "/positions"), token);
+
+    public async Task<string> GetPosition(string token, string id)
+    {
+        var b = await Send<BlueprintOut>(new HttpRequestMessage(HttpMethod.Get,
+            $"/positions/{id}"), token);
+        return $"{b.Id} · {b.Industry}";
+    }
 
     // ---- posture: where the vault lives, and whether it is up ----
 

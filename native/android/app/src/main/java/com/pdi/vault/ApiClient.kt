@@ -406,6 +406,66 @@ object ApiClient {
         }
     }
 
+    // ---- exchange details: one transfer, one intake, their chains ----
+
+    suspend fun transferOne(token: String, tid: String): String =
+        request("/transfers/$tid", token = token)
+
+    suspend fun transferCustody(token: String, tid: String): CustodyChainK =
+        chainOf(JSONObject(request("/transfers/$tid/custody", token = token)))
+
+    /** The recipient's act — the one-shot receive token is the whole
+     *  credential, riding as its own header the way the submit does. */
+    suspend fun receiveTransfer(tid: String, receiveToken: String): String =
+        withContext(Dispatchers.IO) {
+        val conn = (URL("$base/transfers/$tid/receive").openConnection()
+            as HttpURLConnection).apply {
+            requestMethod = "POST"
+            setRequestProperty("accept-language", L10n.deviceLanguage())
+            setRequestProperty("x-receive-token", receiveToken)
+        }
+        JSONObject(conn.inputStream.bufferedReader().readText())
+            .optString("filename", "file")
+    }
+
+    suspend fun intakeOne(token: String, iid: String): String =
+        request("/intakes/$iid", token = token)
+
+    suspend fun intakeCustody(token: String, iid: String): CustodyChainK =
+        chainOf(JSONObject(request("/intakes/$iid/custody", token = token)))
+
+    private fun chainOf(o: JSONObject): CustodyChainK {
+        val events = mutableListOf<String>()
+        o.optJSONArray("chain_of_custody")?.let { a ->
+            for (i in 0 until a.length()) {
+                val e = a.getJSONObject(i)
+                events.add("${e.optString("event")} — ${e.optString("actor")}")
+            }
+        }
+        return CustodyChainK(o.optBoolean("audit_chain_intact"), events)
+    }
+
+    // ---- positions: the assistant builder ----
+
+    suspend fun buildPosition(token: String, industry: String,
+                              jobTitle: String): String {
+        val o = JSONObject(request("/positions", "POST",
+            JSONObject().put("industry", industry)
+                .put("role", JSONObject().put("job_title", jobTitle)), token))
+        return "${o.optString("id")} \u00b7 ${o.optString("industry")}"
+    }
+
+    suspend fun listPositions(token: String): Pair<Int, String?> {
+        val o = JSONObject(request("/positions", token = token))
+        val first = o.optJSONArray("ids")?.optString(0)
+        return Pair(o.optInt("count"), first?.ifEmpty { null })
+    }
+
+    suspend fun getPosition(token: String, id: String): String {
+        val o = JSONObject(request("/positions/$id", token = token))
+        return "${o.optString("id")} \u00b7 ${o.optString("industry")}"
+    }
+
     // ---- posture: where the vault lives, and whether it is up ----
 
     suspend fun health(): String =

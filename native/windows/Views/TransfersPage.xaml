@@ -79,6 +79,15 @@
                                 </Grid>
                                 <TextBlock Text="{Binding Meta}" Foreground="{StaticResource PdiT2Brush}" FontSize="12" />
                                 <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button Content="{Binding RefreshLabel}" Tag="{Binding Id}" Click="OnTransferRefresh"
+                                            Background="Transparent" FontSize="12"
+                                            Foreground="{StaticResource PdiBrandABrush}" />
+                                    <Button Content="{Binding ChainLabel}" Tag="{Binding Id}" Click="OnTransferChain"
+                                            Background="Transparent" FontSize="12"
+                                            Foreground="{StaticResource PdiBrandABrush}" />
+                                    <Button Content="{Binding ReceiveLabel}" Tag="{Binding Id}" Click="OnTransferReceive"
+                                            Background="Transparent" FontSize="12"
+                                            Foreground="{StaticResource PdiBrandABrush}" />
                                     <Button Content="{Binding CheckLinkLabel}" Tag="{Binding Id}" Click="OnCheckLink"
                                             Background="Transparent" FontSize="12"
                                             Foreground="{StaticResource PdiBrandABrush}" />
@@ -167,6 +176,12 @@
                                                    FontFamily="Consolas" FontSize="11" TextWrapping="Wrap"
                                                    Visibility="{Binding FileVisibility}" />
                                         <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <Button Content="{Binding RefreshLabel}" Tag="{Binding Id}" Click="OnIntakeRefresh"
+                                                    Background="Transparent" FontSize="12"
+                                                    Foreground="{StaticResource PdiBrandABrush}" />
+                                            <Button Content="{Binding ChainLabel}" Tag="{Binding Id}" Click="OnIntakeChain"
+                                                    Background="Transparent" FontSize="12"
+                                                    Foreground="{StaticResource PdiBrandABrush}" />
                                             <Button Content="{Binding ReadLabel}" Tag="{Binding Id}" Click="OnReadIntake"
                                                     Visibility="{Binding ReadVisibility}"
                                                     Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />

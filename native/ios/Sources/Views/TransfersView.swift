@@ -57,6 +57,8 @@ private struct OutboundSection: View {
     @State private var busy = false
     @State private var error: String?
     @State private var linkOk: String?
+    @State private var chainLine: String?
+    @State private var receivedLine: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -108,6 +110,23 @@ private struct OutboundSection: View {
                             Text(L10n.t("ntr.retained", state.language).replacingOccurrences(of: "{date}", with: exp)).font(.caption2).foregroundStyle(Theme.t3)
                         }
                         HStack(spacing: 10) {
+                            Button(L10n.t("car.refresh", state.language)) {
+                                Task { _ = try? await ApiClient.shared.transferOne(
+                                    tid: t.id, token: state.token ?? "") }
+                            }
+                            .font(.caption2).foregroundStyle(Theme.brandA)
+                            Button(L10n.t("car.chain", state.language)) {
+                                chain(t.id)
+                            }
+                            .font(.caption2).foregroundStyle(Theme.brandA)
+                            // The recipient's act, with the one-shot token
+                            // this screen just minted.
+                            if mintedToken != nil {
+                                Button(L10n.t("exc.asrecipient", state.language)) {
+                                    receive(t.id)
+                                }
+                                .font(.caption2).foregroundStyle(Theme.brandA)
+                            }
                             // Resolve the recipient's page before the link
                             // goes into an email — a misconfigured public
                             // base is otherwise discovered by the recipient,
@@ -127,6 +146,12 @@ private struct OutboundSection: View {
                         }
                     }.card()
                 }
+                if let chainLine {
+                    Text(chainLine).font(.caption2).foregroundStyle(Theme.t2)
+                }
+                if let receivedLine {
+                    Text(receivedLine).font(.caption2).foregroundStyle(Theme.t2)
+                }
         }
         .task { await load() }
     }
@@ -138,6 +163,28 @@ private struct OutboundSection: View {
                 .padding(.horizontal, 12).padding(.vertical, 10)
                 .background(Theme.scrBot).clipShape(RoundedRectangle(cornerRadius: 11))
                 .overlay(RoundedRectangle(cornerRadius: 11).stroke(Theme.line, lineWidth: 1))
+        }
+    }
+
+    private func chain(_ tid: String) {
+        Task {
+            if let c = try? await ApiClient.shared.transferCustody(
+                tid: tid, token: state.token ?? "") {
+                chainLine = L10n.t(c.audit_chain_intact ? "car.verifies"
+                                                        : "car.notverify",
+                                   state.language)
+                    + " · \(c.chain_of_custody.count)"
+            }
+        }
+    }
+
+    private func receive(_ tid: String) {
+        guard let minted = mintedToken else { return }
+        Task {
+            if let f = try? await ApiClient.shared.receiveTransfer(
+                tid: tid, receiveToken: minted) {
+                receivedLine = "\(f.filename ?? "file")"
+            }
         }
     }
 
@@ -190,6 +237,7 @@ private struct IntakeSection: View {
     @State private var fromParty = ""
     @State private var purpose = ""
     @State private var intakes: [Intake] = []
+    @State private var intakeChain: String?
     @State private var mintedToken: String?
     // L10n.t("ntr.as.sender", state.language) demo form
     @State private var senderToken = ""
@@ -260,6 +308,28 @@ private struct IntakeSection: View {
                     if i.status == "open" {
                         Button(L10n.t("nreq.close", state.language)) { close(i) }
                             .font(.caption.bold()).foregroundStyle(Theme.red)
+                    }
+                    HStack(spacing: 10) {
+                        Button(L10n.t("car.refresh", state.language)) {
+                            Task { _ = try? await ApiClient.shared.intakeOne(
+                                iid: i.id, token: state.token ?? "") }
+                        }
+                        Button(L10n.t("car.chain", state.language)) {
+                            Task {
+                                if let c = try? await ApiClient.shared.intakeCustody(
+                                    iid: i.id, token: state.token ?? "") {
+                                    intakeChain = L10n.t(
+                                        c.audit_chain_intact ? "car.verifies"
+                                                             : "car.notverify",
+                                        state.language)
+                                        + " · \(c.chain_of_custody.count)"
+                                }
+                            }
+                        }
+                    }
+                    .font(.caption2).foregroundStyle(Theme.brandA)
+                    if let intakeChain {
+                        Text(intakeChain).font(.caption2).foregroundStyle(Theme.t2)
                     }
                 }.card()
             }

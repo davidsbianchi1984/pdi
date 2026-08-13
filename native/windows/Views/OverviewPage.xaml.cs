@@ -105,6 +105,11 @@ public sealed partial class OverviewPage : Page
         PoDeployButton.Content = L10n.T("cu.deploy");
         PoOpsHead.Text = L10n.T("op.title");
         PoBaaButton.Content = L10n.T("cu.onfile");
+        PsTitle.Text = L10n.T("pos.build");
+        PsIndustryBox.PlaceholderText = L10n.T("pos.industry");
+        PsTitleBox.PlaceholderText = L10n.T("pos.jobtitle");
+        PsBuildButton.Content = L10n.T("pos.build");
+        PsOpenButton.Content = L10n.T("pos.open");
         LanguageHead.Text = L10n.T("wel.language");
         // `action.refresh` has been in the table, translated into ten
         // languages, since chrome localization landed — and the only
@@ -182,6 +187,7 @@ public sealed partial class OverviewPage : Page
         await ReloadGate();
         try { await ReloadContinuity(); } catch (Exception ex) { ShowCtError(ex.Message); }
         try { await ReloadPosture(); } catch (Exception ex) { ShowPoError(ex.Message); }
+        try { await ReloadPositions(); } catch (Exception ex) { ShowPsError(ex.Message); }
     }
 
     private async void OnRefresh(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) =>
@@ -343,6 +349,57 @@ public sealed partial class OverviewPage : Page
     }
 
     private string[] _heirKeys = Array.Empty<string>();
+
+    private string? _firstPositionId;
+
+    private void ShowPsError(string message)
+    {
+        PsError.Text = message;
+        PsError.Visibility = Visibility.Visible;
+    }
+
+    private async System.Threading.Tasks.Task ReloadPositions()
+    {
+        var s = AppState.Current;
+        if (s.Token is null) return;
+        try
+        {
+            var saved = await ApiClient.Shared.ListPositions(s.Token!);
+            PsSaved.Text = saved.Count == 0 ? L10n.T("pos.none")
+                : L10n.T("pos.saved") + " " + saved.Count;
+            _firstPositionId = saved.Ids.FirstOrDefault();
+        }
+        catch (Exception ex) { ShowPsError(ex.Message); }
+    }
+
+    private async void OnBuildPosition(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        var industry = PsIndustryBox.Text.Trim();
+        if (s.Token is null || industry.Length == 0) return;
+        try
+        {
+            PsLine.Text = L10n.T("pos.blueprint") + " "
+                + await ApiClient.Shared.BuildPosition(s.Token!, industry,
+                    PsTitleBox.Text.Trim());
+            PsLine.Visibility = Visibility.Visible;
+            await ReloadPositions();
+        }
+        catch (Exception ex) { ShowPsError(ex.Message); }
+    }
+
+    private async void OnOpenPosition(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Token is null || _firstPositionId is not { } id) return;
+        try
+        {
+            PsLine.Text = L10n.T("pos.blueprint") + " "
+                + await ApiClient.Shared.GetPosition(s.Token!, id);
+            PsLine.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowPsError(ex.Message); }
+    }
 
     private void ShowPoError(string message)
     {

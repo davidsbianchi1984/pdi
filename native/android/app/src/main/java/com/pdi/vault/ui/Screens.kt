@@ -275,6 +275,7 @@ fun OverviewScreen(vm: VaultViewModel) {
         GateCard(vm)
         ContinuityCard(vm)
         PostureCard(vm)
+        PositionsCard(vm)
         OutlinedButton(onClick = { vm.signOut() }, modifier = Modifier.fillMaxWidth(),
             border = androidx.compose.foundation.BorderStroke(1.dp, Pdi.Line)) {
             Text(L10n.t("action.sign_out", vm.language), color = Pdi.T2)
@@ -319,6 +320,64 @@ fun OfflinePostureCard(vm: VaultViewModel) {
                 }
             }
         }
+    }
+}
+
+/** A position built from two answers, listed, and opened — the console's
+ *  whole intake is optional by design, so the smallest honest intake is
+ *  an industry and a job title. */
+@Composable
+fun PositionsCard(vm: VaultViewModel) {
+    var industry by remember { mutableStateOf("") }
+    var jobTitle by remember { mutableStateOf("") }
+    var line by remember { mutableStateOf<String?>(null) }
+    var savedLine by remember { mutableStateOf<String?>(null) }
+    var firstId by remember { mutableStateOf<String?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun list() {
+        vm.call({ ApiClient.listPositions(vm.token!!) }) { r ->
+            r.onSuccess { (n, first) ->
+                savedLine = if (n == 0) L10n.t("pos.none", vm.language)
+                    else L10n.t("pos.saved", vm.language) + " $n"
+                firstId = first
+            }
+        }
+    }
+    LaunchedEffect(Unit) { list() }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("pos.build", vm.language), color = Pdi.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        labeledField(L10n.t("pos.industry", vm.language), industry,
+            L10n.t("pos.industry", vm.language)) { industry = it }
+        labeledField(L10n.t("pos.jobtitle", vm.language), jobTitle,
+            L10n.t("pos.jobtitle", vm.language)) { jobTitle = it }
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            SmallAction(L10n.t("pos.build", vm.language)) {
+                if (industry.isNotBlank()) {
+                    vm.call({ ApiClient.buildPosition(vm.token!!,
+                        industry.trim(), jobTitle.trim()) }) { r ->
+                        r.onSuccess { line = it; list() }
+                            .onFailure { error = it.message }
+                    }
+                }
+            }
+            SmallAction(L10n.t("pos.open", vm.language)) {
+                firstId?.let { id ->
+                    vm.call({ ApiClient.getPosition(vm.token!!, id) }) { r ->
+                        r.onSuccess { line = it }
+                            .onFailure { error = it.message }
+                    }
+                }
+            }
+        }
+        line?.let {
+            Text(L10n.t("pos.blueprint", vm.language) + " " + it,
+                color = Pdi.T2, fontSize = 11.sp)
+        }
+        savedLine?.let { Text(it, color = Pdi.T2, fontSize = 11.sp) }
+        error?.let { Text(it, color = Pdi.Red, fontSize = 12.sp) }
     }
 }
 
@@ -1533,6 +1592,8 @@ private fun OutboundPanel(vm: VaultViewModel) {
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     var linkOk by remember { mutableStateOf<String?>(null) }
+    var chainLine by remember { mutableStateOf<String?>(null) }
+    var receivedLine by remember { mutableStateOf<String?>(null) }
 
     fun reload() { vm.call({ ApiClient.transfers(vm.token!!) }) { r -> transfers = r.getOrDefault(emptyList()) } }
     LaunchedEffect(Unit) {
@@ -1595,6 +1656,8 @@ private fun OutboundPanel(vm: VaultViewModel) {
             }
         }
 
+        chainLine?.let { Text(it, color = Pdi.T2, fontSize = 11.sp) }
+        receivedLine?.let { Text(it, color = Pdi.T2, fontSize = 11.sp) }
         transfers.forEach { t ->
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -1607,6 +1670,28 @@ private fun OutboundPanel(vm: VaultViewModel) {
                 t.expiresAt?.let { Text(L10n.t("ntr.retained", vm.language).replace("{date}", it), color = Pdi.T3, fontSize = 11.sp) }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically) {
+                    SmallAction(L10n.t("car.refresh", vm.language)) {
+                        vm.call({ ApiClient.transferOne(vm.token!!, t.id) }) { reload() }
+                    }
+                    SmallAction(L10n.t("car.chain", vm.language)) {
+                        vm.call({ ApiClient.transferCustody(vm.token!!, t.id) }) { r ->
+                            r.onSuccess { c ->
+                                chainLine = L10n.t(
+                                    if (c.intact) "car.verifies" else "car.notverify",
+                                    vm.language) + " \u00b7 ${c.events.size}"
+                            }
+                        }
+                    }
+                    // The recipient's act, with the one-shot token this
+                    // screen just minted.
+                    if (minted != null) {
+                        SmallAction(L10n.t("exc.asrecipient", vm.language)) {
+                            vm.call({ ApiClient.receiveTransfer(t.id, minted!!) }) { r ->
+                                r.onSuccess { receivedLine = it }
+                                    .onFailure { error = it.message }
+                            }
+                        }
+                    }
                     // Resolve the recipient's page before the link goes into
                     // an email — a misconfigured public base is otherwise
                     // discovered by the recipient, who has nobody to ask.
@@ -1639,6 +1724,7 @@ private fun IntakePanel(vm: VaultViewModel) {
     var fromParty by remember { mutableStateOf("") }
     var purpose by remember { mutableStateOf("") }
     var intakes by remember { mutableStateOf<List<Intake>>(emptyList()) }
+    var intakeChain by remember { mutableStateOf<String?>(null) }
     var minted by remember { mutableStateOf<String?>(null) }
     var received by remember { mutableStateOf<Map<String, IntakeFile>>(emptyMap()) }
     var senderToken by remember { mutableStateOf("") }
@@ -1704,6 +1790,7 @@ private fun IntakePanel(vm: VaultViewModel) {
             }
         }
 
+        intakeChain?.let { Text(it, color = Pdi.T2, fontSize = 11.sp) }
         intakes.forEach { i ->
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -1724,6 +1811,20 @@ private fun IntakePanel(vm: VaultViewModel) {
                             color = Pdi.T2, fontSize = 11.sp,
                             modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(9.dp))
                                 .background(Pdi.ScrBot).padding(8.dp))
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    SmallAction(L10n.t("car.refresh", vm.language)) {
+                        vm.call({ ApiClient.intakeOne(vm.token!!, i.id) }) { reload() }
+                    }
+                    SmallAction(L10n.t("car.chain", vm.language)) {
+                        vm.call({ ApiClient.intakeCustody(vm.token!!, i.id) }) { r ->
+                            r.onSuccess { c ->
+                                intakeChain = L10n.t(
+                                    if (c.intact) "car.verifies" else "car.notverify",
+                                    vm.language) + " \u00b7 ${c.events.size}"
+                            }
+                        }
                     }
                 }
                 if (i.status == "open") {
