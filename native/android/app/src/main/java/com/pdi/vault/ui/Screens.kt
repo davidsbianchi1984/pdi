@@ -271,6 +271,8 @@ fun OverviewScreen(vm: VaultViewModel) {
         ImproveCard(vm)
         AccessCard(vm)
         AdminCard(vm)
+        TenantsAdminCard(vm)
+        GateCard(vm)
         OutlinedButton(onClick = { vm.signOut() }, modifier = Modifier.fillMaxWidth(),
             border = androidx.compose.foundation.BorderStroke(1.dp, Pdi.Line)) {
             Text(L10n.t("action.sign_out", vm.language), color = Pdi.T2)
@@ -315,6 +317,240 @@ fun OfflinePostureCard(vm: VaultViewModel) {
                 }
             }
         }
+    }
+}
+
+@Composable
+fun TenantsAdminCard(vm: VaultViewModel) {
+    var adminToken by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
+    var tid by remember { mutableStateOf("") }
+    var retention by remember { mutableStateOf("") }
+    var custName by remember { mutableStateOf("") }
+    var opName by remember { mutableStateOf("") }
+    var effDate by remember { mutableStateOf("") }
+    var made by remember { mutableStateOf<TenantMadeK?>(null) }
+    var minted by remember { mutableStateOf<String?>(null) }
+    var baa by remember { mutableStateOf<BaaK?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("tn.create", vm.language), color = Pdi.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        labeledField(L10n.t("nadm.token", vm.language), adminToken, "…") { adminToken = it }
+        labeledField(L10n.t("co.name.ph", vm.language), name,
+            L10n.t("co.name.ph", vm.language)) { name = it }
+        SmallAction(L10n.t("tn.createbtn", vm.language)) {
+            if (name.isNotBlank()) {
+                vm.call({ ApiClient.createTenant(adminToken, name.trim()) }) { r ->
+                    r.onSuccess { made = it; name = "" }
+                        .onFailure { error = it.message }
+                }
+            }
+        }
+        made?.let {
+            Text("${it.id} \u00b7 ${it.token}", color = Pdi.Txt, fontSize = 10.sp)
+            Text(L10n.t("tn.token.note", vm.language), color = Pdi.T2, fontSize = 10.sp)
+        }
+        labeledField(L10n.t("adm.tenant.ph", vm.language), tid,
+            L10n.t("adm.tenant.ph", vm.language)) { tid = it }
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            SmallAction(L10n.t("cu.restore.all", vm.language)) {
+                vm.call({ ApiClient.restoreTenant(adminToken, tid) }) { r ->
+                    r.onFailure { error = it.message }
+                }
+            }
+            // Soft keeps the door open; hard cannot be taken back. Both
+            // leave the audit chain standing.
+            SmallAction(L10n.t("cu.del.soft", vm.language)) {
+                vm.call({ ApiClient.deleteTenant(adminToken, tid, "soft") }) { r ->
+                    r.onFailure { error = it.message }
+                }
+            }
+            SmallAction(L10n.t("cu.del.hard", vm.language)) {
+                vm.call({ ApiClient.deleteTenant(adminToken, tid, "hard") }) { r ->
+                    r.onFailure { error = it.message }
+                }
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            SmallAction(L10n.t("cu.mint.read", vm.language)) {
+                vm.call({ ApiClient.mintTenantToken(adminToken, tid, "read") }) { r ->
+                    r.onSuccess { minted = it }.onFailure { error = it.message }
+                }
+            }
+            SmallAction(L10n.t("cu.mint.write", vm.language)) {
+                vm.call({ ApiClient.mintTenantToken(adminToken, tid, "write") }) { r ->
+                    r.onSuccess { minted = it }.onFailure { error = it.message }
+                }
+            }
+        }
+        minted?.let {
+            Text(it, color = Pdi.Txt, fontSize = 10.sp)
+            Text(L10n.t("cu.minted.note", vm.language), color = Pdi.T2, fontSize = 10.sp)
+        }
+        Row(verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Box(Modifier.weight(1f)) {
+                labeledField(L10n.t("ky.retention", vm.language), retention,
+                    L10n.t("ky.retention", vm.language)) { retention = it }
+            }
+            SmallAction(L10n.t("co.set", vm.language)) {
+                vm.call({ ApiClient.setTenantRetention(adminToken, tid,
+                    retention) }) { r -> r.onFailure { error = it.message } }
+            }
+        }
+        Text(L10n.t("cu.paperwork", vm.language), color = Pdi.Txt,
+            fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        labeledField(L10n.t("cu.cust.name", vm.language), custName,
+            L10n.t("cu.cust.name", vm.language)) { custName = it }
+        labeledField(L10n.t("cu.op.name", vm.language), opName,
+            L10n.t("cu.op.name", vm.language)) { opName = it }
+        labeledField(L10n.t("cu.eff", vm.language), effDate,
+            L10n.t("cu.eff", vm.language)) { effDate = it }
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            SmallAction(L10n.t("cu.record", vm.language)) {
+                vm.call({ ApiClient.recordTenantBaa(adminToken, tid, custName,
+                    opName, effDate) }) { r ->
+                    r.onSuccess { baa = it }.onFailure { error = it.message }
+                }
+            }
+            SmallAction(L10n.t("cu.onfile", vm.language)) {
+                vm.call({ ApiClient.tenantBaa(adminToken, tid) }) { r ->
+                    r.onSuccess { baa = it }.onFailure { error = it.message }
+                }
+            }
+            SmallAction(L10n.t("cu.rescind", vm.language)) {
+                vm.call({ ApiClient.rescindTenantBaa(adminToken, tid) }) { r ->
+                    r.onSuccess { baa = null }.onFailure { error = it.message }
+                }
+            }
+        }
+        baa?.let {
+            if (it.executed) {
+                Text("${it.customer} \u2194 ${it.operatorName} \u00b7 ${it.date}",
+                    color = Pdi.T2, fontSize = 11.sp)
+            }
+        }
+        error?.let { Text(it, color = Pdi.Red, fontSize = 12.sp) }
+    }
+}
+
+@Composable
+fun GateCard(vm: VaultViewModel) {
+    var ceiling by remember { mutableStateOf<GateCeilingK?>(null) }
+    var channel by remember { mutableStateOf<GateChannelK?>(null) }
+    var roster by remember { mutableStateOf<GateRosterK?>(null) }
+    var pages by remember { mutableStateOf<List<GatePageK>>(emptyList()) }
+    var rosterName by remember { mutableStateOf("") }
+    var rosterRole by remember { mutableStateOf("") }
+    var tz by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun reload() {
+        vm.call({ ApiClient.gateCeiling(vm.token!!) }) { r -> ceiling = r.getOrNull() }
+        vm.call({ ApiClient.gateChannel(vm.token!!) }) { r -> channel = r.getOrNull() }
+        vm.call({ ApiClient.gateRoster(vm.token!!) }) { r -> roster = r.getOrNull() }
+        vm.call({ ApiClient.gatePages(vm.token!!) }) { r ->
+            pages = r.getOrDefault(emptyList())
+        }
+    }
+    LaunchedEffect(Unit) { reload() }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("co.ceiling", vm.language), color = Pdi.Txt, fontSize = 16.sp,
+            fontWeight = FontWeight.Bold)
+        ceiling?.let { c ->
+            Text(c.rule, color = Pdi.T2, fontSize = 11.sp)
+            Text(L10n.t("co.may", vm.language) + " " + c.may.joinToString(", "),
+                color = Pdi.T2, fontSize = 11.sp)
+            Text(L10n.t("co.maynever", vm.language) + " "
+                + c.mayNever.joinToString(", "),
+                color = Pdi.T2, fontSize = 11.sp)
+        }
+        channel?.let { c ->
+            Text(L10n.t("co.channel", vm.language) + " "
+                + L10n.t(if (c.configured) "co.configured" else "co.notconfigured",
+                         vm.language)
+                + if (c.signed) " " + L10n.t("co.signed", vm.language) else "",
+                color = Pdi.T2, fontSize = 11.sp)
+        }
+        Text(L10n.t("co.shift", vm.language), color = Pdi.Txt,
+            fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        roster?.let { r ->
+            if (r.roster.isEmpty()) {
+                Text(L10n.t("co.noroster", vm.language), color = Pdi.T2, fontSize = 11.sp)
+            }
+            if (!r.anybodyOnShift) {
+                Text(L10n.t("co.nobody", vm.language), color = Pdi.T2, fontSize = 11.sp)
+            }
+            r.roster.forEach { entry ->
+                Row(Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically) {
+                    Text("${entry.name} \u00b7 ${entry.role}",
+                        color = Pdi.T2, fontSize = 11.sp)
+                    SmallAction(L10n.t("co.remove", vm.language)) {
+                        vm.call({ ApiClient.removeFromRoster(vm.token!!,
+                            entry.id) }) { reload() }
+                    }
+                }
+            }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Box(Modifier.weight(1f)) {
+                labeledField(L10n.t("co.name.ph", vm.language), rosterName,
+                    L10n.t("co.name.ph", vm.language)) { rosterName = it }
+            }
+            Box(Modifier.weight(1f)) {
+                labeledField(L10n.t("co.role.ph", vm.language), rosterRole,
+                    L10n.t("co.role.ph", vm.language)) { rosterRole = it }
+            }
+            SmallAction(L10n.t("co.addroster", vm.language)) {
+                if (rosterName.isNotBlank()) {
+                    vm.call({ ApiClient.addToRoster(vm.token!!,
+                        rosterName.trim(), rosterRole) }) {
+                        rosterName = ""; reload()
+                    }
+                }
+            }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Box(Modifier.weight(1f)) {
+                labeledField(L10n.t("co.tz.ph", vm.language), tz,
+                    L10n.t("co.tz.ph", vm.language)) { tz = it }
+            }
+            SmallAction(L10n.t("co.set", vm.language)) {
+                if (tz.isNotBlank()) {
+                    vm.call({ ApiClient.setGateTimezone(vm.token!!, tz.trim()) }) {
+                        tz = ""; reload()
+                    }
+                }
+            }
+        }
+        Text(L10n.t("co.sent", vm.language), color = Pdi.Txt,
+            fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("co.sent.note", vm.language), color = Pdi.T2, fontSize = 11.sp)
+        if (pages.isEmpty()) {
+            Text(L10n.t("co.nothingpaged", vm.language), color = Pdi.T2, fontSize = 11.sp)
+        }
+        pages.forEach { page ->
+            Row(Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically) {
+                Text("${page.id} \u00b7 ${page.state}",
+                    color = Pdi.T2, fontSize = 11.sp)
+                if (page.state != "sent") {
+                    SmallAction(L10n.t("co.retry", vm.language)) {
+                        vm.call({ ApiClient.retryGatePage(vm.token!!,
+                            page.id) }) { reload() }
+                    }
+                }
+            }
+        }
+        error?.let { Text(it, color = Pdi.Red, fontSize = 12.sp) }
     }
 }
 

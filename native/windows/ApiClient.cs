@@ -91,6 +91,52 @@ public record ComplianceProgram(
 public record CompliancePrograms(
     [property: JsonPropertyName("programs")] ComplianceProgram[] Programs);
 
+public record TenantMade(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("token")] string Token);
+
+public record OkOut([property: JsonPropertyName("id")] string? Id);
+
+public record MintedTokenOut([property: JsonPropertyName("token")] string Token);
+
+public record RetentionOut([property: JsonPropertyName("retention")] string Retention);
+
+public record BaaOut(
+    [property: JsonPropertyName("executed")] bool Executed,
+    [property: JsonPropertyName("customer_legal_name")] string? CustomerLegalName,
+    [property: JsonPropertyName("operator_legal_name")] string? OperatorLegalName,
+    [property: JsonPropertyName("effective_date")] string? EffectiveDate);
+
+public record GateCeilingOut(
+    [property: JsonPropertyName("rule")] string Rule,
+    [property: JsonPropertyName("may")] System.Collections.Generic.Dictionary<string, string> May,
+    [property: JsonPropertyName("may_never")] System.Collections.Generic.Dictionary<string, string> MayNever);
+
+public record GateChannelOut(
+    [property: JsonPropertyName("configured")] bool Configured,
+    [property: JsonPropertyName("signed")] bool? Signed);
+
+public record RosterEntryOut(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("name")] string Name,
+    [property: JsonPropertyName("role")] string Role);
+
+public record GateRosterOut(
+    [property: JsonPropertyName("configured")] bool Configured,
+    [property: JsonPropertyName("roster")] RosterEntryOut[] Roster,
+    [property: JsonPropertyName("anybody_on_shift")] bool AnybodyOnShift);
+
+public record RemovedOut([property: JsonPropertyName("removed")] bool Removed);
+
+public record TzOut(
+    [property: JsonPropertyName("tenant_id")] string TenantId,
+    [property: JsonPropertyName("timezone")] string Timezone);
+
+public record GatePageOut(
+    [property: JsonPropertyName("id")] string? Id,
+    [property: JsonPropertyName("state")] string? State);
+
 public record CarrierBeacon(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("ref_kind")] string RefKind,
@@ -392,6 +438,96 @@ public sealed class ApiClient
     public Task<RecordProvenance> Provenance(string token, string key) =>
         Send<RecordProvenance>(new HttpRequestMessage(
             HttpMethod.Get, $"/provenance/{key}"), token);
+
+    // ---- tenants: the operator's half ----
+
+    public Task<TenantMade> CreateTenant(string adminToken, string name) =>
+        Send<TenantMade>(new HttpRequestMessage(HttpMethod.Post, "/tenants")
+        {
+            Content = JsonContent.Create(new { name }),
+        }, adminToken);
+
+    public Task<OkOut> RestoreTenant(string adminToken, string tid) =>
+        Send<OkOut>(new HttpRequestMessage(HttpMethod.Post,
+            $"/tenants/{tid}/restore"), adminToken);
+
+    // `mode` decides whether the tenant can come back. The audit trail
+    // survives either way — that is the point of a hash chain.
+    public Task<OkOut> DeleteTenant(string adminToken, string tid, string mode) =>
+        Send<OkOut>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/tenants/{tid}?mode={mode}"), adminToken);
+
+    public Task<MintedTokenOut> MintTenantToken(string adminToken, string tid,
+                                                string role) =>
+        Send<MintedTokenOut>(new HttpRequestMessage(HttpMethod.Post,
+            $"/tenants/{tid}/tokens")
+        {
+            Content = JsonContent.Create(new { role }),
+        }, adminToken);
+
+    public Task<RetentionOut> SetTenantRetention(string adminToken, string tid,
+                                                 string retention) =>
+        Send<RetentionOut>(new HttpRequestMessage(HttpMethod.Put,
+            $"/tenants/{tid}/retention")
+        {
+            Content = JsonContent.Create(new { retention }),
+        }, adminToken);
+
+    public Task<BaaOut> TenantBaa(string adminToken, string tid) =>
+        Send<BaaOut>(new HttpRequestMessage(HttpMethod.Get,
+            $"/tenants/{tid}/baa"), adminToken);
+
+    public Task<BaaOut> RecordTenantBaa(string adminToken, string tid,
+                                        string customer, string operatorName,
+                                        string date) =>
+        Send<BaaOut>(new HttpRequestMessage(HttpMethod.Post,
+            $"/tenants/{tid}/baa")
+        {
+            Content = JsonContent.Create(new
+            {
+                customer_legal_name = customer,
+                operator_legal_name = operatorName,
+                effective_date = date,
+            }),
+        }, adminToken);
+
+    public Task<OkOut> RescindTenantBaa(string adminToken, string tid) =>
+        Send<OkOut>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/tenants/{tid}/baa"), adminToken);
+
+    // ---- the agent at the gate ----
+
+    public Task<GateCeilingOut> GateCeiling(string token) =>
+        Send<GateCeilingOut>(new HttpRequestMessage(HttpMethod.Get, "/gate/ceiling"), token);
+
+    public Task<GateChannelOut> GateChannel(string token) =>
+        Send<GateChannelOut>(new HttpRequestMessage(HttpMethod.Get, "/gate/channel"), token);
+
+    public Task<GateRosterOut> GateRoster(string token) =>
+        Send<GateRosterOut>(new HttpRequestMessage(HttpMethod.Get, "/gate/roster"), token);
+
+    public Task<RosterEntryOut> AddToRoster(string token, string name, string role) =>
+        Send<RosterEntryOut>(new HttpRequestMessage(HttpMethod.Post, "/gate/roster")
+        {
+            Content = JsonContent.Create(new { name, role }),
+        }, token);
+
+    public Task<RemovedOut> RemoveFromRoster(string token, string rid) =>
+        Send<RemovedOut>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/gate/roster/{rid}"), token);
+
+    public Task<TzOut> SetGateTimezone(string token, string timezone) =>
+        Send<TzOut>(new HttpRequestMessage(HttpMethod.Put, "/gate/timezone")
+        {
+            Content = JsonContent.Create(new { timezone }),
+        }, token);
+
+    public Task<GatePageOut[]> GatePages(string token) =>
+        Send<GatePageOut[]>(new HttpRequestMessage(HttpMethod.Get, "/gate/pages"), token);
+
+    public Task<GatePageOut> RetryGatePage(string token, string pid) =>
+        Send<GatePageOut>(new HttpRequestMessage(HttpMethod.Post,
+            $"/gate/pages/{pid}/retry"), token);
 
     // ---- carriers: custody codes on sealed things ----
 

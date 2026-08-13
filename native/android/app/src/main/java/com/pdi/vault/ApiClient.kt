@@ -19,6 +19,17 @@ data class RobotSpec(val model: String, val label: String, val maker: String)
 data class Robot(val id: String, val model: String, val name: String, val status: String?, val collected: Int)
 data class IngestResult(val sealed: Boolean, val key: String)
 data class ComplianceProgram(val key: String, val label: String)
+data class TenantMadeK(val id: String, val name: String, val token: String)
+data class BaaK(val executed: Boolean, val customer: String,
+                val operatorName: String, val date: String)
+data class GateCeilingK(val rule: String, val may: List<String>,
+                        val mayNever: List<String>)
+data class GateChannelK(val configured: Boolean, val signed: Boolean)
+data class RosterEntryK(val id: String, val name: String, val role: String)
+data class GateRosterK(val configured: Boolean,
+                       val roster: List<RosterEntryK>,
+                       val anybodyOnShift: Boolean)
+data class GatePageK(val id: String, val state: String)
 data class CarrierBeacon(val id: String, val refKind: String,
                          val label: String, val disclose: String,
                          val state: String, val scans: Int, val active: Boolean)
@@ -386,6 +397,107 @@ object ApiClient {
             ComplianceProgram(o.getString("key"), o.getString("label"))
         }
     }
+
+    // ---- tenants: the operator's half ----
+
+    suspend fun createTenant(adminToken: String, name: String): TenantMadeK {
+        val o = JSONObject(request("/tenants", "POST",
+            JSONObject().put("name", name), adminToken))
+        return TenantMadeK(o.optString("id"), o.optString("name"),
+            o.optString("token"))
+    }
+
+    suspend fun restoreTenant(adminToken: String, tid: String): String =
+        request("/tenants/$tid/restore", "POST", token = adminToken)
+
+    /** `mode` decides whether the tenant can come back. The audit trail
+     *  survives either way — that is the point of a hash chain. */
+    suspend fun deleteTenant(adminToken: String, tid: String,
+                             mode: String): String =
+        request("/tenants/$tid?mode=$mode", "DELETE", token = adminToken)
+
+    suspend fun mintTenantToken(adminToken: String, tid: String,
+                                role: String): String =
+        JSONObject(request("/tenants/$tid/tokens", "POST",
+            JSONObject().put("role", role), adminToken)).optString("token")
+
+    suspend fun setTenantRetention(adminToken: String, tid: String,
+                                   retention: String): String =
+        JSONObject(request("/tenants/$tid/retention", "PUT",
+            JSONObject().put("retention", retention), adminToken))
+            .optString("retention")
+
+    suspend fun tenantBaa(adminToken: String, tid: String): BaaK =
+        baaOf(JSONObject(request("/tenants/$tid/baa", token = adminToken)))
+
+    suspend fun recordTenantBaa(adminToken: String, tid: String,
+                                customer: String, operatorName: String,
+                                date: String): BaaK =
+        baaOf(JSONObject(request("/tenants/$tid/baa", "POST",
+            JSONObject().put("customer_legal_name", customer)
+                .put("operator_legal_name", operatorName)
+                .put("effective_date", date), adminToken)))
+
+    suspend fun rescindTenantBaa(adminToken: String, tid: String): String =
+        request("/tenants/$tid/baa", "DELETE", token = adminToken)
+
+    private fun baaOf(o: JSONObject) = BaaK(o.optBoolean("executed"),
+        o.optString("customer_legal_name"), o.optString("operator_legal_name"),
+        o.optString("effective_date"))
+
+    // ---- the agent at the gate ----
+
+    suspend fun gateCeiling(token: String): GateCeilingK {
+        val o = JSONObject(request("/gate/ceiling", token = token))
+        fun keys(name: String): List<String> {
+            val obj = o.optJSONObject(name) ?: return emptyList()
+            return obj.keys().asSequence().toList().sorted()
+        }
+        return GateCeilingK(o.optString("rule"), keys("may"), keys("may_never"))
+    }
+
+    suspend fun gateChannel(token: String): GateChannelK {
+        val o = JSONObject(request("/gate/channel", token = token))
+        return GateChannelK(o.optBoolean("configured"), o.optBoolean("signed"))
+    }
+
+    suspend fun gateRoster(token: String): GateRosterK {
+        val o = JSONObject(request("/gate/roster", token = token))
+        val entries = mutableListOf<RosterEntryK>()
+        o.optJSONArray("roster")?.let { a ->
+            for (i in 0 until a.length()) {
+                val e = a.getJSONObject(i)
+                entries.add(RosterEntryK(e.optString("id"),
+                    e.optString("name"), e.optString("role")))
+            }
+        }
+        return GateRosterK(o.optBoolean("configured"), entries,
+            o.optBoolean("anybody_on_shift"))
+    }
+
+    suspend fun addToRoster(token: String, name: String, role: String): String =
+        request("/gate/roster", "POST",
+            JSONObject().put("name", name).put("role", role), token)
+
+    suspend fun removeFromRoster(token: String, rid: String): Boolean =
+        JSONObject(request("/gate/roster/$rid", "DELETE", token = token))
+            .optBoolean("removed")
+
+    suspend fun setGateTimezone(token: String, timezone: String): String =
+        JSONObject(request("/gate/timezone", "PUT",
+            JSONObject().put("timezone", timezone), token))
+            .optString("timezone")
+
+    suspend fun gatePages(token: String): List<GatePageK> {
+        val arr = JSONArray(request("/gate/pages", token = token))
+        return (0 until arr.length()).map {
+            val o = arr.getJSONObject(it)
+            GatePageK(o.optString("id"), o.optString("state"))
+        }
+    }
+
+    suspend fun retryGatePage(token: String, pid: String): String =
+        request("/gate/pages/$pid/retry", "POST", token = token)
 
     // ---- carriers: custody codes on sealed things ----
 

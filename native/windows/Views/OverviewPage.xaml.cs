@@ -43,6 +43,35 @@ public sealed partial class OverviewPage : Page
         AdminLoad.Content = L10n.T("nadm.versions");
         RotateButton.Content = L10n.T("nadm.rotate");
         RetireButton.Content = L10n.T("nadm.retire");
+        TnTitle.Text = L10n.T("tn.create");
+        TnAdminTokenBox.Header = L10n.T("nadm.token");
+        TnNameBox.PlaceholderText = L10n.T("co.name.ph");
+        TnCreateButton.Content = L10n.T("tn.createbtn");
+        TnMadeNote.Text = L10n.T("tn.token.note");
+        TnIdBox.PlaceholderText = L10n.T("adm.tenant.ph");
+        TnRestoreButton.Content = L10n.T("cu.restore.all");
+        TnDelSoftButton.Content = L10n.T("cu.del.soft");
+        TnDelHardButton.Content = L10n.T("cu.del.hard");
+        TnMintReadButton.Content = L10n.T("cu.mint.read");
+        TnMintWriteButton.Content = L10n.T("cu.mint.write");
+        TnRetentionBox.PlaceholderText = L10n.T("ky.retention");
+        TnRetentionButton.Content = L10n.T("co.set");
+        TnBaaHead.Text = L10n.T("cu.paperwork");
+        TnCustBox.PlaceholderText = L10n.T("cu.cust.name");
+        TnOpBox.PlaceholderText = L10n.T("cu.op.name");
+        TnEffBox.PlaceholderText = L10n.T("cu.eff");
+        TnBaaRecordButton.Content = L10n.T("cu.record");
+        TnBaaReadButton.Content = L10n.T("cu.onfile");
+        TnBaaRescindButton.Content = L10n.T("cu.rescind");
+        GateTitle.Text = L10n.T("co.ceiling");
+        GateShiftHead.Text = L10n.T("co.shift");
+        GateNameBox.PlaceholderText = L10n.T("co.name.ph");
+        GateRoleBox.PlaceholderText = L10n.T("co.role.ph");
+        GateAddButton.Content = L10n.T("co.addroster");
+        GateTzBox.PlaceholderText = L10n.T("co.tz.ph");
+        GateTzButton.Content = L10n.T("co.set");
+        GateSentHead.Text = L10n.T("co.sent");
+        GateSentNote.Text = L10n.T("co.sent.note");
         LanguageHead.Text = L10n.T("wel.language");
         // `action.refresh` has been in the table, translated into ten
         // languages, since chrome localization landed — and the only
@@ -117,6 +146,7 @@ public sealed partial class OverviewPage : Page
     {
         RefreshButton.Content = L10n.T("action.refresh");
         await Load();
+        await ReloadGate();
     }
 
     private async void OnRefresh(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) =>
@@ -275,6 +305,233 @@ public sealed partial class OverviewPage : Page
             new KeyRow($"v{v.Version}  {(v.Active ? "active " : "inactive")}  {v.CreatedAt}")).ToList();
         RotateButton.IsEnabled = true;
         RetireButton.IsEnabled = true;
+    }
+
+    private void ShowTnError(string message)
+    {
+        TnError.Text = message;
+        TnError.Visibility = Visibility.Visible;
+    }
+
+    private async void OnCreateTenant(object sender, RoutedEventArgs e)
+    {
+        var name = TnNameBox.Text.Trim();
+        if (name.Length == 0) return;
+        try
+        {
+            var made = await ApiClient.Shared.CreateTenant(
+                TnAdminTokenBox.Password, name);
+            TnMade.Text = $"{made.Id} · {made.Token}";
+            TnMade.Visibility = Visibility.Visible;
+            TnMadeNote.Visibility = Visibility.Visible;
+            TnNameBox.Text = "";
+        }
+        catch (Exception ex) { ShowTnError(ex.Message); }
+    }
+
+    private async void OnTenantRestore(object sender, RoutedEventArgs e)
+    {
+        try { await ApiClient.Shared.RestoreTenant(TnAdminTokenBox.Password, TnIdBox.Text.Trim()); }
+        catch (Exception ex) { ShowTnError(ex.Message); }
+    }
+
+    // Soft keeps the door open; hard cannot be taken back. Both leave the
+    // audit chain standing.
+    private async void OnTenantDelSoft(object sender, RoutedEventArgs e)
+    {
+        try { await ApiClient.Shared.DeleteTenant(TnAdminTokenBox.Password, TnIdBox.Text.Trim(), "soft"); }
+        catch (Exception ex) { ShowTnError(ex.Message); }
+    }
+
+    private async void OnTenantDelHard(object sender, RoutedEventArgs e)
+    {
+        try { await ApiClient.Shared.DeleteTenant(TnAdminTokenBox.Password, TnIdBox.Text.Trim(), "hard"); }
+        catch (Exception ex) { ShowTnError(ex.Message); }
+    }
+
+    private async void OnMintRead(object sender, RoutedEventArgs e) => await Mint("read");
+
+    private async void OnMintWrite(object sender, RoutedEventArgs e) => await Mint("write");
+
+    private async System.Threading.Tasks.Task Mint(string role)
+    {
+        try
+        {
+            var minted = await ApiClient.Shared.MintTenantToken(
+                TnAdminTokenBox.Password, TnIdBox.Text.Trim(), role);
+            TnMinted.Text = minted.Token;
+            TnMinted.Visibility = Visibility.Visible;
+            TnMintedNote.Text = L10n.T("cu.minted.note");
+            TnMintedNote.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowTnError(ex.Message); }
+    }
+
+    private async void OnSetTenantRetention(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await ApiClient.Shared.SetTenantRetention(
+                TnAdminTokenBox.Password, TnIdBox.Text.Trim(),
+                TnRetentionBox.Text.Trim());
+        }
+        catch (Exception ex) { ShowTnError(ex.Message); }
+    }
+
+    private async void OnBaaRecord(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var baa = await ApiClient.Shared.RecordTenantBaa(
+                TnAdminTokenBox.Password, TnIdBox.Text.Trim(),
+                TnCustBox.Text.Trim(), TnOpBox.Text.Trim(), TnEffBox.Text.Trim());
+            ShowBaa(baa);
+        }
+        catch (Exception ex) { ShowTnError(ex.Message); }
+    }
+
+    private async void OnBaaRead(object sender, RoutedEventArgs e)
+    {
+        try { ShowBaa(await ApiClient.Shared.TenantBaa(TnAdminTokenBox.Password, TnIdBox.Text.Trim())); }
+        catch (Exception ex) { ShowTnError(ex.Message); }
+    }
+
+    private async void OnBaaRescind(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await ApiClient.Shared.RescindTenantBaa(TnAdminTokenBox.Password, TnIdBox.Text.Trim());
+            TnBaaLine.Visibility = Visibility.Collapsed;
+        }
+        catch (Exception ex) { ShowTnError(ex.Message); }
+    }
+
+    private void ShowBaa(BaaOut baa)
+    {
+        if (!baa.Executed) return;
+        TnBaaLine.Text = $"{baa.CustomerLegalName} ↔ {baa.OperatorLegalName} · {baa.EffectiveDate}";
+        TnBaaLine.Visibility = Visibility.Visible;
+    }
+
+    private static TextBlock GateLine(string text, string brush) => new()
+    {
+        Text = text,
+        FontSize = 11,
+        TextWrapping = TextWrapping.Wrap,
+        Foreground = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources[brush],
+    };
+
+    private async System.Threading.Tasks.Task ReloadGate()
+    {
+        var s = AppState.Current;
+        if (s.Token is null) return;
+        GateError.Visibility = Visibility.Collapsed;
+        try
+        {
+            var ceiling = await ApiClient.Shared.GateCeiling(s.Token!);
+            GateCeilingText.Text = ceiling.Rule + "\n"
+                + L10n.T("co.may") + " " + string.Join(", ", ceiling.May.Keys.OrderBy(k => k)) + "\n"
+                + L10n.T("co.maynever") + " " + string.Join(", ", ceiling.MayNever.Keys.OrderBy(k => k));
+            var channel = await ApiClient.Shared.GateChannel(s.Token!);
+            GateChannelText.Text = L10n.T("co.channel") + " "
+                + L10n.T(channel.Configured ? "co.configured" : "co.notconfigured")
+                + (channel.Signed == true ? " " + L10n.T("co.signed") : "");
+            var roster = await ApiClient.Shared.GateRoster(s.Token!);
+            GateRosterRows.Children.Clear();
+            if (roster.Roster.Length == 0)
+                GateRosterRows.Children.Add(GateLine(L10n.T("co.noroster"), "PdiT2Brush"));
+            if (!roster.AnybodyOnShift)
+                GateRosterRows.Children.Add(GateLine(L10n.T("co.nobody"), "PdiT2Brush"));
+            foreach (var entry in roster.Roster)
+            {
+                var rid = entry.Id;
+                var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+                row.Children.Add(GateLine($"{entry.Name} · {entry.Role}", "PdiT2Brush"));
+                var remove = new Button
+                {
+                    Content = L10n.T("co.remove"), FontSize = 11,
+                    Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                        Microsoft.UI.Colors.Transparent),
+                };
+                remove.Click += async (_, _) =>
+                {
+                    try
+                    {
+                        await ApiClient.Shared.RemoveFromRoster(s.Token!, rid);
+                        await ReloadGate();
+                    }
+                    catch (Exception ex) { ShowGateError(ex.Message); }
+                };
+                row.Children.Add(remove);
+                GateRosterRows.Children.Add(row);
+            }
+            var pages = await ApiClient.Shared.GatePages(s.Token!);
+            GatePageRows.Children.Clear();
+            if (pages.Length == 0)
+                GatePageRows.Children.Add(GateLine(L10n.T("co.nothingpaged"), "PdiT2Brush"));
+            foreach (var page in pages)
+            {
+                var pid = page.Id;
+                var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+                row.Children.Add(GateLine($"{pid} · {page.State}", "PdiT2Brush"));
+                if (page.State != "sent" && pid is not null)
+                {
+                    var retry = new Button
+                    {
+                        Content = L10n.T("co.retry"), FontSize = 11,
+                        Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                            Microsoft.UI.Colors.Transparent),
+                    };
+                    retry.Click += async (_, _) =>
+                    {
+                        try
+                        {
+                            await ApiClient.Shared.RetryGatePage(s.Token!, pid);
+                            await ReloadGate();
+                        }
+                        catch (Exception ex) { ShowGateError(ex.Message); }
+                    };
+                    row.Children.Add(retry);
+                }
+                GatePageRows.Children.Add(row);
+            }
+        }
+        catch (Exception ex) { ShowGateError(ex.Message); }
+    }
+
+    private void ShowGateError(string message)
+    {
+        GateError.Text = message;
+        GateError.Visibility = Visibility.Visible;
+    }
+
+    private async void OnRosterAdd(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        var name = GateNameBox.Text.Trim();
+        if (s.Token is null || name.Length == 0) return;
+        try
+        {
+            await ApiClient.Shared.AddToRoster(s.Token!, name, GateRoleBox.Text.Trim());
+            GateNameBox.Text = "";
+            await ReloadGate();
+        }
+        catch (Exception ex) { ShowGateError(ex.Message); }
+    }
+
+    private async void OnGateTz(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        var tz = GateTzBox.Text.Trim();
+        if (s.Token is null || tz.Length == 0) return;
+        try
+        {
+            await ApiClient.Shared.SetGateTimezone(s.Token!, tz);
+            GateTzBox.Text = "";
+            await ReloadGate();
+        }
+        catch (Exception ex) { ShowGateError(ex.Message); }
     }
 
     private async void OnLoadKeys(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

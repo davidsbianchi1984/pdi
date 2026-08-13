@@ -115,3 +115,297 @@ extension AdminCard {
         }
     }
 }
+
+// MARK: tenants — the operator's half, on the phone
+
+/// Create, restore, delete, mint, retention and the BAA — the console's
+/// Custody admin block, behind the same PDI_ADMIN_TOKEN pasted into a field
+/// and kept only in memory.
+struct TenantsAdminCard: View {
+    @EnvironmentObject var state: AppState
+    @State private var adminToken = ""
+    @State private var name = ""
+    @State private var tid = ""
+    @State private var retention = ""
+    @State private var custName = ""
+    @State private var opName = ""
+    @State private var effDate = ""
+    @State private var made: TenantMade?
+    @State private var minted: String?
+    @State private var baa: BaaOut?
+    @State private var status: String?
+    @State private var error: String?
+    @State private var busy = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(L10n.t("tn.create", state.language))
+                .font(.headline).foregroundStyle(Theme.txt)
+            SecureField(L10n.t("nadm.token", state.language), text: $adminToken)
+                .foregroundStyle(Theme.txt)
+                .padding(10).background(Theme.scrBot)
+                .clipShape(RoundedRectangle(cornerRadius: 11))
+            HStack(spacing: 8) {
+                TextField(L10n.t("co.name.ph", state.language), text: $name)
+                    .foregroundStyle(Theme.txt)
+                Button(L10n.t("tn.createbtn", state.language)) { create() }
+                    .font(.caption.bold()).foregroundStyle(.white)
+                    .padding(.horizontal, 12).padding(.vertical, 7)
+                    .background(Theme.brandA).clipShape(Capsule())
+                    .disabled(busy || name.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+            if let made {
+                Text("\(made.id) · \(made.token)")
+                    .font(.caption2.monospaced()).foregroundStyle(Theme.txt)
+                    .textSelection(.enabled)
+                Text(L10n.t("tn.token.note", state.language))
+                    .font(.caption2).foregroundStyle(Theme.t2)
+            }
+
+            TextField(L10n.t("adm.tenant.ph", state.language), text: $tid)
+                .foregroundStyle(Theme.txt)
+            HStack(spacing: 10) {
+                Button(L10n.t("cu.restore.all", state.language)) {
+                    act { _ = try await ApiClient.shared.restoreTenant(
+                        tid: tid, adminToken: adminToken) }
+                }
+                // Soft keeps the door open; hard is the one that cannot be
+                // taken back. Both leave the audit chain standing.
+                Button(L10n.t("cu.del.soft", state.language)) {
+                    act { _ = try await ApiClient.shared.deleteTenant(
+                        tid: tid, mode: "soft", adminToken: adminToken) }
+                }
+                Button(L10n.t("cu.del.hard", state.language)) {
+                    act { _ = try await ApiClient.shared.deleteTenant(
+                        tid: tid, mode: "hard", adminToken: adminToken) }
+                }.foregroundStyle(Theme.red)
+            }
+            .font(.caption2).foregroundStyle(Theme.brandA)
+            .disabled(busy || tid.isEmpty)
+            HStack(spacing: 10) {
+                Button(L10n.t("cu.mint.read", state.language)) { mint("read") }
+                Button(L10n.t("cu.mint.write", state.language)) { mint("write") }
+            }
+            .font(.caption2).foregroundStyle(Theme.brandA)
+            .disabled(busy || tid.isEmpty)
+            if let minted {
+                Text(minted)
+                    .font(.caption2.monospaced()).foregroundStyle(Theme.txt)
+                    .textSelection(.enabled)
+                Text(L10n.t("cu.minted.note", state.language))
+                    .font(.caption2).foregroundStyle(Theme.t2)
+            }
+            HStack(spacing: 8) {
+                TextField(L10n.t("ky.retention", state.language), text: $retention)
+                    .foregroundStyle(Theme.txt)
+                Button(L10n.t("co.set", state.language)) {
+                    act { _ = try await ApiClient.shared.setTenantRetention(
+                        tid: tid, retention: retention, adminToken: adminToken) }
+                }
+                .font(.caption2).foregroundStyle(Theme.brandA)
+                .disabled(busy || tid.isEmpty || retention.isEmpty)
+            }
+
+            // The paperwork a regulated tenant needs, on file or not.
+            Text(L10n.t("cu.paperwork", state.language))
+                .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+            TextField(L10n.t("cu.cust.name", state.language), text: $custName)
+                .foregroundStyle(Theme.txt)
+            TextField(L10n.t("cu.op.name", state.language), text: $opName)
+                .foregroundStyle(Theme.txt)
+            TextField(L10n.t("cu.eff", state.language), text: $effDate)
+                .foregroundStyle(Theme.txt)
+            HStack(spacing: 10) {
+                Button(L10n.t("cu.record", state.language)) {
+                    act { baa = try await ApiClient.shared.recordTenantBaa(
+                        tid: tid, customer: custName, operatorName: opName,
+                        date: effDate, adminToken: adminToken) }
+                }
+                Button(L10n.t("cu.onfile", state.language)) {
+                    act { baa = try await ApiClient.shared.tenantBaa(
+                        tid: tid, adminToken: adminToken) }
+                }
+                Button(L10n.t("cu.rescind", state.language)) {
+                    act { _ = try await ApiClient.shared.rescindTenantBaa(
+                        tid: tid, adminToken: adminToken)
+                        baa = nil }
+                }.foregroundStyle(Theme.red)
+            }
+            .font(.caption2).foregroundStyle(Theme.brandA)
+            .disabled(busy || tid.isEmpty)
+            if let baa, baa.executed {
+                let line = "\(baa.customer_legal_name ?? "") ↔ \(baa.operator_legal_name ?? "") · \(baa.effective_date ?? "")"
+                Text(line).font(.caption2).foregroundStyle(Theme.t2)
+            }
+
+            if let status { Text(status).font(.caption).foregroundStyle(Theme.green) }
+            if let error { Text(error).font(.caption).foregroundStyle(Theme.red) }
+        }.card()
+    }
+
+    private func act(_ work: @escaping () async throws -> Void) {
+        busy = true; error = nil; status = nil
+        Task {
+            do { try await work(); status = "✓" }
+            catch { self.error = error.localizedDescription }
+            busy = false
+        }
+    }
+
+    private func create() {
+        act {
+            made = try await ApiClient.shared.createTenant(
+                name: name.trimmingCharacters(in: .whitespaces),
+                adminToken: adminToken)
+            name = ""
+        }
+    }
+
+    private func mint(_ role: String) {
+        act {
+            minted = try await ApiClient.shared.mintTenantToken(
+                tid: tid, role: role, adminToken: adminToken).token
+        }
+    }
+}
+
+// MARK: the agent at the gate
+
+/// What the agent may do and may never do, who is on shift, and what it
+/// sent when nobody was — the console's Continuity gate block, with the
+/// tenant's own token.
+struct GateCard: View {
+    @EnvironmentObject var state: AppState
+    @State private var ceiling: GateCeilingOut?
+    @State private var channel: GateChannelOut?
+    @State private var roster: GateRosterOut?
+    @State private var pages: [GatePageOut] = []
+    @State private var rosterName = ""
+    @State private var rosterRole = ""
+    @State private var tz = ""
+    @State private var error: String?
+    @State private var busy = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(L10n.t("co.ceiling", state.language))
+                .font(.headline).foregroundStyle(Theme.txt)
+            if let ceiling {
+                Text(ceiling.rule).font(.caption2).foregroundStyle(Theme.t2)
+                Text(L10n.t("co.may", state.language) + " "
+                     + ceiling.may.keys.sorted().joined(separator: ", "))
+                    .font(.caption2).foregroundStyle(Theme.t2)
+                Text(L10n.t("co.maynever", state.language) + " "
+                     + ceiling.may_never.keys.sorted().joined(separator: ", "))
+                    .font(.caption2).foregroundStyle(Theme.t2)
+            }
+            if let channel {
+                Text(L10n.t("co.channel", state.language) + " "
+                     + L10n.t(channel.configured ? "co.configured"
+                                                 : "co.notconfigured",
+                              state.language)
+                     + (channel.signed == true
+                        ? " " + L10n.t("co.signed", state.language) : ""))
+                    .font(.caption2).foregroundStyle(Theme.t2)
+            }
+
+            Text(L10n.t("co.shift", state.language))
+                .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+            if let roster {
+                if roster.roster.isEmpty {
+                    Text(L10n.t("co.noroster", state.language))
+                        .font(.caption2).foregroundStyle(Theme.t2)
+                }
+                if !roster.anybody_on_shift {
+                    Text(L10n.t("co.nobody", state.language))
+                        .font(.caption2).foregroundStyle(Theme.t2)
+                }
+                ForEach(roster.roster, id: \.id) { entry in
+                    HStack {
+                        Text("\(entry.name) · \(entry.role)")
+                            .font(.caption2).foregroundStyle(Theme.t2)
+                        Spacer()
+                        Button(L10n.t("co.remove", state.language)) {
+                            act { _ = try await ApiClient.shared.removeFromRoster(
+                                rid: entry.id, token: state.token ?? "") }
+                        }
+                        .font(.caption2).foregroundStyle(Theme.red)
+                        .disabled(busy)
+                    }
+                }
+            }
+            HStack(spacing: 8) {
+                TextField(L10n.t("co.name.ph", state.language), text: $rosterName)
+                    .foregroundStyle(Theme.txt)
+                TextField(L10n.t("co.role.ph", state.language), text: $rosterRole)
+                    .foregroundStyle(Theme.txt)
+                Button(L10n.t("co.addroster", state.language)) {
+                    act {
+                        _ = try await ApiClient.shared.addToRoster(
+                            name: rosterName, role: rosterRole,
+                            token: state.token ?? "")
+                        rosterName = ""
+                    }
+                }
+                .font(.caption2).foregroundStyle(Theme.brandA)
+                .disabled(busy || rosterName.isEmpty)
+            }
+            HStack(spacing: 8) {
+                TextField(L10n.t("co.tz.ph", state.language), text: $tz)
+                    .foregroundStyle(Theme.txt)
+                Button(L10n.t("co.set", state.language)) {
+                    act { _ = try await ApiClient.shared.setGateTimezone(
+                        tz, token: state.token ?? "")
+                        tz = "" }
+                }
+                .font(.caption2).foregroundStyle(Theme.brandA)
+                .disabled(busy || tz.isEmpty)
+            }
+
+            Text(L10n.t("co.sent", state.language))
+                .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+            Text(L10n.t("co.sent.note", state.language))
+                .font(.caption2).foregroundStyle(Theme.t2)
+            if pages.isEmpty {
+                Text(L10n.t("co.nothingpaged", state.language))
+                    .font(.caption2).foregroundStyle(Theme.t2)
+            }
+            ForEach(Array(pages.enumerated()), id: \.offset) { _, page in
+                HStack {
+                    // `state` is the wire's word — "sent" is the good end.
+                    let line = "\(page.id ?? "—") · \(page.state ?? "—")"
+                    Text(line).font(.caption2).foregroundStyle(Theme.t2)
+                    Spacer()
+                    if page.state != "sent", let pid = page.id {
+                        Button(L10n.t("co.retry", state.language)) {
+                            act { _ = try await ApiClient.shared.retryGatePage(
+                                pid: pid, token: state.token ?? "") }
+                        }
+                        .font(.caption2).foregroundStyle(Theme.brandA)
+                        .disabled(busy)
+                    }
+                }
+            }
+            if let error { Text(error).font(.caption).foregroundStyle(Theme.red) }
+        }
+        .card()
+        .task { await load() }
+    }
+
+    private func load() async {
+        guard let token = state.token else { return }
+        ceiling = try? await ApiClient.shared.gateCeiling(token: token)
+        channel = try? await ApiClient.shared.gateChannel(token: token)
+        roster = try? await ApiClient.shared.gateRoster(token: token)
+        pages = (try? await ApiClient.shared.gatePages(token: token)) ?? []
+    }
+
+    private func act(_ work: @escaping () async throws -> Void) {
+        busy = true; error = nil
+        Task {
+            do { try await work(); await load() }
+            catch { self.error = error.localizedDescription }
+            busy = false
+        }
+    }
+}

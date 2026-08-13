@@ -511,6 +511,93 @@ actor ApiClient {
         }
     }
 
+    // MARK: tenants — the operator's half
+
+    func createTenant(name: String, adminToken: String) async throws -> TenantMade {
+        try await request("/tenants", method: "POST",
+                          body: ["name": name], token: adminToken)
+    }
+
+    func restoreTenant(tid: String, adminToken: String) async throws -> Ok {
+        try await request("/tenants/\(tid)/restore", method: "POST",
+                          token: adminToken)
+    }
+
+    /// `mode` decides whether the tenant can come back. The audit trail
+    /// survives either way — that is the point of a hash chain.
+    func deleteTenant(tid: String, mode: String,
+                      adminToken: String) async throws -> Ok {
+        try await request("/tenants/\(tid)?mode=\(mode)", method: "DELETE",
+                          token: adminToken)
+    }
+
+    func mintTenantToken(tid: String, role: String,
+                         adminToken: String) async throws -> MintedToken {
+        try await request("/tenants/\(tid)/tokens", method: "POST",
+                          body: ["role": role], token: adminToken)
+    }
+
+    func setTenantRetention(tid: String, retention: String,
+                            adminToken: String) async throws -> RetentionSet {
+        try await request("/tenants/\(tid)/retention", method: "PUT",
+                          body: ["retention": retention], token: adminToken)
+    }
+
+    func tenantBaa(tid: String, adminToken: String) async throws -> BaaOut {
+        try await request("/tenants/\(tid)/baa", token: adminToken)
+    }
+
+    func recordTenantBaa(tid: String, customer: String, operatorName: String,
+                         date: String, adminToken: String) async throws -> BaaOut {
+        try await request("/tenants/\(tid)/baa", method: "POST",
+                          body: ["customer_legal_name": customer,
+                                 "operator_legal_name": operatorName,
+                                 "effective_date": date], token: adminToken)
+    }
+
+    func rescindTenantBaa(tid: String, adminToken: String) async throws -> Ok {
+        try await request("/tenants/\(tid)/baa", method: "DELETE",
+                          token: adminToken)
+    }
+
+    // MARK: the agent at the gate — what it may do, who is on shift
+
+    func gateCeiling(token: String) async throws -> GateCeilingOut {
+        try await request("/gate/ceiling", token: token)
+    }
+
+    func gateChannel(token: String) async throws -> GateChannelOut {
+        try await request("/gate/channel", token: token)
+    }
+
+    func gateRoster(token: String) async throws -> GateRosterOut {
+        try await request("/gate/roster", token: token)
+    }
+
+    func addToRoster(name: String, role: String,
+                     token: String) async throws -> RosterEntryOut {
+        try await request("/gate/roster", method: "POST",
+                          body: ["name": name, "role": role], token: token)
+    }
+
+    func removeFromRoster(rid: String, token: String) async throws -> RemovedOut {
+        try await request("/gate/roster/\(rid)", method: "DELETE", token: token)
+    }
+
+    func setGateTimezone(_ timezone: String, token: String) async throws -> TzOut {
+        try await request("/gate/timezone", method: "PUT",
+                          body: ["timezone": timezone], token: token)
+    }
+
+    func gatePages(token: String) async throws -> [GatePageOut] {
+        try await request("/gate/pages", token: token)
+    }
+
+    func retryGatePage(pid: String, token: String) async throws -> GatePageOut {
+        try await request("/gate/pages/\(pid)/retry", method: "POST",
+                          token: token)
+    }
+
     // MARK: carriers — custody codes on sealed things
 
     func carrierBeacons(token: String) async throws -> [CarrierBeacon] {
@@ -595,6 +682,47 @@ actor ApiClient {
     func pairQrUrl() -> URL {
         base.appendingPathComponent("/pair/qr.svg")
     }
+}
+
+struct TenantMade: Decodable { let id: String; let name: String; let token: String }
+struct MintedToken: Decodable { let token: String }
+struct RetentionSet: Decodable { let retention: String }
+
+struct BaaOut: Decodable {
+    let executed: Bool
+    let effective_date: String?
+    let customer_legal_name: String?
+    let operator_legal_name: String?
+    let note: String?
+}
+
+struct GateCeilingOut: Decodable {
+    let rule: String
+    let may: [String: String]
+    let may_never: [String: String]
+}
+
+struct GateChannelOut: Decodable {
+    let configured: Bool
+    let signed: Bool?
+    let note: String?
+}
+
+struct RosterEntryOut: Decodable { let id: String; let name: String; let role: String }
+
+struct GateRosterOut: Decodable {
+    let configured: Bool
+    let roster: [RosterEntryOut]
+    let anybody_on_shift: Bool
+    let timezone: String?
+}
+
+struct RemovedOut: Decodable { let removed: Bool }
+struct TzOut: Decodable { let tenant_id: String; let timezone: String }
+
+struct GatePageOut: Decodable {
+    let id: String?
+    let state: String?
 }
 
 /// A custody code on a sealed thing. `disclose` is a single value: `blind`
