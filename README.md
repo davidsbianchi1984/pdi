@@ -960,6 +960,16 @@ MIT © 2026 David Bianchi — see [LICENSE](LICENSE).
 
 ---
 
+## The error reports come home
+
+`POST /v1/problems` — the same content-free intake the Cloud Model Gateway
+serves (whitelist screening in `pdi/problems.py`, folded into counters, never
+a message or an id), on this backend, so a deployment with no gateway still
+collects its own failures; the console falls back to it when no collector is
+stamped into the build, behind the same first-run notice and switch.
+`GET /v1/problems` is the operator's read — `PDI_PROBLEMS_KEY`, or the
+backend's own machine.
+
 ## Matthew 7:24–25
 
 > "Everyone then who hears these words of mine and does them will be like a

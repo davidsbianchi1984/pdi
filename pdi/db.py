@@ -395,6 +395,22 @@ CREATE TABLE IF NOT EXISTS console_tutorial (
 -- column at all, because a report about ability must not require disclosing
 -- anything about the body that wrote it. No pdi_key either — this IS the
 -- vault product, so there is no second place to seal to.
+-- Error reports, folded into counters the moment they arrive (pdi/problems.py).
+-- No report is stored as a report: the key is what triage needs and nothing
+-- narrower, because a row that identifies one install is what the whole
+-- content-free design exists to avoid.
+CREATE TABLE IF NOT EXISTS problem_reports (
+    source      TEXT NOT NULL,
+    app_version TEXT NOT NULL,
+    platform    TEXT NOT NULL,
+    op          TEXT NOT NULL,
+    status      INTEGER NOT NULL,
+    day         TEXT NOT NULL,
+    count       INTEGER NOT NULL DEFAULT 0,
+    last_seen   TEXT NOT NULL,
+    PRIMARY KEY (source, app_version, platform, op, status)
+);
+
 CREATE TABLE IF NOT EXISTS access_reports (
     id         TEXT PRIMARY KEY,
     lang       TEXT NOT NULL DEFAULT 'en',

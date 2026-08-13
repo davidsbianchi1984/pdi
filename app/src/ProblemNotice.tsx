@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CONSOLE_VERSION } from "./api";
 import {
-  answerNotice, collectorUrl, noticeAnswered, problemReport, sendProblems,
+  answerNotice, noticeAnswered, problemReport, sendProblems,
 } from "./errors";
 import { deviceLanguage, Lang, t } from "./l10n";
 import { useSession } from "./store";
@@ -20,9 +20,10 @@ import { useSession } from "./store";
  * object is asking for agreement to the thing itself, and the object comes
  * from the same function that posts it, so the two cannot drift apart.
  *
- * Only where a collector exists. A build with no address has nothing to
- * explain, and interrupting somebody to describe a thing that cannot happen
- * teaches them that these notices are noise.
+ * This used to appear only where an external collector was stamped into the
+ * build. Reports now fall back to the deployment's own backend — the same
+ * server every other request already reaches — so there is always somewhere
+ * for them to go, and the question is always worth asking once.
  */
 export function ProblemNotice() {
   const { session } = useSession();
@@ -30,8 +31,7 @@ export function ProblemNotice() {
   const [answered, setAnswered] = useState(noticeAnswered);
   const [showing, setShowing] = useState(false);
 
-  const collector = collectorUrl();
-  if (answered || !collector) return null;
+  if (answered) return null;
 
   const report = problemReport(CONSOLE_VERSION);
 

@@ -229,6 +229,24 @@ public sealed class ApiClient
     /// <param name="token">Empty for the public routes — the posture read
     /// is one of them, and a bearer header with nothing behind it is a
     /// worse answer than no header at all.</param>
+    public record ProblemRow(
+        [property: JsonPropertyName("source")] string Source,
+        [property: JsonPropertyName("app_version")] string AppVersion,
+        [property: JsonPropertyName("platform")] string Platform,
+        [property: JsonPropertyName("op")] string Op,
+        [property: JsonPropertyName("status")] int Status,
+        [property: JsonPropertyName("day")] string Day,
+        [property: JsonPropertyName("count")] int Count);
+    public record ProblemRowsResponse(
+        [property: JsonPropertyName("rows")] ProblemRow[] Rows);
+
+    // The failure aggregate this backend keeps. Reading is the operator's:
+    // PDI_PROBLEMS_KEY as the token, or nothing when asking from the machine
+    // the backend runs on.
+    public Task<ProblemRowsResponse> ProblemRows(string key = "") =>
+        Send<ProblemRowsResponse>(
+            new HttpRequestMessage(HttpMethod.Get, "/v1/problems"), key);
+
     private async Task<T> Send<T>(HttpRequestMessage req, string token = "")
     {
         if (!string.IsNullOrWhiteSpace(token))

@@ -90,3 +90,4 @@ PUT /gate/timezone
 PUT /hosting/{tenant_id}
 PUT /key
 PUT /tenants/{tenant_id}/retention
+GET /v1/problems

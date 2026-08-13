@@ -23,7 +23,9 @@ from . import (app_connectors, assistant, audit, baa, beacons, bequests,
                compliance, connectors, crypto, db, dock as dock_mod, gate,
                hosting, i18n,
                intakes,
-               landing, mobile, notify, offline, positions, retention,
+               landing, mobile, notify, offline, positions,
+               problems as problems_mod,
+               retention,
                robotics, roster,
                terms as terms_mod, transfers, tutorial, vault)
 from .models import (AppCollect, AppConnect, AppInvoke, BAARecordIn,
@@ -240,6 +242,53 @@ def create_app() -> FastAPI:
         no record and no key.
         """
         return offline.status()
+
+    @app.post("/v1/problems", status_code=202)
+    async def report_problems(request: Request) -> dict:
+        """The error reports come home — see `pdi/problems.py`.
+
+        Same contract as the Cloud Model Gateway's intake, on the product's
+        own backend, so a deployment with no gateway still collects its own
+        failures. Accepted or refused whole: a partial accept would leave
+        the sender believing its redaction is fine while the half that
+        proved otherwise was silently binned.
+        """
+        try:
+            payload = problems_mod.screen(await request.json())
+        except problems_mod.Rejected as exc:
+            raise HTTPException(422, str(exc)) from exc
+        folded = problems_mod.add(payload)
+        return {"accepted": True, "problems": len(payload["problems"]),
+                "failures": folded}
+
+    @app.get("/v1/problems")
+    def list_problems(request: Request) -> dict:
+        """The aggregate, worst first — for whoever is fixing the bugs.
+
+        Narrower than the intake: anyone may post (a wrong write costs a
+        wrong counter), but the aggregate is a live map of what fails on
+        every version, so reading needs ``PDI_PROBLEMS_KEY`` — or a caller
+        on the backend's own machine, the self-hosted case where operator
+        and user are one person. Behind a reverse proxy every caller looks
+        local, so a published deployment must set the key.
+        """
+        key = os.environ.get("PDI_PROBLEMS_KEY", "")
+        if key:
+            presented = request.headers.get("authorization") or ""
+            if not presented.startswith("Bearer "):
+                raise HTTPException(
+                    401, "reading the failure map requires the "
+                         "PDI_PROBLEMS_KEY bearer token")
+            if not secrets.compare_digest(presented[len("Bearer "):], key):
+                raise HTTPException(403, "wrong problems key")
+        else:
+            host = request.client.host if request.client else ""
+            if host not in ("127.0.0.1", "::1", "localhost", "testclient"):
+                raise HTTPException(
+                    403, "the failure aggregate is readable from this "
+                         "machine only until PDI_PROBLEMS_KEY is set — "
+                         "behind a proxy, set it")
+        return {"rows": problems_mod.rows()}
 
     @app.get("/health")
     def health() -> dict:

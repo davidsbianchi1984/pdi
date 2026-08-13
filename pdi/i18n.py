@@ -1158,6 +1158,56 @@ def refuse(request, status: int, content, headers: dict | None = None):
 #: languages. What is not here is recorded in
 #: `pdi/tests/refusals_untranslated.txt` and ratcheted.
 _REFUSALS: dict[str, dict[str, str]] = {
+    'reading the failure map requires the PDI_PROBLEMS_KEY bearer token': {
+        'es': 'leer el mapa de fallos requiere el token portador '
+              'PDI_PROBLEMS_KEY',
+        'fr': 'lire la carte des échecs exige le jeton porteur '
+              'PDI_PROBLEMS_KEY',
+        'de': 'das Lesen der Fehlerkarte erfordert das '
+              'PDI_PROBLEMS_KEY-Bearer-Token',
+        'pt': 'ler o mapa de falhas requer o token portador '
+              'PDI_PROBLEMS_KEY',
+        'it': 'leggere la mappa dei guasti richiede il token bearer '
+              'PDI_PROBLEMS_KEY',
+        'ja': '障害マップの閲覧には PDI_PROBLEMS_KEY のベアラートークンが必要です',
+        'zh': '读取故障图需要 PDI_PROBLEMS_KEY 持有者令牌',
+        'hi': 'विफलता मानचित्र पढ़ने के लिए PDI_PROBLEMS_KEY बियरर टोकन चाहिए',
+        'ar': 'قراءة خريطة الأعطال تتطلب رمز PDI_PROBLEMS_KEY الحامل',
+    },
+    'wrong problems key': {
+        'es': 'clave de problemas incorrecta',
+        'fr': 'mauvaise clé des problèmes',
+        'de': 'falscher Problems-Schlüssel',
+        'pt': 'chave de problemas errada',
+        'it': 'chiave dei problemi sbagliata',
+        'ja': 'problemsキーが違います',
+        'zh': '问题密钥不正确',
+        'hi': 'समस्याओं की कुंजी ग़लत है',
+        'ar': 'مفتاح المشاكل خاطئ',
+    },
+    'the failure aggregate is readable from this machine only until '
+    'PDI_PROBLEMS_KEY is set — behind a proxy, set it': {
+        'es': 'el agregado de fallos solo se puede leer desde esta máquina '
+              'hasta que se fije PDI_PROBLEMS_KEY — tras un proxy, fíjala',
+        'fr': "l'agrégat des échecs n'est lisible que depuis cette machine "
+              "tant que PDI_PROBLEMS_KEY n'est pas définie — derrière un "
+              'proxy, définissez-la',
+        'de': 'das Fehleraggregat ist nur von dieser Maschine lesbar, bis '
+              'PDI_PROBLEMS_KEY gesetzt ist — hinter einem Proxy: setzen',
+        'pt': 'o agregado de falhas só pode ser lido a partir desta máquina '
+              'até PDI_PROBLEMS_KEY estar definida — atrás de um proxy, '
+              'defina-a',
+        'it': "l'aggregato dei guasti è leggibile solo da questa macchina "
+              'finché PDI_PROBLEMS_KEY non è impostata — dietro un proxy, '
+              'impostala',
+        'ja': '障害の集計は PDI_PROBLEMS_KEY を設定するまでこの機械からしか読めません — '
+              'プロキシの背後では設定してください',
+        'zh': '在设置 PDI_PROBLEMS_KEY 之前，故障汇总只能从本机读取——在代理之后请务必设置',
+        'hi': 'जब तक PDI_PROBLEMS_KEY निर्धारित नहीं होती, विफलता समग्र केवल इसी '
+              'मशीन से पढ़ा जा सकता है — प्रॉक्सी के पीछे इसे निर्धारित करें',
+        'ar': 'لا يمكن قراءة مجمّع الأعطال إلا من هذا الجهاز حتى يُعيَّن '
+              'PDI_PROBLEMS_KEY — خلف وكيل، عيِّنه',
+    },
     'this deployment is offline — nothing leaves this machine, so the page cannot be fetched. Paste the content into ingest instead.': {
         'es': 'este despliegue está sin conexión: nada sale de esta máquina, así que la página no puede traerse. Pega el contenido en ingerir en su lugar.',
         'fr': "ce déploiement est hors ligne — rien ne quitte cette machine, la page ne peut donc pas être récupérée. Collez plutôt le contenu dans l'ingestion.",

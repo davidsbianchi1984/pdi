@@ -23,6 +23,8 @@ public sealed partial class AuditPage : Page
         ProblemsNo.Content = L10n.T("prb.donot");
         ProblemsSwitch.Header = L10n.T("prb.toggle");
         ProblemsPreviewButton.Content = L10n.T("prb.show");
+        ProblemsKeyBox.PlaceholderText = L10n.T("prob.key.ph");
+        ProblemsFetchButton.Content = L10n.T("prob.fetch");
         // The card reads three stored choices, so it has to be told when
         // the page appears rather than only when a button is pressed.
         Loaded += (_, _) => RefreshProblemsCard();
@@ -108,6 +110,24 @@ public sealed partial class AuditPage : Page
 
     private void OnProblemsToggled(object sender, RoutedEventArgs e) =>
         Problems.SetSending(ProblemsSwitch.IsOn);
+
+    // The other end of the wire: what has reached this deployment's own
+    // backend, from every client of it. Reading needs PDI_PROBLEMS_KEY (or a
+    // caller on the backend's machine); a refusal is rendered verbatim.
+    private async void OnProblemsFetch(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var r = await ApiClient.Shared.ProblemRows(ProblemsKeyBox.Password);
+            ProblemsServerRows.Text = r.Rows.Length == 0
+                ? L10n.T("prob.none")
+                : string.Join("\n", r.Rows.Select(row =>
+                    $"{row.Op}  {row.Status}  ×{row.Count}  " +
+                    $"{row.Source} {row.AppVersion} · {row.Platform} · {row.Day}"));
+        }
+        catch (Exception ex) { ProblemsServerRows.Text = ex.Message; }
+        ProblemsServerRows.Visibility = Visibility.Visible;
+    }
 
     private void OnProblemsPreview(object sender, RoutedEventArgs e)
     {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CONSOLE_VERSION } from "./api";
+import { api, CONSOLE_VERSION, getBase } from "./api";
 import {
   clearProblems, collectorUrl, problemReport, problems, sendProblems,
   sendingEnabled, setSending, type Problem, type SendOutcome,
@@ -41,7 +41,17 @@ export function Problems() {
   const [said, setSaid] = useState("");
   const [on, setOn] = useState(sendingEnabled);
 
-  const collector = collectorUrl();
+  // The operator's half: what has reached the server, from every client of
+  // this deployment. Reading needs PDI_PROBLEMS_KEY (or a caller on the
+  // backend's own machine); the refusal is rendered verbatim when it does.
+  const [readerKey, setReaderKey] = useState("");
+  const [serverRows, setServerRows] = useState<Awaited<
+    ReturnType<typeof api.problemRows>>["rows"] | null>(null);
+  const [readError, setReadError] = useState("");
+
+  // An external collector wins where a release stamps one in; the fallback
+  // is this deployment's own backend, which serves the same intake.
+  const collector = collectorUrl() || getBase();
   // Built once and used for both the preview and the count, so the number
   // beside the button and the text below it can never describe different
   // things.
@@ -67,10 +77,8 @@ export function Problems() {
       ))}
 
       <p className="muted small">
-        {collector
-          ? <>{t("pr.sentto", lang)} <code>{collector}</code>{" "}
-            {t("pr.sentto.rest", lang)}</>
-          : <>{t("pr.nocollector", lang)}</>}
+        {t("pr.sentto", lang)} <code>{collector}</code>{" "}
+        {t("pr.sentto.rest", lang)}
       </p>
 
       {collector && (
@@ -137,6 +145,42 @@ export function Problems() {
           )}
         </>
       )}
+
+      {/* The other end of the wire — the retrieval half, for whoever
+          operates the server. Ported from the siblings, where a field
+          report asked whether these results "get funneled back here to
+          where we can make corrections". */}
+      <h4>{t("prob.server", lang)}</h4>
+      <p className="muted small">{t("prob.server.pitch", lang)}</p>
+      <div className="row">
+        <input type="password" value={readerKey}
+               onChange={(e) => setReaderKey(e.target.value)}
+               placeholder={t("prob.key.ph", lang)} style={{ flex: 1 }} />
+        <button onClick={async () => {
+          setReadError("");
+          try {
+            setServerRows((await api.problemRows(
+              readerKey.trim() || undefined)).rows);
+          } catch (e) {
+            setServerRows(null);
+            setReadError(e instanceof Error ? e.message : String(e));
+          }
+        }}>{t("prob.fetch", lang)}</button>
+      </div>
+      {readError && <p className="small">⚠ {readError}</p>}
+      {serverRows && serverRows.length === 0 && (
+        <p className="muted small">{t("prob.none", lang)}</p>
+      )}
+      {serverRows && serverRows.map((r, i) => (
+        <div className="row" key={i}>
+          <code>{r.op}</code>
+          <span className="muted">{r.status}</span>
+          <span className="muted">×{r.count}</span>
+          <span className="muted">
+            {r.source} {r.app_version} · {r.platform} · {r.day}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }

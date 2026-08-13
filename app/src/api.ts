@@ -407,6 +407,14 @@ export const api = {
    *
    *  Offline mode was settable before this and had nowhere to be read. A
    *  guarantee nobody can see is a guarantee nobody can check. */
+  // The failure aggregate this backend keeps (see pdi/api.py's
+  // /v1/problems pair). Reading is the operator's: PDI_PROBLEMS_KEY as the
+  // token, or nothing when asking from the machine the backend runs on.
+  problemRows: (key?: string) =>
+    req<{ rows: { source: string; app_version: string; platform: string;
+                  op: string; status: number; day: string; count: number;
+                  last_seen: string }[] }>(
+      "/v1/problems", key ? { token: key } : {}),
   offlineStatus: () => req<{
     offline: boolean; external_transmission_possible: boolean;
     local_destinations_allowed: string; guarantees: string[];
