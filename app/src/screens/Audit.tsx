@@ -56,7 +56,7 @@ export function Audit() {
               {schema.retention}
             </span>
             <button onClick={() => setGlossary((g) => !g)}>
-              {glossary ? "Hide what they mean" : "What do these mean?"}
+              {glossary ? t("au.glossary.hide", lang) : t("au.glossary.show", lang)}
             </button>
           </div>
           {glossary && schema.actions.map((a) => (
@@ -76,7 +76,7 @@ export function Audit() {
 
       {chain && (
         <div className={"verify-banner " + (chain.intact ? "ok" : "bad")}>
-          {chain.intact ? "✓ Chain intact" : "✗ Chain broken"} — {chain.entries} {t("au.verified", lang)}
+          {chain.intact ? t("au.chain.intact", lang) : t("au.chain.broken", lang)} — {chain.entries} {t("au.verified", lang)}
           <button onClick={refresh}>{t("au.reverify", lang)}</button>
         </div>
       )}

@@ -329,7 +329,7 @@ export function Continuity() {
         <div key={String(p.id ?? i)} className="card">
           <div className="row">
             <span className="muted">
-              {p.delivered ? "delivered" : "not delivered"}
+              {p.delivered ? t("co.delivered", lang) : t("co.notdelivered", lang)}
             </span>
             {!p.delivered && p.id && (
               <button disabled={busy}

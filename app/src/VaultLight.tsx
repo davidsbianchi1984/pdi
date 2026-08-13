@@ -68,7 +68,7 @@ export function VaultLight() {
          style={{ borderColor: color }}>
       <span className="vl-lamp" style={{ background: color }} />
       <span className="vl-text">
-        {ok ? "vault answering" : "vault degraded"}
+        {ok ? t("vl.answering", lang) : t("vl.degraded", lang)}
         {health.version ? ` · v${health.version}` : ""}
       </span>
       <button className="vl-min" onClick={() => setMinimized(true)}

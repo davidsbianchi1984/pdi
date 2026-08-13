@@ -79,7 +79,7 @@ export function Keys() {
           </tbody>
         </table>
         <button className="primary" onClick={rotate} disabled={busy}>
-          {busy ? "Rotating…" : "Rotate key (re-seal records)"}
+          {busy ? t("ky.rotating", lang) : t("ky.rotate.go", lang)}
         </button>
       </div>
 

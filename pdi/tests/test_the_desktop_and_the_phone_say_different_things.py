@@ -463,6 +463,18 @@ def test_the_jsx_extractor_can_still_see():
     assert "an interpolated value." in found, (
         "the extractor stopped returning text after an interpolation — the "
         f"shape `VersionGuard` is made of:\n{found}")
+    # The shape a field report found. A sentence chosen at render time sits
+    # in child position: the browser lays it out as text, the parser calls it
+    # an expression. Both branches count — a reader sees one of them, and the
+    # untranslated one is as English as the other.
+    for branch in ("a chosen branch", "the other branch", "a guarded phrase"):
+        assert branch in found, (
+            "the extractor stopped reading string literals in child "
+            "expressions — the shape that let the vault light say `vault "
+            f"answering` in English on a translated console:\n{found}")
+    assert "not a rendered word" not in found, (
+        "the extractor is reading call arguments, so every `t(key, lang)` "
+        f"key would be counted as English a person reads:\n{found}")
 
 
 def test_the_reader_reads_more_than_the_regex_did():

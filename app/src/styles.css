@@ -141,6 +141,17 @@ label.check input { width: auto; margin-top: 0; }
   /* Inputs at 16px so iOS doesn't zoom the viewport when they focus. */
   input, textarea, select { font-size: 16px; }
   button { min-height: 44px; }
+
+  /* The vault light is fixed to the viewport, and on a phone the sidebar
+     is a bottom bar — so at this width the light was sitting on top of the
+     first three tabs. A field report: "It seems to be blocking the PDI
+     menus." The bar is a 52px tap target inside 6px of padding, so the
+     light stands clear of 64px of it plus the home indicator. */
+  .vault-light, .vl-dot {
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    left: 12px;
+  }
+  .vault-light { max-width: calc(100vw - 24px); }
 }
 
 /* The version-mismatch banner — visible on every screen until the older

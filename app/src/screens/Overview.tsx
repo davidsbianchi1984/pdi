@@ -32,7 +32,7 @@ export function Overview({ go }: { go: (t: "tenants" | "keys" | "audit") => void
     <div className="screen">
       <header className="screen-head">
         <h2>{t("ov.title", lang)}</h2>
-        <span className={"dot-online" + (health === "ok" ? "" : " off")}>● {health === "ok" ? "Vault online" : health}</span>
+        <span className={"dot-online" + (health === "ok" ? "" : " off")}>● {health === "ok" ? t("ov.online", lang) : health}</span>
       </header>
       {error && <div className="error">⚠ {error}</div>}
       <div className="tiles">
