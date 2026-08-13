@@ -678,6 +678,77 @@ public sealed class ApiClient
         return await res.Content.ReadAsStringAsync();
     }
 
+    // ---- the guide, the pane in the corner, and the translator ----
+
+    public Task<GuideOutlineOut> GuideOutline() =>
+        Send<GuideOutlineOut>(new HttpRequestMessage(HttpMethod.Get,
+            "/console/guide"));
+
+    public Task<GuideStepOut> GuideStep(string key) =>
+        Send<GuideStepOut>(new HttpRequestMessage(HttpMethod.Get,
+            $"/console/guide/steps/{key}"));
+
+    public Task<GuideStepOut> GuideForScreen(int number) =>
+        Send<GuideStepOut>(new HttpRequestMessage(HttpMethod.Get,
+            $"/console/guide/for-screen/{number}"));
+
+    public Task<GuideWhereOut> GuideStart(string learner) =>
+        Send<GuideWhereOut>(new HttpRequestMessage(HttpMethod.Post,
+            "/console/guide/start")
+        {
+            Content = JsonContent.Create(new { learner_id = learner }),
+        });
+
+    public Task<GuideWhereOut> GuideProgress(string learner) =>
+        Send<GuideWhereOut>(new HttpRequestMessage(HttpMethod.Get,
+            $"/console/guide/progress/{learner}"));
+
+    public Task<GuideWhereOut> GuideDone(string learner, string lesson) =>
+        Send<GuideWhereOut>(new HttpRequestMessage(HttpMethod.Post,
+            "/console/guide/done")
+        {
+            Content = JsonContent.Create(new { learner_id = learner, lesson }),
+        });
+
+    public Task<AskOut> ConsoleAsk(string question) =>
+        Send<AskOut>(new HttpRequestMessage(HttpMethod.Post, "/console/ask")
+        {
+            Content = JsonContent.Create(new { question }),
+        });
+
+    /// <summary>Dictionary-only on the backend: PDI runs no model, so it
+    /// translates exactly its own note strings and the engine field says
+    /// which happened.</summary>
+    public Task<TranslateOut> Translate(string token, string text) =>
+        Send<TranslateOut>(new HttpRequestMessage(HttpMethod.Post, "/translate")
+        {
+            Content = JsonContent.Create(new { text }),
+        }, token);
+
+    public Task<DockVocabOut> DockVocabulary() =>
+        Send<DockVocabOut>(new HttpRequestMessage(HttpMethod.Get,
+            "/dock/faces"));
+
+    public Task<DockWhereOut> DockWhere(string face) =>
+        Send<DockWhereOut>(new HttpRequestMessage(HttpMethod.Get,
+            $"/dock/where/{face}"));
+
+    public Task<DockSettingsOut> DockSettings(string token, string tid) =>
+        Send<DockSettingsOut>(new HttpRequestMessage(HttpMethod.Get,
+            $"/dock/{tid}"), token);
+
+    public Task<DockSettingsOut> DockConfigure(string token, string tid,
+                                               string corner) =>
+        Send<DockSettingsOut>(new HttpRequestMessage(HttpMethod.Put,
+            $"/dock/{tid}")
+        {
+            Content = JsonContent.Create(new { corner }),
+        }, token);
+
+    public Task<DockFaceOut> DockFace(string token, string tid, string name) =>
+        Send<DockFaceOut>(new HttpRequestMessage(HttpMethod.Get,
+            $"/dock/{tid}/face/{name}"), token);
+
     // ---- the key itself: whose hands it is in ----
 
     public Task<TenantKeyOut> TenantKey(string token) =>
@@ -1236,6 +1307,45 @@ public sealed class ApiClient
         }
     }
 }
+
+public record GuideOutlineOut(
+    [property: JsonPropertyName("steps")] int Steps);
+
+public record GuideStepOut(
+    [property: JsonPropertyName("key")] string Key,
+    [property: JsonPropertyName("title")] string Title,
+    [property: JsonPropertyName("what")] string? What,
+    [property: JsonPropertyName("speak")] string? Speak);
+
+public record GuideWhereOut(
+    [property: JsonPropertyName("step")] GuideStepOut? Step,
+    [property: JsonPropertyName("done")] int Done,
+    [property: JsonPropertyName("total")] int Total,
+    [property: JsonPropertyName("note")] string Note);
+
+public record AskOut(
+    [property: JsonPropertyName("answer")] string Answer,
+    [property: JsonPropertyName("refused")] bool Refused);
+
+public record TranslateOut(
+    [property: JsonPropertyName("translation")] string Translation,
+    [property: JsonPropertyName("engine")] string Engine);
+
+public record DockVocabOut(
+    [property: JsonPropertyName("default_face")] string DefaultFace,
+    [property: JsonPropertyName("default_state")] string DefaultState);
+
+public record DockWhereOut(
+    [property: JsonPropertyName("title")] string Title,
+    [property: JsonPropertyName("path")] string Path);
+
+public record DockSettingsOut(
+    [property: JsonPropertyName("corner")] string Corner,
+    [property: JsonPropertyName("state")] string State,
+    [property: JsonPropertyName("face")] string Face);
+
+public record DockFaceOut(
+    [property: JsonPropertyName("shows")] string Shows);
 
 public record TenantKeyOut(
     [property: JsonPropertyName("provider")] string Provider,

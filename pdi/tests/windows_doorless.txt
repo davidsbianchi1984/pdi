@@ -4,16 +4,3 @@
 # emails it); a phone has no business fetching somebody else's
 # collection page, and building it into one would mean telling a
 # person who was sent a single file to install an app.
-GET /console/guide
-GET /console/guide/for-screen/{number}
-GET /console/guide/progress/{learner_id}
-GET /console/guide/steps/{key}
-GET /dock/faces
-GET /dock/where/{face}
-GET /dock/{tenant_id}
-GET /dock/{tenant_id}/face/{name}
-POST /console/ask
-POST /console/guide/done
-POST /console/guide/start
-POST /translate
-PUT /dock/{tenant_id}

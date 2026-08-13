@@ -962,3 +962,210 @@ struct KeyCustodyCard: View {
         }
     }
 }
+
+// MARK: the guide in the corner — the walkthrough, a question, a translation
+
+/// The console's guide, from the phone: the walkthrough stepped through, a
+/// question asked of the assistant, one of PDI's own notes translated. All of
+/// it describes the console rather than anybody's data.
+struct GuideCard: View {
+    @EnvironmentObject var state: AppState
+    @State private var outlineLine: String?
+    @State private var progress: GuideWhereOut?
+    @State private var stepLine: String?
+    @State private var question = ""
+    @State private var answerLine: String?
+    @State private var noteText = ""
+    @State private var trLine: String?
+    @State private var error: String?
+    @State private var busy = false
+
+    private let learner = "phone-operator"
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(L10n.t("gd.guide", state.language))
+                .font(.headline).foregroundStyle(Theme.txt)
+            if let outlineLine {
+                Text(outlineLine).font(.caption2).foregroundStyle(Theme.t2)
+            }
+            HStack(spacing: 10) {
+                Button(L10n.t("gd.start", state.language)) {
+                    act { progress = try await ApiClient.shared.guideStart(
+                        learner: learner) }
+                }
+                Button(L10n.t("gd.done", state.language)) {
+                    act {
+                        if let key = progress?.step?.key {
+                            progress = try await ApiClient.shared.guideDone(
+                                learner: learner, lesson: key)
+                        } else {
+                            progress = try await ApiClient.shared.guideProgress(
+                                learner: learner)
+                        }
+                    }
+                }
+                Button(L10n.t("gd.step", state.language)) {
+                    act {
+                        if let key = progress?.step?.key {
+                            let s = try await ApiClient.shared.guideStep(key: key)
+                            stepLine = s.title + " — " + (s.what ?? s.speak ?? "")
+                        }
+                    }
+                }
+                .disabled(progress?.step == nil)
+                Button(L10n.t("gd.thisscreen", state.language)) {
+                    act {
+                        let s = try await ApiClient.shared.guideForScreen(number: 1)
+                        stepLine = s.title + " — " + (s.what ?? s.speak ?? "")
+                    }
+                }
+            }
+            .font(.caption2).foregroundStyle(Theme.brandA)
+            .disabled(busy)
+            if let progress {
+                let line = L10n.t("gd.progress", state.language)
+                    .replacingOccurrences(of: "{done}", with: String(progress.done))
+                    .replacingOccurrences(of: "{total}", with: String(progress.total))
+                Text(line + " · " + (progress.step?.title ?? progress.note))
+                    .font(.caption2).foregroundStyle(Theme.t2)
+            }
+            if let stepLine {
+                Text(stepLine).font(.caption2).foregroundStyle(Theme.t2)
+            }
+            HStack(spacing: 8) {
+                TextField(L10n.t("gd.q.ph", state.language), text: $question)
+                    .foregroundStyle(Theme.txt)
+                Button(L10n.t("gd.ask.go", state.language)) {
+                    act { answerLine = try await ApiClient.shared.consoleAsk(
+                        question: question).answer }
+                }
+                .font(.caption2).foregroundStyle(Theme.brandA)
+                .disabled(busy || question.isEmpty)
+            }
+            if let answerLine {
+                Text(answerLine).font(.caption2).foregroundStyle(Theme.t2)
+            }
+            HStack(spacing: 8) {
+                TextField(L10n.t("gd.text.ph", state.language), text: $noteText)
+                    .foregroundStyle(Theme.txt)
+                Button(L10n.t("gd.translate", state.language)) {
+                    act {
+                        let t = try await ApiClient.shared.translate(
+                            text: noteText, token: state.token ?? "")
+                        trLine = t.translation + " · "
+                            + L10n.t("gd.engine", state.language) + " " + t.engine
+                    }
+                }
+                .font(.caption2).foregroundStyle(Theme.brandA)
+                .disabled(busy || noteText.isEmpty)
+            }
+            if let trLine {
+                Text(trLine).font(.caption2).foregroundStyle(Theme.t2)
+            }
+            if let error { Text(error).font(.caption).foregroundStyle(Theme.red) }
+        }
+        .card()
+        .task {
+            if let o = try? await ApiClient.shared.guideOutline() {
+                outlineLine = "\(o.steps) " + L10n.t("gd.steps", state.language)
+            }
+        }
+    }
+
+    private func act(_ work: @escaping () async throws -> Void) {
+        busy = true; error = nil
+        Task {
+            do { try await work() }
+            catch { self.error = error.localizedDescription }
+            busy = false
+        }
+    }
+}
+
+/// The pane in the corner, from the phone: its public vocabulary, this
+/// tenant's arrangement, and one face as the pane would draw it.
+struct DockCard: View {
+    @EnvironmentObject var state: AppState
+    @State private var vocabLine: String?
+    @State private var tid = ""
+    @State private var settings: DockSettingsOut?
+    @State private var faceLine: String?
+    @State private var whereLine: String?
+    @State private var error: String?
+    @State private var busy = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(L10n.t("gd.corner", state.language))
+                .font(.headline).foregroundStyle(Theme.txt)
+            if let vocabLine {
+                Text(vocabLine).font(.caption2).foregroundStyle(Theme.t2)
+            }
+            TextField(L10n.t("adm.tenant.ph", state.language), text: $tid)
+                .foregroundStyle(Theme.txt)
+            HStack(spacing: 10) {
+                Button(L10n.t("gd.open", state.language)) {
+                    act { settings = try await ApiClient.shared.dockSettings(
+                        tid: tid, token: state.token ?? "") }
+                }
+                .disabled(busy || tid.isEmpty)
+                Button(L10n.t("gd.othercorner", state.language)) {
+                    act {
+                        let corner = settings?.corner == "bottom_right"
+                            ? "bottom_left" : "bottom_right"
+                        settings = try await ApiClient.shared.dockConfigure(
+                            tid: tid, corner: corner, token: state.token ?? "")
+                    }
+                }
+                .disabled(busy || tid.isEmpty)
+                Button(L10n.t("gd.showing", state.language)) {
+                    act {
+                        if let face = settings?.face {
+                            faceLine = try await ApiClient.shared.dockFace(
+                                tid: tid, name: face,
+                                token: state.token ?? "").shows
+                        }
+                    }
+                }
+                .disabled(busy || settings == nil)
+                Button(L10n.t("gd.use", state.language)) {
+                    act {
+                        let w = try await ApiClient.shared.dockWhere(
+                            face: settings?.face ?? "helper")
+                        whereLine = w.title + " · " + w.path
+                    }
+                }
+                .disabled(busy)
+            }
+            .font(.caption2).foregroundStyle(Theme.brandA)
+            if let settings {
+                let line = settings.corner + " · " + settings.state
+                    + " · " + settings.face
+                Text(line).font(.caption2).foregroundStyle(Theme.t2)
+            }
+            if let faceLine {
+                Text(faceLine).font(.caption2).foregroundStyle(Theme.t2)
+            }
+            if let whereLine {
+                Text(whereLine).font(.caption2).foregroundStyle(Theme.t2)
+            }
+            if let error { Text(error).font(.caption).foregroundStyle(Theme.red) }
+        }
+        .card()
+        .task {
+            if let v = try? await ApiClient.shared.dockVocabulary() {
+                vocabLine = v.default_face + " · " + v.default_state
+            }
+        }
+    }
+
+    private func act(_ work: @escaping () async throws -> Void) {
+        busy = true; error = nil
+        Task {
+            do { try await work() }
+            catch { self.error = error.localizedDescription }
+            busy = false
+        }
+    }
+}

@@ -436,6 +436,89 @@
                 </StackPanel>
             </Border>
 
+            <!-- The console's guide, from the desktop: the walkthrough,
+                 a question, one of PDI's own notes translated. -->
+            <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="10">
+                    <TextBlock x:Name="GdTitle" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource PdiTxtBrush}" />
+                    <TextBlock x:Name="GdOutline" FontSize="11" Visibility="Collapsed"
+                               Foreground="{StaticResource PdiT2Brush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="GdStartButton" Click="OnGuideStart"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiBrandABrush}" />
+                        <Button x:Name="GdDoneButton" Click="OnGuideDone"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiBrandABrush}" />
+                        <Button x:Name="GdStepButton" Click="OnGuideStep"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiBrandABrush}" />
+                        <Button x:Name="GdScreenButton" Click="OnGuideForScreen"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiBrandABrush}" />
+                    </StackPanel>
+                    <TextBlock x:Name="GdProgress" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource PdiT2Brush}" />
+                    <TextBlock x:Name="GdStepLine" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource PdiT2Brush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBox x:Name="GdQBox" Width="240" />
+                        <Button x:Name="GdAskButton" Click="OnConsoleAsk"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiBrandABrush}" />
+                    </StackPanel>
+                    <TextBlock x:Name="GdAnswer" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource PdiT2Brush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBox x:Name="GdTextBox" Width="240" />
+                        <Button x:Name="GdTrButton" Click="OnTranslate"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiBrandABrush}" />
+                    </StackPanel>
+                    <TextBlock x:Name="GdTrLine" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource PdiT2Brush}" />
+                    <TextBlock x:Name="GdError" Foreground="{StaticResource PdiRedBrush}" FontSize="12"
+                               TextWrapping="Wrap" Visibility="Collapsed" />
+                </StackPanel>
+            </Border>
+
+            <!-- The pane in the corner: its public vocabulary, this tenant's
+                 arrangement, and one face as the pane would draw it. -->
+            <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="10">
+                    <TextBlock x:Name="DkTitle" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource PdiTxtBrush}" />
+                    <TextBlock x:Name="DkVocab" FontSize="11" Visibility="Collapsed"
+                               Foreground="{StaticResource PdiT2Brush}" />
+                    <TextBox x:Name="DkTidBox" Width="240" HorizontalAlignment="Left" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="DkOpenButton" Click="OnDockOpen"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiBrandABrush}" />
+                        <Button x:Name="DkCornerButton" Click="OnDockOtherCorner"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiBrandABrush}" />
+                        <Button x:Name="DkShowButton" Click="OnDockFace"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiBrandABrush}" />
+                        <Button x:Name="DkUseButton" Click="OnDockWhere"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiBrandABrush}" />
+                    </StackPanel>
+                    <TextBlock x:Name="DkCurrent" FontSize="11" Visibility="Collapsed"
+                               Foreground="{StaticResource PdiT2Brush}" />
+                    <TextBlock x:Name="DkFaceLine" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource PdiT2Brush}" />
+                    <TextBlock x:Name="DkWhereLine" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource PdiT2Brush}" />
+                    <TextBlock x:Name="DkError" Foreground="{StaticResource PdiRedBrush}" FontSize="12"
+                               TextWrapping="Wrap" Visibility="Collapsed" />
+                </StackPanel>
+            </Border>
+
             <!-- The key itself: whose hands it is in. -->
             <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
                     BorderThickness="1" CornerRadius="16" Padding="16">

@@ -573,6 +573,69 @@ actor ApiClient {
         try await request("/robots/\(rid)", method: "DELETE", token: token)
     }
 
+    // MARK: the guide, the pane in the corner, and the translator
+
+    func guideOutline() async throws -> GuideOutlineOut {
+        try await request("/console/guide")
+    }
+
+    func guideStep(key: String) async throws -> GuideStepOut {
+        try await request("/console/guide/steps/\(key)")
+    }
+
+    func guideForScreen(number: Int) async throws -> GuideStepOut {
+        try await request("/console/guide/for-screen/\(number)")
+    }
+
+    func guideStart(learner: String) async throws -> GuideWhereOut {
+        try await request("/console/guide/start", method: "POST",
+                          body: ["learner_id": learner])
+    }
+
+    func guideProgress(learner: String) async throws -> GuideWhereOut {
+        try await request("/console/guide/progress/\(learner)")
+    }
+
+    func guideDone(learner: String, lesson: String) async throws -> GuideWhereOut {
+        try await request("/console/guide/done", method: "POST",
+                          body: ["learner_id": learner, "lesson": lesson])
+    }
+
+    func consoleAsk(question: String) async throws -> AskOut {
+        try await request("/console/ask", method: "POST",
+                          body: ["question": question])
+    }
+
+    /// Dictionary-only on the backend: PDI runs no model, so it translates
+    /// exactly its own note strings and the engine field says which happened.
+    func translate(text: String, token: String) async throws -> TranslateOut {
+        try await request("/translate", method: "POST", body: ["text": text],
+                          token: token)
+    }
+
+    func dockVocabulary() async throws -> DockVocabOut {
+        try await request("/dock/faces")
+    }
+
+    func dockWhere(face: String) async throws -> DockWhereOut {
+        try await request("/dock/where/\(face)")
+    }
+
+    func dockSettings(tid: String, token: String) async throws -> DockSettingsOut {
+        try await request("/dock/\(tid)", token: token)
+    }
+
+    func dockConfigure(tid: String, corner: String,
+                       token: String) async throws -> DockSettingsOut {
+        try await request("/dock/\(tid)", method: "PUT",
+                          body: ["corner": corner], token: token)
+    }
+
+    func dockFace(tid: String, name: String,
+                  token: String) async throws -> DockFaceOut {
+        try await request("/dock/\(tid)/face/\(name)", token: token)
+    }
+
     // MARK: exchange details — one transfer, one intake, and their chains
 
     func transferOne(tid: String, token: String) async throws -> Transfer {
@@ -973,6 +1036,50 @@ actor ApiClient {
 }
 
 struct HealthOut: Decodable { let status: String }
+
+struct GuideOutlineOut: Decodable { let steps: Int }
+
+struct GuideStepOut: Decodable {
+    let key: String
+    let title: String
+    let what: String?
+    let speak: String?
+}
+
+struct GuideWhereOut: Decodable {
+    let step: GuideStepOut?
+    let done: Int
+    let total: Int
+    let note: String
+}
+
+struct AskOut: Decodable {
+    let answer: String
+    let refused: Bool
+}
+
+struct TranslateOut: Decodable {
+    let translation: String
+    let engine: String
+}
+
+struct DockVocabOut: Decodable {
+    let default_face: String
+    let default_state: String
+}
+
+struct DockWhereOut: Decodable {
+    let title: String
+    let path: String
+}
+
+struct DockSettingsOut: Decodable {
+    let corner: String
+    let state: String
+    let face: String
+}
+
+struct DockFaceOut: Decodable { let shows: String }
 
 struct TenantKeyOut: Decodable {
     let provider: String

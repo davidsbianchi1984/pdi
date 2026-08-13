@@ -110,6 +110,21 @@ public sealed partial class OverviewPage : Page
         PsTitleBox.PlaceholderText = L10n.T("pos.jobtitle");
         PsBuildButton.Content = L10n.T("pos.build");
         PsOpenButton.Content = L10n.T("pos.open");
+        GdTitle.Text = L10n.T("gd.guide");
+        GdStartButton.Content = L10n.T("gd.start");
+        GdDoneButton.Content = L10n.T("gd.done");
+        GdStepButton.Content = L10n.T("gd.step");
+        GdScreenButton.Content = L10n.T("gd.thisscreen");
+        GdQBox.PlaceholderText = L10n.T("gd.q.ph");
+        GdAskButton.Content = L10n.T("gd.ask.go");
+        GdTextBox.PlaceholderText = L10n.T("gd.text.ph");
+        GdTrButton.Content = L10n.T("gd.translate");
+        DkTitle.Text = L10n.T("gd.corner");
+        DkTidBox.PlaceholderText = L10n.T("adm.tenant.ph");
+        DkOpenButton.Content = L10n.T("gd.open");
+        DkCornerButton.Content = L10n.T("gd.othercorner");
+        DkShowButton.Content = L10n.T("gd.showing");
+        DkUseButton.Content = L10n.T("gd.use");
         CkTitle.Text = L10n.T("cu.hold");
         CkKeyBox.PlaceholderText = L10n.T("cu.key.ph");
         CkHoldButton.Content = L10n.T("cu.hold");
@@ -202,6 +217,20 @@ public sealed partial class OverviewPage : Page
                 AppState.Current.Token!)).Note);
         }
         catch (Exception ex) { ShowCkError(ex.Message); }
+        try
+        {
+            var o = await ApiClient.Shared.GuideOutline();
+            GdOutline.Text = $"{o.Steps} " + L10n.T("gd.steps");
+            GdOutline.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowGdError(ex.Message); }
+        try
+        {
+            var v = await ApiClient.Shared.DockVocabulary();
+            DkVocab.Text = $"{v.DefaultFace} · {v.DefaultState}";
+            DkVocab.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowDkError(ex.Message); }
     }
 
     private async void OnRefresh(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) =>
@@ -876,6 +905,165 @@ public sealed partial class OverviewPage : Page
             CkResealLine.Visibility = Visibility.Visible;
         }
         catch (Exception ex) { ShowCkError(ex.Message); }
+    }
+
+    // The console's guide, from the desktop. `phone-operator` matches the
+    // other shells: one learner per device family, no authority attached.
+    private GuideWhereOut? _guideProgress;
+    private DockSettingsOut? _dockSettings;
+
+    private void ShowGuideProgress()
+    {
+        if (_guideProgress is not { } p) return;
+        var line = L10n.T("gd.progress")
+            .Replace("{done}", p.Done.ToString())
+            .Replace("{total}", p.Total.ToString());
+        GdProgress.Text = line + " · " + (p.Step?.Title ?? p.Note);
+        GdProgress.Visibility = Visibility.Visible;
+    }
+
+    private async void OnGuideStart(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            _guideProgress = await ApiClient.Shared.GuideStart("phone-operator");
+            ShowGuideProgress();
+        }
+        catch (Exception ex) { ShowGdError(ex.Message); }
+    }
+
+    private async void OnGuideDone(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            _guideProgress = _guideProgress?.Step?.Key is { } key
+                ? await ApiClient.Shared.GuideDone("phone-operator", key)
+                : await ApiClient.Shared.GuideProgress("phone-operator");
+            ShowGuideProgress();
+        }
+        catch (Exception ex) { ShowGdError(ex.Message); }
+    }
+
+    private async void OnGuideStep(object sender, RoutedEventArgs e)
+    {
+        if (_guideProgress?.Step?.Key is not { } key) return;
+        try
+        {
+            var s = await ApiClient.Shared.GuideStep(key);
+            GdStepLine.Text = s.Title + " — " + (s.What ?? s.Speak ?? "");
+            GdStepLine.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowGdError(ex.Message); }
+    }
+
+    private async void OnGuideForScreen(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var s = await ApiClient.Shared.GuideForScreen(1);
+            GdStepLine.Text = s.Title + " — " + (s.What ?? s.Speak ?? "");
+            GdStepLine.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowGdError(ex.Message); }
+    }
+
+    private async void OnConsoleAsk(object sender, RoutedEventArgs e)
+    {
+        var q = GdQBox.Text.Trim();
+        if (q.Length == 0) return;
+        try
+        {
+            GdAnswer.Text = (await ApiClient.Shared.ConsoleAsk(q)).Answer;
+            GdAnswer.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowGdError(ex.Message); }
+    }
+
+    private async void OnTranslate(object sender, RoutedEventArgs e)
+    {
+        var text = GdTextBox.Text.Trim();
+        if (text.Length == 0) return;
+        try
+        {
+            var t = await ApiClient.Shared.Translate(
+                AppState.Current.Token!, text);
+            GdTrLine.Text = t.Translation + " · "
+                + L10n.T("gd.engine") + " " + t.Engine;
+            GdTrLine.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowGdError(ex.Message); }
+    }
+
+    private void ShowGdError(string message)
+    {
+        GdError.Text = message;
+        GdError.Visibility = Visibility.Visible;
+    }
+
+    private void ShowDockCurrent()
+    {
+        if (_dockSettings is not { } s) return;
+        DkCurrent.Text = $"{s.Corner} · {s.State} · {s.Face}";
+        DkCurrent.Visibility = Visibility.Visible;
+    }
+
+    private async void OnDockOpen(object sender, RoutedEventArgs e)
+    {
+        var tid = DkTidBox.Text.Trim();
+        if (tid.Length == 0) return;
+        try
+        {
+            _dockSettings = await ApiClient.Shared.DockSettings(
+                AppState.Current.Token!, tid);
+            ShowDockCurrent();
+        }
+        catch (Exception ex) { ShowDkError(ex.Message); }
+    }
+
+    private async void OnDockOtherCorner(object sender, RoutedEventArgs e)
+    {
+        var tid = DkTidBox.Text.Trim();
+        if (tid.Length == 0) return;
+        var corner = _dockSettings?.Corner == "bottom_right"
+            ? "bottom_left" : "bottom_right";
+        try
+        {
+            _dockSettings = await ApiClient.Shared.DockConfigure(
+                AppState.Current.Token!, tid, corner);
+            ShowDockCurrent();
+        }
+        catch (Exception ex) { ShowDkError(ex.Message); }
+    }
+
+    private async void OnDockFace(object sender, RoutedEventArgs e)
+    {
+        var tid = DkTidBox.Text.Trim();
+        if (tid.Length == 0 || _dockSettings?.Face is not { } face) return;
+        try
+        {
+            DkFaceLine.Text = (await ApiClient.Shared.DockFace(
+                AppState.Current.Token!, tid, face)).Shows;
+            DkFaceLine.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowDkError(ex.Message); }
+    }
+
+    private async void OnDockWhere(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var w = await ApiClient.Shared.DockWhere(
+                _dockSettings?.Face ?? "helper");
+            DkWhereLine.Text = w.Title + " · " + w.Path;
+            DkWhereLine.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowDkError(ex.Message); }
+    }
+
+    private void ShowDkError(string message)
+    {
+        DkError.Text = message;
+        DkError.Visibility = Visibility.Visible;
     }
 
     private void ShowCkNote(string note)

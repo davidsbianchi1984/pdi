@@ -71,6 +71,8 @@ struct OverviewView: View {
                 PostureCard()
                 PositionsCard()
                 KeyCustodyCard()
+                GuideCard()
+                DockCard()
 
                 Button(L10n.t("action.sign_out", state.language)) { state.signOut() }
                     .font(.subheadline).foregroundStyle(Theme.t2)

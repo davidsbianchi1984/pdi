@@ -456,6 +456,83 @@ object ApiClient {
     suspend fun unbindRobot(token: String, rid: String): String =
         request("/robots/$rid", "DELETE", token = token)
 
+    // ---- the guide, the pane in the corner, and the translator ----
+
+    suspend fun guideOutline(): Int =
+        JSONObject(request("/console/guide")).optInt("steps")
+
+    data class GuideStepK(val key: String, val title: String, val said: String)
+
+    private fun stepOf(o: JSONObject): GuideStepK = GuideStepK(
+        o.optString("key"), o.optString("title"),
+        o.optString("what", o.optString("speak")))
+
+    suspend fun guideStep(key: String): GuideStepK =
+        stepOf(JSONObject(request("/console/guide/steps/$key")))
+
+    suspend fun guideForScreen(number: Int): GuideStepK =
+        stepOf(JSONObject(request("/console/guide/for-screen/$number")))
+
+    data class GuideWhereK(val step: GuideStepK?, val done: Int,
+                           val total: Int, val note: String)
+
+    private fun whereOf(o: JSONObject): GuideWhereK = GuideWhereK(
+        o.optJSONObject("step")?.let { stepOf(it) },
+        o.optInt("done"), o.optInt("total"), o.optString("note"))
+
+    suspend fun guideStart(learner: String): GuideWhereK =
+        whereOf(JSONObject(request("/console/guide/start", "POST",
+            JSONObject().put("learner_id", learner))))
+
+    suspend fun guideProgress(learner: String): GuideWhereK =
+        whereOf(JSONObject(request("/console/guide/progress/$learner")))
+
+    suspend fun guideDone(learner: String, lesson: String): GuideWhereK =
+        whereOf(JSONObject(request("/console/guide/done", "POST",
+            JSONObject().put("learner_id", learner).put("lesson", lesson))))
+
+    suspend fun consoleAsk(question: String): String =
+        JSONObject(request("/console/ask", "POST",
+            JSONObject().put("question", question))).optString("answer")
+
+    /** Dictionary-only on the backend: PDI runs no model, so it translates
+     *  exactly its own note strings and the engine field says which
+     *  happened. */
+    suspend fun translate(token: String, text: String): String {
+        val o = JSONObject(request("/translate", "POST",
+            JSONObject().put("text", text), token))
+        return o.optString("translation") + " \u00b7 " + o.optString("engine")
+    }
+
+    suspend fun dockVocabulary(): String {
+        val o = JSONObject(request("/dock/faces"))
+        return o.optString("default_face") + " \u00b7 " +
+            o.optString("default_state")
+    }
+
+    suspend fun dockWhere(face: String): String {
+        val o = JSONObject(request("/dock/where/$face"))
+        return o.optString("title") + " \u00b7 " + o.optString("path")
+    }
+
+    data class DockSettingsK(val corner: String, val state: String,
+                             val face: String)
+
+    private fun dockOf(o: JSONObject): DockSettingsK = DockSettingsK(
+        o.optString("corner"), o.optString("state"), o.optString("face"))
+
+    suspend fun dockSettings(token: String, tid: String): DockSettingsK =
+        dockOf(JSONObject(request("/dock/$tid", token = token)))
+
+    suspend fun dockConfigure(token: String, tid: String,
+                              corner: String): DockSettingsK =
+        dockOf(JSONObject(request("/dock/$tid", "PUT",
+            JSONObject().put("corner", corner), token)))
+
+    suspend fun dockFace(token: String, tid: String, name: String): String =
+        JSONObject(request("/dock/$tid/face/$name", token = token))
+            .optString("shows")
+
     // ---- exchange details: one transfer, one intake, their chains ----
 
     suspend fun transferOne(token: String, tid: String): String =

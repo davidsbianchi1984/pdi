@@ -277,6 +277,8 @@ fun OverviewScreen(vm: VaultViewModel) {
         PostureCard(vm)
         PositionsCard(vm)
         KeyCustodyCard(vm)
+        GuideCard(vm)
+        DockCard(vm)
         OutlinedButton(onClick = { vm.signOut() }, modifier = Modifier.fillMaxWidth(),
             border = androidx.compose.foundation.BorderStroke(1.dp, Pdi.Line)) {
             Text(L10n.t("action.sign_out", vm.language), color = Pdi.T2)
@@ -2186,5 +2188,180 @@ fun ProblemReportingCard(lang: String) {
             }
 
         }
+    }
+}
+
+/** The console's guide, from the phone: the walkthrough stepped through, a
+ *  question asked of the assistant, one of PDI's own notes translated. All
+ *  of it describes the console rather than anybody's data. */
+@Composable
+fun GuideCard(vm: VaultViewModel) {
+    var outlineLine by remember { mutableStateOf<String?>(null) }
+    var progress by remember { mutableStateOf<ApiClient.GuideWhereK?>(null) }
+    var stepLine by remember { mutableStateOf<String?>(null) }
+    var question by remember { mutableStateOf("") }
+    var answerLine by remember { mutableStateOf<String?>(null) }
+    var noteText by remember { mutableStateOf("") }
+    var trLine by remember { mutableStateOf<String?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+    val learner = "phone-operator"
+
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.guideOutline() }) { r ->
+            r.onSuccess {
+                outlineLine = "$it " + L10n.t("gd.steps", vm.language)
+            }
+        }
+    }
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("gd.guide", vm.language), color = Pdi.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        outlineLine?.let { Text(it, color = Pdi.T2, fontSize = 10.sp) }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SmallAction(L10n.t("gd.start", vm.language)) {
+                vm.call({ ApiClient.guideStart(learner) }) { r ->
+                    r.onSuccess { progress = it }.onFailure { error = it.message }
+                }
+            }
+            SmallAction(L10n.t("gd.done", vm.language)) {
+                val key = progress?.step?.key
+                if (key != null) {
+                    vm.call({ ApiClient.guideDone(learner, key) }) { r ->
+                        r.onSuccess { progress = it }
+                            .onFailure { error = it.message }
+                    }
+                } else {
+                    vm.call({ ApiClient.guideProgress(learner) }) { r ->
+                        r.onSuccess { progress = it }
+                            .onFailure { error = it.message }
+                    }
+                }
+            }
+            SmallAction(L10n.t("gd.step", vm.language)) {
+                progress?.step?.key?.let { k ->
+                    vm.call({ ApiClient.guideStep(k) }) { r ->
+                        r.onSuccess { stepLine = it.title + " \u2014 " + it.said }
+                            .onFailure { error = it.message }
+                    }
+                }
+            }
+            SmallAction(L10n.t("gd.thisscreen", vm.language)) {
+                vm.call({ ApiClient.guideForScreen(1) }) { r ->
+                    r.onSuccess { stepLine = it.title + " \u2014 " + it.said }
+                        .onFailure { error = it.message }
+                }
+            }
+        }
+        progress?.let { p ->
+            val line = L10n.t("gd.progress", vm.language)
+                .replace("{done}", p.done.toString())
+                .replace("{total}", p.total.toString())
+            Text(line + " \u00b7 " + (p.step?.title ?: p.note),
+                color = Pdi.T2, fontSize = 10.sp)
+        }
+        stepLine?.let { Text(it, color = Pdi.T2, fontSize = 10.sp) }
+        Row(verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Box(Modifier.weight(1f)) {
+                labeledField(L10n.t("gd.q.ph", vm.language), question,
+                    L10n.t("gd.q.ph", vm.language)) { question = it }
+            }
+            SmallAction(L10n.t("gd.ask.go", vm.language)) {
+                if (question.isNotBlank()) {
+                    vm.call({ ApiClient.consoleAsk(question.trim()) }) { r ->
+                        r.onSuccess { answerLine = it }
+                            .onFailure { error = it.message }
+                    }
+                }
+            }
+        }
+        answerLine?.let { Text(it, color = Pdi.T2, fontSize = 10.sp) }
+        Row(verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Box(Modifier.weight(1f)) {
+                labeledField(L10n.t("gd.text.ph", vm.language), noteText,
+                    L10n.t("gd.text.ph", vm.language)) { noteText = it }
+            }
+            SmallAction(L10n.t("gd.translate", vm.language)) {
+                if (noteText.isNotBlank()) {
+                    vm.call({ ApiClient.translate(vm.token!!, noteText) }) { r ->
+                        r.onSuccess {
+                            trLine = L10n.t("gd.engine", vm.language) + " " + it
+                        }.onFailure { error = it.message }
+                    }
+                }
+            }
+        }
+        trLine?.let { Text(it, color = Pdi.T2, fontSize = 10.sp) }
+        error?.let { Text(it, color = Pdi.Red, fontSize = 11.sp) }
+    }
+}
+
+/** The pane in the corner, from the phone: its public vocabulary, this
+ *  tenant's arrangement, and one face as the pane would draw it. */
+@Composable
+fun DockCard(vm: VaultViewModel) {
+    var vocabLine by remember { mutableStateOf<String?>(null) }
+    var tid by remember { mutableStateOf("") }
+    var current by remember { mutableStateOf<ApiClient.DockSettingsK?>(null) }
+    var faceLine by remember { mutableStateOf<String?>(null) }
+    var whereLine by remember { mutableStateOf<String?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        vm.call({ ApiClient.dockVocabulary() }) { r ->
+            r.onSuccess { vocabLine = it }
+        }
+    }
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("gd.corner", vm.language), color = Pdi.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        vocabLine?.let { Text(it, color = Pdi.T2, fontSize = 10.sp) }
+        labeledField(L10n.t("adm.tenant.ph", vm.language), tid,
+            L10n.t("adm.tenant.ph", vm.language)) { tid = it }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SmallAction(L10n.t("gd.open", vm.language)) {
+                if (tid.isNotBlank()) {
+                    vm.call({ ApiClient.dockSettings(vm.token!!, tid.trim()) }) { r ->
+                        r.onSuccess { current = it }
+                            .onFailure { error = it.message }
+                    }
+                }
+            }
+            SmallAction(L10n.t("gd.othercorner", vm.language)) {
+                if (tid.isNotBlank()) {
+                    val corner = if (current?.corner == "bottom_right")
+                        "bottom_left" else "bottom_right"
+                    vm.call({ ApiClient.dockConfigure(vm.token!!, tid.trim(),
+                        corner) }) { r ->
+                        r.onSuccess { current = it }
+                            .onFailure { error = it.message }
+                    }
+                }
+            }
+            SmallAction(L10n.t("gd.showing", vm.language)) {
+                val face = current?.face
+                if (tid.isNotBlank() && face != null) {
+                    vm.call({ ApiClient.dockFace(vm.token!!, tid.trim(),
+                        face) }) { r ->
+                        r.onSuccess { faceLine = it }
+                            .onFailure { error = it.message }
+                    }
+                }
+            }
+            SmallAction(L10n.t("gd.use", vm.language)) {
+                vm.call({ ApiClient.dockWhere(current?.face ?: "helper") }) { r ->
+                    r.onSuccess { whereLine = it }
+                        .onFailure { error = it.message }
+                }
+            }
+        }
+        current?.let {
+            Text(it.corner + " \u00b7 " + it.state + " \u00b7 " + it.face,
+                color = Pdi.T2, fontSize = 10.sp)
+        }
+        faceLine?.let { Text(it, color = Pdi.T2, fontSize = 10.sp) }
+        whereLine?.let { Text(it, color = Pdi.T2, fontSize = 10.sp) }
+        error?.let { Text(it, color = Pdi.Red, fontSize = 11.sp) }
     }
 }
