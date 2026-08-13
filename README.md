@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.70.0** ([changelog](CHANGELOG.md)) — one of three products
+**Current release: v0.70.1** ([changelog](CHANGELOG.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
 together, so one number names one combination of all three.
@@ -227,6 +227,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.70.1** | **No functional changes to PDI** — cut with the siblings. In QRME, the widget runner asked whether *an* interpreter existed and never whether it was new enough, so a host carrying Node 18 reported ready and then failed every run |
 | **0.70.0** | **The light stopped sitting on the menu, and custody is not ownership in writing** — the vault light and its minimized dot clear the phone's tab bar and speak ten languages; the terms say that PDI's holding confers nothing and that a data subject's statutory rights survive it (terms 1.2 → 1.3); the failure reports come home to this backend; and the doorless backlog on all three shells reaches zero |
 | **0.68.0** | **Cut in step** — no PDI code changed; QRME gained the memory door, the steering lock, character-card import and rehearsal rooms that forget on purpose, while JIM's meals, weekly letters, interview drills and bank statements all took their private halves to this vault |
 | **0.67.0** | **Cut in step** — no PDI code changed; QRME's licences now carry real substance under a manifest and organizations lease specialists, JIM's tandem sends the triggering vitals across the handoff, collected rooms are scanned for hazards, and a minor's consent became the guardian's own verified click |

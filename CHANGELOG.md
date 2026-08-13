@@ -4,6 +4,13 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.70.1] - 2026-08-13
+
+**There are no functional changes to PDI in this release**: cut with the
+siblings. In QRME, the widget runner asked whether *an* interpreter
+existed and never whether it was new enough, so a host carrying Node 18
+reported ready and then failed every run.
+
 ## [0.70.0] - 2026-08-13
 
 ### Fixed
@@ -6395,7 +6402,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.70.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.70.1...HEAD
+[0.70.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.70.1
 [0.70.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.70.0
 [0.61.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.61.1
 [0.19.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.19.1
