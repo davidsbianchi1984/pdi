@@ -1,6 +1,6 @@
 # PDI (Private Data Infrastructure) Terms of Service
 
-*Version 1.2 — effective 2026-08-10. Served by the API at `GET /terms`.
+*Version 1.3 — effective 2026-08-13. Served by the API at `GET /terms`.
 PDI is business-to-business infrastructure: the "Customer" is the
 organization whose tenant is provisioned, and these Terms bind the
 Customer and every system and user it connects. The version in force is
@@ -48,6 +48,14 @@ Service: sealing, storing, serving, and deleting it as directed through
 the API. Export and deletion are available at any time through the
 documented endpoints; deletion honors the tenant's soft-delete recovery
 window, then is permanent.
+
+2.1a **Custody is not ownership.** PDI holds the Customer's data in
+custody: the deployment stores, seals, serves and deletes it under the
+Customer's direction and acquires no ownership of it by holding it.
+Neither the Customer's ownership under 2.1 nor PDI's custody under this
+clause diminishes the statutory rights a data subject has over their own
+personal data — access, correction, erasure and portability are theirs
+by law, and this agreement does not contract them away on their behalf.
 
 2.2 The Customer is responsible for: the lawfulness of the data it
 stores; obtaining any consents its data subjects require; **safeguarding

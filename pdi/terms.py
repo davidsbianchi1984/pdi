@@ -10,7 +10,7 @@ recorded and enforced by :mod:`pdi.baa`.
 
 from __future__ import annotations
 
-TERMS_VERSION = "1.2"
+TERMS_VERSION = "1.3"
 DOCUMENT = "docs/terms.md"
 
 KEY_POINTS = [
@@ -26,6 +26,10 @@ KEY_POINTS = [
     "compliant.",
     "The Customer owns its data and is responsible for its lawfulness, "
     "consents, tenant-token safekeeping, and connected systems.",
+    "PDI holds that data in custody and never in ownership: the "
+    "deployment stores and serves it under the Customer's direction, and "
+    "neither the Customer's ownership nor PDI's custody diminishes the "
+    "statutory rights a data subject has over their own personal data.",
     "PHI requires an executed Business Associate Agreement, recorded on "
     "the tenant — the API refuses HIPAA-program work without one.",
     "No security measure is absolute; the Customer assumes the inherent "

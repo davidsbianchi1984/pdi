@@ -80,6 +80,54 @@ def test_no_screen_is_named_something_a_url_cannot_carry():
                      + "\n  ".join(bad))
 
 
+# -- the README's own arithmetic -----------------------------------------------
+
+def test_every_test_count_the_readme_claims_is_true():
+    """The README says "`module.py`, N tests" in several places, and this
+    repository is the third to learn that such a number rots.
+
+    Ported from QRME and JIM-mini, where the same guard found five stale
+    claims between them. It is on `guard_divergences.txt` as a question this
+    product was not asking, and asking it here found one: `pdi/hosting.py`
+    claimed 16 while `test_hosting.py` and `test_hosting_modes.py` held 25.
+
+        asked     does the README's prose read plausibly
+        mattered  is each number in it still the number
+
+    A number in prose is a duplicate of something the repository already
+    knows, and duplicates drift the moment somebody adds a test — nothing
+    fails when a file grows a function, so nothing did.
+
+    The counting is deliberately the dumb kind, as in both siblings: `def
+    test_` at column zero, in every file named after the module. One claim
+    here names two modules at once (`tutorial.py` and `assistant.py` deliver
+    one walkthrough between them), so the files for every module a claim
+    names are counted as one bucket — the claim is a single number and has
+    to be checked against a single number. This is what moved
+    `test_console_guide.py` to `test_tutorial.py`: a test file the
+    convention cannot find is a claim nothing checks.
+    """
+    readme = _readme()
+    claims = re.findall(
+        r"`(pdi/[\w/]+\.py)`((?:\s+and\s+`pdi/[\w/]+\.py`)*)[^\n]{0,40}?"
+        r"(\d+) tests", readme)
+    assert claims, "no test-count claims found — has the README format changed?"
+    root = pathlib.Path(ROOT)
+    for first, rest, claimed in claims:
+        modules = [first] + re.findall(r"`(pdi/[\w/]+\.py)`", rest)
+        files = sorted({f for m in modules
+                        for f in root.rglob(f"test_{pathlib.Path(m).stem}*.py")})
+        assert files, (
+            f"README cites {', '.join(modules)} but no test file is named "
+            "after any of them")
+        actual = sum(len(re.findall(r"^def test_", f.read_text(encoding="utf-8"),
+                                    re.M))
+                     for f in files)
+        assert actual == int(claimed), (
+            f"README says {', '.join(modules)} has {claimed} tests; "
+            f"{', '.join(f.name for f in files)} hold {actual}")
+
+
 def test_the_desktop_app_version_matches_the_api():
     """Three releases shipped installers labelled 0.3.3 from 0.4.x tags.
 

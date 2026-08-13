@@ -115,7 +115,9 @@ GUIDANCE = (
     "reason to hold the hardware — a regulator, a contract, or a preference "
     "about who can walk up to the machine. Your own device is a real option "
     "and not a toy: the encryption is identical. What changes is who is "
-    "awake at 3am when it stops."
+    "awake at 3am when it stops. None of the four changes whose data it "
+    "is: every mode is custody rather than ownership, and the statutory "
+    "rights of the people the records are about survive all of them."
 )
 
 

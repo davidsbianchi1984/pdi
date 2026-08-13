@@ -591,7 +591,7 @@ and customer keys.
 
 ## Where the vault lives
 
-`pdi/hosting.py`, 4 routes, 16 tests, screen **42**.
+`pdi/hosting.py`, 4 routes, 25 tests, screen **42**.
 
 QRME and JIM-mini sell memberships. PDI does not: it is the layer underneath
 both, and what it offers is a **place to put the bytes**.
