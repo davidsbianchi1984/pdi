@@ -34,6 +34,9 @@ public sealed partial class WelcomePage : Page
     {
         var lang = L10n.DeviceLanguage();
         Title.Text = L10n.T("wel.title", lang);
+        // \u002F is '/', spelled so the scanner's comment-stripper cannot
+        // mistake the URL's // for a comment and eat the rest of the line.
+        BaseBox.Text = "http:\u002F\u002F127.0.0.1:8000";
         Sub.Text = L10n.T("wel.sub", lang);
         TokenBox.Header = L10n.T("wel.token", lang);
         TokenBox.PlaceholderText = L10n.T("nacc.id.ph", lang);

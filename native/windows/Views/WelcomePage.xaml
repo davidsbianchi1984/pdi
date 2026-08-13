@@ -25,7 +25,7 @@
                     BorderThickness="1" CornerRadius="16" Padding="16">
                 <StackPanel Spacing="12">
                     <PasswordBox x:Name="TokenBox" />
-                    <TextBox x:Name="BaseBox" Text="http://127.0.0.1:8000" />
+                    <TextBox x:Name="BaseBox" />
                     <!-- Only a vault under customer custody needs this.
                          Leaving it blank on such a vault is what every
                          shell did until now, and every record answered

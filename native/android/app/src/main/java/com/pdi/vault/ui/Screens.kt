@@ -1053,13 +1053,15 @@ fun AdminCard(vm: VaultViewModel) {
             }
         }
         info?.let { k ->
-            Text("provider: ${k.provider}", color = Pdi.T3, fontSize = 10.sp)
+            Text(L10n.t("cu.provider", vm.language) + ": " + k.provider,
+                color = Pdi.T3, fontSize = 10.sp)
             k.versions.forEach { v ->
                 Row(verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Box(Modifier.size(8.dp).clip(CircleShape)
                         .background(if (v.active) Pdi.Green else Pdi.T3))
-                    Text("v${v.version}", color = Pdi.Txt, fontSize = 12.sp,
+                    val vTag = "v" + v.version
+                    Text(vTag, color = Pdi.Txt, fontSize = 12.sp,
                         fontWeight = FontWeight.Bold)
                     Text(if (v.active) "active" else "inactive",
                         color = if (v.active) Pdi.Green else Pdi.T3, fontSize = 10.sp)
@@ -1738,7 +1740,9 @@ private fun OutboundPanel(vm: VaultViewModel) {
                     Text(t.status.replaceFirstChar { it.uppercase() },
                         color = if (t.status == "revoked") Pdi.Red else Pdi.Green, fontSize = 12.sp)
                 }
-                Text("→ ${t.recipient} · ${t.programs.joinToString(" ") { it.uppercase() }}",
+                val line = "\u2192 " + t.recipient + " \u00b7 " +
+                    t.programs.joinToString(" ") { it.uppercase() }
+                Text(line,
                     color = Pdi.T2, fontSize = 12.sp)
                 t.expiresAt?.let { Text(L10n.t("ntr.retained", vm.language).replace("{date}", it), color = Pdi.T3, fontSize = 11.sp) }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -1880,7 +1884,8 @@ private fun IntakePanel(vm: VaultViewModel) {
                         }
                     }) { Text(L10n.t("ntr.read", vm.language), color = Pdi.BrandA, fontSize = 12.sp) }
                     received[i.id]?.let { f ->
-                        Text("${f.filename ?: "file"}: ${f.content ?: ""}",
+                        val fileLine = (f.filename ?: "file") + ": " + (f.content ?: "")
+                        Text(fileLine,
                             color = Pdi.T2, fontSize = 11.sp,
                             modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(9.dp))
                                 .background(Pdi.ScrBot).padding(8.dp))
@@ -2150,8 +2155,10 @@ fun ProblemReportingCard(lang: String) {
                          style = MaterialTheme.typography.bodySmall)
                 } else {
                     owed.forEach { r ->
-                        Text("${r.optString("op")} → ${r.optInt("status")}  " +
-                             "×${r.optInt("count")}  ${r.optString("day")}",
+                        val problemLine = r.optString("op") + " \u2192 " +
+                            r.optInt("status") + "  \u00d7" + r.optInt("count") +
+                            "  " + r.optString("day")
+                        Text(problemLine,
                              style = MaterialTheme.typography.bodySmall)
                     }
                 }

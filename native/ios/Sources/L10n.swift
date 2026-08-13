@@ -148,6 +148,7 @@ enum L10n {
         "co.nothingpaged": ["en": "Nothing paged.", "es": "Ningún aviso.", "fr": "Aucune alerte.", "de": "Nichts gerufen.", "pt": "Nenhum aviso.", "it": "Nessuna chiamata.", "ja": "呼び出しはありません。", "zh": "没有发出呼叫。", "hi": "कोई पेज नहीं भेजा गया।", "ar": "لا نداءات."],
         "co.retry": ["en": "Retry", "es": "Reintentar", "fr": "Réessayer", "de": "Erneut versuchen", "pt": "Tentar de novo", "it": "Riprovare", "ja": "再試行", "zh": "重试", "hi": "पुन: प्रयास करें", "ar": "إعادة المحاولة"],
         "adm.tenant.ph": ["en": "tenant id", "es": "id del tenant", "fr": "id du tenant", "de": "Tenant-ID", "pt": "id do tenant", "it": "id del tenant", "ja": "テナントID", "zh": "租户ID", "hi": "टेनेंट ID", "ar": "معرّف المستأجر"],
+        "cu.provider": ["en": "provider", "es": "proveedor", "fr": "fournisseur", "de": "Anbieter", "pt": "fornecedor", "it": "fornitore", "ja": "提供元", "zh": "提供方", "hi": "प्रदाता", "ar": "المزوّد"],
         "gd.guide": ["en": "The guide", "es": "La guía", "fr": "Le guide", "de": "Der Leitfaden", "pt": "O guia", "it": "La guida", "ja": "案内", "zh": "指引", "hi": "गाइड", "ar": "الدليل"],
         "gd.steps": ["en": "steps", "es": "pasos", "fr": "étapes", "de": "Schritte", "pt": "passos", "it": "passi", "ja": "ステップ", "zh": "个步骤", "hi": "चरण", "ar": "خطوات"],
         "gd.start": ["en": "Start the walkthrough", "es": "Empezar el recorrido", "fr": "Commencer la visite", "de": "Rundgang beginnen", "pt": "Começar o percurso", "it": "Iniziare il percorso", "ja": "ひと通り始める", "zh": "开始导览", "hi": "परिचय शुरू करें", "ar": "بدء الجولة"],

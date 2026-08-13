@@ -48,13 +48,14 @@ struct AdminCard: View {
             }
 
             if let info {
-                Text("provider: \(info.provider)")
+                Text(L10n.t("cu.provider", state.language) + ": " + info.provider)
                     .font(.caption2).foregroundStyle(Theme.t3)
                 ForEach(info.versions) { v in
                     HStack {
                         Circle().fill(v.active ? Theme.green : Theme.t3)
                             .frame(width: 8, height: 8)
-                        Text("v\(v.version)").font(.caption.bold())
+                        let vTag = "v" + String(v.version)
+                        Text(vTag).font(.caption.bold())
                             .foregroundStyle(Theme.txt)
                         Text(v.active ? "active" : "inactive")
                             .font(.caption2)

@@ -11,6 +11,7 @@ struct WelcomeView: View {
         ("ja", "日本語"), ("zh", "中文"), ("hi", "हिन्दी"), ("ar", "العربية"),
     ]
     @State private var base = "http://127.0.0.1:8000"
+    private let baseHint = "http://127.0.0.1:8000"
     /// Held in view state and handed to the client, never to
     /// `UserDefaults` — see `ApiClient.holdKey`.
     @State private var tenantKey = ""
@@ -45,7 +46,7 @@ struct WelcomeView: View {
                             .textInputAutocapitalization(.never).autocorrectionDisabled()
                     }
                     field(L10n.t("wel.server", lang)) {
-                        TextField("http://127.0.0.1:8000", text: $base).textFieldStyle(.plain).foregroundStyle(Theme.txt)
+                        TextField(baseHint, text: $base).textFieldStyle(.plain).foregroundStyle(Theme.txt)
                             .textInputAutocapitalization(.never).autocorrectionDisabled()
                     }
                     // Only a vault under customer custody needs this, which

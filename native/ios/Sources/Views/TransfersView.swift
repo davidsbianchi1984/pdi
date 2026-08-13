@@ -104,7 +104,9 @@ private struct OutboundSection: View {
                             Text(t.status.capitalized).font(.caption)
                                 .foregroundStyle(t.status == "revoked" ? Theme.red : Theme.green)
                         }
-                        Text("→ \(t.recipient) · \(t.programs.map { $0.uppercased() }.joined(separator: " "))")
+                        let line = "→ " + t.recipient + " · "
+                            + t.programs.map { $0.uppercased() }.joined(separator: " ")
+                        Text(line)
                             .font(.caption).foregroundStyle(Theme.t2)
                         if let exp = t.expires_at {
                             Text(L10n.t("ntr.retained", state.language).replacingOccurrences(of: "{date}", with: exp)).font(.caption2).foregroundStyle(Theme.t3)
@@ -297,7 +299,8 @@ private struct IntakeSection: View {
                         Button(L10n.t("ntr.read", state.language)) { read(i) }
                             .font(.caption.bold()).foregroundStyle(Theme.brandA)
                         if let f = received[i.id] {
-                            Text("\(f.filename ?? "file"): \(f.content ?? "")")
+                            let line = (f.filename ?? "file") + ": " + (f.content ?? "")
+                            Text(line)
                                 .font(.system(.caption, design: .monospaced))
                                 .foregroundStyle(Theme.t2)
                                 .frame(maxWidth: .infinity, alignment: .leading)

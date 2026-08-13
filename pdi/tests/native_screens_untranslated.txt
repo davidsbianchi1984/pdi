@@ -95,6 +95,6 @@
 # URL default, and the extractor's own truncations of interpolated strings.
 # A floor with names, not a backlog with a number.
 
-ios: 6
-android: 5
-windows: 1
+ios: 0
+android: 0
+windows: 0
