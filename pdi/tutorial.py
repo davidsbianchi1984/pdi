@@ -157,7 +157,12 @@ LESSONS: tuple[dict, ...] = (
               "query string, which can name a key. Nothing here touches the "
               "vault: no record, no key and no seal is involved. Before a "
               "single report is sent the console asks, and shows you the exact "
-              "thing it would send.",
+              "thing it would send. And the reports funnel home now: with no "
+              "external collector stamped into the build, the console posts "
+              "to this deployment's own backend, and the same card retrieves "
+              "the aggregate — every client's failures folded into counters, "
+              "no messages to leak — behind PDI_PROBLEMS_KEY, or freely from "
+              "the backend's own machine.",
          screens=(46, 47),
          click="Open Settings and press 'Show me exactly what would be shared'."),
     dict(key="all_set", chapter="Running it", title="Ready",
