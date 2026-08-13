@@ -152,6 +152,16 @@ label.check input { width: auto; margin-top: 0; }
     left: 12px;
   }
   .vault-light { max-width: calc(100vw - 24px); }
+  /* Second report, same photograph one state along: "Same thing with the
+     small green circle when minimized." Minimized was not small — a 40px
+     solid disc with a heavy shadow, parked over whatever the screen was
+     trying to say. On a phone it becomes a true dot and loses the shadow:
+     still pressable, no longer furniture. QRME's lights settled here after
+     the same report. */
+  .vl-dot {
+    width: 22px; height: 22px; opacity: 0.75;
+    box-shadow: 0 2px 8px rgba(0,0,0,.35);
+  }
 }
 
 /* The version-mismatch banner — visible on every screen until the older

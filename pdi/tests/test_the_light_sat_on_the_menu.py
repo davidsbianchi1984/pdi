@@ -165,6 +165,44 @@ def test_nothing_fixed_to_the_bottom_covers_the_bar(selector):
         f"{bar}px tall, so it covers the menu")
 
 
+#: What the minimized light may occupy on a phone, and how solid it may be.
+#: Both numbers are QRME's, which arrived at them after the same report
+#: about the same widget.
+DOT_MAX_PX, DOT_MAX_OPACITY = 24.0, 0.9
+
+
+def test_the_minimized_light_is_a_dot_and_not_a_disc():
+    """The second half of the same field report.
+
+    The first photograph showed the light covering the tabs; lifting it
+    answered that. The next one — *"Same thing with the small green circle
+    when minimized"* — showed the minimized state, and it was not small: a
+    40px solid disc with a heavy shadow, sitting over the screen's own
+    content at full strength.
+
+        asked     does the minimized light clear the menu
+        mattered  is the minimized light small enough to be minimized
+
+    Minimizing is the reader saying *get out of the way*. A widget that
+    answers by staying the same size in a different shape has not obeyed;
+    it has only stopped explaining itself.
+    """
+    rule = _rule(_mobile_block(), ".vl-dot")
+    assert rule, (
+        ".vl-dot has no rule at the mobile breakpoint, so it keeps its "
+        "desktop size on a phone")
+    for prop in ("width", "height"):
+        size = _px(rule, prop)
+        assert size is not None and size <= DOT_MAX_PX, (
+            f"the minimized light's {prop} is {size}px on a phone; a dot "
+            f"that is more than {DOT_MAX_PX}px is a disc parked on the "
+            "content")
+    m = re.search(r"\bopacity:\s*([\d.]+)\s*;", rule)
+    assert m and float(m.group(1)) <= DOT_MAX_OPACITY, (
+        "the minimized light is fully opaque on a phone — it hides whatever "
+        "is under it rather than sitting lightly over it")
+
+
 def test_the_light_stays_inside_the_glass():
     """A pill wider than the phone pushes the page sideways, which is the
     other way a fixed element takes a screen over."""
