@@ -78,9 +78,14 @@
                                                Foreground="{StaticResource PdiT2Brush}" FontSize="12" />
                                 </Grid>
                                 <TextBlock Text="{Binding Meta}" Foreground="{StaticResource PdiT2Brush}" FontSize="12" />
-                                <Button Content="{Binding RevokeLabel}" Tag="{Binding Id}" Click="OnRevoke"
-                                        Visibility="{Binding RevokeVisibility}"
-                                        Background="Transparent" Foreground="{StaticResource PdiRed}" />
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button Content="{Binding CheckLinkLabel}" Tag="{Binding Id}" Click="OnCheckLink"
+                                            Background="Transparent" FontSize="12"
+                                            Foreground="{StaticResource PdiBrandABrush}" />
+                                    <Button Content="{Binding RevokeLabel}" Tag="{Binding Id}" Click="OnRevoke"
+                                            Visibility="{Binding RevokeVisibility}"
+                                            Background="Transparent" Foreground="{StaticResource PdiRed}" />
+                                </StackPanel>
                             </StackPanel>
                         </Border>
                     </DataTemplate>
@@ -189,6 +194,62 @@
                                     Height="38" Click="OnSubmitIntake"
                                     Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
                         </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </PivotItem>
+
+        <!-- Carriers: custody codes on sealed things — the sticker, everyone
+             who rang it, and the pairing card. -->
+        <PivotItem x:Name="CarPivot">
+            <ScrollViewer>
+                <StackPanel Spacing="12" Padding="4">
+                    <TextBlock x:Name="CarHead" FontSize="22" FontWeight="Bold"
+                               Foreground="{StaticResource PdiTxtBrush}" />
+                    <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
+                            BorderThickness="1" CornerRadius="14" Padding="14">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Name="CarPlaceHead" FontWeight="Bold"
+                                       Foreground="{StaticResource PdiTxtBrush}" />
+                            <TextBox x:Name="CarLabelBox" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <ToggleButton x:Name="CarBlind" Click="OnDiscloseBlind" FontSize="12" />
+                                <ToggleButton x:Name="CarContact" Click="OnDiscloseContact" FontSize="12" />
+                                <Button x:Name="CarPlaceButton" Click="OnPlaceCarrier"
+                                        Background="{StaticResource PdiBrandABrush}" Foreground="White" FontSize="12" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                    <TextBlock x:Name="CarError" FontSize="12" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource PdiRed}" />
+                    <TextBlock x:Name="CarNone" FontSize="12"
+                               Foreground="{StaticResource PdiT2Brush}" />
+                    <StackPanel x:Name="CarRows" Spacing="8" />
+                    <Border x:Name="CarCardPanel" Visibility="Collapsed"
+                            Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
+                            BorderThickness="1" CornerRadius="14" Padding="14">
+                        <StackPanel x:Name="CarCard" Spacing="4" />
+                    </Border>
+                    <Border x:Name="CarChainPanel" Visibility="Collapsed"
+                            Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
+                            BorderThickness="1" CornerRadius="14" Padding="14">
+                        <StackPanel x:Name="CarChain" Spacing="4" />
+                    </Border>
+                    <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
+                            BorderThickness="1" CornerRadius="14" Padding="14">
+                        <StackPanel Spacing="4">
+                            <TextBlock x:Name="CarRangHead" FontWeight="Bold"
+                                       Foreground="{StaticResource PdiTxtBrush}" />
+                            <TextBlock x:Name="CarNoRings" FontSize="12"
+                                       Foreground="{StaticResource PdiT2Brush}" />
+                            <StackPanel x:Name="CarRings" Spacing="4" />
+                            <TextBlock x:Name="CarTranscript" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                                       Foreground="{StaticResource PdiT2Brush}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
+                            BorderThickness="1" CornerRadius="14" Padding="14">
+                        <StackPanel x:Name="CarPair" Spacing="2" />
                     </Border>
                 </StackPanel>
             </ScrollViewer>

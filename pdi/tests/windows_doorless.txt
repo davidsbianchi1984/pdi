@@ -4,7 +4,6 @@
 # emails it); a phone has no business fetching somebody else's
 # collection page, and building it into one would mean telling a
 # person who was sent a single file to install an app.
-DELETE /beacons/{bid}
 DELETE /bequests/{bid}
 DELETE /bequests/{bid}/grant
 DELETE /contributions/{ref}
@@ -16,9 +15,6 @@ DELETE /tenants/{tenant_id}/baa
 DELETE /tokens/{token}
 GET /audit/schema
 GET /baa
-GET /beacons
-GET /beacons/{bid}
-GET /beacons/{bid}/custody
 GET /bequests
 GET /bequests/grant/keys
 GET /bequests/grant/read
@@ -46,22 +42,13 @@ GET /intakes/{iid}
 GET /intakes/{iid}/custody
 GET /key
 GET /operations
-GET /pair
-GET /pair/qr.svg
 GET /positions
 GET /positions/{position_id}
-GET /r/{tid}
 GET /retention
-GET /rings
-GET /rings/{rid}/transcript
-GET /s/{bid}
-GET /s/{bid}/card
-GET /s/{bid}/qr.svg
 GET /snapshot
 GET /tenants/{tenant_id}/baa
 GET /transfers/{tid}
 GET /transfers/{tid}/custody
-POST /beacons
 POST /bequests
 POST /bequests/{bid}/activate
 POST /console/ask
@@ -75,8 +62,6 @@ POST /keys/reseal
 POST /positions
 POST /restore
 POST /retention/sweep
-POST /s/{bid}/found
-POST /s/{bid}/ring
 POST /seed
 POST /tenants
 POST /tenants/{tenant_id}/baa
@@ -84,7 +69,6 @@ POST /tenants/{tenant_id}/restore
 POST /tenants/{tenant_id}/tokens
 POST /transfers/{tid}/receive
 POST /translate
-PUT /beacons/{bid}/state
 PUT /dock/{tenant_id}
 PUT /gate/timezone
 PUT /hosting/{tenant_id}

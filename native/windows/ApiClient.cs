@@ -91,6 +91,56 @@ public record ComplianceProgram(
 public record CompliancePrograms(
     [property: JsonPropertyName("programs")] ComplianceProgram[] Programs);
 
+public record CarrierBeacon(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("ref_kind")] string RefKind,
+    [property: JsonPropertyName("label")] string Label,
+    [property: JsonPropertyName("disclose")] string Disclose,
+    [property: JsonPropertyName("state")] string State,
+    [property: JsonPropertyName("scans")] int Scans,
+    [property: JsonPropertyName("active")] bool Active);
+
+public record LiftedOut(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("active")] bool Active);
+
+// What a scanner sees. `contents` is always null on the wire and that is
+// the feature: the code proves custody, it does not open the thing.
+public record ScanCardOut(
+    [property: JsonPropertyName("reference")] string Reference,
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("state")] string State,
+    [property: JsonPropertyName("under_custody")] bool UnderCustody,
+    [property: JsonPropertyName("badge")] string Badge,
+    [property: JsonPropertyName("note")] string Note);
+
+public record CustodyEntryOut(
+    [property: JsonPropertyName("event")] string Event,
+    [property: JsonPropertyName("actor")] string Actor,
+    [property: JsonPropertyName("at")] string At);
+
+public record CustodyChainOut(
+    [property: JsonPropertyName("chain_of_custody")] CustodyEntryOut[] ChainOfCustody,
+    [property: JsonPropertyName("audit_chain_intact")] bool AuditChainIntact);
+
+public record FoundAckOut(
+    [property: JsonPropertyName("beacon")] string Beacon,
+    [property: JsonPropertyName("recorded")] bool Recorded,
+    [property: JsonPropertyName("note")] string Note);
+
+public record RingRowOut(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("kind")] string? Kind,
+    [property: JsonPropertyName("note")] string? Note,
+    [property: JsonPropertyName("state")] string? State,
+    [property: JsonPropertyName("outcome")] string? Outcome,
+    [property: JsonPropertyName("created_at")] string? CreatedAt);
+
+public record PairInfoOut(
+    [property: JsonPropertyName("console_url")] string ConsoleUrl,
+    [property: JsonPropertyName("how")] string[] How,
+    [property: JsonPropertyName("note")] string Note);
+
 public record Transfer(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("recipient")] string Recipient,
@@ -342,6 +392,88 @@ public sealed class ApiClient
     public Task<RecordProvenance> Provenance(string token, string key) =>
         Send<RecordProvenance>(new HttpRequestMessage(
             HttpMethod.Get, $"/provenance/{key}"), token);
+
+    // ---- carriers: custody codes on sealed things ----
+
+    public Task<CarrierBeacon[]> CarrierBeacons(string token) =>
+        Send<CarrierBeacon[]>(new HttpRequestMessage(HttpMethod.Get, "/beacons"), token);
+
+    public Task<CarrierBeacon> PlaceCarrierBeacon(string token, string label,
+                                                  string disclose) =>
+        Send<CarrierBeacon>(new HttpRequestMessage(HttpMethod.Post, "/beacons")
+        {
+            Content = JsonContent.Create(new { ref_kind = "object", label, disclose }),
+        }, token);
+
+    public Task<CarrierBeacon> CarrierBeacon(string token, string bid) =>
+        Send<CarrierBeacon>(new HttpRequestMessage(HttpMethod.Get, $"/beacons/{bid}"), token);
+
+    public Task<CarrierBeacon> SetCarrierState(string token, string bid, string state) =>
+        Send<CarrierBeacon>(new HttpRequestMessage(HttpMethod.Put, $"/beacons/{bid}/state")
+        {
+            Content = JsonContent.Create(new { state }),
+        }, token);
+
+    public Task<LiftedOut> LiftCarrierBeacon(string token, string bid) =>
+        Send<LiftedOut>(new HttpRequestMessage(HttpMethod.Delete, $"/beacons/{bid}"), token);
+
+    public Task<CustodyChainOut> CarrierCustody(string token, string bid) =>
+        Send<CustodyChainOut>(new HttpRequestMessage(HttpMethod.Get, $"/beacons/{bid}/custody"), token);
+
+    // The scanner's half — no bearer at all: the code in the hand is the
+    // whole credential, and what it earns is capped by `disclose`.
+    public Task<ScanCardOut> ScanCard(string bid) =>
+        Send<ScanCardOut>(new HttpRequestMessage(HttpMethod.Get, $"/s/{bid}/card"));
+
+    // The landing page and its QR image: the JSON sender cannot carry
+    // either, so the door is the request the opener makes, and building it
+    // here is what the route audit reads.
+    public string ScanPageUrl(string bid) =>
+        new Uri(_http.BaseAddress!,
+                new HttpRequestMessage(HttpMethod.Get, $"/s/{bid}").RequestUri!).ToString();
+
+    public string ScanQrUrl(string bid) =>
+        new Uri(_http.BaseAddress!,
+                new HttpRequestMessage(HttpMethod.Get, $"/s/{bid}/qr.svg").RequestUri!).ToString();
+
+    public Task<FoundAckOut> ReportFound(string bid) =>
+        Send<FoundAckOut>(new HttpRequestMessage(HttpMethod.Post, $"/s/{bid}/found")
+        {
+            Content = JsonContent.Create(new { where = "loading dock" }),
+        });
+
+    public Task<RingRowOut> RingHolder(string bid) =>
+        Send<RingRowOut>(new HttpRequestMessage(HttpMethod.Post, $"/s/{bid}/ring")
+        {
+            Content = JsonContent.Create(new { kind = "delivery" }),
+        });
+
+    public Task<RingRowOut[]> Rings(string token) =>
+        Send<RingRowOut[]>(new HttpRequestMessage(HttpMethod.Get, "/rings"), token);
+
+    public Task<RingRowOut> RingTranscript(string token, string rid) =>
+        Send<RingRowOut>(new HttpRequestMessage(HttpMethod.Get, $"/rings/{rid}/transcript"), token);
+
+    // Resolve the recipient's page before the link goes into an email — a
+    // misconfigured public base is otherwise discovered by the recipient,
+    // who has nobody to ask.
+    public async Task<bool> CheckRecipientPage(string tid)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Get, $"/r/{tid}");
+        var path = req.RequestUri!.ToString();
+        var res = await Dispatch(req);
+        if (!res.IsSuccessStatusCode)
+            Problems.Record("GET", path, (int)res.StatusCode);
+        return res.IsSuccessStatusCode;
+    }
+
+    // How to open this console on a phone: same Wi-Fi, no app store.
+    public Task<PairInfoOut> PairInfo() =>
+        Send<PairInfoOut>(new HttpRequestMessage(HttpMethod.Get, "/pair"));
+
+    public string PairQrUrl() =>
+        new Uri(_http.BaseAddress!,
+                new HttpRequestMessage(HttpMethod.Get, "/pair/qr.svg").RequestUri!).ToString();
 
     public Task<LanguagesList> Languages(string token) =>
         Send<LanguagesList>(new HttpRequestMessage(HttpMethod.Get, "/languages"), token);

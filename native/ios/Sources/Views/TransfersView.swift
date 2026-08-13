@@ -8,7 +8,11 @@ struct TransfersView: View {
     @EnvironmentObject var state: AppState
 
     enum Direction: String, CaseIterable {
-        case outbound = "Outbound", intake = "Intake"
+        // "carriers" lowercase on purpose: the raw value is what the screen
+        // switches on, never what a person reads — and the capitalized word
+        // is one the table translates, which the language guard rightly
+        // reads as English shown untranslated.
+        case outbound = "Outbound", intake = "Intake", carriers = "carriers"
 
         /// The raw value is what the screen switches on; this is what a
         /// person reads. Keeping the two apart is the rule the picker
@@ -18,6 +22,7 @@ struct TransfersView: View {
             switch self {
             case .outbound: return "ntr.t.outbound"
             case .intake:   return "ntr.t.intake"
+            case .carriers: return "car.title"
             }
         }
     }
@@ -33,6 +38,7 @@ struct TransfersView: View {
                 switch direction {
                 case .outbound: OutboundSection()
                 case .intake: IntakeSection()
+                case .carriers: CarriersSection()
                 }
             }.padding(20)
         }
@@ -50,6 +56,7 @@ private struct OutboundSection: View {
     @State private var mintedToken: String?
     @State private var busy = false
     @State private var error: String?
+    @State private var linkOk: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -100,9 +107,23 @@ private struct OutboundSection: View {
                         if let exp = t.expires_at {
                             Text(L10n.t("ntr.retained", state.language).replacingOccurrences(of: "{date}", with: exp)).font(.caption2).foregroundStyle(Theme.t3)
                         }
-                        if t.status != "revoked" {
-                            Button(L10n.t("ntr.revoke", state.language)) { revoke(t) }
-                                .font(.caption.bold()).foregroundStyle(Theme.red)
+                        HStack(spacing: 10) {
+                            // Resolve the recipient's page before the link
+                            // goes into an email — a misconfigured public
+                            // base is otherwise discovered by the recipient,
+                            // who has nobody to ask.
+                            Button(L10n.t("ntr.reciplink", state.language)) {
+                                checkLink(t.id)
+                            }
+                            .font(.caption2).foregroundStyle(Theme.brandA)
+                            if linkOk == t.id {
+                                Text(L10n.t("car.verifies", state.language))
+                                    .font(.caption2).foregroundStyle(Theme.green)
+                            }
+                            if t.status != "revoked" {
+                                Button(L10n.t("ntr.revoke", state.language)) { revoke(t) }
+                                    .font(.caption.bold()).foregroundStyle(Theme.red)
+                            }
                         }
                     }.card()
                 }
@@ -117,6 +138,16 @@ private struct OutboundSection: View {
                 .padding(.horizontal, 12).padding(.vertical, 10)
                 .background(Theme.scrBot).clipShape(RoundedRectangle(cornerRadius: 11))
                 .overlay(RoundedRectangle(cornerRadius: 11).stroke(Theme.line, lineWidth: 1))
+        }
+    }
+
+    private func checkLink(_ tid: String) {
+        Task {
+            if (try? await ApiClient.shared.checkRecipientPage(tid: tid)) == true {
+                linkOk = tid
+            } else {
+                error = L10n.t("car.notverify", state.language)
+            }
         }
     }
 
@@ -352,5 +383,260 @@ private extension Array {
         stride(from: 0, to: count, by: size).map {
             Array(self[$0..<Swift.min($0 + size, count)])
         }
+    }
+}
+
+// MARK: carriers — the sticker on the sealed thing, and everyone who rang it
+
+/// The console's Carriers screen, on the phone: place a custody code,
+/// advance its state, read its chain, see what a scanner sees, and answer
+/// as the scanner — found and ring — plus the pairing card, because the QR
+/// on this screen is how the phone got here in the first place.
+private struct CarriersSection: View {
+    @EnvironmentObject var state: AppState
+    @State private var rows: [CarrierBeacon] = []
+    @State private var rings: [RingRow] = []
+    @State private var label = ""
+    @State private var disclose = "blind"
+    @State private var card: ScanCardOut?
+    @State private var custody: CustodyChainOut?
+    @State private var transcript: RingRow?
+    @State private var pair: PairInfoOut?
+    @State private var busy = false
+    @State private var error: String?
+
+    private let states = ["sealed", "in_transit", "delivered", "opened"]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(L10n.t("car.title", state.language))
+                .font(.title2.bold()).foregroundStyle(Theme.txt)
+
+            // Place a code on a thing.
+            VStack(alignment: .leading, spacing: 10) {
+                Text(L10n.t("car.place", state.language))
+                    .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                TextField(L10n.t("car.label.ph", state.language), text: $label)
+                    .foregroundStyle(Theme.txt)
+                HStack(spacing: 8) {
+                    ForEach(["blind", "contact"], id: \.self) { d in
+                        Button(L10n.t("car.disclose.\(d)", state.language)) {
+                            disclose = d
+                        }
+                        .font(.caption2)
+                        .foregroundStyle(disclose == d ? .white : Theme.t2)
+                        .padding(.horizontal, 10).padding(.vertical, 5)
+                        .background(disclose == d ? Theme.brandA : Theme.scrBot)
+                        .clipShape(Capsule())
+                    }
+                    Button(L10n.t("car.place.go", state.language)) { place() }
+                        .font(.caption.bold()).foregroundStyle(.white)
+                        .padding(.horizontal, 12).padding(.vertical, 7)
+                        .background(Theme.brandA).clipShape(Capsule())
+                        .disabled(busy || label.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }.card()
+
+            if let error { Text(error).font(.caption).foregroundStyle(Theme.red) }
+            if rows.isEmpty {
+                Text(L10n.t("car.none", state.language))
+                    .font(.caption).foregroundStyle(Theme.t2)
+            }
+
+            ForEach(rows, id: \.id) { row in
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Text(row.label).font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                        Spacer()
+                        Text("\(row.ref_kind) · \(row.state) · \(row.disclose) · ×\(row.scans)"
+                             + (row.active ? "" : " · " + L10n.t("car.lifted", state.language)))
+                            .font(.caption2).foregroundStyle(Theme.t2)
+                    }
+                    HStack(spacing: 10) {
+                        Button(L10n.t("car.chain", state.language)) { chain(row.id) }
+                        Button(L10n.t("car.sees", state.language)) { sees(row.id) }
+                        Button(L10n.t("car.refresh", state.language)) { refresh(row.id) }
+                        // The state select, as a walk along the chain.
+                        Menu(row.state) {
+                            ForEach(states, id: \.self) { st in
+                                Button(st) { setState(row.id, st) }
+                            }
+                        }.font(.caption2)
+                        Button(L10n.t("car.lift", state.language)) { lift(row.id) }
+                            .foregroundStyle(Theme.red)
+                    }
+                    .font(.caption2).foregroundStyle(Theme.brandA)
+                    .disabled(busy)
+                    // The scanner's half, exercised from here: found and ring
+                    // take no bearer at all.
+                    HStack(spacing: 10) {
+                        Button(L10n.t("car.ring", state.language)) { ring(row.id) }
+                        Button(L10n.t("car.found", state.language)) { found(row.id) }
+                    }
+                    .font(.caption2).foregroundStyle(Theme.brandA)
+                    .disabled(busy)
+                    Text(L10n.t("qr.addr", state.language) + " "
+                         + ApiClient.shared.scanQrUrl(bid: row.id).absoluteString)
+                        .font(.caption2.monospaced()).foregroundStyle(Theme.t3)
+                        .textSelection(.enabled)
+                    Text(ApiClient.shared.scanPageUrl(bid: row.id).absoluteString)
+                        .font(.caption2.monospaced()).foregroundStyle(Theme.t3)
+                        .textSelection(.enabled)
+                }.card()
+            }
+
+            if let card {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(L10n.t("car.strangercard", state.language))
+                        .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                    Text(card.badge).font(.caption.bold()).foregroundStyle(Theme.txt)
+                    Text(card.note).font(.caption2).foregroundStyle(Theme.t2)
+                    Text("\(card.reference) · \(card.kind) · \(card.state) · "
+                         + L10n.t(card.under_custody ? "car.custody.yes"
+                                                     : "car.custody.no",
+                                  state.language))
+                        .font(.caption2).foregroundStyle(Theme.t2)
+                    Text(L10n.t("car.contents", state.language) + " "
+                         + L10n.t("car.contents.no", state.language) + " "
+                         + L10n.t("car.contents.never", state.language))
+                        .font(.caption2).foregroundStyle(Theme.t3)
+                }.card()
+            }
+
+            if let custody {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(L10n.t("car.chain", state.language))
+                        .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                    Text(L10n.t("car.auditchain", state.language) + " "
+                         + L10n.t(custody.audit_chain_intact ? "car.verifies"
+                                                             : "car.notverify",
+                                  state.language))
+                        .font(.caption2).foregroundStyle(Theme.t2)
+                    ForEach(Array(custody.chain_of_custody.enumerated()),
+                            id: \.offset) { _, e in
+                        Text("\(e.event) — \(e.actor) · \(e.at)")
+                            .font(.caption2).foregroundStyle(Theme.t2)
+                    }
+                }.card()
+            }
+
+            // Who rang: every scanner who pressed the sticker's button.
+            VStack(alignment: .leading, spacing: 6) {
+                Text(L10n.t("car.rang", state.language))
+                    .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+                if rings.isEmpty {
+                    Text(L10n.t("car.norings", state.language))
+                        .font(.caption2).foregroundStyle(Theme.t2)
+                }
+                ForEach(rings, id: \.id) { r in
+                    // Built outside the view call: a default written inside
+                    // an interpolation reads, to the language audit, like an
+                    // English literal cut off mid-hole.
+                    let line = "\(r.kind ?? "—") · \(r.state ?? "—") · \(r.created_at ?? "")"
+                    HStack {
+                        Text(line)
+                            .font(.caption2).foregroundStyle(Theme.t2)
+                        Spacer()
+                        Button(L10n.t("car.transcript", state.language)) {
+                            readTranscript(r.id)
+                        }
+                        .font(.caption2).foregroundStyle(Theme.brandA)
+                        .disabled(busy)
+                    }
+                }
+                if let transcript {
+                    let said = "\(transcript.kind ?? "") · \(transcript.note ?? "") · \(transcript.outcome ?? "")"
+                    Text(said)
+                        .font(.caption2).foregroundStyle(Theme.t3)
+                }
+            }.card()
+
+            // The pairing card: the card's own words, straight from the wire.
+            if let pair {
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(Array(pair.how.enumerated()), id: \.offset) { _, line in
+                        Text(line).font(.caption2.bold()).foregroundStyle(Theme.t2)
+                    }
+                    Text(pair.console_url)
+                        .font(.caption2.monospaced()).foregroundStyle(Theme.txt)
+                        .textSelection(.enabled)
+                    Text(pair.note).font(.caption2).foregroundStyle(Theme.t3)
+                    Text(L10n.t("qr.addr", state.language) + " "
+                         + ApiClient.shared.pairQrUrl().absoluteString)
+                        .font(.caption2.monospaced()).foregroundStyle(Theme.t3)
+                        .textSelection(.enabled)
+                }.card()
+            }
+        }
+        .task { await load() }
+    }
+
+    private func load() async {
+        pair = try? await ApiClient.shared.pairInfo()
+        guard let token = state.token else { return }
+        rows = (try? await ApiClient.shared.carrierBeacons(token: token)) ?? []
+        rings = (try? await ApiClient.shared.rings(token: token)) ?? []
+    }
+
+    private func act(_ work: @escaping () async throws -> Void) {
+        busy = true; error = nil
+        Task {
+            do { try await work(); await load() }
+            catch { self.error = error.localizedDescription }
+            busy = false
+        }
+    }
+
+    private func place() {
+        guard let token = state.token else { return }
+        let name = label.trimmingCharacters(in: .whitespaces)
+        act {
+            _ = try await ApiClient.shared.placeCarrierBeacon(
+                label: name, refKind: "object", disclose: disclose,
+                token: token)
+            label = ""
+        }
+    }
+
+    private func chain(_ bid: String) {
+        guard let token = state.token else { return }
+        act { custody = try await ApiClient.shared.carrierCustody(
+            bid: bid, token: token) }
+    }
+
+    private func sees(_ bid: String) {
+        act { card = try await ApiClient.shared.scanCard(bid: bid) }
+    }
+
+    private func refresh(_ bid: String) {
+        guard let token = state.token else { return }
+        act { _ = try await ApiClient.shared.carrierBeacon(
+            bid: bid, token: token) }
+    }
+
+    private func setState(_ bid: String, _ st: String) {
+        guard let token = state.token else { return }
+        act { _ = try await ApiClient.shared.setCarrierState(
+            bid: bid, state: st, token: token) }
+    }
+
+    private func lift(_ bid: String) {
+        guard let token = state.token else { return }
+        act { _ = try await ApiClient.shared.liftCarrierBeacon(
+            bid: bid, token: token) }
+    }
+
+    private func ring(_ bid: String) {
+        act { _ = try await ApiClient.shared.ringHolder(bid: bid) }
+    }
+
+    private func found(_ bid: String) {
+        act { _ = try await ApiClient.shared.reportFound(bid: bid) }
+    }
+
+    private func readTranscript(_ rid: String) {
+        guard let token = state.token else { return }
+        act { transcript = try await ApiClient.shared.ringTranscript(
+            rid: rid, token: token) }
     }
 }

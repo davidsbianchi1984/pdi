@@ -19,6 +19,17 @@ data class RobotSpec(val model: String, val label: String, val maker: String)
 data class Robot(val id: String, val model: String, val name: String, val status: String?, val collected: Int)
 data class IngestResult(val sealed: Boolean, val key: String)
 data class ComplianceProgram(val key: String, val label: String)
+data class CarrierBeacon(val id: String, val refKind: String,
+                         val label: String, val disclose: String,
+                         val state: String, val scans: Int, val active: Boolean)
+data class ScanCardK(val reference: String, val kind: String, val state: String,
+                     val underCustody: Boolean, val badge: String,
+                     val note: String)
+data class CustodyChainK(val intact: Boolean, val events: List<String>)
+data class RingK(val id: String, val kind: String, val note: String,
+                 val state: String, val outcome: String, val createdAt: String)
+data class PairInfoK(val consoleUrl: String, val how: List<String>,
+                     val note: String)
 data class Transfer(val id: String, val recipient: String, val filename: String,
                     val status: String, val programs: List<String>,
                     val expiresAt: String?, val receiveToken: String?)
@@ -375,6 +386,105 @@ object ApiClient {
             ComplianceProgram(o.getString("key"), o.getString("label"))
         }
     }
+
+    // ---- carriers: custody codes on sealed things ----
+
+    suspend fun carrierBeacons(token: String): List<CarrierBeacon> {
+        val arr = JSONArray(request("/beacons", token = token))
+        return (0 until arr.length()).map { beaconOf(arr.getJSONObject(it)) }
+    }
+
+    suspend fun placeCarrierBeacon(token: String, label: String,
+                                   disclose: String): CarrierBeacon =
+        beaconOf(JSONObject(request("/beacons", "POST",
+            JSONObject().put("ref_kind", "object").put("label", label)
+                .put("disclose", disclose), token)))
+
+    suspend fun carrierBeacon(token: String, bid: String): CarrierBeacon =
+        beaconOf(JSONObject(request("/beacons/$bid", token = token)))
+
+    suspend fun setCarrierState(token: String, bid: String,
+                                state: String): CarrierBeacon =
+        beaconOf(JSONObject(request("/beacons/$bid/state", "PUT",
+            JSONObject().put("state", state), token)))
+
+    suspend fun liftCarrierBeacon(token: String, bid: String): Boolean =
+        JSONObject(request("/beacons/$bid", "DELETE", token = token))
+            .optBoolean("active")
+
+    suspend fun carrierCustody(token: String, bid: String): CustodyChainK {
+        val o = JSONObject(request("/beacons/$bid/custody", token = token))
+        val events = mutableListOf<String>()
+        o.optJSONArray("chain_of_custody")?.let { a ->
+            for (i in 0 until a.length()) {
+                val e = a.getJSONObject(i)
+                events.add("${e.optString("event")} — ${e.optString("actor")}"
+                    + " · ${e.optString("at")}")
+            }
+        }
+        return CustodyChainK(o.optBoolean("audit_chain_intact"), events)
+    }
+
+    /** The scanner's half — no bearer at all: the code in the hand is the
+     *  whole credential, and what it earns is capped by `disclose`. */
+    suspend fun scanCard(bid: String): ScanCardK {
+        val o = JSONObject(request("/s/$bid/card"))
+        return ScanCardK(o.optString("reference"), o.optString("kind"),
+            o.optString("state"), o.optBoolean("under_custody"),
+            o.optString("badge"), o.optString("note"))
+    }
+
+    /** The landing page and its QR image: the JSON helper cannot carry
+     *  either, so the door is the URL the opener fetches, and building it
+     *  here is what the route audit reads. */
+    fun scanPageUrl(bid: String): String =
+        java.net.URL("$base/s/$bid").toString()
+
+    fun scanQrUrl(bid: String): String =
+        java.net.URL("$base/s/$bid/qr.svg").toString()
+
+    suspend fun reportFound(bid: String): String =
+        JSONObject(request("/s/$bid/found", "POST",
+            JSONObject().put("where", "loading dock"))).optString("note")
+
+    suspend fun ringHolder(bid: String): RingK =
+        ringOf(JSONObject(request("/s/$bid/ring", "POST",
+            JSONObject().put("kind", "delivery"))))
+
+    suspend fun rings(token: String): List<RingK> {
+        val arr = JSONArray(request("/rings", token = token))
+        return (0 until arr.length()).map { ringOf(arr.getJSONObject(it)) }
+    }
+
+    suspend fun ringTranscript(token: String, rid: String): RingK =
+        ringOf(JSONObject(request("/rings/$rid/transcript", token = token)))
+
+    /** Resolve the recipient's page before the link goes into an email — a
+     *  misconfigured public base is otherwise discovered by the recipient,
+     *  who has nobody to ask. */
+    suspend fun checkRecipientPage(tid: String): Boolean =
+        request("/r/$tid").isNotEmpty()
+
+    /** How to open this console on a phone: same Wi-Fi, no app store. */
+    suspend fun pairInfo(): PairInfoK {
+        val o = JSONObject(request("/pair"))
+        val how = mutableListOf<String>()
+        o.optJSONArray("how")?.let { a ->
+            for (i in 0 until a.length()) how.add(a.getString(i))
+        }
+        return PairInfoK(o.optString("console_url"), how, o.optString("note"))
+    }
+
+    fun pairQrUrl(): String = java.net.URL("$base/pair/qr.svg").toString()
+
+    private fun beaconOf(o: JSONObject) = CarrierBeacon(
+        o.optString("id"), o.optString("ref_kind"), o.optString("label"),
+        o.optString("disclose"), o.optString("state"), o.optInt("scans"),
+        o.optBoolean("active"))
+
+    private fun ringOf(o: JSONObject) = RingK(o.optString("id"),
+        o.optString("kind"), o.optString("note"), o.optString("state"),
+        o.optString("outcome"), o.optString("created_at"))
 
     suspend fun transfers(token: String): List<Transfer> {
         val arr = JSONArray(request("/transfers", token = token))

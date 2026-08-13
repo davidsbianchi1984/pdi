@@ -510,6 +510,150 @@ actor ApiClient {
             throw ApiError.http(said ?? "submit failed")
         }
     }
+
+    // MARK: carriers — custody codes on sealed things
+
+    func carrierBeacons(token: String) async throws -> [CarrierBeacon] {
+        try await request("/beacons", token: token)
+    }
+
+    func placeCarrierBeacon(label: String, refKind: String, disclose: String,
+                            token: String) async throws -> CarrierBeacon {
+        try await request("/beacons", method: "POST",
+                          body: ["ref_kind": refKind, "label": label,
+                                 "disclose": disclose], token: token)
+    }
+
+    func carrierBeacon(bid: String, token: String) async throws -> CarrierBeacon {
+        try await request("/beacons/\(bid)", token: token)
+    }
+
+    func setCarrierState(bid: String, state: String,
+                         token: String) async throws -> CarrierBeacon {
+        try await request("/beacons/\(bid)/state", method: "PUT",
+                          body: ["state": state], token: token)
+    }
+
+    func liftCarrierBeacon(bid: String, token: String) async throws -> Lifted {
+        try await request("/beacons/\(bid)", method: "DELETE", token: token)
+    }
+
+    func carrierCustody(bid: String, token: String) async throws -> CustodyChainOut {
+        try await request("/beacons/\(bid)/custody", token: token)
+    }
+
+    /// The scanner's half — no bearer at all: the code in the hand is the
+    /// whole credential, and what it earns is capped by `disclose`.
+    func scanCard(bid: String) async throws -> ScanCardOut {
+        try await request("/s/\(bid)/card")
+    }
+
+    /// The landing page and its QR image. The JSON helper cannot carry
+    /// either, so the door is the URL the opener fetches; building it here
+    /// is what the route audit reads, and GET stands absent a verb.
+    func scanPageUrl(bid: String) -> URL {
+        base.appendingPathComponent("/s/\(bid)")
+    }
+
+    func scanQrUrl(bid: String) -> URL {
+        base.appendingPathComponent("/s/\(bid)/qr.svg")
+    }
+
+    func reportFound(bid: String) async throws -> FoundAck {
+        try await request("/s/\(bid)/found", method: "POST",
+                          body: ["where": "loading dock"])
+    }
+
+    func ringHolder(bid: String) async throws -> RingRow {
+        try await request("/s/\(bid)/ring", method: "POST",
+                          body: ["kind": "delivery"])
+    }
+
+    func rings(token: String) async throws -> [RingRow] {
+        try await request("/rings", token: token)
+    }
+
+    func ringTranscript(rid: String, token: String) async throws -> RingRow {
+        try await request("/rings/\(rid)/transcript", token: token)
+    }
+
+    /// Resolve the recipient's page before the link goes into an email — a
+    /// misconfigured public base would otherwise be discovered by the
+    /// recipient, who has nobody to ask.
+    func checkRecipientPage(tid: String) async throws -> Bool {
+        var req = URLRequest(url: base.appendingPathComponent("/r/\(tid)"))
+        req.setValue(L10n.deviceLanguage, forHTTPHeaderField: "accept-language")
+        let (_, resp) = try await URLSession.shared.data(for: req)
+        return ((resp as? HTTPURLResponse)?.statusCode ?? 0) < 400
+    }
+
+    /// How to open this console on a phone: same Wi-Fi, no app store.
+    func pairInfo() async throws -> PairInfoOut {
+        try await request("/pair")
+    }
+
+    func pairQrUrl() -> URL {
+        base.appendingPathComponent("/pair/qr.svg")
+    }
+}
+
+/// A custody code on a sealed thing. `disclose` is a single value: `blind`
+/// proves custody and says nothing else; `contact` adds a way to reach
+/// whoever holds it.
+struct CarrierBeacon: Decodable {
+    let id: String
+    let ref_kind: String
+    let label: String
+    let disclose: String
+    let state: String
+    let scans: Int
+    let active: Bool
+}
+
+struct Lifted: Decodable { let id: String; let active: Bool }
+
+/// What a scanner sees. `contents` is always null on the wire and that is
+/// the feature: the code proves custody, it does not open the thing.
+struct ScanCardOut: Decodable {
+    let reference: String
+    let kind: String
+    let state: String
+    let under_custody: Bool
+    let badge: String
+    let note: String
+    let held_by: String?
+}
+
+struct CustodyEntryOut: Decodable {
+    let event: String
+    let actor: String
+    let at: String
+}
+
+struct CustodyChainOut: Decodable {
+    let chain_of_custody: [CustodyEntryOut]
+    let audit_chain_intact: Bool
+}
+
+struct FoundAck: Decodable {
+    let beacon: String
+    let recorded: Bool
+    let note: String
+}
+
+struct RingRow: Decodable {
+    let id: String
+    let kind: String?
+    let note: String?
+    let state: String?
+    let outcome: String?
+    let created_at: String?
+}
+
+struct PairInfoOut: Decodable {
+    let console_url: String
+    let how: [String]
+    let note: String
 }
 
 /// What the deployment can and cannot reach.

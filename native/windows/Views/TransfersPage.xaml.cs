@@ -21,7 +21,10 @@ public sealed partial class TransfersPage : Page
         // A DataTemplate is stamped once per row, so `x:Name` addresses only
         // the last one. The label rides on the row instead.
         public string RevokeLabel => L10n.T("ntr.revoke");
+        public string CheckLinkLabel => L10n.T("ntr.reciplink");
     }
+
+    private string _disclose = "blind";
 
     private List<ProgramChip> _chips = new();
 
@@ -38,6 +41,17 @@ public sealed partial class TransfersPage : Page
     private void Localize()
     {
         NtrTOutbound.Header = L10n.T("ntr.t.outbound");
+        CarPivot.Header = L10n.T("car.title");
+        CarHead.Text = L10n.T("car.title");
+        CarPlaceHead.Text = L10n.T("car.place");
+        CarLabelBox.PlaceholderText = L10n.T("car.label.ph");
+        CarBlind.Content = L10n.T("car.disclose.blind");
+        CarBlind.IsChecked = true;
+        CarContact.Content = L10n.T("car.disclose.contact");
+        CarPlaceButton.Content = L10n.T("car.place.go");
+        CarNone.Text = L10n.T("car.none");
+        CarRangHead.Text = L10n.T("car.rang");
+        CarNoRings.Text = L10n.T("car.norings");
         TabTransfers.Text = L10n.T("tab.transfers");
         NfilSub.Text = L10n.T("nfil.sub");
         ProgramsLabel.Text = L10n.T("nfil.programs");
@@ -88,6 +102,7 @@ public sealed partial class TransfersPage : Page
         catch (Exception ex) { ShowError(ex.Message); }
         await Reload();
         await ReloadIntakes();
+        try { await ReloadCarriers(); } catch (Exception ex) { ShowCarError(ex.Message); }
     }
 
     private async System.Threading.Tasks.Task Reload()
@@ -133,6 +148,219 @@ public sealed partial class TransfersPage : Page
         }
         catch (Exception ex) { ShowError(ex.Message); }
         finally { CreateButton.IsEnabled = true; }
+    }
+
+    // Resolve the recipient's page before the link goes into an email — a
+    // misconfigured public base is otherwise discovered by the recipient,
+    // who has nobody to ask.
+    private async void OnCheckLink(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string tid }) return;
+        try
+        {
+            ShowError(await ApiClient.Shared.CheckRecipientPage(tid)
+                ? L10n.T("car.verifies")
+                : L10n.T("car.notverify"));
+        }
+        catch (Exception ex) { ShowError(ex.Message); }
+    }
+
+    private void OnDiscloseBlind(object sender, RoutedEventArgs e)
+    {
+        _disclose = "blind"; CarBlind.IsChecked = true; CarContact.IsChecked = false;
+    }
+
+    private void OnDiscloseContact(object sender, RoutedEventArgs e)
+    {
+        _disclose = "contact"; CarContact.IsChecked = true; CarBlind.IsChecked = false;
+    }
+
+    private async void OnPlaceCarrier(object sender, RoutedEventArgs e)
+    {
+        var label = CarLabelBox.Text.Trim();
+        if (label.Length == 0) return;
+        var s = AppState.Current;
+        try
+        {
+            await ApiClient.Shared.PlaceCarrierBeacon(s.Token!, label, _disclose);
+            CarLabelBox.Text = "";
+            await ReloadCarriers();
+        }
+        catch (Exception ex) { ShowCarError(ex.Message); }
+    }
+
+    private void ShowCarError(string message)
+    {
+        CarError.Text = message;
+        CarError.Visibility = Visibility.Visible;
+    }
+
+    private static TextBlock CarLine(string text, string brush, int size = 12) => new()
+    {
+        Text = text,
+        FontSize = size,
+        TextWrapping = TextWrapping.Wrap,
+        IsTextSelectionEnabled = true,
+        Foreground = (Microsoft.UI.Xaml.Media.Brush)
+            Application.Current.Resources[brush],
+    };
+
+    private Button CarAction(string label, Func<System.Threading.Tasks.Task> work)
+    {
+        var b = new Button
+        {
+            Content = label, FontSize = 11,
+            Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                Microsoft.UI.Colors.Transparent),
+        };
+        b.Click += async (_, _) =>
+        {
+            try { await work(); }
+            catch (Exception ex) { ShowCarError(ex.Message); }
+        };
+        return b;
+    }
+
+    private async System.Threading.Tasks.Task ReloadCarriers()
+    {
+        var s = AppState.Current;
+        if (s.Token is null) return;
+        CarError.Visibility = Visibility.Collapsed;
+        var rows = await ApiClient.Shared.CarrierBeacons(s.Token!);
+        CarNone.Visibility = rows.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+        CarRows.Children.Clear();
+        foreach (var row in rows)
+        {
+            var bid = row.Id;
+            var panel = new StackPanel { Spacing = 4 };
+            panel.Children.Add(CarLine(
+                $"{row.Label} · {row.RefKind} · {row.State} · {row.Disclose}"
+                + $" · ×{row.Scans}"
+                + (row.Active ? "" : " · " + L10n.T("car.lifted")),
+                "PdiTxtBrush"));
+            var actions = new StackPanel
+            { Orientation = Orientation.Horizontal, Spacing = 6 };
+            actions.Children.Add(CarAction(L10n.T("car.chain"), async () =>
+            {
+                var ch = await ApiClient.Shared.CarrierCustody(s.Token!, bid);
+                CarChain.Children.Clear();
+                CarChain.Children.Add(CarLine(L10n.T("car.chain"), "PdiTxtBrush"));
+                CarChain.Children.Add(CarLine(
+                    L10n.T("car.auditchain") + " "
+                    + L10n.T(ch.AuditChainIntact ? "car.verifies" : "car.notverify"),
+                    "PdiT2Brush"));
+                foreach (var entry in ch.ChainOfCustody)
+                    CarChain.Children.Add(CarLine(
+                        $"{entry.Event} — {entry.Actor} · {entry.At}", "PdiT2Brush", 11));
+                CarChainPanel.Visibility = Visibility.Visible;
+            }));
+            actions.Children.Add(CarAction(L10n.T("car.sees"), async () =>
+            {
+                var card = await ApiClient.Shared.ScanCard(bid);
+                CarCard.Children.Clear();
+                CarCard.Children.Add(CarLine(L10n.T("car.strangercard"), "PdiTxtBrush"));
+                CarCard.Children.Add(CarLine(card.Badge, "PdiTxtBrush"));
+                CarCard.Children.Add(CarLine(card.Note, "PdiT2Brush", 11));
+                CarCard.Children.Add(CarLine(
+                    $"{card.Reference} · {card.Kind} · {card.State} · "
+                    + L10n.T(card.UnderCustody ? "car.custody.yes" : "car.custody.no"),
+                    "PdiT2Brush", 11));
+                CarCard.Children.Add(CarLine(
+                    L10n.T("car.contents") + " " + L10n.T("car.contents.no")
+                    + " " + L10n.T("car.contents.never"), "PdiT2Brush", 11));
+                CarCardPanel.Visibility = Visibility.Visible;
+            }));
+            actions.Children.Add(CarAction(L10n.T("car.refresh"), async () =>
+            {
+                await ApiClient.Shared.CarrierBeacon(s.Token!, bid);
+                await ReloadCarriers();
+            }));
+            actions.Children.Add(CarAction(L10n.T("car.lift"), async () =>
+            {
+                await ApiClient.Shared.LiftCarrierBeacon(s.Token!, bid);
+                await ReloadCarriers();
+            }));
+            panel.Children.Add(actions);
+            // The state select, as a walk along the chain — and the scanner's
+            // half, exercised from here: found and ring take no bearer.
+            var states = new StackPanel
+            { Orientation = Orientation.Horizontal, Spacing = 6 };
+            foreach (var st in new[] { "sealed", "in_transit", "delivered", "opened" })
+            {
+                var target = st;
+                states.Children.Add(CarAction(
+                    row.State == target ? target + " ✓" : target, async () =>
+                {
+                    await ApiClient.Shared.SetCarrierState(s.Token!, bid, target);
+                    await ReloadCarriers();
+                }));
+            }
+            panel.Children.Add(states);
+            var scanner = new StackPanel
+            { Orientation = Orientation.Horizontal, Spacing = 6 };
+            scanner.Children.Add(CarAction(L10n.T("car.ring"), async () =>
+            {
+                await ApiClient.Shared.RingHolder(bid);
+                await ReloadCarriers();
+            }));
+            scanner.Children.Add(CarAction(L10n.T("car.found"), async () =>
+            {
+                await ApiClient.Shared.ReportFound(bid);
+                await ReloadCarriers();
+            }));
+            panel.Children.Add(scanner);
+            panel.Children.Add(CarLine(
+                L10n.T("qr.addr") + " " + ApiClient.Shared.ScanQrUrl(bid),
+                "PdiT2Brush", 10));
+            panel.Children.Add(CarLine(ApiClient.Shared.ScanPageUrl(bid),
+                "PdiT2Brush", 10));
+            var border = new Border
+            {
+                Background = (Microsoft.UI.Xaml.Media.Brush)
+                    Application.Current.Resources["PdiCardBrush"],
+                BorderBrush = (Microsoft.UI.Xaml.Media.Brush)
+                    Application.Current.Resources["PdiLineBrush"],
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(14),
+                Padding = new Thickness(14),
+                Child = panel,
+            };
+            CarRows.Children.Add(border);
+        }
+
+        var rings = await ApiClient.Shared.Rings(s.Token!);
+        CarNoRings.Visibility = rings.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+        CarRings.Children.Clear();
+        foreach (var ring in rings)
+        {
+            var rid = ring.Id;
+            var line = new StackPanel
+            { Orientation = Orientation.Horizontal, Spacing = 8 };
+            line.Children.Add(CarLine(
+                $"{ring.Kind} · {ring.State} · {ring.CreatedAt}", "PdiT2Brush", 11));
+            line.Children.Add(CarAction(L10n.T("car.transcript"), async () =>
+            {
+                var tr = await ApiClient.Shared.RingTranscript(s.Token!, rid);
+                CarTranscript.Text = $"{tr.Kind} · {tr.Note} · {tr.Outcome}";
+                CarTranscript.Visibility = Visibility.Visible;
+            }));
+            CarRings.Children.Add(line);
+        }
+
+        // The pairing card: the card's own words, straight from the wire.
+        try
+        {
+            var pair = await ApiClient.Shared.PairInfo();
+            CarPair.Children.Clear();
+            foreach (var how in pair.How)
+                CarPair.Children.Add(CarLine(how, "PdiT2Brush", 11));
+            CarPair.Children.Add(CarLine(pair.ConsoleUrl, "PdiTxtBrush", 11));
+            CarPair.Children.Add(CarLine(pair.Note, "PdiT2Brush", 10));
+            CarPair.Children.Add(CarLine(
+                L10n.T("qr.addr") + " " + ApiClient.Shared.PairQrUrl(),
+                "PdiT2Brush", 10));
+        }
+        catch { /* pairing is best-effort; the deployment may be headless */ }
     }
 
     private async void OnRevoke(object sender, RoutedEventArgs e)

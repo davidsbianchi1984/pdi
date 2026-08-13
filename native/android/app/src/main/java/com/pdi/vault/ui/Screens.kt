@@ -759,12 +759,201 @@ fun TransfersScreen(vm: VaultViewModel) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
         TabRow(selectedTabIndex = seg, containerColor = Pdi.Card, contentColor = Pdi.BrandA) {
-            listOf("ntr.t.outbound", "ntr.t.intake").forEachIndexed { i, t ->
+            listOf("ntr.t.outbound", "ntr.t.intake", "car.title").forEachIndexed { i, t ->
                 Tab(selected = seg == i, onClick = { seg = i },
                     text = { Text(L10n.t(t, vm.language), fontSize = 13.sp) })
             }
         }
-        if (seg == 0) OutboundPanel(vm) else IntakePanel(vm)
+        when (seg) {
+            0 -> OutboundPanel(vm)
+            1 -> IntakePanel(vm)
+            else -> CarriersPanel(vm)
+        }
+    }
+}
+
+/** The console's Carriers screen, on the phone: place a custody code on a
+ *  sealed thing, advance its state, read its chain, see what a scanner
+ *  sees, and answer as the scanner — found and ring — plus the pairing
+ *  card, because the QR on this screen is how the phone got here. */
+@Composable
+private fun CarriersPanel(vm: VaultViewModel) {
+    var rows by remember { mutableStateOf<List<CarrierBeacon>>(emptyList()) }
+    var rings by remember { mutableStateOf<List<RingK>>(emptyList()) }
+    var label by remember { mutableStateOf("") }
+    var disclose by remember { mutableStateOf("blind") }
+    var card by remember { mutableStateOf<ScanCardK?>(null) }
+    var custody by remember { mutableStateOf<CustodyChainK?>(null) }
+    var transcript by remember { mutableStateOf<RingK?>(null) }
+    var pair by remember { mutableStateOf<PairInfoK?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun reload() {
+        vm.call({ ApiClient.carrierBeacons(vm.token!!) }) { r ->
+            rows = r.getOrDefault(emptyList())
+        }
+        vm.call({ ApiClient.rings(vm.token!!) }) { r ->
+            rings = r.getOrDefault(emptyList())
+        }
+    }
+    LaunchedEffect(Unit) {
+        reload()
+        vm.call({ ApiClient.pairInfo() }) { r -> pair = r.getOrNull() }
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Text(L10n.t("car.title", vm.language), color = Pdi.Txt,
+            fontSize = 22.sp, fontWeight = FontWeight.Bold)
+
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(L10n.t("car.place", vm.language), color = Pdi.Txt,
+                fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            labeledField(L10n.t("car.place", vm.language), label,
+                L10n.t("car.label.ph", vm.language)) { label = it }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("blind", "contact").forEach { d ->
+                    SmallAction(L10n.t("car.disclose.$d", vm.language)
+                        + if (disclose == d) " ✓" else "") { disclose = d }
+                }
+                SmallAction(L10n.t("car.place.go", vm.language)) {
+                    if (label.isNotBlank()) {
+                        vm.call({ ApiClient.placeCarrierBeacon(vm.token!!,
+                            label.trim(), disclose) }) { r ->
+                            r.onSuccess { label = ""; reload() }
+                                .onFailure { error = it.message }
+                        }
+                    }
+                }
+            }
+        }
+
+        error?.let { Text(it, color = Pdi.Red, fontSize = 12.sp) }
+        if (rows.isEmpty()) {
+            Text(L10n.t("car.none", vm.language), color = Pdi.T2, fontSize = 12.sp)
+        }
+
+        rows.forEach { row ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(row.label, color = Pdi.Txt, fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold)
+                    Text("${row.refKind} · ${row.state} · ${row.disclose}"
+                        + " · ×${row.scans}"
+                        + if (row.active) "" else " · " + L10n.t("car.lifted", vm.language),
+                        color = Pdi.T2, fontSize = 11.sp)
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    SmallAction(L10n.t("car.chain", vm.language)) {
+                        vm.call({ ApiClient.carrierCustody(vm.token!!, row.id) }) { r ->
+                            r.onSuccess { custody = it }.onFailure { error = it.message }
+                        }
+                    }
+                    SmallAction(L10n.t("car.sees", vm.language)) {
+                        vm.call({ ApiClient.scanCard(row.id) }) { r ->
+                            r.onSuccess { card = it }.onFailure { error = it.message }
+                        }
+                    }
+                    SmallAction(L10n.t("car.refresh", vm.language)) {
+                        vm.call({ ApiClient.carrierBeacon(vm.token!!, row.id) }) { reload() }
+                    }
+                    SmallAction(L10n.t("car.lift", vm.language)) {
+                        vm.call({ ApiClient.liftCarrierBeacon(vm.token!!, row.id) }) { reload() }
+                    }
+                }
+                // The state select, as a walk along the chain — and the
+                // scanner's half, exercised from here: found and ring take
+                // no bearer at all.
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    listOf("sealed", "in_transit", "delivered", "opened").forEach { st ->
+                        SmallAction(if (row.state == st) "$st ✓" else st) {
+                            vm.call({ ApiClient.setCarrierState(vm.token!!,
+                                row.id, st) }) { reload() }
+                        }
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    SmallAction(L10n.t("car.ring", vm.language)) {
+                        vm.call({ ApiClient.ringHolder(row.id) }) { reload() }
+                    }
+                    SmallAction(L10n.t("car.found", vm.language)) {
+                        vm.call({ ApiClient.reportFound(row.id) }) { reload() }
+                    }
+                }
+                Text(L10n.t("qr.addr", vm.language) + " " + ApiClient.scanQrUrl(row.id),
+                    color = Pdi.T3, fontSize = 9.sp)
+                Text(ApiClient.scanPageUrl(row.id), color = Pdi.T3, fontSize = 9.sp)
+            }
+        }
+
+        card?.let { c ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(L10n.t("car.strangercard", vm.language), color = Pdi.Txt,
+                    fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                Text(c.badge, color = Pdi.Txt, fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold)
+                Text(c.note, color = Pdi.T2, fontSize = 11.sp)
+                Text("${c.reference} · ${c.kind} · ${c.state} · "
+                    + L10n.t(if (c.underCustody) "car.custody.yes"
+                             else "car.custody.no", vm.language),
+                    color = Pdi.T2, fontSize = 11.sp)
+                Text(L10n.t("car.contents", vm.language) + " "
+                    + L10n.t("car.contents.no", vm.language) + " "
+                    + L10n.t("car.contents.never", vm.language),
+                    color = Pdi.T3, fontSize = 10.sp)
+            }
+        }
+
+        custody?.let { ch ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(L10n.t("car.chain", vm.language), color = Pdi.Txt,
+                    fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                Text(L10n.t("car.auditchain", vm.language) + " "
+                    + L10n.t(if (ch.intact) "car.verifies" else "car.notverify",
+                             vm.language),
+                    color = Pdi.T2, fontSize = 11.sp)
+                ch.events.forEach { Text(it, color = Pdi.T2, fontSize = 11.sp) }
+            }
+        }
+
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(L10n.t("car.rang", vm.language), color = Pdi.Txt,
+                fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            if (rings.isEmpty()) {
+                Text(L10n.t("car.norings", vm.language), color = Pdi.T2,
+                    fontSize = 11.sp)
+            }
+            rings.forEach { r ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically) {
+                    Text("${r.kind} · ${r.state} · ${r.createdAt}",
+                        color = Pdi.T2, fontSize = 11.sp)
+                    SmallAction(L10n.t("car.transcript", vm.language)) {
+                        vm.call({ ApiClient.ringTranscript(vm.token!!, r.id) }) { t ->
+                            t.onSuccess { transcript = it }
+                                .onFailure { error = it.message }
+                        }
+                    }
+                }
+            }
+            transcript?.let {
+                Text("${it.kind} · ${it.note} · ${it.outcome}",
+                    color = Pdi.T3, fontSize = 10.sp)
+            }
+        }
+
+        // The pairing card: the card's own words, straight from the wire.
+        pair?.let { p ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                p.how.forEach {
+                    Text(it, color = Pdi.T2, fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold)
+                }
+                Text(p.consoleUrl, color = Pdi.Txt, fontSize = 11.sp)
+                Text(p.note, color = Pdi.T3, fontSize = 10.sp)
+                Text(L10n.t("qr.addr", vm.language) + " " + ApiClient.pairQrUrl(),
+                    color = Pdi.T3, fontSize = 10.sp)
+            }
+        }
     }
 }
 
@@ -779,6 +968,7 @@ private fun OutboundPanel(vm: VaultViewModel) {
     var minted by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    var linkOk by remember { mutableStateOf<String?>(null) }
 
     fun reload() { vm.call({ ApiClient.transfers(vm.token!!) }) { r -> transfers = r.getOrDefault(emptyList()) } }
     LaunchedEffect(Unit) {
@@ -851,10 +1041,25 @@ private fun OutboundPanel(vm: VaultViewModel) {
                 Text("→ ${t.recipient} · ${t.programs.joinToString(" ") { it.uppercase() }}",
                     color = Pdi.T2, fontSize = 12.sp)
                 t.expiresAt?.let { Text(L10n.t("ntr.retained", vm.language).replace("{date}", it), color = Pdi.T3, fontSize = 11.sp) }
-                if (t.status != "revoked") {
-                    TextButton(onClick = {
-                        vm.call({ ApiClient.revokeTransfer(vm.token!!, t.id) }) { reload() }
-                    }) { Text(L10n.t("ntr.revoke", vm.language), color = Pdi.Red, fontSize = 12.sp) }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically) {
+                    // Resolve the recipient's page before the link goes into
+                    // an email — a misconfigured public base is otherwise
+                    // discovered by the recipient, who has nobody to ask.
+                    SmallAction(L10n.t("ntr.reciplink", vm.language)) {
+                        vm.call({ ApiClient.checkRecipientPage(t.id) }) { r ->
+                            if (r.getOrDefault(false)) linkOk = t.id
+                        }
+                    }
+                    if (linkOk == t.id) {
+                        Text(L10n.t("car.verifies", vm.language),
+                            color = Pdi.Green, fontSize = 11.sp)
+                    }
+                    if (t.status != "revoked") {
+                        TextButton(onClick = {
+                            vm.call({ ApiClient.revokeTransfer(vm.token!!, t.id) }) { reload() }
+                        }) { Text(L10n.t("ntr.revoke", vm.language), color = Pdi.Red, fontSize = 12.sp) }
+                    }
                 }
             }
         }
