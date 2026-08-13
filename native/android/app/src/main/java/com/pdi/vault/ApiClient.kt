@@ -19,6 +19,10 @@ data class RobotSpec(val model: String, val label: String, val maker: String)
 data class Robot(val id: String, val model: String, val name: String, val status: String?, val collected: Int)
 data class IngestResult(val sealed: Boolean, val key: String)
 data class ComplianceProgram(val key: String, val label: String)
+data class BequestK(val id: String, val grantee: String,
+                    val condition: String, val prefixes: List<String>,
+                    val activated: Boolean, val revoked: Boolean,
+                    val grantToken: String)
 data class TenantMadeK(val id: String, val name: String, val token: String)
 data class BaaK(val executed: Boolean, val customer: String,
                 val operatorName: String, val date: String)
@@ -397,6 +401,126 @@ object ApiClient {
             ComplianceProgram(o.getString("key"), o.getString("label"))
         }
     }
+
+    // ---- continuity: bequests, and what outlives the tenant ----
+
+    suspend fun bequests(token: String): List<BequestK> {
+        val arr = JSONArray(request("/bequests", token = token))
+        return (0 until arr.length()).map { bequestOf(arr.getJSONObject(it)) }
+    }
+
+    suspend fun createBequest(token: String, grantee: String,
+                              prefixes: List<String>, note: String?): BequestK {
+        val pfx = JSONArray(); prefixes.forEach { pfx.put(it) }
+        val body = JSONObject().put("grantee_name", grantee)
+            .put("key_prefixes", pfx)
+        if (!note.isNullOrBlank()) body.put("note", note)
+        return bequestOf(JSONObject(request("/bequests", "POST", body, token)))
+    }
+
+    suspend fun revokeBequest(token: String, bid: String): BequestK =
+        bequestOf(JSONObject(request("/bequests/$bid", "DELETE", token = token)))
+
+    /** The executor's act: activation attests the condition — the reference
+     *  goes into the audit chain — and mints the grant token, shown once. */
+    suspend fun activateBequest(adminToken: String, bid: String,
+                                ref: String): BequestK =
+        bequestOf(JSONObject(request("/bequests/$bid/activate", "POST",
+            JSONObject().put("activation_ref", ref), adminToken)))
+
+    suspend fun revokeBequestGrant(adminToken: String, bid: String): Boolean =
+        JSONObject(request("/bequests/$bid/grant", "DELETE",
+            token = adminToken)).optBoolean("revoked")
+
+    /** The heir's side. Two separate secrets on purpose — the grant token
+     *  says the condition was attested, the customer key decrypts — so both
+     *  ride as headers on a connection opened here, in the shape the route
+     *  audit reads. */
+    suspend fun bequestKeys(grantToken: String, customerKey: String):
+        List<String> = withContext(Dispatchers.IO) {
+        val conn = (URL("$base/bequests/grant/keys").openConnection()
+            as HttpURLConnection).apply {
+            requestMethod = "GET"
+            setRequestProperty("accept-language", L10n.deviceLanguage())
+            setRequestProperty("x-grant-token", grantToken)
+            setRequestProperty("x-tenant-key", customerKey)
+        }
+        val o = JSONObject(conn.inputStream.bufferedReader().readText())
+        val out = mutableListOf<String>()
+        o.optJSONArray("keys")?.let { a ->
+            for (i in 0 until a.length()) out.add(a.getString(i))
+        }
+        out
+    }
+
+    suspend fun bequestRead(key: String, grantToken: String,
+                            customerKey: String): String =
+        withContext(Dispatchers.IO) {
+        val conn = (URL("$base/bequests/grant/read?key=$key").openConnection()
+            as HttpURLConnection).apply {
+            requestMethod = "GET"
+            setRequestProperty("accept-language", L10n.deviceLanguage())
+            setRequestProperty("x-grant-token", grantToken)
+            setRequestProperty("x-tenant-key", customerKey)
+        }
+        conn.inputStream.bufferedReader().readText()
+    }
+
+    private fun bequestOf(o: JSONObject): BequestK {
+        val pfx = mutableListOf<String>()
+        o.optJSONArray("key_prefixes")?.let { a ->
+            for (i in 0 until a.length()) pfx.add(a.getString(i))
+        }
+        return BequestK(o.optString("id"), o.optString("grantee_name"),
+            o.optString("condition"), pfx, o.optBoolean("activated"),
+            o.optBoolean("revoked"), o.optString("grant_token", ""))
+    }
+
+    // ---- contributions, the snapshot, and the custody ops ----
+
+    suspend fun contributions(token: String): Int =
+        JSONObject(request("/contributions", token = token)).optInt("count")
+
+    suspend fun contribute(token: String, source: String, ref: String?): String {
+        val body = JSONObject().put("source", source).put("kind", "outcome")
+            .put("payload", JSONObject().put("helped", true))
+        if (!ref.isNullOrBlank()) body.put("ref", ref)
+        return JSONObject(request("/contributions", "POST", body, token))
+            .optString("key")
+    }
+
+    suspend fun withdrawContribution(token: String, ref: String): String =
+        request("/contributions/$ref", "DELETE", token = token)
+
+    /** The whole tenant, in hand — raw on purpose: records are arbitrary
+     *  JSON and the door is the fetch, not a schema. Held so a restore can
+     *  put back exactly what was taken. */
+    private var lastSnapshot: JSONArray? = null
+
+    suspend fun snapshotRecords(token: String): Int {
+        val o = JSONObject(request("/snapshot", token = token))
+        lastSnapshot = o.optJSONArray("records")
+        return lastSnapshot?.length() ?: 0
+    }
+
+    suspend fun restoreSnapshot(token: String): String =
+        request("/restore", "POST",
+            JSONObject().put("records", lastSnapshot ?: JSONArray()), token)
+
+    suspend fun retentionPolicy(adminToken: String): String =
+        JSONObject(request("/retention", token = adminToken))
+            .optString("recovery_window")
+
+    suspend fun retentionSweep(adminToken: String): String {
+        val o = JSONObject(request("/retention/sweep", "POST",
+            token = adminToken))
+        return "${o.optInt("purged_tenants")} \u00b7 " +
+            "${o.optInt("expired_records")} \u00b7 " +
+            o.optString("recovery_window")
+    }
+
+    suspend fun seedDemo(adminToken: String): String =
+        request("/seed", "POST", token = adminToken)
 
     // ---- tenants: the operator's half ----
 

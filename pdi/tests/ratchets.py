@@ -178,7 +178,7 @@ RATCHETS: tuple[Ratchet, ...] = (
             "call sites the route audit reads out of the desktop shell"),
     Ratchet("route.table", 110, _route_table,
             "routes reachable by walking the included routers"),
-    Ratchet("extractor.path_literals", 145, _path_literals,
+    Ratchet("extractor.path_literals", 254, _path_literals,
             "path literals found across all four surfaces"),
     Ratchet("console.source_files", 19, _console_files,
             "TypeScript sources the console sink sweep reads"),

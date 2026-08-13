@@ -273,6 +273,7 @@ fun OverviewScreen(vm: VaultViewModel) {
         AdminCard(vm)
         TenantsAdminCard(vm)
         GateCard(vm)
+        ContinuityCard(vm)
         OutlinedButton(onClick = { vm.signOut() }, modifier = Modifier.fillMaxWidth(),
             border = androidx.compose.foundation.BorderStroke(1.dp, Pdi.Line)) {
             Text(L10n.t("action.sign_out", vm.language), color = Pdi.T2)
@@ -317,6 +318,228 @@ fun OfflinePostureCard(vm: VaultViewModel) {
                 }
             }
         }
+    }
+}
+
+/** Bequests through their whole life — recorded, activated by the
+ *  executor, taken back, redeemed by the heir — plus contributions, the
+ *  snapshot pair, and the retention ops. */
+@Composable
+fun ContinuityCard(vm: VaultViewModel) {
+    var rows by remember { mutableStateOf<List<BequestK>>(emptyList()) }
+    var grantee by remember { mutableStateOf("") }
+    var prefixes by remember { mutableStateOf("") }
+    var note by remember { mutableStateOf("") }
+    var adminToken by remember { mutableStateOf("") }
+    var ref by remember { mutableStateOf("") }
+    var mintedGrant by remember { mutableStateOf<String?>(null) }
+    var grantTok by remember { mutableStateOf("") }
+    var custKey by remember { mutableStateOf("") }
+    var heirKeys by remember { mutableStateOf<List<String>>(emptyList()) }
+    var readBack by remember { mutableStateOf<String?>(null) }
+    var contribSource by remember { mutableStateOf("") }
+    var contribRef by remember { mutableStateOf("") }
+    var contribLine by remember { mutableStateOf<String?>(null) }
+    var opsLine by remember { mutableStateOf<String?>(null) }
+    var status by remember { mutableStateOf<String?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun reload() {
+        vm.call({ ApiClient.bequests(vm.token!!) }) { r ->
+            rows = r.getOrDefault(emptyList())
+        }
+        vm.call({ ApiClient.contributions(vm.token!!) }) { r ->
+            r.onSuccess { n ->
+                contribLine = L10n.t("bri.held", vm.language)
+                    .replace("{n}", n.toString())
+            }
+        }
+    }
+    LaunchedEffect(Unit) { reload() }
+
+    Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(L10n.t("co.bequests", vm.language), color = Pdi.Txt,
+            fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("co.bequests.note", vm.language), color = Pdi.T2, fontSize = 11.sp)
+        if (rows.isEmpty()) {
+            Text(L10n.t("co.nothing", vm.language), color = Pdi.T2, fontSize = 11.sp)
+        }
+        rows.forEach { b ->
+            Text(L10n.t("co.wouldopen", vm.language) + " "
+                + b.prefixes.joinToString(", "),
+                color = Pdi.T3, fontSize = 9.sp)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically) {
+                Text(b.grantee + " \u00b7 " + L10n.t(
+                    if (b.revoked) "co.revoke"
+                    else if (b.activated) "co.inforce" else "co.dormant",
+                    vm.language), color = Pdi.T2, fontSize = 11.sp)
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    if (!b.revoked) {
+                        SmallAction(L10n.t("co.revoke", vm.language)) {
+                            vm.call({ ApiClient.revokeBequest(vm.token!!, b.id) }) { reload() }
+                        }
+                    }
+                    // The executor's press, one per dormant row; the taking
+                    // back, one per row in force.
+                    if (!b.activated && !b.revoked) {
+                        SmallAction(L10n.t("co.activate", vm.language)) {
+                            if (adminToken.isNotBlank() && ref.isNotBlank()) {
+                                vm.call({ ApiClient.activateBequest(adminToken,
+                                    b.id, ref.trim()) }) { r ->
+                                    r.onSuccess {
+                                        mintedGrant = it.grantToken; reload()
+                                    }.onFailure { error = it.message }
+                                }
+                            }
+                        }
+                    }
+                    if (b.activated && !b.revoked) {
+                        SmallAction(L10n.t("co.revoke.grant", vm.language)) {
+                            if (adminToken.isNotBlank()) {
+                                vm.call({ ApiClient.revokeBequestGrant(adminToken,
+                                    b.id) }) { reload() }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        labeledField(L10n.t("co.grantee.ph", vm.language), grantee,
+            L10n.t("co.grantee.ph", vm.language)) { grantee = it }
+        labeledField(L10n.t("co.prefixes.ph", vm.language), prefixes,
+            L10n.t("co.prefixes.ph", vm.language)) { prefixes = it }
+        labeledField(L10n.t("co.note.ph", vm.language), note,
+            L10n.t("co.note.ph", vm.language)) { note = it }
+        SmallAction(L10n.t("co.record", vm.language)) {
+            if (grantee.isNotBlank() && prefixes.isNotBlank()) {
+                vm.call({ ApiClient.createBequest(vm.token!!, grantee.trim(),
+                    prefixes.split(",").map { it.trim() }.filter { it.isNotEmpty() },
+                    note.trim().ifEmpty { null }) }) { r ->
+                    r.onSuccess { grantee = ""; prefixes = ""; note = ""; reload() }
+                        .onFailure { error = it.message }
+                }
+            }
+        }
+
+        Text(L10n.t("co.activation", vm.language), color = Pdi.Txt,
+            fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("co.activation.note", vm.language), color = Pdi.T2, fontSize = 11.sp)
+        labeledField(L10n.t("co.admin.ph", vm.language), adminToken, "…") { adminToken = it }
+        labeledField(L10n.t("co.ref.ph", vm.language), ref,
+            L10n.t("co.ref.ph", vm.language)) { ref = it }
+        mintedGrant?.let {
+            Text(L10n.t("co.minted", vm.language) + " "
+                + L10n.t("co.minted.note", vm.language),
+                color = Pdi.T2, fontSize = 10.sp)
+            Text(it, color = Pdi.Txt, fontSize = 10.sp)
+        }
+
+        // The heir's side: two separate secrets, and one without the other
+        // opens nothing.
+        Text(L10n.t("co.redeem", vm.language), color = Pdi.Txt,
+            fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        Text(L10n.t("co.redeem.note", vm.language), color = Pdi.T2, fontSize = 11.sp)
+        labeledField(L10n.t("co.grant.ph", vm.language), grantTok,
+            L10n.t("co.grant.ph", vm.language)) { grantTok = it }
+        labeledField(L10n.t("co.custkey.ph", vm.language), custKey,
+            L10n.t("co.custkey.ph", vm.language)) { custKey = it }
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            SmallAction(L10n.t("co.whatopen", vm.language)) {
+                if (grantTok.isNotBlank() && custKey.isNotBlank()) {
+                    vm.call({ ApiClient.bequestKeys(grantTok, custKey) }) { r ->
+                        r.onSuccess { heirKeys = it }
+                            .onFailure { error = it.message }
+                    }
+                }
+            }
+            SmallAction(L10n.t("co.read", vm.language)) {
+                heirKeys.firstOrNull()?.let { first ->
+                    vm.call({ ApiClient.bequestRead(first, grantTok, custKey) }) { r ->
+                        r.onSuccess { readBack = it.take(200) }
+                            .onFailure { error = it.message }
+                    }
+                }
+            }
+        }
+        if (heirKeys.isNotEmpty()) {
+            Text(heirKeys.joinToString(", "), color = Pdi.T2, fontSize = 10.sp)
+        }
+        readBack?.let { Text(it, color = Pdi.T2, fontSize = 10.sp) }
+
+        // Contributions: what the tandem products sealed in, by count and
+        // key only.
+        Text(L10n.t("bri.contribute", vm.language), color = Pdi.Txt,
+            fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        contribLine?.let { Text(it, color = Pdi.T2, fontSize = 11.sp) }
+        labeledField(L10n.t("bri.source", vm.language), contribSource,
+            L10n.t("bri.source.ph", vm.language)) { contribSource = it }
+        labeledField(L10n.t("bri.ref", vm.language), contribRef,
+            L10n.t("bri.ref.ph", vm.language)) { contribRef = it }
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            SmallAction(L10n.t("bri.contribute", vm.language)) {
+                if (contribSource.isNotBlank()) {
+                    vm.call({ ApiClient.contribute(vm.token!!,
+                        contribSource.trim(),
+                        contribRef.trim().ifEmpty { null }) }) { r ->
+                        r.onSuccess { key ->
+                            status = L10n.t("bri.sealed", vm.language)
+                                .replace("{key}", key)
+                            contribSource = ""; reload()
+                        }.onFailure { error = it.message }
+                    }
+                }
+            }
+            SmallAction(L10n.t("bri.withdraw", vm.language)) {
+                if (contribRef.isNotBlank()) {
+                    vm.call({ ApiClient.withdrawContribution(vm.token!!,
+                        contribRef.trim()) }) { reload() }
+                }
+            }
+        }
+
+        // The custody ops: the whole tenant in hand and back, the retention
+        // window, the sweep, and the demo seed.
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            SmallAction(L10n.t("cu.snapshot", vm.language)) {
+                vm.call({ ApiClient.snapshotRecords(vm.token!!) }) { r ->
+                    r.onSuccess { opsLine = it.toString() }
+                        .onFailure { error = it.message }
+                }
+            }
+            SmallAction(L10n.t("cu.restore", vm.language)) {
+                vm.call({ ApiClient.restoreSnapshot(vm.token!!) }) { r ->
+                    r.onFailure { error = it.message }
+                }
+            }
+            SmallAction(L10n.t("ky.window", vm.language)) {
+                if (adminToken.isNotBlank()) {
+                    vm.call({ ApiClient.retentionPolicy(adminToken) }) { r ->
+                        r.onSuccess { opsLine = it }
+                            .onFailure { error = it.message }
+                    }
+                }
+            }
+            SmallAction(L10n.t("ky.sweep", vm.language)) {
+                if (adminToken.isNotBlank()) {
+                    vm.call({ ApiClient.retentionSweep(adminToken) }) { r ->
+                        r.onSuccess { opsLine = it }
+                            .onFailure { error = it.message }
+                    }
+                }
+            }
+            SmallAction(L10n.t("bri.seed", vm.language)) {
+                if (adminToken.isNotBlank()) {
+                    vm.call({ ApiClient.seedDemo(adminToken) }) { r ->
+                        r.onSuccess { status = L10n.t("bri.seeded", vm.language) }
+                            .onFailure { error = it.message }
+                    }
+                }
+            }
+        }
+        opsLine?.let { Text(it, color = Pdi.T2, fontSize = 11.sp) }
+        status?.let { Text(it, color = Pdi.Green, fontSize = 12.sp) }
+        error?.let { Text(it, color = Pdi.Red, fontSize = 12.sp) }
     }
 }
 

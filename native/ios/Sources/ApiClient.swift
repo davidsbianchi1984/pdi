@@ -511,6 +511,121 @@ actor ApiClient {
         }
     }
 
+    // MARK: continuity — bequests, and what outlives the tenant
+
+    func bequests(token: String) async throws -> [BequestOut] {
+        try await request("/bequests", token: token)
+    }
+
+    func createBequest(grantee: String, prefixes: [String], note: String?,
+                       token: String) async throws -> BequestOut {
+        var body: [String: Any] = ["grantee_name": grantee,
+                                   "key_prefixes": prefixes]
+        if let note, !note.isEmpty { body["note"] = note }
+        return try await request("/bequests", method: "POST", body: body,
+                                 token: token)
+    }
+
+    func revokeBequest(bid: String, token: String) async throws -> BequestOut {
+        try await request("/bequests/\(bid)", method: "DELETE", token: token)
+    }
+
+    /// The executor's act: activation attests the condition — the reference
+    /// goes into the audit chain — and mints the grant token, shown once.
+    func activateBequest(bid: String, ref: String,
+                         adminToken: String) async throws -> BequestOut {
+        try await request("/bequests/\(bid)/activate", method: "POST",
+                          body: ["activation_ref": ref], token: adminToken)
+    }
+
+    func revokeBequestGrant(bid: String,
+                            adminToken: String) async throws -> RevokedOut {
+        try await request("/bequests/\(bid)/grant", method: "DELETE",
+                          token: adminToken)
+    }
+
+    /// The heir's side. Two separate secrets on purpose: the grant token
+    /// says the condition was attested, the customer key decrypts. Holding
+    /// one without the other opens nothing — so both ride as headers here,
+    /// inline the way the intake submit already is.
+    func bequestKeys(grantToken: String,
+                     customerKey: String) async throws -> KeysListOut {
+        var req = URLRequest(url: base.appendingPathComponent("/bequests/grant/keys"))
+        req.setValue(L10n.deviceLanguage, forHTTPHeaderField: "accept-language")
+        req.setValue(grantToken, forHTTPHeaderField: "x-grant-token")
+        req.setValue(customerKey, forHTTPHeaderField: "x-tenant-key")
+        let (data, resp) = try await URLSession.shared.data(for: req)
+        guard let http = resp as? HTTPURLResponse,
+              (200..<300).contains(http.statusCode) else {
+            throw ApiError.http("the grant did not open")
+        }
+        return try JSONDecoder().decode(KeysListOut.self, from: data)
+    }
+
+    func bequestRead(key: String, grantToken: String,
+                     customerKey: String) async throws -> Data {
+        var req = URLRequest(url: base.appendingPathComponent(
+            "/bequests/grant/read?key=\(key)"))
+        req.setValue(L10n.deviceLanguage, forHTTPHeaderField: "accept-language")
+        req.setValue(grantToken, forHTTPHeaderField: "x-grant-token")
+        req.setValue(customerKey, forHTTPHeaderField: "x-tenant-key")
+        let (data, _) = try await URLSession.shared.data(for: req)
+        return data
+    }
+
+    // MARK: contributions, the snapshot, and the custody ops
+
+    func contributions(token: String) async throws -> ContribCount {
+        try await request("/contributions", token: token)
+    }
+
+    func contribute(source: String, ref: String?,
+                    token: String) async throws -> ContribOut {
+        var body: [String: Any] = ["source": source, "kind": "outcome",
+                                   "payload": ["helped": true]]
+        if let ref, !ref.isEmpty { body["ref"] = ref }
+        return try await request("/contributions", method: "POST",
+                                 body: body, token: token)
+    }
+
+    func withdrawContribution(ref: String, token: String) async throws -> Ok {
+        try await request("/contributions/\(ref)", method: "DELETE",
+                          token: token)
+    }
+
+    /// The whole tenant, in hand — raw on purpose: records are arbitrary
+    /// JSON and the door is the fetch, not a schema. Held so a restore can
+    /// put back exactly what was taken.
+    private var lastSnapshot: [[String: Any]] = []
+
+    func snapshotRecords(token: String) async throws -> Int {
+        var req = URLRequest(url: base.appendingPathComponent("/snapshot"))
+        req.setValue(L10n.deviceLanguage, forHTTPHeaderField: "accept-language")
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "authorization")
+        let (data, _) = try await URLSession.shared.data(for: req)
+        let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        lastSnapshot = obj?["records"] as? [[String: Any]] ?? []
+        return lastSnapshot.count
+    }
+
+    func restoreSnapshot(token: String) async throws -> Ok {
+        try await request("/restore", method: "POST",
+                          body: ["records": lastSnapshot], token: token)
+    }
+
+    func retentionPolicy(adminToken: String) async throws -> RetentionPolicyOut {
+        try await request("/retention", token: adminToken)
+    }
+
+    func retentionSweep(adminToken: String) async throws -> SweepOut {
+        try await request("/retention/sweep", method: "POST",
+                          token: adminToken)
+    }
+
+    func seedDemo(adminToken: String) async throws -> Ok {
+        try await request("/seed", method: "POST", token: adminToken)
+    }
+
     // MARK: tenants — the operator's half
 
     func createTenant(name: String, adminToken: String) async throws -> TenantMade {
@@ -682,6 +797,39 @@ actor ApiClient {
     func pairQrUrl() -> URL {
         base.appendingPathComponent("/pair/qr.svg")
     }
+}
+
+struct BequestOut: Decodable {
+    let id: String
+    let grantee_name: String
+    let condition: String?
+    let key_prefixes: [String]
+    let note: String?
+    let activated: Bool
+    let revoked: Bool
+    let activation_ref: String?
+    let grant_token: String?
+}
+
+struct RevokedOut: Decodable { let revoked: Bool }
+struct KeysListOut: Decodable { let keys: [String] }
+struct ContribCount: Decodable { let count: Int; let keys: [String] }
+
+struct ContribOut: Decodable {
+    let id: String
+    let key: String
+    let sealed: Bool
+}
+
+struct RetentionPolicyOut: Decodable {
+    let recovery_window: String
+    let windows: [String]
+}
+
+struct SweepOut: Decodable {
+    let purged_tenants: Int
+    let expired_records: Int
+    let recovery_window: String
 }
 
 struct TenantMade: Decodable { let id: String; let name: String; let token: String }

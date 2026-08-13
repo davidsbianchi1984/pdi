@@ -91,6 +91,37 @@ public record ComplianceProgram(
 public record CompliancePrograms(
     [property: JsonPropertyName("programs")] ComplianceProgram[] Programs);
 
+public record BequestRow(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("grantee_name")] string GranteeName,
+    [property: JsonPropertyName("condition")] string? Condition,
+    [property: JsonPropertyName("key_prefixes")] string[] KeyPrefixes,
+    [property: JsonPropertyName("activated")] bool Activated,
+    [property: JsonPropertyName("revoked")] bool Revoked,
+    [property: JsonPropertyName("grant_token")] string? GrantToken);
+
+public record RevokedOut([property: JsonPropertyName("revoked")] bool Revoked);
+
+public record KeysListOut([property: JsonPropertyName("keys")] string[] Keys);
+
+public record ContribCount(
+    [property: JsonPropertyName("count")] int Count,
+    [property: JsonPropertyName("keys")] string[] Keys);
+
+public record ContribOut(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("key")] string Key,
+    [property: JsonPropertyName("sealed")] bool Sealed);
+
+public record RetentionPolicyOut(
+    [property: JsonPropertyName("recovery_window")] string RecoveryWindow,
+    [property: JsonPropertyName("windows")] string[] Windows);
+
+public record SweepOut(
+    [property: JsonPropertyName("purged_tenants")] int PurgedTenants,
+    [property: JsonPropertyName("expired_records")] int ExpiredRecords,
+    [property: JsonPropertyName("recovery_window")] string RecoveryWindow);
+
 public record TenantMade(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("name")] string Name,
@@ -438,6 +469,127 @@ public sealed class ApiClient
     public Task<RecordProvenance> Provenance(string token, string key) =>
         Send<RecordProvenance>(new HttpRequestMessage(
             HttpMethod.Get, $"/provenance/{key}"), token);
+
+    // ---- continuity: bequests, and what outlives the tenant ----
+
+    public Task<BequestRow[]> Bequests(string token) =>
+        Send<BequestRow[]>(new HttpRequestMessage(HttpMethod.Get, "/bequests"), token);
+
+    public Task<BequestRow> CreateBequest(string token, string grantee,
+                                          string[] prefixes, string? note) =>
+        Send<BequestRow>(new HttpRequestMessage(HttpMethod.Post, "/bequests")
+        {
+            Content = JsonContent.Create(new
+            {
+                grantee_name = grantee,
+                key_prefixes = prefixes,
+                note,
+            }),
+        }, token);
+
+    public Task<BequestRow> RevokeBequest(string token, string bid) =>
+        Send<BequestRow>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/bequests/{bid}"), token);
+
+    // The executor's act: activation attests the condition — the reference
+    // goes into the audit chain — and mints the grant token, shown once.
+    public Task<BequestRow> ActivateBequest(string adminToken, string bid,
+                                            string activationRef) =>
+        Send<BequestRow>(new HttpRequestMessage(HttpMethod.Post,
+            $"/bequests/{bid}/activate")
+        {
+            Content = JsonContent.Create(new { activation_ref = activationRef }),
+        }, adminToken);
+
+    public Task<RevokedOut> RevokeBequestGrant(string adminToken, string bid) =>
+        Send<RevokedOut>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/bequests/{bid}/grant"), adminToken);
+
+    // The heir's side. Two separate secrets on purpose — the grant token
+    // says the condition was attested, the customer key decrypts — so both
+    // ride as headers on the request itself.
+    public Task<KeysListOut> BequestKeys(string grantToken, string customerKey)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Get, "/bequests/grant/keys");
+        req.Headers.TryAddWithoutValidation("x-grant-token", grantToken);
+        req.Headers.TryAddWithoutValidation("x-tenant-key", customerKey);
+        return Send<KeysListOut>(req);
+    }
+
+    public async Task<string> BequestRead(string key, string grantToken,
+                                          string customerKey)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Get,
+            $"/bequests/grant/read?key={Uri.EscapeDataString(key)}");
+        req.Headers.TryAddWithoutValidation("x-grant-token", grantToken);
+        req.Headers.TryAddWithoutValidation("x-tenant-key", customerKey);
+        var res = await Dispatch(req);
+        return await res.Content.ReadAsStringAsync();
+    }
+
+    // ---- contributions, the snapshot, and the custody ops ----
+
+    public async Task<int> Contributions(string token) =>
+        (await Send<ContribCount>(new HttpRequestMessage(HttpMethod.Get,
+            "/contributions"), token)).Count;
+
+    public async Task<string> Contribute(string token, string source,
+                                         string? reference)
+    {
+        var made = await Send<ContribOut>(
+            new HttpRequestMessage(HttpMethod.Post, "/contributions")
+            {
+                Content = JsonContent.Create(new
+                {
+                    source,
+                    kind = "outcome",
+                    payload = new { helped = true },
+                    @ref = reference,
+                }),
+            }, token);
+        return made.Key;
+    }
+
+    public Task<OkOut> WithdrawContribution(string token, string reference) =>
+        Send<OkOut>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/contributions/{reference}"), token);
+
+    // The whole tenant, in hand — raw on purpose: records are arbitrary
+    // JSON and the door is the fetch, not a schema. Held so a restore can
+    // put back exactly what was taken.
+    private System.Text.Json.JsonElement? _lastSnapshot;
+
+    public async Task<int> SnapshotRecords(string token)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Get, "/snapshot");
+        req.Headers.Add("authorization", $"Bearer {token}");
+        var res = await Dispatch(req);
+        var doc = System.Text.Json.JsonDocument.Parse(
+            await res.Content.ReadAsStringAsync());
+        _lastSnapshot = doc.RootElement.TryGetProperty("records", out var records)
+            ? records.Clone() : null;
+        return _lastSnapshot?.GetArrayLength() ?? 0;
+    }
+
+    public Task<OkOut> RestoreSnapshot(string token) =>
+        Send<OkOut>(new HttpRequestMessage(HttpMethod.Post, "/restore")
+        {
+            Content = JsonContent.Create(new { records = _lastSnapshot }),
+        }, token);
+
+    public async Task<string> RetentionPolicy(string adminToken) =>
+        (await Send<RetentionPolicyOut>(new HttpRequestMessage(HttpMethod.Get,
+            "/retention"), adminToken)).RecoveryWindow;
+
+    public async Task<string> RetentionSweep(string adminToken)
+    {
+        var s = await Send<SweepOut>(new HttpRequestMessage(HttpMethod.Post,
+            "/retention/sweep"), adminToken);
+        return $"{s.PurgedTenants} · {s.ExpiredRecords} · {s.RecoveryWindow}";
+    }
+
+    public Task<OkOut> SeedDemo(string adminToken) =>
+        Send<OkOut>(new HttpRequestMessage(HttpMethod.Post, "/seed"), adminToken);
 
     // ---- tenants: the operator's half ----
 

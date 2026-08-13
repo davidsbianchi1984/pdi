@@ -409,3 +409,261 @@ struct GateCard: View {
         }
     }
 }
+
+// MARK: continuity — what outlives the tenant, on the phone
+
+/// Bequests through their whole life — recorded, activated by the executor,
+/// taken back, redeemed by the heir — plus contributions, the snapshot pair,
+/// and the retention ops. The console's Continuity and custody blocks.
+struct ContinuityCard: View {
+    @EnvironmentObject var state: AppState
+    @State private var rows: [BequestOut] = []
+    @State private var grantee = ""
+    @State private var prefixes = ""
+    @State private var note = ""
+    @State private var adminToken = ""
+    @State private var ref = ""
+    @State private var mintedGrant: String?
+    @State private var grantToken = ""
+    @State private var custKey = ""
+    @State private var heirKeys: [String] = []
+    @State private var readBack: String?
+    @State private var contribSource = ""
+    @State private var contribRef = ""
+    @State private var contribLine: String?
+    @State private var snapCount: Int?
+    @State private var sweepLine: String?
+    @State private var status: String?
+    @State private var error: String?
+    @State private var busy = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(L10n.t("co.bequests", state.language))
+                .font(.headline).foregroundStyle(Theme.txt)
+            Text(L10n.t("co.bequests.note", state.language))
+                .font(.caption2).foregroundStyle(Theme.t2)
+            if rows.isEmpty {
+                Text(L10n.t("co.nothing", state.language))
+                    .font(.caption2).foregroundStyle(Theme.t2)
+            }
+            ForEach(rows, id: \.id) { b in
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack {
+                        Text(b.grantee_name)
+                            .font(.caption.bold()).foregroundStyle(Theme.txt)
+                        Text(L10n.t(b.revoked ? "co.revoke"
+                                    : b.activated ? "co.inforce" : "co.dormant",
+                                    state.language))
+                            .font(.caption2).foregroundStyle(Theme.t2)
+                        Spacer()
+                        if !b.revoked {
+                            Button(L10n.t("co.revoke", state.language)) {
+                                act { _ = try await ApiClient.shared.revokeBequest(
+                                    bid: b.id, token: state.token ?? "") }
+                            }
+                            .font(.caption2).foregroundStyle(Theme.red)
+                            .disabled(busy)
+                        }
+                    }
+                    Text(L10n.t("co.wouldopen", state.language) + " "
+                         + b.key_prefixes.joined(separator: ", "))
+                        .font(.caption2).foregroundStyle(Theme.t2)
+                    // The executor's press, one per dormant row; the taking
+                    // back, one per row in force.
+                    if !b.activated && !b.revoked {
+                        Button(L10n.t("co.activate", state.language)) {
+                            act {
+                                let out = try await ApiClient.shared.activateBequest(
+                                    bid: b.id, ref: ref, adminToken: adminToken)
+                                mintedGrant = out.grant_token
+                            }
+                        }
+                        .font(.caption2).foregroundStyle(Theme.brandA)
+                        .disabled(busy || adminToken.isEmpty || ref.isEmpty)
+                    }
+                    if b.activated && !b.revoked {
+                        Button(L10n.t("co.revoke.grant", state.language)) {
+                            act { _ = try await ApiClient.shared.revokeBequestGrant(
+                                bid: b.id, adminToken: adminToken) }
+                        }
+                        .font(.caption2).foregroundStyle(Theme.red)
+                        .disabled(busy || adminToken.isEmpty)
+                    }
+                }
+            }
+            TextField(L10n.t("co.grantee.ph", state.language), text: $grantee)
+                .foregroundStyle(Theme.txt)
+            TextField(L10n.t("co.prefixes.ph", state.language), text: $prefixes)
+                .foregroundStyle(Theme.txt)
+            TextField(L10n.t("co.note.ph", state.language), text: $note)
+                .foregroundStyle(Theme.txt)
+            Button(L10n.t("co.record", state.language)) { record() }
+                .font(.caption.bold()).foregroundStyle(.white)
+                .padding(.horizontal, 12).padding(.vertical, 7)
+                .background(Theme.brandA).clipShape(Capsule())
+                .disabled(busy || grantee.isEmpty || prefixes.isEmpty)
+
+            Text(L10n.t("co.activation", state.language))
+                .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+            Text(L10n.t("co.activation.note", state.language))
+                .font(.caption2).foregroundStyle(Theme.t2)
+            SecureField(L10n.t("co.admin.ph", state.language), text: $adminToken)
+                .foregroundStyle(Theme.txt)
+            TextField(L10n.t("co.ref.ph", state.language), text: $ref)
+                .foregroundStyle(Theme.txt)
+            if let mintedGrant {
+                Text(L10n.t("co.minted", state.language) + " "
+                     + L10n.t("co.minted.note", state.language))
+                    .font(.caption2).foregroundStyle(Theme.t2)
+                Text(mintedGrant)
+                    .font(.caption2.monospaced()).foregroundStyle(Theme.txt)
+                    .textSelection(.enabled)
+            }
+
+            // The heir's side: two separate secrets, and one without the
+            // other opens nothing.
+            Text(L10n.t("co.redeem", state.language))
+                .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+            Text(L10n.t("co.redeem.note", state.language))
+                .font(.caption2).foregroundStyle(Theme.t2)
+            TextField(L10n.t("co.grant.ph", state.language), text: $grantToken)
+                .foregroundStyle(Theme.txt)
+            SecureField(L10n.t("co.custkey.ph", state.language), text: $custKey)
+                .foregroundStyle(Theme.txt)
+            HStack(spacing: 10) {
+                Button(L10n.t("co.whatopen", state.language)) {
+                    act { heirKeys = try await ApiClient.shared.bequestKeys(
+                        grantToken: grantToken, customerKey: custKey).keys }
+                }
+                Button(L10n.t("co.read", state.language)) {
+                    act {
+                        guard let first = heirKeys.first else { return }
+                        let data = try await ApiClient.shared.bequestRead(
+                            key: first, grantToken: grantToken,
+                            customerKey: custKey)
+                        readBack = String(data: data, encoding: .utf8)
+                    }
+                }.disabled(heirKeys.isEmpty)
+            }
+            .font(.caption2).foregroundStyle(Theme.brandA)
+            .disabled(busy || grantToken.isEmpty || custKey.isEmpty)
+            if !heirKeys.isEmpty {
+                Text(heirKeys.joined(separator: ", "))
+                    .font(.caption2.monospaced()).foregroundStyle(Theme.t2)
+            }
+            if let readBack {
+                Text(readBack).font(.caption2.monospaced())
+                    .foregroundStyle(Theme.t2).lineLimit(4)
+            }
+
+            // Contributions: what the tandem products sealed in, by count
+            // and key only.
+            Text(L10n.t("bri.contribute", state.language))
+                .font(.subheadline.bold()).foregroundStyle(Theme.txt)
+            if let contribLine {
+                Text(contribLine).font(.caption2).foregroundStyle(Theme.t2)
+            }
+            TextField(L10n.t("bri.source.ph", state.language), text: $contribSource)
+                .foregroundStyle(Theme.txt)
+            TextField(L10n.t("bri.ref.ph", state.language), text: $contribRef)
+                .foregroundStyle(Theme.txt)
+            HStack(spacing: 10) {
+                Button(L10n.t("bri.contribute", state.language)) { contribute() }
+                    .disabled(busy || contribSource.isEmpty)
+                Button(L10n.t("bri.withdraw", state.language)) {
+                    act { _ = try await ApiClient.shared.withdrawContribution(
+                        ref: contribRef, token: state.token ?? "") }
+                }.disabled(busy || contribRef.isEmpty)
+            }
+            .font(.caption2).foregroundStyle(Theme.brandA)
+
+            // The custody ops: the whole tenant in hand and back, the
+            // retention window, the sweep, and the demo seed.
+            HStack(spacing: 10) {
+                Button(L10n.t("cu.snapshot", state.language)) {
+                    act { snapCount = try await ApiClient.shared.snapshotRecords(
+                        token: state.token ?? "") }
+                }
+                Button(L10n.t("cu.restore", state.language)) {
+                    act { _ = try await ApiClient.shared.restoreSnapshot(
+                        token: state.token ?? "") }
+                }.disabled(snapCount == nil)
+                Button(L10n.t("ky.window", state.language)) {
+                    act {
+                        let r = try await ApiClient.shared.retentionPolicy(
+                            adminToken: adminToken)
+                        sweepLine = r.recovery_window
+                    }
+                }.disabled(adminToken.isEmpty)
+                Button(L10n.t("ky.sweep", state.language)) {
+                    act {
+                        let s = try await ApiClient.shared.retentionSweep(
+                            adminToken: adminToken)
+                        sweepLine = "\(s.purged_tenants) · \(s.expired_records) · \(s.recovery_window)"
+                    }
+                }.disabled(adminToken.isEmpty)
+                Button(L10n.t("bri.seed", state.language)) {
+                    act { _ = try await ApiClient.shared.seedDemo(
+                        adminToken: adminToken)
+                        status = L10n.t("bri.seeded", state.language) }
+                }.disabled(adminToken.isEmpty)
+            }
+            .font(.caption2).foregroundStyle(Theme.brandA)
+            .disabled(busy)
+            if let snapCount {
+                Text("\(snapCount)").font(.caption2).foregroundStyle(Theme.t2)
+            }
+            if let sweepLine {
+                Text(sweepLine).font(.caption2).foregroundStyle(Theme.t2)
+            }
+
+            if let status { Text(status).font(.caption).foregroundStyle(Theme.green) }
+            if let error { Text(error).font(.caption).foregroundStyle(Theme.red) }
+        }
+        .card()
+        .task { await load() }
+    }
+
+    private func load() async {
+        guard let token = state.token else { return }
+        rows = (try? await ApiClient.shared.bequests(token: token)) ?? []
+        if let c = try? await ApiClient.shared.contributions(token: token) {
+            contribLine = L10n.t("bri.held", state.language)
+                .replacingOccurrences(of: "{n}", with: String(c.count))
+        }
+    }
+
+    private func act(_ work: @escaping () async throws -> Void) {
+        busy = true; error = nil; status = nil
+        Task {
+            do { try await work(); await load() }
+            catch { self.error = error.localizedDescription }
+            busy = false
+        }
+    }
+
+    private func record() {
+        let parts = prefixes.split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+        act {
+            _ = try await ApiClient.shared.createBequest(
+                grantee: grantee, prefixes: parts,
+                note: note.isEmpty ? nil : note, token: state.token ?? "")
+            grantee = ""; prefixes = ""; note = ""
+        }
+    }
+
+    private func contribute() {
+        act {
+            let c = try await ApiClient.shared.contribute(
+                source: contribSource,
+                ref: contribRef.isEmpty ? nil : contribRef,
+                token: state.token ?? "")
+            status = L10n.t("bri.sealed", state.language)
+                .replacingOccurrences(of: "{key}", with: c.key)
+            contribSource = ""
+        }
+    }
+}

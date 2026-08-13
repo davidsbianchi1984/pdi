@@ -4,17 +4,11 @@
 # emails it); a phone has no business fetching somebody else's
 # collection page, and building it into one would mean telling a
 # person who was sent a single file to install an app.
-DELETE /bequests/{bid}
-DELETE /bequests/{bid}/grant
-DELETE /contributions/{ref}
 DELETE /key
 DELETE /robots/{rid}
 DELETE /tokens/{token}
 GET /audit/schema
 GET /baa
-GET /bequests
-GET /bequests/grant/keys
-GET /bequests/grant/read
 GET /connectors/catalog
 GET /connectors/{cid}/beacon
 GET /connectors/{cid}/qr.svg
@@ -22,7 +16,6 @@ GET /console/guide
 GET /console/guide/for-screen/{number}
 GET /console/guide/progress/{learner_id}
 GET /console/guide/steps/{key}
-GET /contributions
 GET /dock/faces
 GET /dock/where/{face}
 GET /dock/{tenant_id}
@@ -37,22 +30,14 @@ GET /key
 GET /operations
 GET /positions
 GET /positions/{position_id}
-GET /retention
-GET /snapshot
 GET /transfers/{tid}
 GET /transfers/{tid}/custody
-POST /bequests
-POST /bequests/{bid}/activate
 POST /console/ask
 POST /console/guide/done
 POST /console/guide/start
-POST /contributions
 POST /deployments
 POST /keys/reseal
 POST /positions
-POST /restore
-POST /retention/sweep
-POST /seed
 POST /transfers/{tid}/receive
 POST /translate
 PUT /dock/{tenant_id}

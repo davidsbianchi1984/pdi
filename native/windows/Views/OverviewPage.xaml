@@ -286,6 +286,90 @@
                                TextWrapping="Wrap" Visibility="Collapsed" />
                 </StackPanel>
             </Border>
+
+            <!-- Continuity: bequests through their whole life, contributions,
+                 the snapshot pair, and the retention ops. -->
+            <Border Background="{StaticResource PdiCardBrush}" BorderBrush="{StaticResource PdiLineBrush}"
+                    BorderThickness="1" CornerRadius="16" Padding="16">
+                <StackPanel Spacing="10">
+                    <TextBlock x:Name="CtTitle" FontWeight="Bold" FontSize="16"
+                               Foreground="{StaticResource PdiTxtBrush}" />
+                    <TextBlock x:Name="CtNote" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource PdiT2Brush}" />
+                    <StackPanel x:Name="CtRows" Spacing="4" />
+                    <TextBox x:Name="CtGranteeBox" />
+                    <TextBox x:Name="CtPrefixesBox" />
+                    <TextBox x:Name="CtNoteBox" />
+                    <Button x:Name="CtRecordButton" Click="OnBequestRecord"
+                            Background="{StaticResource PdiBrandABrush}" Foreground="White" FontSize="12" />
+                    <TextBlock x:Name="CtActHead" FontWeight="Bold" FontSize="13"
+                               Foreground="{StaticResource PdiTxtBrush}" />
+                    <TextBlock x:Name="CtActNote" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource PdiT2Brush}" />
+                    <PasswordBox x:Name="CtAdminBox" />
+                    <TextBox x:Name="CtRefBox" />
+                    <TextBlock x:Name="CtMinted" FontSize="11" FontFamily="Consolas" IsTextSelectionEnabled="True"
+                               TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource PdiTxtBrush}" />
+                    <TextBlock x:Name="CtRedeemHead" FontWeight="Bold" FontSize="13"
+                               Foreground="{StaticResource PdiTxtBrush}" />
+                    <TextBlock x:Name="CtRedeemNote" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource PdiT2Brush}" />
+                    <TextBox x:Name="CtGrantBox" />
+                    <PasswordBox x:Name="CtCustKeyBox" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="CtKeysButton" Click="OnBequestKeys"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiBrandABrush}" />
+                        <Button x:Name="CtReadButton" Click="OnBequestRead"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiBrandABrush}" />
+                    </StackPanel>
+                    <TextBlock x:Name="CtHeirKeys" FontSize="11" FontFamily="Consolas" IsTextSelectionEnabled="True"
+                               TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource PdiT2Brush}" />
+                    <TextBlock x:Name="CtReadBack" FontSize="11" FontFamily="Consolas" IsTextSelectionEnabled="True"
+                               TextWrapping="Wrap" Visibility="Collapsed" MaxHeight="80"
+                               Foreground="{StaticResource PdiT2Brush}" />
+                    <TextBlock x:Name="CtContribHead" FontWeight="Bold" FontSize="13"
+                               Foreground="{StaticResource PdiTxtBrush}" />
+                    <TextBlock x:Name="CtContribLine" FontSize="11"
+                               Foreground="{StaticResource PdiT2Brush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBox x:Name="CtSourceBox" Width="180" />
+                        <TextBox x:Name="CtContribRefBox" Width="140" />
+                        <Button x:Name="CtContribButton" Click="OnContribute"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiBrandABrush}" />
+                        <Button x:Name="CtWithdrawButton" Click="OnWithdraw"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiRedBrush}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="CtSnapshotButton" Click="OnSnapshot"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiBrandABrush}" />
+                        <Button x:Name="CtRestoreButton" Click="OnRestoreSnapshot"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiBrandABrush}" />
+                        <Button x:Name="CtWindowButton" Click="OnRetentionWindow"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiBrandABrush}" />
+                        <Button x:Name="CtSweepButton" Click="OnRetentionSweep"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiBrandABrush}" />
+                        <Button x:Name="CtSeedButton" Click="OnSeedDemo"
+                                Background="Transparent" FontSize="12"
+                                Foreground="{StaticResource PdiBrandABrush}" />
+                    </StackPanel>
+                    <TextBlock x:Name="CtOpsLine" FontSize="11" TextWrapping="Wrap" Visibility="Collapsed"
+                               Foreground="{StaticResource PdiT2Brush}" />
+                    <TextBlock x:Name="CtStatus" Foreground="{StaticResource PdiGreenBrush}" FontSize="12"
+                               TextWrapping="Wrap" Visibility="Collapsed" />
+                    <TextBlock x:Name="CtError" Foreground="{StaticResource PdiRedBrush}" FontSize="12"
+                               TextWrapping="Wrap" Visibility="Collapsed" />
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>

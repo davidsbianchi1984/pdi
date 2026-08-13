@@ -72,6 +72,32 @@ public sealed partial class OverviewPage : Page
         GateTzButton.Content = L10n.T("co.set");
         GateSentHead.Text = L10n.T("co.sent");
         GateSentNote.Text = L10n.T("co.sent.note");
+        CtTitle.Text = L10n.T("co.bequests");
+        CtNote.Text = L10n.T("co.bequests.note");
+        CtGranteeBox.PlaceholderText = L10n.T("co.grantee.ph");
+        CtPrefixesBox.PlaceholderText = L10n.T("co.prefixes.ph");
+        CtNoteBox.PlaceholderText = L10n.T("co.note.ph");
+        CtRecordButton.Content = L10n.T("co.record");
+        CtActHead.Text = L10n.T("co.activation");
+        CtActNote.Text = L10n.T("co.activation.note");
+        CtAdminBox.Header = L10n.T("co.admin.ph");
+        CtRefBox.PlaceholderText = L10n.T("co.ref.ph");
+        CtRedeemHead.Text = L10n.T("co.redeem");
+        CtRedeemNote.Text = L10n.T("co.redeem.note");
+        CtGrantBox.PlaceholderText = L10n.T("co.grant.ph");
+        CtCustKeyBox.Header = L10n.T("co.custkey.ph");
+        CtKeysButton.Content = L10n.T("co.whatopen");
+        CtReadButton.Content = L10n.T("co.read");
+        CtContribHead.Text = L10n.T("bri.contribute");
+        CtSourceBox.PlaceholderText = L10n.T("bri.source.ph");
+        CtContribRefBox.PlaceholderText = L10n.T("bri.ref.ph");
+        CtContribButton.Content = L10n.T("bri.contribute");
+        CtWithdrawButton.Content = L10n.T("bri.withdraw");
+        CtSnapshotButton.Content = L10n.T("cu.snapshot");
+        CtRestoreButton.Content = L10n.T("cu.restore");
+        CtWindowButton.Content = L10n.T("ky.window");
+        CtSweepButton.Content = L10n.T("ky.sweep");
+        CtSeedButton.Content = L10n.T("bri.seed");
         LanguageHead.Text = L10n.T("wel.language");
         // `action.refresh` has been in the table, translated into ten
         // languages, since chrome localization landed — and the only
@@ -147,6 +173,7 @@ public sealed partial class OverviewPage : Page
         RefreshButton.Content = L10n.T("action.refresh");
         await Load();
         await ReloadGate();
+        try { await ReloadContinuity(); } catch (Exception ex) { ShowCtError(ex.Message); }
     }
 
     private async void OnRefresh(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) =>
@@ -305,6 +332,245 @@ public sealed partial class OverviewPage : Page
             new KeyRow($"v{v.Version}  {(v.Active ? "active " : "inactive")}  {v.CreatedAt}")).ToList();
         RotateButton.IsEnabled = true;
         RetireButton.IsEnabled = true;
+    }
+
+    private string[] _heirKeys = Array.Empty<string>();
+
+    private void ShowCtError(string message)
+    {
+        CtError.Text = message;
+        CtError.Visibility = Visibility.Visible;
+    }
+
+    private async System.Threading.Tasks.Task ReloadContinuity()
+    {
+        var s = AppState.Current;
+        if (s.Token is null) return;
+        CtError.Visibility = Visibility.Collapsed;
+        var rows = await ApiClient.Shared.Bequests(s.Token!);
+        CtRows.Children.Clear();
+        if (rows.Length == 0)
+            CtRows.Children.Add(GateLine(L10n.T("co.nothing"), "PdiT2Brush"));
+        foreach (var b in rows)
+        {
+            var bid = b.Id;
+            var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+            row.Children.Add(GateLine(
+                $"{b.GranteeName} · " + L10n.T(
+                    b.Revoked ? "co.revoke"
+                    : b.Activated ? "co.inforce" : "co.dormant"),
+                "PdiT2Brush"));
+            if (!b.Revoked)
+            {
+                var revoke = new Button
+                {
+                    Content = L10n.T("co.revoke"), FontSize = 11,
+                    Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                        Microsoft.UI.Colors.Transparent),
+                };
+                revoke.Click += async (_, _) =>
+                {
+                    try
+                    {
+                        await ApiClient.Shared.RevokeBequest(s.Token!, bid);
+                        await ReloadContinuity();
+                    }
+                    catch (Exception ex) { ShowCtError(ex.Message); }
+                };
+                row.Children.Add(revoke);
+            }
+            // The executor's press, one per dormant row; the taking back,
+            // one per row in force.
+            if (!b.Activated && !b.Revoked)
+            {
+                var activate = new Button
+                {
+                    Content = L10n.T("co.activate"), FontSize = 11,
+                    Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                        Microsoft.UI.Colors.Transparent),
+                };
+                activate.Click += async (_, _) =>
+                {
+                    if (CtAdminBox.Password.Length == 0
+                        || CtRefBox.Text.Trim().Length == 0) return;
+                    try
+                    {
+                        var made = await ApiClient.Shared.ActivateBequest(
+                            CtAdminBox.Password, bid, CtRefBox.Text.Trim());
+                        if (made.GrantToken is { } grant)
+                        {
+                            CtMinted.Text = L10n.T("co.minted") + " "
+                                + L10n.T("co.minted.note") + "\n" + grant;
+                            CtMinted.Visibility = Visibility.Visible;
+                        }
+                        await ReloadContinuity();
+                    }
+                    catch (Exception ex) { ShowCtError(ex.Message); }
+                };
+                row.Children.Add(activate);
+            }
+            if (b.Activated && !b.Revoked)
+            {
+                var takeBack = new Button
+                {
+                    Content = L10n.T("co.revoke.grant"), FontSize = 11,
+                    Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                        Microsoft.UI.Colors.Transparent),
+                };
+                takeBack.Click += async (_, _) =>
+                {
+                    if (CtAdminBox.Password.Length == 0) return;
+                    try
+                    {
+                        await ApiClient.Shared.RevokeBequestGrant(
+                            CtAdminBox.Password, bid);
+                        await ReloadContinuity();
+                    }
+                    catch (Exception ex) { ShowCtError(ex.Message); }
+                };
+                row.Children.Add(takeBack);
+            }
+            CtRows.Children.Add(row);
+            CtRows.Children.Add(GateLine(
+                L10n.T("co.wouldopen") + " " + string.Join(", ", b.KeyPrefixes),
+                "PdiT2Brush"));
+        }
+        try
+        {
+            var held = await ApiClient.Shared.Contributions(s.Token!);
+            CtContribLine.Text = L10n.T("bri.held")
+                .Replace("{n}", held.ToString());
+        }
+        catch { /* the count is decoration on this card */ }
+    }
+
+    private async void OnBequestRecord(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        var grantee = CtGranteeBox.Text.Trim();
+        var prefixes = CtPrefixesBox.Text.Split(',')
+            .Select(p => p.Trim()).Where(p => p.Length > 0).ToArray();
+        if (s.Token is null || grantee.Length == 0 || prefixes.Length == 0) return;
+        try
+        {
+            await ApiClient.Shared.CreateBequest(s.Token!, grantee, prefixes,
+                CtNoteBox.Text.Trim().Length == 0 ? null : CtNoteBox.Text.Trim());
+            CtGranteeBox.Text = ""; CtPrefixesBox.Text = ""; CtNoteBox.Text = "";
+            await ReloadContinuity();
+        }
+        catch (Exception ex) { ShowCtError(ex.Message); }
+    }
+
+    // The heir's side: two separate secrets, and one without the other
+    // opens nothing.
+    private async void OnBequestKeys(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            _heirKeys = (await ApiClient.Shared.BequestKeys(
+                CtGrantBox.Text.Trim(), CtCustKeyBox.Password)).Keys;
+            CtHeirKeys.Text = string.Join(", ", _heirKeys);
+            CtHeirKeys.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowCtError(ex.Message); }
+    }
+
+    private async void OnBequestRead(object sender, RoutedEventArgs e)
+    {
+        if (_heirKeys.Length == 0) return;
+        try
+        {
+            CtReadBack.Text = await ApiClient.Shared.BequestRead(
+                _heirKeys[0], CtGrantBox.Text.Trim(), CtCustKeyBox.Password);
+            CtReadBack.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowCtError(ex.Message); }
+    }
+
+    private async void OnContribute(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        var source = CtSourceBox.Text.Trim();
+        if (s.Token is null || source.Length == 0) return;
+        try
+        {
+            var key = await ApiClient.Shared.Contribute(s.Token!, source,
+                CtContribRefBox.Text.Trim().Length == 0
+                    ? null : CtContribRefBox.Text.Trim());
+            CtStatus.Text = L10n.T("bri.sealed").Replace("{key}", key);
+            CtStatus.Visibility = Visibility.Visible;
+            CtSourceBox.Text = "";
+            await ReloadContinuity();
+        }
+        catch (Exception ex) { ShowCtError(ex.Message); }
+    }
+
+    private async void OnWithdraw(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        var reference = CtContribRefBox.Text.Trim();
+        if (s.Token is null || reference.Length == 0) return;
+        try
+        {
+            await ApiClient.Shared.WithdrawContribution(s.Token!, reference);
+            await ReloadContinuity();
+        }
+        catch (Exception ex) { ShowCtError(ex.Message); }
+    }
+
+    private async void OnSnapshot(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Token is null) return;
+        try
+        {
+            var n = await ApiClient.Shared.SnapshotRecords(s.Token!);
+            CtOpsLine.Text = n.ToString();
+            CtOpsLine.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowCtError(ex.Message); }
+    }
+
+    private async void OnRestoreSnapshot(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (s.Token is null) return;
+        try { await ApiClient.Shared.RestoreSnapshot(s.Token!); }
+        catch (Exception ex) { ShowCtError(ex.Message); }
+    }
+
+    private async void OnRetentionWindow(object sender, RoutedEventArgs e)
+    {
+        if (CtAdminBox.Password.Length == 0) return;
+        try
+        {
+            CtOpsLine.Text = await ApiClient.Shared.RetentionPolicy(CtAdminBox.Password);
+            CtOpsLine.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowCtError(ex.Message); }
+    }
+
+    private async void OnRetentionSweep(object sender, RoutedEventArgs e)
+    {
+        if (CtAdminBox.Password.Length == 0) return;
+        try
+        {
+            CtOpsLine.Text = await ApiClient.Shared.RetentionSweep(CtAdminBox.Password);
+            CtOpsLine.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowCtError(ex.Message); }
+    }
+
+    private async void OnSeedDemo(object sender, RoutedEventArgs e)
+    {
+        if (CtAdminBox.Password.Length == 0) return;
+        try
+        {
+            await ApiClient.Shared.SeedDemo(CtAdminBox.Password);
+            CtStatus.Text = L10n.T("bri.seeded");
+            CtStatus.Visibility = Visibility.Visible;
+        }
+        catch (Exception ex) { ShowCtError(ex.Message); }
     }
 
     private void ShowTnError(string message)
