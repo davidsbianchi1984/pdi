@@ -170,7 +170,9 @@ actor ApiClient {
     var base = URL(string: "http://127.0.0.1:8000")!
 
     func setBase(_ s: String) {
-        let t = s.hasSuffix("/") ? String(s.dropLast()) : s
+        // One trailing slash was removed where the other three clients
+        // remove them all, so `http://host//` survived only here.
+        let t = String(s.reversed().drop(while: { $0 == "/" }).reversed())
         if !t.isEmpty, let u = URL(string: t) { base = u }
     }
 
