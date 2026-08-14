@@ -1037,7 +1037,14 @@ actor ApiClient {
     }
 }
 
-struct HealthOut: Decodable { let status: String }
+/// `version` is optional twice over: a backend old enough to predate the
+/// field answers without it, and that case is exactly the one the version
+/// guard exists to catch — so decoding must survive its absence rather than
+/// throw and leave the shell with no answer at all. It was decoded away
+/// entirely until the guard needed it; a binding that discards the answer is
+/// worse than none, because the next person to want it finds a health call
+/// that looks complete.
+struct HealthOut: Decodable { let status: String; let version: String? }
 
 struct GuideOutlineOut: Decodable { let steps: Int }
 

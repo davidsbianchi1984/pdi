@@ -595,6 +595,18 @@ object ApiClient {
 
     // ---- posture: where the vault lives, and whether it is up ----
 
+    /**
+     * The backend's own version, for the guard that compares it with this
+     * build's. Empty when the field is absent, which is a real answer and
+     * not an error: a backend old enough to predate the field is exactly
+     * the deployment the guard exists to name. `health` above reads the
+     * same response and throws this away, which is why nothing on this
+     * shell could tell a stale backend from a current one.
+     */
+    suspend fun backendVersion(): String {
+        return JSONObject(request("/health")).optString("version", "")
+    }
+
     suspend fun health(): String =
         JSONObject(request("/health")).optString("status")
 

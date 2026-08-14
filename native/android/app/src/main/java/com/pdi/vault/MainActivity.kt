@@ -35,6 +35,7 @@ import com.pdi.vault.ui.SourcesScreen
 import com.pdi.vault.ui.TransfersScreen
 import com.pdi.vault.ui.VaultScreen
 import com.pdi.vault.ui.WelcomeScreen
+import com.pdi.vault.ui.VersionGuardBar
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,10 +55,17 @@ class MainActivity : ComponentActivity() {
         setContent {
             PdiTheme {
                 val vm: VaultViewModel = viewModel()
-                if (!vm.isSignedIn) {
-                    WelcomeScreen(vm)
-                } else {
-                    HomeShell(vm)
+                // Over the tab bar and over the welcome flow both: a stale
+                // backend breaks the screens a signed-out person meets
+                // first, and saying so only after they get in would be
+                // saying it after the part that fails.
+                Box {
+                    if (!vm.isSignedIn) {
+                        WelcomeScreen(vm)
+                    } else {
+                        HomeShell(vm)
+                    }
+                    VersionGuardBar(vm.language)
                 }
             }
         }

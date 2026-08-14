@@ -109,7 +109,8 @@ public record BaaStandingOut(
     [property: JsonPropertyName("note")] string? Note);
 
 public record HealthOut(
-    [property: JsonPropertyName("status")] string Status);
+    [property: JsonPropertyName("status")] string Status,
+    [property: JsonPropertyName("version")] string? Version);
 
 public record HostingModeOut(
     [property: JsonPropertyName("title")] string Title,
@@ -390,6 +391,14 @@ public sealed class ApiClient
         var t = key?.Trim();
         _tenantKey = string.IsNullOrEmpty(t) ? null : t;
     }
+
+    /// <summary>
+    /// Where this shell is actually pointed, for a message that has to name
+    /// it. The address was settable and unreadable: a person told that two
+    /// versions are answering needs to know *which* address serves the other
+    /// one, and "somewhere" is not an answer they can act on.
+    /// </summary>
+    public Uri Base => _http.BaseAddress!;
 
     public void SetBase(string url)
     {
