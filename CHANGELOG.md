@@ -4,6 +4,62 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [0.73.0] - 2026-08-14
+
+### Added
+
+- **The phones say when the backend is a different version.** `/health`
+  answers a `version`, and the console has compared it against its own build
+  since a stale backend first cost somebody an evening — an older install
+  answers perfectly well and then serves an older API, so the app looks
+  alive while every newer screen says "Not Found" for no stated reason. The
+  native shells can be pointed at that same address, and said nothing at
+  all.
+
+      asked     is the backend reachable
+      mattered  is it the backend this build was written against
+
+  The answer was already on the wire and every shell decoded it away. All
+  three read it now and raise a dismissible banner naming both versions and
+  the address, in ten languages, dismissed per launch rather than
+  remembered — the condition holds until the address or the backend changes.
+
+### Changed
+
+- **The asymmetry between four clients is checked now, not reviewed for.**
+  The drift that matters is not the loud kind: it is a treatment applied in
+  three clients and skipped in the fourth, because every review of the three
+  that agree comes back clean and the odd one out is only reached by whoever
+  owns that device.
+
+      asked     does this client handle the input
+      mattered  does it handle it the way the other three do
+
+  `client_symmetry.txt` names treatments in words, one row per client, each
+  giving a path and a pattern that evidences it — with a refusal of any
+  treatment written for fewer than four clients, since that is the defect
+  recorded as intent and also the obvious way to quiet a failure. Error
+  reporting was the first surface entered into it: the record call, the path
+  redaction, and the consent gate, which is a privacy promise made four
+  times independently and the one worth having.
+
+  The first extension of the manifest reported a bug that was not there —
+  the redaction row's pattern matched three shells and missed a console that
+  had been doing the work since it was written, in all three products, and
+  the failure read exactly like a real one from the night before. A
+  manifest that can be wrong in the direction of *more* work is the reason
+  the "the file moved" and "the treatment went" cases are separated.
+
+- **The release checklist is checked against the manifest the guards read.**
+  It said five places for sixty releases, then twelve, and the manifest had
+  thirteen rows the whole time — `README.md`'s **Current release** banner
+  sat in the table without being counted in the prose above it. Two
+  corrections in two directions is the argument for checking rather than
+  re-reading, so the number is tied to the row count now, and every file the
+  manifest names must appear somewhere in the doc.
+
 ## [0.72.0] - 2026-08-14
 
 **There are no functional changes to PDI in this release**: cut with the
@@ -6444,7 +6500,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.72.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.73.0...HEAD
+[0.73.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.73.0
 [0.72.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.72.0
 [0.71.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.71.1
 [0.71.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.71.0
