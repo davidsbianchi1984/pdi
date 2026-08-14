@@ -70,8 +70,8 @@ export function Keys() {
           <thead><tr><th>version</th><th>state</th><th>created</th></tr></thead>
           <tbody>
             {keys.map((k) => (
-              <tr key={k.version}>
-                <td className="mono">v{k.version}</td>
+              <tr key={k.generation}>
+                <td className="mono">v{k.generation}</td>
                 <td>{k.active ? <span className="cyan">active</span> : <span className="muted">{t("ky.retirable", lang)}</span>}</td>
                 <td className="muted small">{k.created_at.slice(0, 19).replace("T", " ")}</td>
               </tr>

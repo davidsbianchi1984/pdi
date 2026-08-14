@@ -299,7 +299,9 @@ public record SocialConn(
     [property: JsonPropertyName("handle")] string? Handle);
 
 public record KeyVersion(
-    [property: JsonPropertyName("version")] int Version,
+    /// A rotation count, not a semantic version — `/health` uses `version`
+    /// for the latter and the two cannot share a wire name.
+    [property: JsonPropertyName("generation")] int Generation,
     [property: JsonPropertyName("active")] bool Active,
     [property: JsonPropertyName("created_at")] string? CreatedAt);
 

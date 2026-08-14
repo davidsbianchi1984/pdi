@@ -54,7 +54,7 @@ struct AdminCard: View {
                     HStack {
                         Circle().fill(v.active ? Theme.green : Theme.t3)
                             .frame(width: 8, height: 8)
-                        let vTag = "v" + String(v.version)
+                        let vTag = "v" + String(v.generation)
                         Text(vTag).font(.caption.bold())
                             .foregroundStyle(Theme.txt)
                         Text(v.active ? "active" : "inactive")

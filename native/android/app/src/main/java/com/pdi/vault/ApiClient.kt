@@ -59,7 +59,7 @@ data class IntakeFile(val filename: String?, val content: String?)
 data class SocialConn(val id: String, val platform: String, val direction: String,
                       val handle: String?, val status: String?)
 
-data class KeyVersion(val version: Int, val active: Boolean, val createdAt: String?)
+data class KeyVersion(val generation: Int, val active: Boolean, val createdAt: String?)
 data class KeysInfo(val provider: String, val versions: List<KeyVersion>)
 data class ImproveItem(val category: String, val message: String, val status: String)
 data class ImproveState(val mine: List<ImproveItem>, val tally: Map<String, Int>, val total: Int)
@@ -318,7 +318,7 @@ object ApiClient {
         return KeysInfo(o.optString("provider", "env"),
             (0 until (arr?.length() ?: 0)).map { i ->
                 val v = arr!!.getJSONObject(i)
-                KeyVersion(v.optInt("version"), v.optBoolean("active"),
+                KeyVersion(v.optInt("generation"), v.optBoolean("active"),
                     v.optString("created_at", null))
             })
     }

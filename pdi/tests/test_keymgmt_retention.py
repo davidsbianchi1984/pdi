@@ -35,7 +35,7 @@ def test_rotate_and_reseal_moves_records_to_new_version(client):
     assert body["active_version"] == 2 and body["reseal"]["resealed"] == 1
 
     versions = client.get("/keys").json()["versions"]
-    assert [v["version"] for v in versions] == [1, 2]
+    assert [v["generation"] for v in versions] == [1, 2]
     assert [v["active"] for v in versions] == [False, True]
 
     # Record is still readable after rotation, now sealed under v2.

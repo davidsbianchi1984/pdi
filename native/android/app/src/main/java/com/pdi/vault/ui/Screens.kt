@@ -1060,7 +1060,7 @@ fun AdminCard(vm: VaultViewModel) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Box(Modifier.size(8.dp).clip(CircleShape)
                         .background(if (v.active) Pdi.Green else Pdi.T3))
-                    val vTag = "v" + v.version
+                    val vTag = "v" + v.generation
                     Text(vTag, color = Pdi.Txt, fontSize = 12.sp,
                         fontWeight = FontWeight.Bold)
                     Text(if (v.active) "active" else "inactive",

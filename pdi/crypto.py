@@ -469,7 +469,12 @@ def key_versions() -> list[dict]:
         "SELECT version, active, created_at FROM key_versions ORDER BY version"
     ).fetchall()
     provider = os.environ.get("PDI_KEY_PROVIDER", "env")
-    return [{"version": r["version"], "active": bool(r["active"]),
+    # `generation` and not `version`: `/health` answers a `version` too,
+    # and that one is a semantic version string while this counts key
+    # rotations. One wire name carrying two types is the defect
+    # `test_no_wire_name_carries_two_types` was written for — the column
+    # stays `version`, because the ambiguity was never in the database.
+    return [{"generation": r["version"], "active": bool(r["active"]),
              "created_at": r["created_at"], "provider": provider} for r in rows]
 
 

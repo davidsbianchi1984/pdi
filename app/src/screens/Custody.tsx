@@ -179,9 +179,9 @@ export function Custody() {
                   })}>{t("cu.retire", lang)}</button>
         </div>
         {versions.map((v) => (
-          <div key={v.version} className="row"
+          <div key={v.generation} className="row"
                style={{ padding: "4px 0" }}>
-            <span style={{ flex: 1 }}>version {v.version}</span>
+            <span style={{ flex: 1 }}>version {v.generation}</span>
             <span className="muted small">
               {v.provider}{v.active ? ` · ${t("cu.active", lang)}` : ""} ·{" "}
               {new Date(v.created_at).toLocaleString()}

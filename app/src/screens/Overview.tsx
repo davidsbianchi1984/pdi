@@ -23,7 +23,7 @@ export function Overview({ go }: { go: (t: "tenants" | "keys" | "audit") => void
   const active = keys.find((k) => k.active);
   const tiles = [
     { label: "Health", value: health === "ok" ? "OK" : health, sub: "GET /health" },
-    { label: "Key version", value: active ? `v${active.version}` : "—", sub: active?.provider || "envelope" },
+    { label: "Key version", value: active ? `v${active.generation}` : "—", sub: active?.provider || "envelope" },
     { label: "Audit chain", value: chain ? (chain.intact ? "OK" : "BROKEN") : "—", sub: chain ? `${chain.entries} entries` : "select a tenant" },
     { label: "Recovery window", value: ret?.recovery_window || "—", sub: "soft-delete purge" },
   ];

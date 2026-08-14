@@ -134,10 +134,12 @@ struct AccessReportRow: Decodable, Identifiable {
 struct AccessReportsState: Decodable { let reports: [AccessReportRow]; let total: Int }
 
 struct KeyVersion: Decodable, Identifiable {
-    let version: Int
+    /// A rotation count, not a semantic version — `/health` uses `version`
+    /// for the latter and the two cannot share a wire name.
+    let generation: Int
     let active: Bool
     let created_at: String?
-    var id: Int { version }
+    var id: Int { generation }
 }
 
 struct TenantExport: Decodable {

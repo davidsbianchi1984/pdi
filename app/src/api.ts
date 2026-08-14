@@ -278,7 +278,7 @@ export interface ImproveBoard {
   categories: string[];
 }
 
-export interface KeyVersion { version: number; active: boolean; created_at: string; provider: string }
+export interface KeyVersion { generation: number; active: boolean; created_at: string; provider: string }
 export interface AuditEntry { seq: number; action: string; category: string; tenant_id?: string; ref?: string; at: string }
 export interface RetentionPolicy {
   recovery_window: string;
