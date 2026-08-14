@@ -4,6 +4,18 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.71.0] - 2026-08-14
+
+**There are no functional changes to PDI in this release**: cut with the
+siblings. In JIM-mini, an engaged session stays open until the person signs
+off, acts across their own records through a written allowlist rather than
+the token's full authority, and lands every change on a trail with the
+request that would take it back beside it — and signing off hands the
+session to the offline coach with anything named on the way out becoming a
+standing watch. In QRME, a player embedded in the console learned the origin
+it needs to play, and the feed deck became the screen rather than a card
+sitting on one.
+
 ## [0.70.1] - 2026-08-13
 
 **There are no functional changes to PDI in this release**: cut with the
