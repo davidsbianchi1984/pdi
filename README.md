@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.71.1** ([changelog](CHANGELOG.md)) — one of three products
+**Current release: v0.72.0** ([changelog](CHANGELOG.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
 together, so one number names one combination of all three.
@@ -227,6 +227,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.72.0** | **No functional changes to PDI** — cut with the siblings. One guard came across: the Swift reader in `test_the_tabs_are_translated_and_the_screens_are_not` stopped at the first quote inside an interpolation and counted a property name as an untranslated sentence. Nothing here trips it yet, which is exactly the case `shared_guards.txt` exists for |
 | **0.71.1** | **No functional changes to PDI** — cut with the siblings. In QRME, `widgets.py` imported a POSIX-only module at the top of the file, which took the whole API down on Windows: the frozen desktop backend would not start, and two releases published with no installers attached at all |
 | **0.71.0** | **No functional changes to PDI** — cut with the siblings. In JIM-mini, an engaged session stays open until you sign off, acts across your own records through a written allowlist, and lands every change on a trail you can take back; in QRME, an embedded player learned the origin it needs to play and the feed deck became the screen rather than a card on it |
 | **0.70.1** | **No functional changes to PDI** — cut with the siblings. In QRME, the widget runner asked whether *an* interpreter existed and never whether it was new enough, so a host carrying Node 18 reported ready and then failed every run |

@@ -4,6 +4,28 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.72.0] - 2026-08-14
+
+**There are no functional changes to PDI in this release**: cut with the
+siblings, which carried a homepage screen to QRME's phones and a speaking
+allowance to JIM's.
+
+One guard did come across. `test_the_tabs_are_translated_and_the_screens_are_not`
+reads Swift with `\bText\(\s*"([^"]{2,})"`, and `[^"]` stops at the first
+quote it meets — which in Swift is not always the end of the string, because
+an interpolation may hold a literal of its own. QRME's ratchet fired on a
+card with no English on it at all, having captured `\(m.kind ?? ` and counted
+a *property name* as an untranslated sentence.
+
+    asked     does the pattern find a literal
+    mattered  does it find the whole literal
+
+Nothing in this shell trips it today — no `Text(` here nests a literal yet —
+so this suite was green with the defect sitting in it. That is precisely the
+case `shared_guards.txt` exists for: a fix made in one product and never
+carried across. The literal is now scanned rather than matched, and the new
+guard is recorded as shared in all three repositories.
+
 ## [0.71.1] - 2026-08-14
 
 **There are no functional changes to PDI in this release**: cut with the
@@ -6422,7 +6444,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.71.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.72.0...HEAD
+[0.72.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.72.0
 [0.71.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.71.1
 [0.71.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.71.0
 [0.70.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.70.1
