@@ -6,6 +6,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.76.0] - 2026-08-15
+
+There are no functional changes to PDI in this release.
+
+The number moves because the three products are versioned as one release and
+cut in the same pass, so that anyone running all three can pin one number.
+
+Two records it shares with its siblings did move: `guard_divergences.txt` and
+`shared_guards.txt` are byte-identical in all three repositories, and this
+round two guards stopped being divergences —
+`test_the_shared_vocabulary_matches_the_sibling_products` landed in QRME and
+`test_the_table_is_complete_in_every_language` in JIM-mini, so both move out
+of the divergence record and into the manifest of what all three carry.
+
 ## [0.75.0] - 2026-08-15
 
 There are no functional changes to PDI in this release.
@@ -6574,7 +6588,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.75.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.76.0...HEAD
+[0.76.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.76.0
 [0.75.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.75.0
 [0.74.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.74.0
 [0.73.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.73.0

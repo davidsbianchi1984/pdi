@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.75.0** ([changelog](CHANGELOG.md)) — one of three products
+**Current release: v0.76.0** ([changelog](CHANGELOG.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
 together, so one number names one combination of all three.
@@ -227,6 +227,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.76.0** | No functional changes to PDI. The number moves because the three products are cut as one release; two shared guard records moved rows out of the divergence backlog and into the manifest |
 | **0.75.0** | **No functional changes to PDI** — cut with the siblings. The round's work was next door, and one line of it is this repository's: JIM-mini took a port of the hash-chained audit log designed here, `user_id` where PDI has `tenant_id`, including the part that has survived a dozen releases of new actions — fixed stored-and-hashed fields with `category` derived at read time, so a catalogue can grow forever without breaking a single existing hash |
 | **0.74.0** | **A guarantee nobody re-runs is marketing** — the infrastructure specification's acceptance section listed five criteria and three were already asked by guards in CI, which is the right place for them and the wrong reader: a vendor assurance is precisely what a sovereignty proposition is not selling. `pdi/acceptance.py` runs the five against a live deployment and returns a dated pass/fail per check, whole, repairing nothing it finds. One criterion would have failed — "key rotation with no bulk plaintext exposure" had no operation behind it — so `crypto.rewrap()` opens each stored data key under the old KEK and seals it again under the new one, all-or-nothing, records never read |
 | **0.73.0** | **The phones that never asked which backend** — `/health` has answered a `version` since a stale backend first cost somebody an evening, and every native shell decoded that field away, so a phone pointed at an older install looked alive while newer screens said "Not Found" for no stated reason. All three read it now and raise a dismissible banner naming both versions and the address, in ten languages. The rest of the round is guards: `client_symmetry.txt` names treatments one row per client and refuses any written for fewer than four, because the drift that matters is a treatment three clients have and the fourth does not — and the release checklist's count of version fields is tied to the manifest the guards actually read, having been wrong in both directions |
