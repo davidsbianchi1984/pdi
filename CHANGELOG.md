@@ -6,6 +6,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The check that catches an identifier on a button.** Ported from JIM-mini,
+  where a navigation tab shipped reading `nav.presence` in Latin letters in
+  every language, because `t()` falls back to the key when the table has no
+  row. This console does not have the defect — fifteen tabs, fifteen rows —
+  and the guard is here anyway, because one that only exists where the bug was
+  found is one that catches the bug once.
+
+      asked     does every key in the table reach a screen
+      mattered  does every key a screen asks for exist
+
+  The completeness guards next door have been hunting the opposite failure for
+  releases and nothing looked this way. A dead key wastes a translation nobody
+  reads; a missing row puts an identifier in front of a person.
+
+  Worth recording what the port found on arrival: six keys reported missing
+  that were not keys at all. This console builds some lookups by concatenation
+  — `t("pos.cap." + k, lang)` — and a pattern that stopped at the closing
+  quote read `pos.cap.` as a key of its own. A guard against identifiers on
+  screen that would have had somebody add six rows nothing reads.
+
 ## [0.73.0] - 2026-08-14
 
 ### Added

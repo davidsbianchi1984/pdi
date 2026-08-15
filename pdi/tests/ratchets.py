@@ -152,6 +152,11 @@ def _files_swept() -> int:
     return parsed_files()
 
 
+
+def _nav_tabs() -> int:
+    from .test_a_key_with_no_row_reads_as_itself import _tab_ids
+    return len(_tab_ids())
+
 #: The registry. Every entry replaced a bare literal inside an assertion; the
 #: assertion now reads its number from here, which is what takes it out of the
 #: unregistered backlog.
@@ -196,6 +201,9 @@ RATCHETS: tuple[Ratchet, ...] = (
             "test functions this suite declares"),
     Ratchet("sweep.files_parsed", 78, _files_swept,
             "test files the bare-floor sweep can read"),
+    Ratchet("console.nav_tabs", 15, _nav_tabs,
+            "tabs the console's navigation declares — the floor under "
+            "the check that every one of them has a label"),
 )
 
 _BY_NAME = {r.name: r for r in RATCHETS}
