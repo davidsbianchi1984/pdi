@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, type AuditEntry } from "../api";
+import { api, type AcceptanceReport, type AuditEntry } from "../api";
 import { useSession } from "../store";
 import { deviceLanguage, Lang, t } from "../l10n";
 
@@ -22,6 +22,10 @@ export function Audit() {
     { actions: { action: string; category: string; description: string }[];
       retention: string } | null>(null);
   const [glossary, setGlossary] = useState(false);
+  // Section 10, run on demand. Not fetched on mount: it rotates a key (and
+  // rotates it back), and a check with side effects should happen because
+  // somebody asked, not because a screen was opened.
+  const [accept, setAccept] = useState<AcceptanceReport | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function refresh() {
@@ -80,6 +84,36 @@ export function Audit() {
           <button onClick={refresh}>{t("au.reverify", lang)}</button>
         </div>
       )}
+
+      {/* Section 10, on demand, delivered whether or not it is clean.
+          The client runs this on their own deployment — that is the whole
+          difference between a guarantee and a vendor assurance. */}
+      <div className="card">
+        <h3>{t("au.accept.title", lang)}</h3>
+        <p className="muted small">{t("au.accept.blurb", lang)}</p>
+        <button onClick={async () => {
+          if (!session.tenantToken) return;
+          try { setAccept(await api.acceptance(session.tenantToken)); }
+          catch (e) { setError((e as Error).message); }
+        }}>{t("au.accept.run", lang)}</button>
+        {accept && (
+          <>
+            <p className={accept.clean ? "ok" : "bad"}>
+              {accept.passing} / {accept.of} · {accept.at.slice(0, 19)}
+            </p>
+            {accept.checks.map((c) => (
+              <div key={c.check} className="row">
+                <span className={c.passed ? "chip" : "chip warn"}>
+                  {c.passed ? t("au.accept.pass", lang)
+                            : t("au.accept.fail", lang)}
+                </span>
+                <span style={{ flex: 1 }}>{c.says}</span>
+                <span className="muted small">{c.detail}</span>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
 
       {entries.length > 0 && (
         <div className="card">

@@ -447,10 +447,88 @@ def _dek(version: int, tenant_id: str | None = None,
     return _unwrap(row["wrapped_dek"], kek)
 
 
+def rewrap(new_kek: bytes, old_kek: bytes | None = None, *,
+           tenant_id: str | None = None) -> dict:
+    """Rotate the **key-encryption key**, without opening a single record.
+
+    The operation the envelope model exists for and the one this module did
+    not have. `rotate` mints a new *DEK* and `vault.reseal_all` then decrypts
+    and re-encrypts every record under it — which is the right answer when a
+    DEK is suspect, and the wrong one for the routine annual rotation a
+    security review asks about. Bulk plaintext, once a year, to change a key
+    that never touched the records in the first place.
+
+        asked     can the key be rotated
+        mattered  can it be rotated without decrypting anything
+
+    Here the records are not read at all. Each stored `wrapped_dek` is opened
+    with the old KEK and sealed again under the new one; the DEK inside is
+    unchanged, so every existing ciphertext still decrypts and no plaintext
+    record is ever formed.
+
+    **All or nothing.** Every unwrap is done and checked *before* anything is
+    written. A keyring half-rotated is a keyring where half the records are
+    unopenable and nothing says which half — the failure this could cause is
+    categorically worse than the failure it protects against, so a single bad
+    unwrap aborts the whole operation with the keyring untouched.
+
+    Without an old KEK that opens what is there, this refuses rather than
+    guessing: re-wrapping under a key nobody can verify produces a keyring
+    that looks healthy and opens nothing.
+    """
+    conn = db.connect()
+    if tenant_id is None:
+        rows = conn.execute(
+            "SELECT version, wrapped_dek FROM key_versions ORDER BY version"
+        ).fetchall()
+        table, where = "key_versions", ()
+    else:
+        rows = conn.execute(
+            "SELECT version, wrapped_dek FROM tenant_key_versions"
+            " WHERE tenant_id=? ORDER BY version", (tenant_id,)).fetchall()
+        table, where = "tenant_key_versions", (tenant_id,)
+    if not rows:
+        raise CustomerKeyMismatch(
+            "there is no keyring here to rotate — nothing has been sealed yet")
+
+    # Open everything first. Nothing is written until all of it succeeded.
+    opened: list[tuple[int, bytes]] = []
+    for row in rows:
+        try:
+            opened.append((row["version"], _unwrap(row["wrapped_dek"], old_kek)))
+        except Exception as exc:                       # noqa: BLE001
+            raise CustomerKeyMismatch(
+                f"the old key does not open key version {row['version']}, so "
+                "this rotation would seal the keyring shut — nothing was "
+                "changed") from exc
+
+    for version, dek in opened:
+        if tenant_id is None:
+            conn.execute("UPDATE key_versions SET wrapped_dek=? WHERE version=?",
+                         (_wrap(dek, new_kek), version))
+        else:
+            conn.execute(
+                "UPDATE tenant_key_versions SET wrapped_dek=?"
+                " WHERE tenant_id=? AND version=?",
+                (_wrap(dek, new_kek), tenant_id, version))
+    conn.commit()
+
+    from . import audit
+    audit.record("key.rewrap", tenant_id=tenant_id, ref=str(len(opened)))
+    return {"rewrapped": len(opened), "records_decrypted": 0,
+            "keyring": table, "tenant_id": tenant_id}
+
+
 def rotate() -> dict:
     """Mint a new key version + DEK and make it active. Existing ciphertext
     still decrypts under its own (now-inactive) version; call ``reseal`` to move
-    records onto the new version."""
+    records onto the new version.
+
+    This is **DEK** rotation, and it is the expensive one: moving records onto
+    the new version means reading each of them. For rotating the key that
+    wraps the DEKs — the routine one, with no plaintext formed — see
+    :func:`rewrap`.
+    """
     _ensure_keyring()
     conn = db.connect()
     cur = conn.execute("SELECT MAX(version) m FROM key_versions").fetchone()

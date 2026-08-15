@@ -279,6 +279,12 @@ export interface ImproveBoard {
 }
 
 export interface KeyVersion { generation: number; active: boolean; created_at: string; provider: string }
+export interface AcceptanceReport {
+  at: string; deployment: string; passing: number; of: number;
+  clean: boolean; note: string;
+  checks: { check: string; says: string; passed: boolean; detail: string }[];
+}
+
 export interface AuditEntry { seq: number; action: string; category: string; tenant_id?: string; ref?: string; at: string }
 export interface RetentionPolicy {
   recovery_window: string;
@@ -481,6 +487,12 @@ export const api = {
   audit: (token: string) => req<AuditEntry[]>("/audit", { token }),
   verify: (token: string) =>
     req<{ intact: boolean; entries: number }>("/audit/verify", { token }),
+  // Section 10's five acceptance criteria, run against this deployment now.
+  // Tenant-scoped like `verify` and for the same reason: the specification
+  // calls these client-run, and a guarantee only the vendor can demonstrate
+  // is a vendor assurance.
+  acceptance: (token: string) =>
+    req<AcceptanceReport>("/acceptance", { token }),
   auditSchema: () =>
     req<{ actions: { action: string; category: string; description: string }[]; retention: string }>(
       "/audit/schema"),

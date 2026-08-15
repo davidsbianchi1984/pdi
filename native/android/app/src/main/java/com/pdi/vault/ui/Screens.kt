@@ -1306,10 +1306,35 @@ fun VaultScreen(vm: VaultViewModel) {
 @Composable
 fun AuditScreen(vm: VaultViewModel) {
     var intact by remember { mutableStateOf<Boolean?>(null) }
+    var accept by remember { mutableStateOf<AcceptanceReport?>(null) }
     var entries by remember { mutableStateOf<List<AuditEntry>?>(null) }
     LaunchedEffect(Unit) {
         vm.call({ ApiClient.auditVerify(vm.token!!) }) { r -> intact = r.getOrNull() }
         vm.call({ ApiClient.auditEntries(vm.token!!) }) { r -> entries = r.getOrDefault(emptyList()) }
+        // Section 10, beside the chain it verifies. Left null on failure
+        // rather than shown as a clean zero: a report that could not be
+        // produced is not a report that passed.
+        vm.call({ ApiClient.acceptance(vm.token!!) }) { r -> accept = r.getOrNull() }
+    }
+
+    // Section 10, beside the chain it verifies.
+    accept?.let { a ->
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(L10n.t("naud.accept", vm.language), color = Pdi.Txt,
+                fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text("${a.passing} / ${a.of}",
+                color = if (a.clean) Pdi.Green else Pdi.Red, fontSize = 14.sp)
+            a.checks.forEach { c ->
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(if (c.passed) "\u2713" else "\u2717",
+                        color = if (c.passed) Pdi.Green else Pdi.Red, fontSize = 13.sp)
+                    Column {
+                        Text(c.says, color = Pdi.Txt, fontSize = 12.sp)
+                        Text(c.detail, color = Pdi.T2, fontSize = 11.sp)
+                    }
+                }
+            }
+        }
     }
     screenScroll {
         Text(L10n.t("tab.audit", vm.language), color = Pdi.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)

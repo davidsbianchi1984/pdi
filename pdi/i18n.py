@@ -1166,6 +1166,17 @@ SERVER_ERROR = ("Something went wrong on our side. "
 #: languages. What is not here is recorded in
 #: `pdi/tests/refusals_untranslated.txt` and ratcheted.
 _REFUSALS: dict[str, dict[str, str]] = {
+    "there is no keyring here to rotate — nothing has been sealed yet": {
+        'es': "aquí no hay ningún llavero que rotar: todavía no se ha sellado nada",
+        'fr': "il n'y a ici aucun trousseau à faire tourner : rien n'a encore été scellé",
+        'de': "hier gibt es keinen Schlüsselbund zum Rotieren — es wurde noch nichts versiegelt",
+        'pt': "não há aqui nenhum chaveiro para rodar — ainda nada foi selado",
+        'it': "qui non c'è alcun portachiavi da ruotare: non è ancora stato sigillato nulla",
+        'ja': "ここには回転させる鍵束がありません。まだ何も封印されていません",
+        'zh': "这里没有可轮换的密钥环 —— 还没有任何东西被封存",
+        'hi': "यहाँ घुमाने के लिए कोई कीरिंग नहीं है — अभी तक कुछ भी सील नहीं हुआ",
+        'ar': "لا توجد هنا حلقة مفاتيح لتدويرها — لم يُختم أي شيء بعد",
+    },
     'Something went wrong on our side. Nothing you sent was recorded.': {
         'es': 'Algo falló de nuestro lado. No se registró nada de lo que envió.',
         'fr': "Quelque chose a échoué de notre côté. Rien de ce que vous avez envoyé n'a été enregistré.",

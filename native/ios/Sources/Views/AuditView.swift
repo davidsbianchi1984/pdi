@@ -4,6 +4,7 @@ import SwiftUI
 struct AuditView: View {
     @EnvironmentObject var state: AppState
     @State private var intact: Bool?
+    @State private var acceptance: AcceptanceReport?
     @State private var entries: [AuditEntry] = []
     @State private var loading = true
 
@@ -26,6 +27,30 @@ struct AuditView: View {
                     }
                     Spacer()
                 }.card()
+
+                // Section 10, beside the chain it verifies.
+                if let acceptance {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(L10n.t("naud.accept", state.language))
+                            .font(.headline).foregroundStyle(Theme.txt)
+                        Text("\(acceptance.passing) / \(acceptance.of)")
+                            .font(.subheadline)
+                            .foregroundStyle(acceptance.clean ? Theme.green : Theme.red)
+                        ForEach(acceptance.checks) { check in
+                            HStack(alignment: .top, spacing: 8) {
+                                Image(systemName: check.passed
+                                      ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                    .foregroundStyle(check.passed ? Theme.green : Theme.red)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(check.says).font(.caption)
+                                        .foregroundStyle(Theme.txt)
+                                    Text(check.detail).font(.caption2)
+                                        .foregroundStyle(Theme.t2)
+                                }
+                            }
+                        }
+                    }.card()
+                }
 
                 if loading {
                     ProgressView().tint(Theme.brandA).frame(maxWidth: .infinity)
@@ -55,11 +80,19 @@ struct AuditView: View {
         .refreshable { await load() }
     }
 
+    /// The five acceptance criteria, run on this deployment. Nil until the
+    /// screen has loaded, and left nil on failure rather than shown as a
+    /// clean zero — an acceptance report that cannot be produced is not the
+    /// same as one that passed.
     private func load() async {
         guard let token = state.token else { return }
         loading = true
         intact = (try? await ApiClient.shared.auditVerify(token: token))?.intact
         entries = (try? await ApiClient.shared.auditEntries(token: token)) ?? []
+        // Section 10, beside the chain it verifies. A phone is where somebody
+        // asks the awkward question in a meeting, which is exactly when
+        // "our CI is green" is the wrong answer.
+        acceptance = try? await ApiClient.shared.acceptance(token: token)
         loading = false
     }
 }

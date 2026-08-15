@@ -18,6 +18,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse, JSONResponse
 
 from . import pagehead
+from . import acceptance  # noqa: F401
 from . import (app_connectors, assistant, audit, baa, beacons, bequests,
                catalog,
                compliance, connectors, crypto, db, dock as dock_mod, gate,
@@ -1429,6 +1430,18 @@ def create_app() -> FastAPI:
     @app.get("/audit")
     def audit_log(tenant: dict = Depends(_tenant)) -> list[dict]:
         return audit.entries(tenant["id"])
+
+    @app.get("/acceptance")
+    def acceptance_run(tenant: dict = Depends(_tenant)) -> dict:
+        """Section 10's five checks, run now, against this deployment.
+
+        Tenant-scoped rather than admin for the same reason `/audit/verify`
+        is: the specification calls these client-run, and a guarantee only the
+        vendor can demonstrate is a vendor assurance. Returns pass or fail per
+        check and repairs nothing — an audit that quietly fixed what it found
+        would be worse than no audit.
+        """
+        return acceptance.run()
 
     @app.get("/audit/verify")
     def audit_verify(tenant: dict = Depends(_tenant)) -> dict:

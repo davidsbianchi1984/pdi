@@ -41,6 +41,19 @@ public sealed partial class AuditPage : Page
         }
         catch (Exception ex) { StatusText.Text = ex.Message; }
 
+        // Section 10, beside the chain it verifies. Surfaced as a count with
+        // the failing clauses named — a desktop is where somebody prints the
+        // page for a review, so "3 of 5" with no names would be useless.
+        try
+        {
+            var report = await ApiClient.Shared.Acceptance(s.Token!);
+            AcceptText.Text = L10n.T("naud.accept") + ": "
+                + $"{report.Passing} / {report.Of}" + (report.Clean ? "" :
+                " — " + string.Join("; ", report.Checks
+                    .Where(c => !c.Passed).Select(c => c.Says)));
+        }
+        catch (Exception ex) { AcceptText.Text = ex.Message; }
+
         try
         {
             var entries = await ApiClient.Shared.AuditEntries(s.Token!);

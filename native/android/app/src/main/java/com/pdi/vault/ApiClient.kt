@@ -14,6 +14,13 @@ data class RecordProvenance(val origin: String, val cipher: String, val boundTo:
                             val createdAt: String, val ciphertextBytes: Int,
                             val auditCount: Int, val chainIntact: Boolean)
 data class LanguageInfo(val code: String, val label: String, val notesTranslated: Boolean)
+data class AcceptanceCheck(val check: String, val says: String,
+                          val passed: Boolean, val detail: String)
+
+data class AcceptanceReport(val at: String, val passing: Int, val of: Int,
+                            val clean: Boolean,
+                            val checks: List<AcceptanceCheck>)
+
 data class AuditEntry(val seq: Int, val action: String, val ref: String?, val at: String, val category: String?)
 data class RobotSpec(val model: String, val label: String, val maker: String)
 data class Robot(val id: String, val model: String, val name: String, val status: String?, val collected: Int)
@@ -335,6 +342,26 @@ object ApiClient {
     suspend fun retireKeys(adminToken: String): Pair<Int, KeysInfo> {
         val o = JSONObject(request("/keys/retire", "POST", JSONObject(), adminToken))
         return o.optInt("retired") to parseKeys(o)
+    }
+
+    /**
+     * Section 10's five acceptance criteria, run against this deployment.
+     *
+     * The rows come back whole rather than as a count. A shell that reported
+     * "3 of 5" and could not name which two failed would be the binding that
+     * decoded the answer and returned a tally of what it discarded.
+     */
+    suspend fun acceptance(token: String): AcceptanceReport {
+        val o = JSONObject(request("/acceptance", token = token))
+        val arr = o.optJSONArray("checks") ?: JSONArray()
+        return AcceptanceReport(
+            o.optString("at", ""), o.optInt("passing"), o.optInt("of"),
+            o.optBoolean("clean"),
+            (0 until arr.length()).map { i ->
+                val c = arr.getJSONObject(i)
+                AcceptanceCheck(c.optString("check", ""), c.optString("says", ""),
+                    c.optBoolean("passed"), c.optString("detail", ""))
+            })
     }
 
     suspend fun auditVerify(token: String): Boolean {

@@ -32,6 +32,7 @@ ACTIONS: dict[str, tuple[str, str]] = {
     "token.revoke": ("access", "token revoked"),
     "retention.set": ("retention", "tenant retention policy changed"),
     "key.rotate": ("key", "key version rotated"),
+    "key.rewrap": ("key", "key-encryption key rotated; DEKs re-wrapped, no record decrypted"),
     "key.reseal": ("key", "records re-sealed under the active key version"),
     "key.retire": ("key", "old key versions retired"),
     "snapshot.export": ("dr", "ciphertext snapshot exported"),

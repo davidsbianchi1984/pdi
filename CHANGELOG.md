@@ -8,6 +8,39 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Section 10 as five checks that run, not five sentences that don't.** The
+  infrastructure specification this deployment answers to closes on a line
+  worth quoting: a guarantee nobody re-runs is marketing. Its acceptance
+  section listed five criteria, three of which were already asked by guards in
+  this repository's suite — which is the right place for them and the wrong
+  reader for them. "Our CI is green" is a vendor assurance, and a vendor
+  assurance is precisely what a sovereignty proposition is not selling.
+
+      asked     does the deployment have these properties
+      mattered  can the client watch it demonstrate them, on their machine, dated
+
+  `pdi/acceptance.py` runs the five against a live deployment and returns a
+  dated pass/fail per check, whole — a run that stopped at the first failure
+  would report one problem and conceal four. It repairs nothing it finds; the
+  finding is the product. `GET /acceptance` opens it on the console and on all
+  three native shells, beside the chain verifier that was already exposed to
+  tenants for the same reason.
+
+- **KEK rotation that never opens a record.** The criterion that would have
+  failed. `rotate()` mints a new data key and re-seals every record under it —
+  correct when a *data* key is suspect, and bulk plaintext once a year to
+  change a key that never touched the records in the first place. That is the
+  operation the envelope model exists to avoid.
+
+  `crypto.rewrap()` unwraps each stored DEK under the old KEK and seals it
+  again under the new one. Records are never read, and the test that says so
+  drives it rather than asserting it — `open_` is replaced with a counter for
+  the duration. It is all-or-nothing: every wrapped key is opened before any is
+  written, because a keyring half re-wrapped is one where half the records are
+  unopenable and nothing says which half. The rotation lands in the audit log
+  as `key.rewrap`, since a key rotation is exactly the event a reviewer goes
+  looking for.
+
 - **The check that catches an identifier on a button.** Ported from JIM-mini,
   where a navigation tab shipped reading `nav.presence` in Latin letters in
   every language, because `t()` falls back to the key when the table has no

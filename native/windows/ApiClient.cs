@@ -52,6 +52,20 @@ public record LanguageChoice(
     [property: JsonPropertyName("label")] string Label,
     [property: JsonPropertyName("mode")] string? Mode);
 
+public record AcceptanceCheck(
+    [property: JsonPropertyName("check")] string Check,
+    [property: JsonPropertyName("says")] string Says,
+    [property: JsonPropertyName("passed")] bool Passed,
+    [property: JsonPropertyName("detail")] string Detail);
+
+// Appendix C, generated rather than typed: dated, pass/fail, per check.
+public record AcceptanceReport(
+    [property: JsonPropertyName("at")] string At,
+    [property: JsonPropertyName("passing")] int Passing,
+    [property: JsonPropertyName("of")] int Of,
+    [property: JsonPropertyName("clean")] bool Clean,
+    [property: JsonPropertyName("checks")] AcceptanceCheck[] Checks);
+
 public record VerifyResult(
     [property: JsonPropertyName("intact")] bool Intact);
 
@@ -1078,6 +1092,15 @@ public sealed class ApiClient
         {
             Content = JsonContent.Create(new { }),
         }, adminToken);
+
+    /// <summary>
+    /// Section 10's five acceptance criteria, run against this deployment.
+    /// Client-run by design — a guarantee only the vendor can demonstrate is
+    /// a vendor assurance.
+    /// </summary>
+    public Task<AcceptanceReport> Acceptance(string token) =>
+        Send<AcceptanceReport>(
+            new HttpRequestMessage(HttpMethod.Get, "/acceptance"), token);
 
     public Task<VerifyResult> AuditVerify(string token) =>
         Send<VerifyResult>(new HttpRequestMessage(HttpMethod.Get, "/audit/verify"), token);

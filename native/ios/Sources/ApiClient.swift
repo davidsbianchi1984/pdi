@@ -42,6 +42,25 @@ struct LanguagesList: Decodable {
 }
 
 struct LanguageChoice: Decodable { let language: String; let label: String; let mode: String? }
+struct AcceptanceCheck: Decodable, Identifiable {
+    let check: String
+    let says: String
+    let passed: Bool
+    let detail: String
+    var id: String { check }
+}
+
+/// Appendix C, generated rather than typed: dated, pass/fail, per check.
+struct AcceptanceReport: Decodable {
+    let at: String
+    let deployment: String
+    let passing: Int
+    let of: Int
+    let clean: Bool
+    let note: String
+    let checks: [AcceptanceCheck]
+}
+
 struct VerifyResult: Decodable { let intact: Bool }
 struct AuditEntry: Decodable {
     let seq: Int
@@ -364,6 +383,15 @@ actor ApiClient {
 
     func retireKeys(adminToken: String) async throws -> RetireResult {
         try await request("/keys/retire", method: "POST", token: adminToken)
+    }
+
+    /// Section 10's five acceptance criteria, run against this deployment.
+    ///
+    /// Client-run by design: a guarantee only the vendor can demonstrate is a
+    /// vendor assurance, and that is the thing a sovereignty proposition is
+    /// explicitly not selling.
+    func acceptance(token: String) async throws -> AcceptanceReport {
+        try await request("/acceptance", token: token)
     }
 
     func auditVerify(token: String) async throws -> VerifyResult {

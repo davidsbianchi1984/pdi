@@ -3371,6 +3371,21 @@ const CHROME: Table = {
     ja: "件の項目を検証", zh: "条目已验证",
     hi: "प्रविष्टियाँ सत्यापित", ar: "مدخلات مُتحقَّق منها",
   },
+  "au.accept.title": {
+    en: "Acceptance checks", es: "Comprobaciones de aceptación", fr: "Contrôles de recette", de: "Abnahmeprüfungen", pt: "Verificações de aceitação", it: "Verifiche di accettazione", ja: "受け入れ検査", zh: "验收检查", hi: "स्वीकृति जाँच", ar: "فحوص القبول",
+  },
+  "au.accept.blurb": {
+    en: "The five guarantees, run against this deployment, right now — by you, not by us. The result is what it is.", es: "Las cinco garantías, ejecutadas sobre esta instalación ahora mismo, por ti y no por nosotros. El resultado es el que sea.", fr: "Les cinq garanties, exécutées sur ce déploiement à l'instant — par vous, pas par nous. Le résultat est ce qu'il est.", de: "Die fünf Zusagen, jetzt gegen diese Installation geprüft — von Ihnen, nicht von uns. Das Ergebnis ist, was es ist.", pt: "As cinco garantias, executadas nesta instalação agora — por si, não por nós. O resultado é o que for.", it: "Le cinque garanzie, eseguite su questa installazione adesso — da te, non da noi. Il risultato è quello che è.", ja: "5つの保証を、いまこの環境に対して実行します。こちらではなく、あなたが。結果はありのままです。", zh: "五项保证，此刻在这套部署上运行 —— 由你来跑，不是由我们。结果如何就是如何。", hi: "पाँच गारंटियाँ, अभी इसी परिनियोजन पर चलाई गईं — आपके द्वारा, हमारे द्वारा नहीं। परिणाम जो है सो है।", ar: "الضمانات الخمسة، تُنفَّذ على هذا النشر الآن — بيدك أنت لا بأيدينا. والنتيجة هي ما هي.",
+  },
+  "au.accept.run": {
+    en: "Run them now", es: "Ejecutarlas ahora", fr: "Les exécuter maintenant", de: "Jetzt ausführen", pt: "Executar agora", it: "Eseguile adesso", ja: "いま実行する", zh: "立即运行", hi: "अभी चलाएँ", ar: "شغّلها الآن",
+  },
+  "au.accept.pass": {
+    en: "pass", es: "pasa", fr: "réussi", de: "bestanden", pt: "passa", it: "superato", ja: "合格", zh: "通过", hi: "पास", ar: "ناجح",
+  },
+  "au.accept.fail": {
+    en: "fail", es: "falla", fr: "échec", de: "nicht bestanden", pt: "falha", it: "fallito", ja: "不合格", zh: "未通过", hi: "विफल", ar: "راسب",
+  },
   "au.reverify": {
     en: "Re-verify", es: "Volver a verificar", fr: "Revérifier",
     de: "Erneut prüfen", pt: "Verificar de novo", it: "Verificare di nuovo",
