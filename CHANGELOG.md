@@ -6,6 +6,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.75.0] - 2026-08-15
+
+There are no functional changes to PDI in this release.
+
+The number moves because the three products are versioned as one release and
+cut in the same pass, so that anyone running all three can pin one number.
+This round's work was in the siblings: JIM-mini took a port of *this*
+repository's hash-chained audit log — the same design, `user_id` where PDI
+has `tenant_id` — and both consoles drove their untranslated-string backlogs
+down to the rows that are English on purpose.
+
+The port is worth one line here, because it is this repository's design
+leaving this repository for the first time. What went across was the part
+that has survived a dozen releases of new actions: the stored and hashed
+fields are fixed, and `category` is derived at read time, so a catalogue can
+grow forever without altering — or breaking — a single existing hash.
+
 ## [0.74.0] - 2026-08-15
 
 ### Added
@@ -6557,7 +6574,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.74.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.75.0...HEAD
+[0.75.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.75.0
 [0.74.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.74.0
 [0.73.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.73.0
 [0.72.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.72.0
