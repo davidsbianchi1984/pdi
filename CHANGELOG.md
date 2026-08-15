@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.74.0] - 2026-08-15
+
 ### Added
 
 - **Section 10 as five checks that run, not five sentences that don't.** The
@@ -6555,7 +6557,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.73.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.74.0...HEAD
+[0.74.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.74.0
 [0.73.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.73.0
 [0.72.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.72.0
 [0.71.1]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.71.1
