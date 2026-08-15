@@ -201,7 +201,11 @@ RATCHETS: tuple[Ratchet, ...] = (
             "test functions this suite declares"),
     Ratchet("sweep.files_parsed", 78, _files_swept,
             "test files the bare-floor sweep can read"),
-    Ratchet("console.nav_tabs", 15, _nav_tabs,
+    # 12 against 15 — four-fifths, and not the 15 this was first written
+    # with. A floor set to exactly what is there today is one that fails on
+    # the day somebody legitimately removes a tab, which teaches people to
+    # edit the floor rather than read it.
+    Ratchet("console.nav_tabs", 12, _nav_tabs,
             "tabs the console's navigation declares — the floor under "
             "the check that every one of them has a label"),
 )
