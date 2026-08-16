@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.77.0] - 2026-08-16
+
+No PDI code changed. The three products are cut in step, so this version
+exists to keep the suite's numbers aligned — QRME's Agent round and JIM's
+circle-list fix are what 0.77.0 is. PDI's vault, its journal and its sealing
+are unchanged from 0.76.0.
+
 ## [0.76.0] - 2026-08-15
 
 There are no functional changes to PDI in this release.
@@ -6588,7 +6595,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.76.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.77.0...HEAD
+[0.77.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.77.0
 [0.76.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.76.0
 [0.75.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.75.0
 [0.74.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.74.0
