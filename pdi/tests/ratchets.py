@@ -160,7 +160,22 @@ def _nav_tabs() -> int:
 #: The registry. Every entry replaced a bare literal inside an assertion; the
 #: assertion now reads its number from here, which is what takes it out of the
 #: unregistered backlog.
+
+def _literal_refusals() -> int:
+    """Refusal sentences written as a plain string, as the classifier counts
+    them now. The floor is here rather than inside the assertion because a
+    number in an assertion is a number nothing compares against what it
+    measures — and this one guards the walk that every other refusal check
+    is built on."""
+    from pathlib import Path
+
+    from .test_the_vault_refuses_in_one_language import REPO, _refusals
+    return len(_refusals(REPO / "pdi")["literal"])
+
+
 RATCHETS: tuple[Ratchet, ...] = (
+    Ratchet("refusals.literal", 40, _literal_refusals,
+            "refusals written as a plain string — the walk every other\n            refusal check stands on"),
     Ratchet("l10n.asked.ios", 200, _l10n("ios", "asked"),
             "screens on the iPhone that call the localizer"),
     Ratchet("l10n.asked.android", 205, _l10n("android", "asked"),

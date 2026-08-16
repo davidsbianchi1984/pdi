@@ -1,4 +1,5 @@
 # status: backlog — 52 rows
+# ceiling: 52
 #
 # Every numeric floor in this suite still carrying its own literal: an
 # `assert <something> > <int>` with the number written into the assertion.
@@ -48,8 +49,6 @@
 # The ceiling does not move up. A new bare floor is a new number nothing will
 # ever audit.
 #
-# ceiling: 52
-
 test_a_binding_is_not_a_door.py:134: len(found) > 20
 test_a_form_that_asks_for_it_has_a_label_for_it.py:121: controls > 2000
 test_a_native_binding_is_not_a_door_either.py:181: n > 20
@@ -73,9 +72,9 @@ test_the_key_the_server_never_sends.py:221: len(vocabulary) >= 500
 test_the_keys_the_android_client_reads.py:359: len(reads) >= 16
 test_the_keys_the_android_client_reads.py:360: sum((len(k) for _, k in reads)) >= 28
 test_the_keys_the_android_client_reads.py:383: len(driven) >= 14
+test_the_member_that_isnt_there.py:277: len(_declared(lang, REPO / decl)) >= 5
 test_the_member_that_isnt_there.py:286: len(keys) >= 12
 test_the_member_that_isnt_there.py:287: len(used) >= 8
-test_the_member_that_isnt_there.py:277: len(_declared(lang, REPO / decl)) >= 5
 test_the_readme_says_what_shipped.py:127: len(_rows()) >= 40
 test_the_readme_says_what_shipped.py:130: len(_released()) >= 40
 test_the_refusal_names_the_field_on_the_form.py:106: len(found) >= 90
@@ -101,4 +100,4 @@ test_the_shells_still_parse.py:411: checked >= 30
 test_the_shells_still_parse.py:413: driven >= 78
 test_the_tabs_are_translated_and_the_screens_are_not.py:539: english + calls >= 50
 test_the_tabs_are_translated_and_the_screens_are_not.py:760: len(rows) >= 10
-test_the_vault_refuses_in_one_language.py:270: len(i18n._REFUSALS) >= 8
+test_the_vault_refuses_in_one_language.py:633: len(i18n._REFUSALS) >= 8

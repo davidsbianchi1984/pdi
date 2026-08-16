@@ -1,4 +1,5 @@
-# status: floor — 1 row
+# status: backlog — 16 rows
+# ceiling: 16
 #
 # English refusals — the sentences the vault says when it says no.
 # Checked by test_the_vault_refuses_in_one_language.py, both directions, and
@@ -62,5 +63,39 @@
 # reading a translated version could do anything a reader of this one could
 # not.
 #
-# ceiling: 1
+#
+# ## 0.80.0: the sentences behind `str(exc)`
+#
+# This file rested on a guard that walked `HTTPException` call sites and
+# stopped there. The routes that refuse by forwarding a domain exception —
+# `except SomeError as exc: raise HTTPException(409, str(exc))` — carry a
+# sentence that lives at the `raise` in a module the guard never opened.
+#
+#     asked     what does this route pass to HTTPException
+#     mattered  where does the sentence it passes come from
+#
+# 15 rows below are what following those forwards found. They are not new
+# English; they are English this file has been unable to see for as long as
+# it has existed. `tr_refusal` treats them identically to a directly-raised
+# literal: it looks the sentence up, misses, and serves English.
+#
+# Found in QRME first and measured here the same day — all three products
+# had it, which is what this estate keeps finding when a guard is written
+# once and never asked whether its siblings need it too.
+#
+'count' must be a positive integer
+'day' must be YYYY-MM-DD
+'fingerprint' must be 8 hex characters
+'op' must be a string
+'problems' must be a non-empty list
+'status' must be an HTTP status code (0 for no answer)
+PDIClient needs base_url or an injected client
+PDI_MASTER_KEY must be base64 of 32 bytes
+QRMEClient needs base_url or an injected client
+an error report is an object
+each problem is an object
+no public address to visit — reconnect with the account's handle
+provider must be 'held' or 'kms'
 this deployment is reachable beyond localhost but has no PDI_ADMIN_TOKEN set — admin endpoints stay closed until one is configured (see docs/operations.md)
+this tenant already has a customer-managed key; release it before adopting another
+this tenant is already under deployment custody
