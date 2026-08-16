@@ -6,6 +6,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.79.0] - 2026-08-16
+
+### Changed
+
+- **Cut in step.** No PDI code changed. QRME took 0.78.0 alone for a plug-in
+  storefront, and 0.79.0 brings the three products back to one number.
+
+      asked     what changed in the vault this release
+      mattered  that the three report the same version to a caller
+
+  The vault, the journal, the sealing and the audit chain are unchanged. The
+  number moves because the tandem's version guard compares a console against
+  the backend answering its port, and `docs/beta-deploy.md` §7 rebuilds all
+  three on every release for that reason — a box carrying two versions
+  reports the mismatch to whoever is using it rather than to whoever
+  deployed it.
+
 ## [0.77.0] - 2026-08-16
 
 No PDI code changed. The three products are cut in step, so this version
@@ -6595,7 +6612,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.77.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.79.0...HEAD
+[0.79.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.79.0
 [0.77.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.77.0
 [0.76.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.76.0
 [0.75.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.75.0

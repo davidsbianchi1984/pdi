@@ -1,6 +1,6 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.77.0** ([changelog](CHANGELOG.md)) — one of three products
+**Current release: v0.79.0** ([changelog](CHANGELOG.md)) — one of three products
 ([qrme](https://github.com/davidsbianchi1984/qrme),
 [jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
 together, so one number names one combination of all three.
@@ -227,6 +227,7 @@ contribution is usually to hold the bytes exactly as it already did.
 
 | Release | What landed |
 |---|---|
+| **0.79.0** | **Cut in step** — no PDI code changed. QRME's plug-in storefront is what this version is; the vault, the journal and the sealing are unchanged |
 | **0.77.0** | **Cut in step** — no PDI code changed. QRME's Agent round and JIM's circle-list fix are what this version is; the vault, the journal and the sealing are unchanged |
 | **0.76.0** | No functional changes to PDI. The number moves because the three products are cut as one release; two shared guard records moved rows out of the divergence backlog and into the manifest |
 | **0.75.0** | **No functional changes to PDI** — cut with the siblings. The round's work was next door, and one line of it is this repository's: JIM-mini took a port of the hash-chained audit log designed here, `user_id` where PDI has `tenant_id`, including the part that has survived a dozen releases of new actions — fixed stored-and-hashed fields with `category` derived at read time, so a catalogue can grow forever without breaking a single existing hash |
