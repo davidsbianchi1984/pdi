@@ -97,6 +97,25 @@ Adoption is all-or-nothing on purpose. A half-migrated tenant — some records
 the operator can still read, some not, and no way to tell which from the
 outside — is a worse position than either end state.
 
+## The three-product beta is a different page
+
+This page is about running PDI on its own. The live beta is four
+containers on one box — PDI, its two sibling products and the shared
+gateway behind one reverse proxy — and it is documented once, in QRME, at
+`docs/beta-deploy.md`, beside the compose file it describes.
+
+Once rather than three times, deliberately: it is one machine. Three copies
+of a page about one box is the drift this estate keeps finding in itself, and
+the copies would disagree the first time somebody fixed only the one they had
+open. What belongs here is the pointer, so an operator standing in this
+repository can find it.
+
+Its § 7 is the one to read at the end of a release: all three repositories are
+pulled and rebuilt every time, even for a release that changed only one of
+them, because each console's version guard compares itself against whatever
+backend answers its port.
+
+
 ## Deploying
 
 The `Dockerfile` builds the console and the API into one image, so the UI is
