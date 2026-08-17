@@ -6,6 +6,32 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.84.0] - 2026-08-17
+
+### Changed
+
+- **The version, and nothing else.** This product carries no code changes in
+  0.84.0. JIM-mini took this release on its own — one window over everything
+  a guardian is running, both people having to agree before a link outlives
+  the call, what the offline coach could not settle becoming a paid errand
+  only where it had to, the day as it was taken in against what the roster
+  promised beforehand, a room reading cues rather than keeping footage, and
+  two people on one call each with their own second channel — and none of
+  them has a counterpart here yet.
+
+      asked     what changed in this product this release
+      mattered  that the three products report the same version to a caller
+
+  This one skipped 0.83.0. That release was JIM-mini's address-book round and
+  QRME's deploy-page repair, neither of which touched anything here, and the
+  number was left where it was rather than cut for the sake of it. The result
+  is the drift the version guard exists to prevent: a box carrying 0.83.0 on
+  two ports and 0.82.0 on the third reports the mismatch to whoever is using
+  it rather than to whoever deployed it. So the three come back onto one
+  number here, and the honest way to say that is a release that says nothing
+  changed in this product — cheaper than a scheme where they drift apart and
+  somebody has to remember which pairs go together.
+
 ## [0.82.0] - 2026-08-17
 
 ### Changed
@@ -6673,7 +6699,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.82.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.84.0...HEAD
+[0.84.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.82.0...app-v0.84.0
 [0.82.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.81.0...app-v0.82.0
 [0.81.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.81.0
 [0.80.0]: https://github.com/davidsbianchi1984/pdi/releases/tag/app-v0.80.0
