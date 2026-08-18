@@ -8,6 +8,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The front page reads like a product, and the mockups moved next door.**
+  A field report from the owner's own phone called the README what it had
+  become: thousands of lines, walls of mockups, and the thing a visitor
+  should learn in a minute buried under both. The README is now a
+  professional overview — what it does, the surfaces, quick start,
+  configuration, and the release table folded but present.
+  The remaining screen sets live in `docs/gallery.md`, and every guard that
+  held the old page — screens shown somewhere, galleries shaped for a
+  phone, no stale counts, the banner naming the shipped version — now
+  holds the same promises across the pages they moved to.
+
 - **A guard on the translations that are already there.**
   `refusals_untranslated.txt` counts the sentences with **no** translation yet
   and only shrinks. Nothing has ever looked at the ones that do, so the whole

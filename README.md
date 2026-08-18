@@ -1,230 +1,170 @@
 # Private Data Infrastructure (PDI)
 
-**Current release: v0.84.0** ([changelog](CHANGELOG.md)) — one of three products
-([qrme](https://github.com/davidsbianchi1984/qrme),
-[jim-mini](https://github.com/davidsbianchi1984/jim-mini)) versioned and cut
-together, so one number names one combination of all three.
+**A private, encrypted data vault with a tamper-evident audit log and a
+tenant registry.**
 
-![PDI — Private Data Infrastructure](assets/cover.svg)
-
-A standalone **secure private data platform** (the "Private Data Infrastructure" enabling seamless support for future AI agent services (**JAN2024 NETWORKED
-RESPONSIVE PERSONAL GUIDANCE SYSTEM FOR KNOWN CONDITIONS United States application or CT international application # 19/038,196 ATTORNEY DOCKET # 526.P001 Patent Pending — published as US 2025/0246290 A1**) through a centralized AI-driven
-management system (**FEB2024 SYNTHETIC USER PROFILE MANAGEMENT United States application or CT international application # 19/056,418 ATTORNEY DOCKET # 526.P002 Patent Pending — published as US 2025/0265659 A1**). When elected
-to activate these capabilities, the platform will be equipped to deploy intelligent, role-specific AI agents capable of assisting users,
-automating tasks, managing workflows, and enhancing operational decision-making and could potentially run more efficiently, replace
-Mundane Outdated Tasks and or Roles within the company.— all within the same secure, private network environment.
-A private, encrypted data vault with a
-tamper-evident audit log and a tenant registry. It is the infrastructure layer
-that AI systems such as QRME and JIM-mini can *optionally* run on top of —
-storing sensitive data in PDI's encrypted vault instead of their own databases,
-reached only over PDI's HTTP API. Both integrations are live: JIM-mini
-vaults its medical and context payloads here, and QRME seals its profile
-source material — each as its own tenant with its own token. See
+PDI is the storage layer the other two products can optionally run on top
+of: sensitive data lives in PDI's encrypted vault instead of their own
+databases, reached only over PDI's HTTP API. Both integrations are live —
+JIM-mini vaults its medical and context payloads here, and QRME seals its
+profile source material — each as its own tenant with its own token. See
 [docs/tandem.md](docs/tandem.md).
 
+**Current release: v0.84.0** — see [CHANGELOG.md](CHANGELOG.md).
 
-## Ability is not a gate
+PDI is one of three products versioned and released together:
+[QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
+[JIM-mini](https://github.com/davidsbianchi1984/jim-mini) (health guardian).
+One version number names one tested combination of all three.
 
-If how a person's body or mind works stands between them and this product,
-that is a defect in the product — not in them. This is stated upfront,
-before features: we build for blind and low-vision people, deaf and
-hard-of-hearing people, mute and nonspeaking people, people with limited
-mobility or amputation or tremor, autistic and cognitively different
-people, people with dyslexia, people sensitive to motion — and for every
-need not on that list, which is a gap in the list, not in the person.
+**Patents.** The platform is designed to host the AI agent services covered
+by two pending applications: *Networked Responsive Personal Guidance System
+for Known Conditions* (US 19/038,196, published as US 2025/0246290 A1) and
+*Synthetic User Profile Management* (US 19/056,418, published as
+US 2025/0265659 A1). See
+[docs/invention-disclosure.md](docs/invention-disclosure.md).
 
-What is true today, enforced by the suite rather than promised: every
-function works by text alone and voice is always optional; every image in
-the console carries a description (`test_ability_is_not_a_gate.py` fails
-on one that does not); no step is timed; the console honours
-`prefers-reduced-motion`; and the known gaps live in
-[`pdi/tests/a11y_backlog.txt`](pdi/tests/a11y_backlog.txt), a ledger that
-only shrinks. Anything that stands in your way can be reported from the
-**Accessibility** tab — with three questions and no diagnosis: what were
-you trying to do, what stood in the way, what would help. The report
-sends no token, because reporting that the vault shut you out must not
-require the tenant token it may have shut you out of. Reports stay on the
-deployment that received them (never relayed to the shared error
-collector), are read with the deployment's admin token, and become rows
-in that only-shrinks ledger. That is the whole loop: your words become
-tracked work.
+## What it provides
 
+- **Private, encrypted data vault** — record values are sealed at rest with
+  AES-256-GCM (`pdi/crypto.py`); only ciphertext touches disk. AAD binds each
+  record to its tenant + key so ciphertext can't be relocated.
+- **Production key management (envelope encryption)** — a key-encryption key
+  (KEK) never touches record data; each **key version** owns a random
+  data-encryption key (DEK) stored only *wrapped* by the KEK. `POST /keys/rotate`
+  mints a new version and re-seals records under it (old versions stay readable
+  until `POST /keys/retire`); `GET /keys` reports versions. The KEK lives in the
+  env (dev) or a **KMS/HSM** in production (`PDI_KEY_PROVIDER=kms`, a loud
+  integration seam — never a silent local fallback).
+- **Retention — from a short window up to forever** — per-tenant record
+  retention (`7d`/`30d`/`90d`/`180d`/`1y`/`forever`, default **forever**) and a
+  global soft-delete recovery window (`PDI_RECOVERY_WINDOW`, default forever);
+  `POST /retention/sweep` expires records/purges tombstoned tenants past their
+  window — `forever` expires nothing. The audit chain is always kept forever
+  (pruning it would break tamper-evidence).
+- **Documented audit event schema** — `GET /audit/schema` returns the field
+  definitions and the full action catalogue (each action's category and
+  meaning); every audit entry carries a derived `category`.
+- **Tenant registry** — each integrating system gets a tenant + bearer token;
+  data is strictly namespaced per tenant (no cross-tenant reads).
+- **Tamper-evident audit log** — every access is recorded in an append-only,
+  SHA-256 hash-chained log; `GET /audit/verify` detects any retroactive edit.
+- **Disaster-recovery snapshot & restore** — `GET /snapshot` exports
+  ciphertext only; `POST /restore` reinserts a snapshot after a loss, with
+  AAD still binding every record to its tenant + key.
+- **Cloud-model contribution intake** — `POST /contributions` seals
+  anonymized model-improvement data from integrating systems under
+  `contributions/{source}/…` keys, encrypted and audit-chained;
+  `GET /contributions` lists the intake ([docs/cloud-model.md](docs/cloud-model.md)).
+- **Position & assistant builder** — `POST /positions` turns a completed
+  AI Integration & Role-Mapping Questionnaire (industry-agnostic) into an
+  assistant *blueprint* — recommended capabilities, an automation-opportunity
+  score, human-in-the-loop guardrails, reskilling paths, and a ready-to-use
+  assistant system-prompt. The raw workforce answers are sealed in the vault
+  under `positions/{id}`; only the derived blueprint is returned. Decision
+  support, never an automated staffing decision
+  ([docs/positions.md](docs/positions.md)).
+- **Custody beacons** — `POST /beacons` prints a code for a physical carrier
+  (a records box, a decommissioned drive, a courier bag) or for the facility
+  door itself, so custody stays visible once a payload has a handle. The seal
+  card at `GET /s/{id}` says a thing is under custody and what governs it, and
+  **never what is in it**. A finder's `POST /s/{id}/found` is a custody
+  receipt, not a message: it lands in the hash-chained audit log, so a gap in
+  a carrier's chain becomes a compliance finding PDI can produce on demand.
+  Plain scans stay off the chain — a barcode gun sweeping a pallet must not
+  fill a tamper-evidence log. Blind by default, because naming the tenant can
+  itself be the disclosure ([docs/beacons.md](docs/beacons.md)).
+- **The agent at the gate** — `POST /s/{id}/ring` triages a facility ring when
+  no human is awake. PDI grows no model: the voice is a QRME profile over HTTP
+  (`PDI_QRME_URL` + `PDI_GATE_PROFILE`), which also means it carries QRME's AI
+  mark, and an unconfigured deployment answers from a written script with no
+  model anywhere near it. **The model is the voice, not the decider** —
+  `gate.decide()` takes no model output, so there is no code path from
+  generated text to a consequential action. The ceiling comes from the
+  `HUMAN_IN_LOOP` set `positions.py` already publishes, and is itself published
+  at `GET /gate/ceiling`: the agent may direct, check, structure a receipt and
+  hand off, and may **never** grant entry, assert identity, override an
+  authorization, or see contents. A hand-off is **delivered**, not merely
+  filed: PDI posts a signed envelope to `PDI_NOTIFY_URL` and, when nobody was
+  reached, says so on the scan page rather than letting *"I've passed this to
+  the on-call contact"* leave somebody waiting in the rain for nobody.
+- **A per-tenant on-call roster** — `POST /gate/roster` sets who answers *this*
+  facility's gate and when, in the tenant's own database rows under the
+  tenant's own token. It replaces one deployment-wide `PDI_GATE_ONCALL` that
+  routed every customer's courier to the same name. Shifts cross midnight
+  correctly (`18:00`–`06:00` belongs to the day it started), the facility's
+  IANA timezone is **refused if unknown** rather than silently read as UTC, and
+  a page that a webhook rejects moves to the next name — with one contact, a
+  failed page was the end of the line.
+- **Role-based access control** — `POST /tenants/{id}/tokens` issues scoped
+  `read`/`write` tokens; read tokens cannot write or delete, and
+  `DELETE /tokens/{token}` revokes instantly.
+- **Tokens hashed at rest** — only the SHA-256 hash of each tenant/scoped
+  token is stored, so a leak of PDI's own database yields no usable
+  credential; the plaintext is shown once at issuance. The admin token is
+  compared in constant time.
+- **Deployment record** — models the on-premises vs. colocation (Tier III+)
+  options from the proposal.
 
-## Console screens
+## Product surfaces
 
-The PDI operator console in two form factors — a **desktop dashboard** and a **mobile console** — one screen per capability of the vault, in the product's design language (Deep Indigo · Vault Cyan · Soft Silver, SF-style type, liquid-glass cards). It shares the night-indigo universe of QRME and JIM-mini with vault cyan as its accent — one world, three products. Every screen is a self-contained SVG (no fonts, images, or scripts) and maps to a real endpoint.
+| Surface | Where | Notes |
+|---|---|---|
+| API server | `pdi/` | FastAPI + SQLite. `python -m pdi serve` or `uvicorn pdi.api:app`. |
+| Operator console | `app/` | React + TypeScript (Vite); also served by the backend. |
+| iOS / Android / Windows | `native/` | Native shells at parity with the console. |
+| Desktop app | `python -m pdi desktop` | Electron wrapper; packaged installers on the releases page. |
 
-### Desktop dashboard
+## Quick start
 
-Wide, multi-panel operator views — sidebar nav, live tiles, the hash-chain audit table, and the encryption pipeline. Regenerate with `python3 docs/desktop/build.py`.
+```bash
+pip install -e .[dev]
+export PDI_MASTER_KEY=$(python -c "import base64,os;print(base64.b64encode(os.urandom(32)).decode())")
+uvicorn pdi.api:app
 
-<table>
-  <tr>
-    <td align="center" width="50%"><a href="docs/desktop/01-overview.svg"><img src="docs/desktop/01-overview.svg" width="460" alt="Overview — PDI desktop console"></a><br><sub><b>01</b> · Overview</sub></td>
-    <td align="center" width="50%"><a href="docs/desktop/02-vault.svg"><img src="docs/desktop/02-vault.svg" width="460" alt="Vault — PDI desktop console"></a><br><sub><b>02</b> · Vault</sub></td>
-  </tr>
-  <tr>
-    <td align="center" width="50%"><a href="docs/desktop/03-audit-log.svg"><img src="docs/desktop/03-audit-log.svg" width="460" alt="Audit Log — PDI desktop console"></a><br><sub><b>03</b> · Audit Log</sub></td>
-    <td align="center" width="50%"><a href="docs/desktop/04-tenants-access.svg"><img src="docs/desktop/04-tenants-access.svg" width="460" alt="Tenants & Access — PDI desktop console"></a><br><sub><b>04</b> · Tenants & Access</sub></td>
-  </tr>
-  <tr>
-    <td align="center" width="50%"><a href="docs/desktop/05-encryption-keys.svg"><img src="docs/desktop/05-encryption-keys.svg" width="460" alt="Encryption & Keys — PDI desktop console"></a><br><sub><b>05</b> · Encryption & Keys</sub></td>
-    <td align="center" width="50%"><a href="docs/desktop/06-deployment-health.svg"><img src="docs/desktop/06-deployment-health.svg" width="460" alt="Deployment & Health — PDI desktop console"></a><br><sub><b>06</b> · Deployment & Health</sub></td>
-  </tr>
-</table>
+# or the launcher menu — phone, desktop, installer, headless:
+python -m pdi
+```
 
-The full capability set is **also rendered in the desktop frame**: every one of the 57 mobile screens below has a wide operator-console counterpart in [`docs/screens/desktop/`](docs/screens/desktop) — window chrome, left nav rail, right status rail — generated by the same `docs/screens/build.py`.
+`PDI_DB` sets the SQLite path (default `pdi.db`). `PDI_MASTER_KEY` is base64
+of 32 bytes; in production the key-encryption key belongs in your own
+KMS/HSM (`PDI_KEY_PROVIDER=kms`) — an ephemeral key is generated if unset,
+for development only.
 
-### Mobile console
+## Configuration
 
-The same system, glanceable on a phone. Regenerate with `python3 docs/screens/build.py`.
+| Variable | Purpose |
+|---|---|
+| `PDI_MASTER_KEY` | Base64 key-encryption key (dev). Production uses `PDI_KEY_PROVIDER=kms` with `PDI_KMS_BACKEND` / `PDI_KMS_KEY_ID`. |
+| `PDI_DB` | SQLite path (default `pdi.db`). |
+| `PDI_ADMIN_TOKEN` | Operator token; open admin fails closed off-machine. |
+| `PDI_RECOVERY_WINDOW` | Global soft-delete recovery window (default forever). |
+| `PDI_CORS_ORIGINS` | Allowed console origins. |
 
-**The vault**
+See [docs/hosting.md](docs/hosting.md) and
+[docs/operations.md](docs/operations.md) for production deployment.
 
-<table>
-<tr>
-<td align="center" width="25%"><a href="docs/screens/01-overview.svg"><img src="docs/screens/01-overview.svg" width="210" alt="Overview — PDI desktop console"></a><br><sub><b>01</b> · Overview</sub></td>
-<td align="center" width="25%"><a href="docs/screens/02-vault.svg"><img src="docs/screens/02-vault.svg" width="210" alt="Vault — PDI desktop console"></a><br><sub><b>02</b> · Vault</sub></td>
-<td align="center" width="25%"><a href="docs/screens/03-store-a-record.svg"><img src="docs/screens/03-store-a-record.svg" width="210" alt="Store a Record — PDI desktop console"></a><br><sub><b>03</b> · Store a Record</sub></td>
-<td align="center" width="25%"><a href="docs/screens/04-encryption.svg"><img src="docs/screens/04-encryption.svg" width="210" alt="Encryption — PDI desktop console"></a><br><sub><b>04</b> · Encryption</sub></td>
-</tr>
-</table>
+## Documentation
 
-**Tenants, access & intake**
+| Document | Contents |
+|---|---|
+| [docs/tandem.md](docs/tandem.md) | Running PDI under QRME and JIM-mini. |
+| [docs/operations.md](docs/operations.md) | Day-two operations: keys, retention, backups. |
+| [docs/hosting.md](docs/hosting.md) | Production hosting. |
+| [docs/enterprise.md](docs/enterprise.md) | Enterprise compliance transfer. |
+| [docs/baa-template.md](docs/baa-template.md) | Business associate agreement template. |
+| [docs/invention-disclosure.md](docs/invention-disclosure.md) | The patent filings. |
+| [docs/releasing.md](docs/releasing.md) | How releases are cut. |
+| [docs/gallery.md](docs/gallery.md) | The full desktop and mobile console gallery. |
 
-<table>
-<tr>
-<td align="center" width="25%"><a href="docs/screens/05-tenants.svg"><img src="docs/screens/05-tenants.svg" width="210" alt="Tenants — PDI desktop console"></a><br><sub><b>05</b> · Tenants</sub></td>
-<td align="center" width="25%"><a href="docs/screens/06-create-tenant.svg"><img src="docs/screens/06-create-tenant.svg" width="210" alt="Create Tenant — PDI desktop console"></a><br><sub><b>06</b> · Create Tenant</sub></td>
-<td align="center" width="25%"><a href="docs/screens/07-access-control.svg"><img src="docs/screens/07-access-control.svg" width="210" alt="Access Control — PDI desktop console"></a><br><sub><b>07</b> · Access Control</sub></td>
-<td align="center" width="25%"><a href="docs/screens/10-contributions.svg"><img src="docs/screens/10-contributions.svg" width="210" alt="Contributions — PDI desktop console"></a><br><sub><b>10</b> · Contributions</sub></td>
-</tr>
-</table>
+## Release history
 
-**Audit & integrity**
+<details>
+<summary><b>What each release added, newest first</b> — the short version of
+how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summary>
 
-<table>
-  <tr>
-    <td align="center" width="33%"><a href="docs/screens/08-audit-log.svg"><img src="docs/screens/08-audit-log.svg" width="210" alt="Audit Log — PDI desktop console"></a><br><sub><b>08</b> · Audit Log</sub></td>
-    <td align="center" width="33%"><a href="docs/screens/09-verify-chain.svg"><img src="docs/screens/09-verify-chain.svg" width="210" alt="Verify Chain — PDI desktop console"></a><br><sub><b>09</b> · Verify Chain</sub></td>
-  </tr>
-</table>
-
-**Operations & deployment**
-
-<table>
-<tr>
-<td align="center" width="25%"><a href="docs/screens/11-snapshot-restore.svg"><img src="docs/screens/11-snapshot-restore.svg" width="210" alt="Snapshot & Restore — PDI desktop console"></a><br><sub><b>11</b> · Snapshot & Restore</sub></td>
-<td align="center" width="25%"><a href="docs/screens/12-deployment.svg"><img src="docs/screens/12-deployment.svg" width="210" alt="Deployment — PDI desktop console"></a><br><sub><b>12</b> · Deployment</sub></td>
-<td align="center" width="25%"><a href="docs/screens/13-key-management.svg"><img src="docs/screens/13-key-management.svg" width="210" alt="Key Management — PDI desktop console"></a><br><sub><b>13</b> · Key Management</sub></td>
-<td align="center" width="25%"><a href="docs/screens/17-system-health.svg"><img src="docs/screens/17-system-health.svg" width="210" alt="System Health — PDI desktop console"></a><br><sub><b>17</b> · System Health</sub></td>
-</tr>
-</table>
-
-**Isolation, the promise & the tandem**
-
-<table>
-<tr>
-<td align="center" width="25%"><a href="docs/screens/14-tenant-isolation.svg"><img src="docs/screens/14-tenant-isolation.svg" width="210" alt="Tenant Isolation — PDI desktop console"></a><br><sub><b>14</b> · Tenant Isolation</sub></td>
-<td align="center" width="25%"><a href="docs/screens/15-data-promise.svg"><img src="docs/screens/15-data-promise.svg" width="210" alt="Data Promise — PDI desktop console"></a><br><sub><b>15</b> · Data Promise</sub></td>
-<td align="center" width="25%"><a href="docs/screens/16-your-data.svg"><img src="docs/screens/16-your-data.svg" width="210" alt="Your Data — PDI desktop console"></a><br><sub><b>16</b> · Your Data</sub></td>
-<td align="center" width="25%"><a href="docs/screens/18-tandem.svg"><img src="docs/screens/18-tandem.svg" width="210" alt="Tandem — PDI desktop console"></a><br><sub><b>18</b> · Tandem</sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="docs/screens/19-design-system.svg"><img src="docs/screens/19-design-system.svg" width="210" alt="Design System — PDI desktop console"></a><br><sub><b>19</b> · Design System</sub></td>
-</tr>
-</table>
-
-**First-run setup**
-
-The first-run journey runs **23 Welcome → 22 Log In → 24 Key Setup → 25 Grant Access → 26 Connect Systems → 27 All Set**, then opens the console.
-
-<table>
-<tr>
-<td align="center" width="25%"><a href="docs/screens/23-welcome.svg"><img src="docs/screens/23-welcome.svg" width="210" alt="Welcome — PDI"></a><br><sub><b>23</b> · Welcome</sub></td>
-<td align="center" width="25%"><a href="docs/screens/24-key-setup.svg"><img src="docs/screens/24-key-setup.svg" width="210" alt="Key Setup — KMS/HSM or master key"></a><br><sub><b>24</b> · Key Setup</sub></td>
-<td align="center" width="25%"><a href="docs/screens/25-grant-access.svg"><img src="docs/screens/25-grant-access.svg" width="210" alt="Grant Access — scoped tokens"></a><br><sub><b>25</b> · Grant Access</sub></td>
-<td align="center" width="25%"><a href="docs/screens/26-connect-systems.svg"><img src="docs/screens/26-connect-systems.svg" width="210" alt="Connect Systems — QRME & JIM-mini"></a><br><sub><b>26</b> · Connect Systems</sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="docs/screens/27-all-set.svg"><img src="docs/screens/27-all-set.svg" width="210" alt="All Set — the vault is live"></a><br><sub><b>27</b> · All Set</sub></td>
-</tr>
-</table>
-
-**Operator session lifecycle**
-
-<table>
-  <tr>
-    <td align="center" width="33%"><a href="docs/screens/20-sign-in.svg"><img src="docs/screens/20-sign-in.svg" width="210" alt="Sign In — PDI desktop console"></a><br><sub><b>20</b> · Sign In</sub></td>
-    <td align="center" width="33%"><a href="docs/screens/21-sign-out.svg"><img src="docs/screens/21-sign-out.svg" width="210" alt="Sign Out — PDI desktop console"></a><br><sub><b>21</b> · Sign Out</sub></td>
-    <td align="center" width="33%"><a href="docs/screens/22-log-in.svg"><img src="docs/screens/22-log-in.svg" width="210" alt="Log In — Apple, Google or email"></a><br><sub><b>22</b> · Log In</sub></td>
-  </tr>
-</table>
-
-**Connectors — social platforms & AI-integrated apps**
-
-<table>
-<tr>
-<td align="center" width="25%"><a href="docs/screens/28-connectors.svg"><img src="docs/screens/28-connectors.svg" width="210" alt="Connectors — collect & publish"></a><br><sub><b>28</b> · Connectors</sub></td>
-<td align="center" width="25%"><a href="docs/screens/29-connected-apps.svg"><img src="docs/screens/29-connected-apps.svg" width="210" alt="Connected Apps"></a><br><sub><b>29</b> · Connected Apps</sub></td>
-<td align="center" width="25%"><a href="docs/screens/30-compliance-transfers.svg"><img src="docs/screens/30-compliance-transfers.svg" width="210" alt="Compliance Transfers"></a><br><sub><b>30</b> · Compliance Transfers</sub></td>
-<td align="center" width="25%"><a href="docs/screens/31-secure-intake.svg"><img src="docs/screens/31-secure-intake.svg" width="210" alt="Secure Intake"></a><br><sub><b>31</b> · Secure Intake</sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="docs/screens/32-files-photos.svg"><img src="docs/screens/32-files-photos.svg" width="210" alt="Files & Photos"></a><br><sub><b>32</b> · Files &amp; Photos</sub></td>
-<td align="center" width="25%"><a href="docs/screens/33-apple-intelligence.svg"><img src="docs/screens/33-apple-intelligence.svg" width="210" alt="Apple Intelligence"></a><br><sub><b>33</b> · Apple Intelligence</sub></td>
-<td align="center" width="25%"><a href="docs/screens/34-google-gemini.svg"><img src="docs/screens/34-google-gemini.svg" width="210" alt="Google Gemini"></a><br><sub><b>34</b> · Google Gemini</sub></td>
-<td align="center" width="25%"><a href="docs/screens/35-microsoft-copilot.svg"><img src="docs/screens/35-microsoft-copilot.svg" width="210" alt="Microsoft Copilot"></a><br><sub><b>35</b> · Microsoft Copilot</sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="docs/screens/36-robot-data-vault.svg"><img src="docs/screens/36-robot-data-vault.svg" width="210" alt="Robot Data Vault"></a><br><sub><b>36</b> · Robot Data Vault</sub></td>
-<td align="center" width="25%"><a href="docs/screens/37-custody-beacons.svg"><img src="docs/screens/37-custody-beacons.svg" width="210" alt="Custody Beacons"></a><br><sub><b>37</b> · Custody Beacons</sub></td>
-<td align="center" width="25%"><a href="docs/screens/38-gate-agent.svg"><img src="docs/screens/38-gate-agent.svg" width="210" alt="Gate Agent"></a><br><sub><b>38</b> · Gate Agent</sub></td>
-<td align="center" width="25%"><a href="docs/screens/39-gate-agents.svg"><img src="docs/screens/39-gate-agents.svg" width="210" alt="Gate Agents"></a><br><sub><b>39</b> · Gate Agents</sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="docs/screens/40-audit.svg"><img src="docs/screens/40-audit.svg" width="210" alt="Audit with the agent overlay"></a><br><sub><b>40</b> · Audit · overlay</sub></td>
-<td align="center" width="25%"><a href="docs/screens/41-console-guide.svg"><img src="docs/screens/41-console-guide.svg" width="210" alt="Console Guide"></a><br><sub><b>41</b> · Console Guide</sub></td>
-<td align="center" width="25%"><a href="docs/screens/42-where-it-lives.svg"><img src="docs/screens/42-where-it-lives.svg" width="210" alt="Where It Lives"></a><br><sub><b>42</b> · Where It Lives</sub></td>
-<td align="center" width="25%"><a href="docs/screens/43-the-corner-pane.svg"><img src="docs/screens/43-the-corner-pane.svg" width="210" alt="The Corner Pane"></a><br><sub><b>43</b> · The Corner Pane</sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="docs/screens/44-choose-a-home.svg"><img src="docs/screens/44-choose-a-home.svg" width="210" alt="Choose a Home"></a><br><sub><b>44</b> · Choose a Home</sub></td>
-<td align="center" width="25%"><a href="docs/screens/45-request-a-quote.svg"><img src="docs/screens/45-request-a-quote.svg" width="210" alt="Request a Quote"></a><br><sub><b>45</b> · Request a Quote</sub></td>
-<td align="center" width="25%"><a href="docs/screens/46-what-went-wrong.svg"><img src="docs/screens/46-what-went-wrong.svg" width="210" alt="What Went Wrong"></a><br><sub><b>46</b> · What Went Wrong</sub></td>
-<td align="center" width="25%"><a href="docs/screens/47-before-anything-is-sent.svg"><img src="docs/screens/47-before-anything-is-sent.svg" width="210" alt="Before Anything Is Sent"></a><br><sub><b>47</b> · Before Anything Is Sent</sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="docs/screens/48-carriers.svg"><img src="docs/screens/48-carriers.svg" width="210" alt="Carriers"></a><br><sub><b>48</b> · Carriers</sub></td>
-<td align="center" width="25%"><a href="docs/screens/49-exchange.svg"><img src="docs/screens/49-exchange.svg" width="210" alt="Exchange"></a><br><sub><b>49</b> · Exchange</sub></td>
-<td align="center" width="25%"><a href="docs/screens/50-custody.svg"><img src="docs/screens/50-custody.svg" width="210" alt="Custody"></a><br><sub><b>50</b> · Custody</sub></td>
-<td align="center" width="25%"><a href="docs/screens/51-bridges.svg"><img src="docs/screens/51-bridges.svg" width="210" alt="Bridges"></a><br><sub><b>51</b> · Bridges</sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="docs/screens/52-guiding.svg"><img src="docs/screens/52-guiding.svg" width="210" alt="Guiding"></a><br><sub><b>52</b> · Guiding</sub></td>
-<td align="center" width="25%"><a href="docs/screens/53-continuity.svg"><img src="docs/screens/53-continuity.svg" width="210" alt="Continuity"></a><br><sub><b>53</b> · Continuity</sub></td>
-<td align="center" width="25%"><a href="docs/screens/54-operations.svg"><img src="docs/screens/54-operations.svg" width="210" alt="Operations"></a><br><sub><b>54</b> · Operations</sub></td>
-<td align="center" width="25%"><a href="docs/screens/55-positions.svg"><img src="docs/screens/55-positions.svg" width="210" alt="Positions"></a><br><sub><b>55</b> · Positions</sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="docs/screens/56-settings.svg"><img src="docs/screens/56-settings.svg" width="210" alt="Settings"></a><br><sub><b>56</b> · Settings</sub></td>
-<td align="center" width="25%"><a href="docs/screens/57-ability-is-not-a-gate.svg"><img src="docs/screens/57-ability-is-not-a-gate.svg" width="210" alt="Ability Is Not A Gate"></a><br><sub><b>57</b> · Ability Is Not A Gate</sub></td>
-</tr>
-</table>
-
-**For enterprises:** PDI offers compliance-grade secure file transfer for corporations (carriers, healthcare, financial, public sector) — files sealed under HIPAA / OSHA / CPNI / PCI-DSS and more, with audited chain of custody and enforced retention, in both directions: outbound transfers and inbound secure intake from subscribers and partners. See [docs/enterprise.md](docs/enterprise.md).
-
-## What's in the current release
-
-The sections below describe every capability in detail. This is the short
-version of how it got here — what each release actually added, newest first.
-Full detail in [CHANGELOG.md](CHANGELOG.md).
-
-Several rounds land here as **no functional change**, and the changelog says so
-in those words rather than padding the entry. PDI is the bottom layer: when the
-products above it learn to handle something new, the vault's correct
-contribution is usually to hold the bytes exactly as it already did.
-
+| Release | What landed |
+|---|---|
 | Release | What landed |
 |---|---|
 | **0.84.0** | **The version, and nothing else** — no code changes in this product. JIM-mini took this release on its own: one window over everything a guardian is running, both people having to agree before a link outlives the call, what the offline coach could not settle becoming a paid errand only where it had to, the day as it was taken in measured against what the roster promised before anything was switched on, a room reading cues rather than keeping footage, and two people on one call each with their own second channel. This product skipped 0.83.0 — that release touched nothing here and the number was left where it was rather than cut for the sake of it — which is exactly the drift the version guard exists to prevent, since a box carrying two numbers reports the mismatch to whoever is using it rather than to whoever deployed it. The three come back onto one number here |
@@ -453,525 +393,12 @@ contribution is usually to hold the bytes exactly as it already did.
 | **0.1.1** | Native iOS / Android / Windows apps at parity. First-run onboarding. Enterprise compliance transfer, robots as vault-backed data sources, connected platforms, language & provenance |
 | **0.1.0** | First public release — the **encrypted vault**, envelope encryption & key management, **tamper-evident audit**, tenant registry & RBAC, retention up to forever, and tenant deletion |
 
-## What it provides
-
-- **Private, encrypted data vault** — record values are sealed at rest with
-  AES-256-GCM (`pdi/crypto.py`); only ciphertext touches disk. AAD binds each
-  record to its tenant + key so ciphertext can't be relocated.
-- **Production key management (envelope encryption)** — a key-encryption key
-  (KEK) never touches record data; each **key version** owns a random
-  data-encryption key (DEK) stored only *wrapped* by the KEK. `POST /keys/rotate`
-  mints a new version and re-seals records under it (old versions stay readable
-  until `POST /keys/retire`); `GET /keys` reports versions. The KEK lives in the
-  env (dev) or a **KMS/HSM** in production (`PDI_KEY_PROVIDER=kms`, a loud
-  integration seam — never a silent local fallback).
-- **Retention — from a short window up to forever** — per-tenant record
-  retention (`7d`/`30d`/`90d`/`180d`/`1y`/`forever`, default **forever**) and a
-  global soft-delete recovery window (`PDI_RECOVERY_WINDOW`, default forever);
-  `POST /retention/sweep` expires records/purges tombstoned tenants past their
-  window — `forever` expires nothing. The audit chain is always kept forever
-  (pruning it would break tamper-evidence).
-- **Documented audit event schema** — `GET /audit/schema` returns the field
-  definitions and the full action catalogue (each action's category and
-  meaning); every audit entry carries a derived `category`.
-- **Tenant registry** — each integrating system gets a tenant + bearer token;
-  data is strictly namespaced per tenant (no cross-tenant reads).
-- **Tamper-evident audit log** — every access is recorded in an append-only,
-  SHA-256 hash-chained log; `GET /audit/verify` detects any retroactive edit.
-- **Disaster-recovery snapshot & restore** — `GET /snapshot` exports
-  ciphertext only; `POST /restore` reinserts a snapshot after a loss, with
-  AAD still binding every record to its tenant + key.
-- **Cloud-model contribution intake** — `POST /contributions` seals
-  anonymized model-improvement data from integrating systems under
-  `contributions/{source}/…` keys, encrypted and audit-chained;
-  `GET /contributions` lists the intake ([docs/cloud-model.md](docs/cloud-model.md)).
-- **Position & assistant builder** — `POST /positions` turns a completed
-  AI Integration & Role-Mapping Questionnaire (industry-agnostic) into an
-  assistant *blueprint* — recommended capabilities, an automation-opportunity
-  score, human-in-the-loop guardrails, reskilling paths, and a ready-to-use
-  assistant system-prompt. The raw workforce answers are sealed in the vault
-  under `positions/{id}`; only the derived blueprint is returned. Decision
-  support, never an automated staffing decision
-  ([docs/positions.md](docs/positions.md)).
-- **Custody beacons** — `POST /beacons` prints a code for a physical carrier
-  (a records box, a decommissioned drive, a courier bag) or for the facility
-  door itself, so custody stays visible once a payload has a handle. The seal
-  card at `GET /s/{id}` says a thing is under custody and what governs it, and
-  **never what is in it**. A finder's `POST /s/{id}/found` is a custody
-  receipt, not a message: it lands in the hash-chained audit log, so a gap in
-  a carrier's chain becomes a compliance finding PDI can produce on demand.
-  Plain scans stay off the chain — a barcode gun sweeping a pallet must not
-  fill a tamper-evidence log. Blind by default, because naming the tenant can
-  itself be the disclosure ([docs/beacons.md](docs/beacons.md)).
-- **The agent at the gate** — `POST /s/{id}/ring` triages a facility ring when
-  no human is awake. PDI grows no model: the voice is a QRME profile over HTTP
-  (`PDI_QRME_URL` + `PDI_GATE_PROFILE`), which also means it carries QRME's AI
-  mark, and an unconfigured deployment answers from a written script with no
-  model anywhere near it. **The model is the voice, not the decider** —
-  `gate.decide()` takes no model output, so there is no code path from
-  generated text to a consequential action. The ceiling comes from the
-  `HUMAN_IN_LOOP` set `positions.py` already publishes, and is itself published
-  at `GET /gate/ceiling`: the agent may direct, check, structure a receipt and
-  hand off, and may **never** grant entry, assert identity, override an
-  authorization, or see contents. A hand-off is **delivered**, not merely
-  filed: PDI posts a signed envelope to `PDI_NOTIFY_URL` and, when nobody was
-  reached, says so on the scan page rather than letting *"I've passed this to
-  the on-call contact"* leave somebody waiting in the rain for nobody.
-- **A per-tenant on-call roster** — `POST /gate/roster` sets who answers *this*
-  facility's gate and when, in the tenant's own database rows under the
-  tenant's own token. It replaces one deployment-wide `PDI_GATE_ONCALL` that
-  routed every customer's courier to the same name. Shifts cross midnight
-  correctly (`18:00`–`06:00` belongs to the day it started), the facility's
-  IANA timezone is **refused if unknown** rather than silently read as UTC, and
-  a page that a webhook rejects moves to the next name — with one contact, a
-  failed page was the end of the line.
-- **Role-based access control** — `POST /tenants/{id}/tokens` issues scoped
-  `read`/`write` tokens; read tokens cannot write or delete, and
-  `DELETE /tokens/{token}` revokes instantly.
-- **Tokens hashed at rest** — only the SHA-256 hash of each tenant/scoped
-  token is stored, so a leak of PDI's own database yields no usable
-  credential; the plaintext is shown once at issuance. The admin token is
-  compared in constant time.
-- **Deployment record** — models the on-premises vs. colocation (Tier III+)
-  options from the proposal.
-
-## The agent status light
-
-An agent working on its own raises one question, and it is not *what phase is
-it in* — it is **does this need me right now?** Three colours answer it.
-
-| | | |
-| --- | --- | --- |
-| 🟢 **green** | working · done | in progress, or finished. Nothing wanted from you |
-| 🟡 **amber** | needs you | it has stopped and is waiting on a person |
-| 🔴 **red** | stopped | it hit an error or was cancelled, and will not continue |
-
-**Derived, never stored.** There is no `light` column and nothing sets one — it
-is computed from the status the work already keeps. A second field naming the
-same fact is a second field that can disagree with the first, and the one a
-screen reads would be the one nobody remembers to update.
-
-**The word rides with the colour**, because green alone cannot separate an
-agent that is still going from one that has finished, and those call for
-opposite reactions. On a watch face the word is doing most of the reading
-anyway.
-
-**An unrecognised state raises rather than defaulting.** A default would paint
-an unknown status green, and green is the colour that means *ignore me* — the
-one failure this must not have.
-
-Defined once, in [`qrme/agentlight.py`](https://github.com/davidsbianchi1984/qrme/blob/main/qrme/agentlight.py), for all three products.
-
-**Where you actually see it.** Three surfaces, doing three different jobs.
-
-| Surface | What it shows | Why that shape |
-| --- | --- | --- |
-| **Watch** — *36 Agents* (JIM) | three lights and three counts, and **no agent names** | a wrist is glanced at, not read. Naming the agents was the first cut and was wrong: a name is something you read, and reading is the thing a glance cannot do. Which agent went amber is a question for the console |
-| **Console** — *39 Gate Agents* | the same three lights, each a **tappable group** — working, needs you, stopped | somebody opening this *because* amber appeared should not have to scan a flat list for the one that changed. Here amber means a person is standing at a door |
-| **Overlay** — *40 Audit · overlay*, and every desktop view | a small translucent box in the bottom-right corner — the same three rows as the wrist, each its own way in | an agent that reports only on its own screen is one somebody has to remember to check. On desktop it rides on **every** view, because a console is watched from, not visited |
-
-## The pane in the corner
-
-`pdi/dock.py`, 5 routes, 13 tests, screen **43**.
-
-The third of three docks, and the one whose corner was already occupied: this
-console has carried a pinned agent-lights overlay on every desktop view since
-the light landed — three quarters of the feature with no lid on it. The dock
-**replaces** it rather than joining it, because two floating boxes in one corner
-is what you get by adding the second.
-
-It opens on the lights by default, as the panel did, for the reason the panel
-gave: an operator has no wrist, and a chain that has stopped verifying is
-exactly the state nobody thinks to go and check. What it gains is a way to close
-it, four more faces, and the helper button as its handle.
-
-**It shows, and it routes. It never acts** — and the rule holds hardest here.
-The buttons this floats over rotate keys, revoke tokens and wipe vaults, and
-[`pdi/gate.py`](#the-agent-at-the-gate)'s doctrine — *the agent's ceiling is
-whatever a wrong answer cannot undo* — puts every one of them far above anything
-a pane in a corner may reach.
-
-**And it cannot read a record.** Same rule as the guide and the assistant, for
-the same reason: under BYOK the operator reading this console frequently cannot
-decrypt the data, so a pane displaying a record would assert a capability the
-design denies. The faces carry **counts and states** — how many records, whether
-the chain verifies, how many tenants are live — which is what an operator is
-watching for anyway. A test parses the module and asserts it never reaches the
-vault.
-
-**It is inside every screenshot**, and on an operator console that matters more
-than on a phone: console screenshots go into tickets, runbooks and vendor
-threads. `dock.NEVER` holds tenant names, record keys, tokens, audit payloads
-and customer keys.
-
-## Where the vault lives
-
-`pdi/hosting.py`, 4 routes, 25 tests, screen **42**.
-
-QRME and JIM-mini sell memberships. PDI does not: it is the layer underneath
-both, and what it offers is a **place to put the bytes**.
-
-| | | |
-| --- | --- | --- |
-| **Our facility** | **free** | we hold it. Free for holding and sharing JIM-mini and QRME user data |
-| **Leased space** | quoted | a rack, cage or suite in a facility we own, tied into the same control plane |
-| **Your facility** | quoted | you own the building and host the vault; we tie into it |
-| **Your own device** | **free** | a phone or a computer on your own broadband, holding its own vault |
-
-**Colocation is free and that is structural, not promotional.** The tandem is
-the only place JIM-mini and QRME may put sensitive material *on a paid plan* —
-that is the whole point of both products' data promise — and putting a price on
-the only place it can go would make that promise conditional on somebody's
-card.
-
-**The free plans in those two products do not touch PDI at all**, and this
-page should say so rather than let a reader infer that every account has a
-vault. `qrme/storage.py` and `jim/storage.py` describe an **open cloud**
-posture: the app's own database, in the clear, with no vault and no key the
-user holds. Both name it in the response body of every surface that states a
-plan, and both refuse a short list of payloads outright rather than store them
-open — source material about a third party and rated content in QRME, a
-photograph of a body and a child's record in JIM-mini. So the free plan does
-not weaken anything on this page; it is a different arrangement, and the two
-products are responsible for saying which one somebody is on. **Nothing PDI
-holds is ever less protected because somebody else is on a free plan** — a
-vault has one posture, and the four hosting modes above share it.
-
-**The encouragement to lease must not become a reason to make the free option
-worse.** Every mode runs the same code: the same AES-256-GCM, the same AAD
-binding, the same tamper-evident chain, the same BYOK. `hosting.GUARANTEES` is
-**one list shared by all four**, returned on every mode, and a test asserts no
-mode can hold fewer. There is no per-mode copy to quietly drop an entry from,
-which is how that erosion would actually happen — a field at a time.
-
-**What genuinely differs is availability, not security**, and saying so is the
-honest version of the pitch. A phone in a pocket is not a Tier III facility: it
-goes flat, it goes through a washing machine, it is on a domestic line
-contending with the household's video calls. The bytes on it are exactly as
-encrypted as ours. Whether they are *there tomorrow* is a different question
-and it is the customer's, so every mode states `you_are_responsible_for`
-plainly. A hosting page listing only upside would be selling the wrong thing to
-the person most likely to need the other kind.
-
-**Leased space and your own facility are quoted rather than listed.** A rack in
-one city is not a rack in another, and a made-up figure on a page like this is
-the kind of thing somebody plans a budget around.
-
-**Choosing a mode records an arrangement; it does not move anything.** Nothing
-in `choose()` copies, migrates or ships a byte — an endpoint that silently
-relocated somebody's vault because a field changed would be the most alarming
-one in this product. The choice lands in the tamper-evident audit chain,
-because where a vault has lived is exactly what an auditor asks afterwards, and
-the history is kept for the same reason.
-
-## The console guide
-
-`pdi/tutorial.py` and `pdi/assistant.py`, 7 routes, 29 tests, screen **41**.
-
-Fourteen steps across six chapters, in the order an operator actually meets the
-product: you have a vault before you have a tenant, a tenant before it has a
-token, and a token before anything is sealed with it. It is the third of three
-guides — QRME's walks a consumer through a product full of synthetic people,
-JIM's walks a patient through their own record — and the audience is what makes
-this one different.
-
-<table>
-  <tr>
-    <td align="center" width="34%"><a href="docs/screens/41-console-guide.svg"><img src="docs/screens/41-console-guide.svg" width="200" alt="Console guide"></a><br><sub><b>41</b> · fourteen steps, no vault access</sub></td>
-    <td width="66%" valign="top">
-
-| route | does |
-| --- | --- |
-| `GET /console/guide` | the whole walkthrough, chaptered |
-| `GET /console/guide/steps/{key}` | one named step |
-| `GET /console/guide/for-screen/{n}` | the lesson covering a screen |
-| `POST /console/guide/start` | begin, or begin again |
-| `GET /console/guide/progress/{id}` | where an operator is, and what is next |
-| `POST /console/guide/done` | mark a step and get the next |
-| `POST /console/ask` | ask about operating PDI |
-
-Public: the operator who most needs this is the one standing a vault up, who
-has no token yet. `mode: "voice"` renders it for listening.
-
-  </td>
-  </tr>
-</table>
-
-**It cannot read the vault.** Not "it is careful with records", not "it reads
-only what you are entitled to" — there is no code path from either module to
-`pdi.vault`, and a test parses both and asserts it. The reason is sharper here
-than in the other two products: under BYOK the customer's key travels per
-request and is never stored, so **the operator asking the question frequently
-cannot read the records either**. That is the product working. An assistant
-offering to look at the data to be helpful would be promising something the
-whole design exists to prevent, and the first person to notice would be the
-customer whose key was supposed to be the point.
-
-**It performs no operator action.** No token issued, no key rotated, no tenant
-created, no retention window set, nothing deleted. The walkthrough writes to
-one table — its own progress — and the assistant writes nothing at all. *"Just
-do it"* is refused by name, because that is the question an operator under time
-pressure genuinely asks, and the only honest answer is where the button is and
-what it will change.
-
-**It inherits the gate agent's ceiling rather than restating it.**
-[`pdi/gate.py`](#the-agent-at-the-gate) established the doctrine for this
-codebase — *the model is the voice, not the decider* — and with it the rule:
-
-> The agent's ceiling is whatever a wrong answer cannot undo.
-
-A walkthrough sits comfortably under that ceiling, because a wrong sentence in
-a tutorial is undone by reading the next one. That is why it is allowed to run
-without a human in the loop, and it is worth saying plainly: this module is safe
-because of what it cannot reach, not because the prose is careful. A test
-asserts the sentence above is quoted from `gate` rather than written out a
-second time, since a second wording of the same rule is the one that goes stale.
-
-**Written prose, no model required.** A self-hosted vault with no API key is the
-*typical* PDI deployment rather than a degraded one — the customers most likely
-to run their own vault are the least likely to let it call out to a provider.
-
-**And it cannot quietly fall behind the console.** Each lesson names the screens
-it covers, and a test asserts every screen in the gallery is claimed by one, in
-both directions. Add a capability, draw its screen, and the walkthrough fails
-until somebody has said what it is for.
-
-## Your data promise
-
-**No raw user data ever leaves your vault.** PDI is the vault — and it holds
-what the integrating apps *send* it. QRME's and JIM-mini's free plans send
-nothing here at all; see [Where the vault lives](#where-the-vault-lives). Every
-guarantee below is about what is inside.
-
-- Everything stored is AES-256-GCM ciphertext, AAD-bound to its tenant and
-  key — one integrating system can never read another's records, and the
-  database on disk holds nothing readable.
-- PDI's own credentials get the same care as your data: bearer tokens are
-  stored only as SHA-256 hashes, shown once at issuance.
-- Every access — store, read, erase — lands in a tamper-evident hash-chained
-  audit log; `GET /audit/verify` proves nothing was retroactively edited, and
-  integrating apps surface a per-user view of it.
-- Deletion is real: the owning app purges its keys, tenant deletion offers a
-  soft recovery window and then a permanent wipe, and no orphaned ciphertext
-  remains. Retention is yours to set — per-tenant, from a short window up to
-  **forever** — while the tamper-evident audit chain is always kept forever.
-- Deployed on-premises or in colocation — your hardware, your keys
-  (`PDI_MASTER_KEY`), your walls.
-
-## Out of scope for v1
-
-Real facility provisioning, HSM/KMS integration, replication/redundancy across
-sites, and billing — represented structurally (deployment record, snapshot
-export), not as live infrastructure.
-
-**Not built:** a transport of PDI's own — a hand-off is delivered as a signed
-envelope to `PDI_NOTIFY_URL`, and whatever rings a phone behind it is the
-deployment's — and an on-call roster rather than a single contact. See
-[docs/beacons.md](docs/beacons.md).
-
-## Related projects
-
-Three separate products, each standalone, interoperating only over HTTP —
-see [docs/tandem.md](docs/tandem.md) for the full architecture:
-
-- [**qrme**](https://github.com/davidsbianchi1984/qrme) — AI synthetic
-  profiles: relationship-aware, remembered, moderated.
-- [**jim-mini**](https://github.com/davidsbianchi1984/jim-mini) — Guardian
-  personal guidance: monitor, predict, guide, escalate; can delegate
-  specialist guidance to QRME.
-- [**pdi**](https://github.com/davidsbianchi1984/pdi) — Private Data
-  Infrastructure: the encrypted vault both AI systems can run on top of.
-
-## Reference
-
-Everything below is lookup material — how to run it, what to configure, what
-the endpoints are. It is at the bottom on purpose: if you see a command in one
-of the screens above and want to know what it does, this is where to find it.
-
-### Run
-
-```bash
-pip install -e .[dev]
-export PDI_MASTER_KEY=$(python -c "import base64,os;print(base64.b64encode(os.urandom(32)).decode())")
-uvicorn pdi.api:app
-```
-
-`PDI_DB` sets the SQLite path (default `pdi.db`). `PDI_MASTER_KEY` is base64 of
-32 bytes; in production it belongs in the corporation's own KMS/HSM inside the
-private facility (an ephemeral key is generated if unset — dev only).
-
-### Run it on your phone
-
-The operator console is a web app, so a phone on the same Wi-Fi runs it
-straight from this backend — no app store, no second server, nothing to
-configure on the phone.
-
-```bash
-python -m pdi          # the launcher menu: choose your device
-python -m pdi phone    # straight to the phone flow
-```
-
-Bare `python -m pdi` prints the launcher menu — every way to run the
-vault console, one command each, so you pick per device: **phone** (this
-section), **desktop** (`python -m pdi desktop`, the Electron app on this
-PC), **packaged installer** (`.dmg`/`.exe`/`.AppImage` from the releases
-page — no toolchain needed), or **headless API** (`python -m pdi serve`).
-Same backend, same data, same token checks in every form.
-
-### Maintenance: rows a wipe could not finish
-
-`cascade()` has read the schema since before 0.59.9, so this vault never
-accumulated the orphan class the siblings' one-off sweep is cleaning up. The
-residue this command exists for is a different one: a wipe is a loop over
-sixty-some tables, and the `tenants` row is removed by the **caller** rather
-than by the cascade — deliberately, because the retention sweep and the
-operator's wipe hold different locks on it. Two callers, one of which runs on
-a schedule with nobody reading the result. If either lands the tenant's
-removal and not the rest, every route 404s and nothing looks at what is left.
-
-```bash
-python -m pdi.orphans            # count them, change nothing
-python -m pdi.orphans --json     # the same survey, machine-readable
-python -m pdi.orphans --apply    # clear them
-```
-
-**Dry by default.** The scope is the cascade's own reader, so `audit` is kept
-— the chain is the proof a wipe happened — and `bequests` is **retired rather
-than deleted**, using the cascade's own `SET` clause: an heir presenting a
-grant should be told *revoked*, not met with silence. A row counts as an
-orphan only when its `tenant_id` names a tenant not in `tenants`; rows with a
-NULL or empty subject are left alone.
-
-`python -m pdi phone` builds the console if it's missing (first run installs the
-npm dependencies too), prints the phone URL **with a QR code right in the
-terminal**, and starts the API on the network — scan, Add to Home Screen,
-done. Flags: `--port`, `--rebuild`, `--no-build`, `--print-only`.
-
-The manual equivalent, if you prefer the steps separately:
-
-```bash
-npm --prefix app install && npm --prefix app run build   # build the console once
-uvicorn pdi.api:app --host 0.0.0.0                       # listen on the network
-curl localhost:8000/pair                                 # what to open on the phone
-```
-
-`GET /pair` answers with the console's URL on your local network (and
-`GET /pair/qr.svg` is the same URL as a QR code — the Settings screen shows
-both, so you can scan it off the laptop). Open that URL on the phone, then
-**Add to Home Screen**: it installs as a standalone app with its own icon,
-runs full-screen, and keeps working through a brief drop in connectivity.
-
-Why it needs no setup: the API serves the console at `/app`, so the UI and
-the API share one origin — the console simply calls the address it was
-loaded from. The phone layout follows: the sidebar becomes a thumb-reachable
-bottom tab bar, inputs stay at 16px so iOS doesn't zoom, and the layout
-respects the notch and home indicator.
-
-The address is local-network only and deliberately not reachable from the
-internet — the vault and its sealed records stay on your own network. Admin
-endpoints still require `PDI_ADMIN_TOKEN` and tenant data still requires the
-tenant's bearer token; a phone on the LAN is exactly as authorized as a
-laptop on the LAN. If `/pair` reports `reachable: false`, it could only find
-loopback (which on a phone means the phone itself): set `PDI_LAN_HOST` to
-this machine's address and restart.
-
-#### Hosting a collation facility
-
-A PDI deployment *is* the collation facility. Run your own, or use one
-somebody else runs — the `Dockerfile` packages the console and the API into
-one image either way:
-
-```bash
-docker build -t pdi .
-docker run -p 8100:8100 -v pdi-data:/data \
-  -e PDI_MASTER_KEY="$(openssl rand -base64 32)" \
-  -e PDI_ADMIN_TOKEN="$(openssl rand -base64 24)" \
-  -e PDI_PUBLIC_URL=https://vault.example.com pdi
-```
-
-The choice that matters is not whose rack it sits in — it's **who holds
-`PDI_MASTER_KEY`**. Keep it yourself and a host with root, full disk access,
-and every backup still holds only ciphertext; hand it over and they can read
-the vault. [docs/hosting.md](docs/hosting.md) puts the three postures
-(self-hosted, colocation, managed) side by side and says what each one
-actually means.
-
-### API
-
-<table>
-<tr><th align="left"><sub>Endpoint</sub></th><th align="left"><sub>Auth</sub></th><th align="left"><sub>Purpose</sub></th></tr>
-<tr><td valign="top"><sub><code>GET /health</code></sub></td><td valign="top"><sub>—</sub></td><td valign="top"><sub>Liveness</sub></td></tr>
-<tr><td valign="top"><sub><code>POST /deployments</code></sub></td><td valign="top"><sub>admin</sub></td><td valign="top"><sub>Record a deployment (on-premises / colocation)</sub></td></tr>
-<tr><td valign="top"><sub><code>POST /tenants</code></sub></td><td valign="top"><sub>admin</sub></td><td valign="top"><sub>Create a tenant (optional <code>retention</code>); returns its bearer token once</sub></td></tr>
-<tr><td valign="top"><sub><code>POST /seed</code></sub></td><td valign="top"><sub>admin</sub></td><td valign="top"><sub>Seed the <b>starter vault</b> (<code>pdi/seed.py</code>, also <code>python -m pdi.seed</code>): a <code>starter-demo</code> tenant with sealed sample records covering every provenance origin (direct / <code>jim/</code> / <code>qrme/</code>), a bound home robot with sealed collection data, and an audit trail with a full custody cycle. Idempotent; the tenant token is returned only by the run that creates it</sub></td></tr>
-<tr><td valign="top"><sub><code>PUT /tenants/{id}/retention</code></sub></td><td valign="top"><sub>admin</sub></td><td valign="top"><sub>Set record retention (<code>7d</code>…<code>1y</code>|<code>forever</code>|days)</sub></td></tr>
-<tr><td valign="top"><sub><code>PUT /records</code></sub></td><td valign="top"><sub>tenant (write)</sub></td><td valign="top"><sub>Store <code>{key, value}</code> — value sealed at rest</sub></td></tr>
-<tr><td valign="top"><sub><code>GET /records/{key}</code></sub></td><td valign="top"><sub>tenant</sub></td><td valign="top"><sub>Retrieve and decrypt a value (keys may be path-namespaced)</sub></td></tr>
-<tr><td valign="top"><sub><code>DELETE /records/{key}</code></sub></td><td valign="top"><sub>tenant (write)</sub></td><td valign="top"><sub>Delete a record</sub></td></tr>
-<tr><td valign="top"><sub><code>GET /records</code></sub></td><td valign="top"><sub>tenant</sub></td><td valign="top"><sub>List this tenant's keys</sub></td></tr>
-<tr><td valign="top"><sub><code>GET /operations</code></sub></td><td valign="top"><sub>tenant</sub></td><td valign="top"><sub>The <b>operations journal</b>: coordination records QRME sealed here (<code>qrme/coordination/*</code>) — org, goal, joint plan, contributing departments — decrypted with the tenant's own token. A view, never a side door: every journal read lands on the audit chain like any other read</sub></td></tr>
-<tr><td valign="top"><sub><code>POST /contributions</code></sub></td><td valign="top"><sub>tenant (write)</sub></td><td valign="top"><sub>Seal an anonymized cloud-model contribution (optional <code>ref</code>)</sub></td></tr>
-<tr><td valign="top"><sub><code>GET /contributions</code></sub></td><td valign="top"><sub>tenant</sub></td><td valign="top"><sub>List contribution keys</sub></td></tr>
-<tr><td valign="top"><sub><code>DELETE /contributions/{ref}</code></sub></td><td valign="top"><sub>tenant (write)</sub></td><td valign="top"><sub>Revoke a contribution by its anonymous ref</sub></td></tr>
-<tr><td valign="top"><sub><code>POST /positions</code></sub></td><td valign="top"><sub>tenant (write)</sub></td><td valign="top"><sub>Seal a role-mapping intake and return the assistant blueprint</sub></td></tr>
-<tr><td valign="top"><sub><code>GET /positions</code></sub></td><td valign="top"><sub>tenant</sub></td><td valign="top"><sub>List saved position ids</sub></td></tr>
-<tr><td valign="top"><sub><code>GET /positions/{id}</code></sub></td><td valign="top"><sub>tenant</sub></td><td valign="top"><sub>Fetch a saved position's blueprint</sub></td></tr>
-<tr><td valign="top"><sub><code>GET /snapshot</code></sub></td><td valign="top"><sub>tenant</sub></td><td valign="top"><sub>DR export (ciphertext only)</sub></td></tr>
-<tr><td valign="top"><sub><code>POST /keys/rotate</code></sub></td><td valign="top"><sub>admin</sub></td><td valign="top"><sub>Rotate the key version (re-seals records; <code>?reseal=false</code> to defer)</sub></td></tr>
-<tr><td valign="top"><sub><code>GET /keys</code></sub></td><td valign="top"><sub>admin</sub></td><td valign="top"><sub>Key versions + provider</sub></td></tr>
-<tr><td valign="top"><sub><code>POST /keys/reseal</code> · <code>POST /keys/retire</code></sub></td><td valign="top"><sub>admin</sub></td><td valign="top"><sub>Re-seal records / retire old versions</sub></td></tr>
-<tr><td valign="top"><sub><code>GET /retention</code></sub></td><td valign="top"><sub>admin</sub></td><td valign="top"><sub>Retention policy (recovery window + per-tenant)</sub></td></tr>
-<tr><td valign="top"><sub><code>POST /retention/sweep</code></sub></td><td valign="top"><sub>admin</sub></td><td valign="top"><sub>Enforce retention now (expire/purge past-window; <code>forever</code> = no-op)</sub></td></tr>
-<tr><td valign="top"><sub><code>GET /audit</code></sub></td><td valign="top"><sub>tenant</sub></td><td valign="top"><sub>This tenant's audit entries (each with a <code>category</code>)</sub></td></tr>
-<tr><td valign="top"><sub><code>GET /audit/verify</code></sub></td><td valign="top"><sub>tenant</sub></td><td valign="top"><sub>Verify the hash-chain is intact</sub></td></tr>
-<tr><td valign="top"><sub><code>GET /audit/schema</code></sub></td><td valign="top"><sub>—</sub></td><td valign="top"><sub>Audit event schema: fields + action catalogue</sub></td></tr>
-<tr><td valign="top"><sub><code>POST</code>/<code>GET /tenants/{id}/baa</code>, <code>DELETE …/baa</code>, <code>GET /baa</code></sub></td><td valign="top"><sub>admin / tenant</sub></td><td valign="top"><sub><b>BAA enforcement</b>: the operator records each customer's executed Business Associate Agreement (<a href="docs/baa-template.md">template</a>); HIPAA-program transfers/intakes are refused (403) for tenants without one on file; tenants check their own standing at <code>GET /baa</code>; execution/termination land in the audit chain</sub></td></tr>
-<tr><td valign="top"><sub><code>POST</code>/<code>GET /improve</code></sub></td><td valign="top"><sub>— (open)</sub></td><td valign="top"><sub><b>Help us improve</b>: product feedback on PDI itself (idea/improvement/bug/praise + optional 1–5 rating). Not tenant record data — a tenant token, if presented, just lets a submitter find their own words again; a submitter sees only their own plus the public per-category tally</sub></td></tr>
-</table>
-
-Tenant endpoints require `Authorization: Bearer pdi_...`.
-
-### Tandem client
-
-`pdi/client.py` (`PDIClient`) is the small library an AI system uses to store
-secrets in PDI over HTTP — e.g. JIM-mini keeping a user's emergency contact in
-the encrypted vault instead of its own database. The AI systems never import
-PDI internals.
-
-### Configuration
-
-<table>
-<tr><th align="left"><sub>Variable</sub></th><th align="left"><sub>Default</sub></th><th align="left"><sub>Purpose</sub></th></tr>
-<tr><td valign="top"><sub><code>PDI_DB</code></sub></td><td valign="top"><sub><code>pdi.db</code></sub></td><td valign="top"><sub>SQLite database path (ciphertext only)</sub></td></tr>
-<tr><td valign="top"><sub><code>PDI_MASTER_KEY</code></sub></td><td valign="top"><sub>—</sub></td><td valign="top"><sub>Key-encryption key (KEK): base64 of 32 bytes. Wraps the per-version DEKs; ephemeral if unset (dev only)</sub></td></tr>
-<tr><td valign="top"><sub><code>PDI_KEY_PROVIDER</code></sub></td><td valign="top"><sub><code>env</code></sub></td><td valign="top"><sub><code>env</code> reads <code>PDI_MASTER_KEY</code>; <code>kms</code> routes the KEK to a KMS/HSM (see <code>KmsKeyProvider</code>)</sub></td></tr>
-<tr><td valign="top"><sub><code>PDI_KMS_KEY_ID</code></sub></td><td valign="top"><sub>—</sub></td><td valign="top"><sub>KMS/HSM key id used by the <code>kms</code> provider</sub></td></tr>
-<tr><td valign="top"><sub><code>PDI_RECOVERY_WINDOW</code></sub></td><td valign="top"><sub><code>forever</code></sub></td><td valign="top"><sub>Soft-deleted tenants purge after this window on sweep (<code>7d</code>…<code>1y</code>|<code>forever</code>|days)</sub></td></tr>
-<tr><td valign="top"><sub><code>PDI_ADMIN_TOKEN</code></sub></td><td valign="top"><sub>—</sub></td><td valign="top"><sub>Guards admin endpoints; unset = open (dev only)</sub></td></tr>
-<tr><td valign="top"><sub><code>PDI_QRME_URL</code> / <code>PDI_GATE_PROFILE</code></sub></td><td valign="top"><sub>—</sub></td><td valign="top"><sub>The gate agent's voice: a QRME <code>@handle</code> over HTTP. Both required, or the gate answers from its written script</sub></td></tr>
-<tr><td valign="top"><sub><code>PDI_GATE_ONCALL</code></sub></td><td valign="top"><sub><code>the site's on-call contact</code></sub></td><td valign="top"><sub>Fallback for a tenant with <b>no roster</b>. Who a hand-off is routed to is per tenant now (<code>POST /gate/roster</code>) — a deployment-wide name sent every customer's courier to the same person (<a href="docs/beacons.md#who-answers-and-when">docs/beacons.md</a>)</sub></td></tr>
-<tr><td valign="top"><sub><code>PDI_NOTIFY_URL</code> / <code>PDI_NOTIFY_SECRET</code></sub></td><td valign="top"><sub>—</sub></td><td valign="top"><sub>Where a hand-off is actually delivered; signed HMAC-SHA256. Unset = queued, and the caller is told nobody was reached (<a href="docs/beacons.md#telling-somebody">docs/beacons.md</a>)</sub></td></tr>
-</table>
-
-### Test
-
-```bash
-pytest pdi/tests
-```
-
-Covers encryption round-trip, encryption-at-rest (plaintext never on disk),
-tenant isolation, the hash-chained audit log (including tamper detection), and
-a tandem run where a simulated AI system uses `PDIClient`.
-
-### Architecture
-
-![PDI architecture — tenants, encrypted vault, tamper-evident audit](assets/architecture.svg)
-
-![PDI encryption flow — seal, store, audit](assets/encryption-flow.svg)
+</details>
 
 ## License
 
-MIT © 2026 David Bianchi — see [LICENSE](LICENSE).
+Copyright © 2026 David Bianchi. Use requires prior written permission —
+see [LICENSE](LICENSE).
 
 ---
 
