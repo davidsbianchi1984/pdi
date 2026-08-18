@@ -232,6 +232,14 @@ export function Resident() {
             {matches.map((m) => (
               <p className="small" key={m.key}>
                 <code>{m.key}</code> · {m.score}
+                {" "}
+                <button disabled={busy} onClick={act(async () => {
+                  await api.residentForget(m.key, token);
+                  setMatches((was) => (was ?? []).filter(
+                    (x) => x.key !== m.key));
+                })}>
+                  {t("res.forget", lang)}
+                </button>
               </p>
             ))}
           </>

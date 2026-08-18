@@ -847,6 +847,9 @@ export const api = {
   residentEmbed: (body: { key: string; text: string }, token: string) =>
     req<{ key: string; embedder: string; dim: number; note: string }>(
       "/resident/embeddings", { method: "POST", body, token }),
+  residentForget: (key: string, token: string) =>
+    req<{ key: string; prefix: boolean; vectors_removed: number }>(
+      `/resident/embeddings/${key}`, { method: "DELETE", token }),
   residentSearch: (body: { query: string; top_k?: number }, token: string) =>
     req<{ query: string; embedder: string | null;
           matches: { key: string; score: number }[] }>(

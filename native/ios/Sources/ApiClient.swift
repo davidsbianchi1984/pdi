@@ -294,6 +294,13 @@ actor ApiClient {
                           body: ["key": key, "text": text], token: token)
     }
 
+    func residentForget(key: String, token: String) async throws -> Int {
+        struct ForgetOut: Decodable { let vectors_removed: Int }
+        let out: ForgetOut = try await request(
+            "/resident/embeddings/\(key)", method: "DELETE", token: token)
+        return out.vectors_removed
+    }
+
     func residentSearch(query: String,
                         token: String) async throws -> ResidentSearchOut {
         try await request("/resident/search", method: "POST",

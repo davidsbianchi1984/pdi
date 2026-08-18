@@ -3982,6 +3982,18 @@ const CHROME: Table = {
     hi: "रेज़िडेंट",
     ar: "المقيم",
   },
+  "res.forget": {
+    en: "Forget this memory",
+    es: "Olvidar este recuerdo",
+    fr: "Oublier ce souvenir",
+    de: "Diese Erinnerung vergessen",
+    pt: "Esquecer esta memória",
+    it: "Dimentica questo ricordo",
+    ja: "この記憶を忘れる",
+    zh: "忘掉这条记忆",
+    hi: "यह स्मृति भुला दें",
+    ar: "انسَ هذه الذكرى",
+  },
   "res.title": {
     en: "Resident intelligence",
     es: "Inteligencia residente",

@@ -274,3 +274,66 @@ def test_rows_that_are_not_flat_refuse_with_a_sentence(client):
                       headers=auth(token)).json()
     assert out["status"] == "failed"
     assert "flat" in out["plan_steps"][0]["error"]
+
+
+# -- forgetting reaches the vectors ------------------------------------------
+
+def test_a_forgotten_key_stops_being_findable(client):
+    token = new_tenant(client)
+    client.post("/resident/embeddings",
+                json={"key": "doc/secret", "text": "meet at the north gate"},
+                headers=auth(token))
+    gone = client.delete("/resident/embeddings/doc/secret",
+                         headers=auth(token))
+    assert gone.status_code == 200, gone.text
+    assert gone.json()["vectors_removed"] == 1
+    found = client.post("/resident/search",
+                        json={"query": "north gate meeting"},
+                        headers=auth(token)).json()
+    assert found["matches"] == []
+    from pdi import db
+    assert db.connect().execute(
+        "SELECT COUNT(*) AS n FROM resident_vectors").fetchone()["n"] == 0
+
+
+def test_prefix_forget_takes_a_whole_shelf_in_one_call(client):
+    """The erasure sweeps' call: a person's memories go together — and a
+    key that merely shares the spelling up to an underscore does not,
+    because the match is a character compare, never a LIKE wildcard."""
+    token = new_tenant(client)
+    for key in ("jim/usr_a/memory/coach/m1", "jim/usr_a/memory/journal/m2",
+                "jim/usr_ab/memory/coach/m3"):
+        client.post("/resident/embeddings",
+                    json={"key": key, "text": "words here"},
+                    headers=auth(token))
+    gone = client.delete("/resident/embeddings/jim/usr_a/?prefix=true",
+                         headers=auth(token))
+    assert gone.status_code == 200, gone.text
+    assert gone.json()["vectors_removed"] == 2
+    from pdi import db
+    left = [r["key"] for r in db.connect().execute(
+        "SELECT key FROM resident_vectors").fetchall()]
+    assert left == ["jim/usr_ab/memory/coach/m3"]
+
+
+def test_another_tenant_cannot_forget_my_vectors(client):
+    mine, theirs = new_tenant(client, "mine"), new_tenant(client, "theirs")
+    client.post("/resident/embeddings",
+                json={"key": "doc/a", "text": "alpha beta"},
+                headers=auth(mine))
+    gone = client.delete("/resident/embeddings/doc/a", headers=auth(theirs))
+    assert gone.status_code == 200
+    assert gone.json()["vectors_removed"] == 0
+    found = client.post("/resident/search", json={"query": "alpha"},
+                        headers=auth(mine)).json()
+    assert found["matches"] and found["matches"][0]["key"] == "doc/a"
+
+
+def test_forgetting_lands_on_the_audit_chain(client):
+    token = new_tenant(client)
+    client.post("/resident/embeddings",
+                json={"key": "k", "text": "words"}, headers=auth(token))
+    client.delete("/resident/embeddings/k", headers=auth(token))
+    actions = {e["action"] for e in
+               client.get("/audit", headers=auth(token)).json()}
+    assert "resident.forget" in actions

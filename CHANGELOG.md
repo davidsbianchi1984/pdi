@@ -6,6 +6,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Forgetting reaches the vectors.** The resident's embedding index had
+  one door in and none out: a vector stores a hash and a direction, not
+  the words — but a direction still ranks, and a memory somebody deleted
+  must stop being findable, not merely stop being readable.
+  `DELETE /resident/embeddings/{key}` removes one vector;
+  `?prefix=true` takes everything under a key in one call — the shape the
+  tandems' erasure sweeps need, matched character-for-character rather
+  than by LIKE, whose wildcards a key's own underscores would trip.
+  Tenant-scoped in the SQL like every resident statement, audited as
+  `resident.forget`, refused with a translated sentence when the key is
+  missing, and another tenant's forget removes nothing. A Forget-this-
+  memory control rides every search match on the console, iOS, Android
+  and Windows, in ten languages.
+
 ## [0.86.0] - 2026-08-18
 
 ### Added

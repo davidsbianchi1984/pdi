@@ -381,6 +381,19 @@ public static class L10n
             ["hi"] = "रेज़िडेंट",
             ["ar"] = "المقيم",
         },
+        ["res.forget"] = new()
+        {
+            ["en"] = "Forget this memory",
+            ["es"] = "Olvidar este recuerdo",
+            ["fr"] = "Oublier ce souvenir",
+            ["de"] = "Diese Erinnerung vergessen",
+            ["pt"] = "Esquecer esta memória",
+            ["it"] = "Dimentica questo ricordo",
+            ["ja"] = "この記憶を忘れる",
+            ["zh"] = "忘掉这条记忆",
+            ["hi"] = "यह स्मृति भुला दें",
+            ["ar"] = "انسَ هذه الذكرى",
+        },
         ["res.title"] = new()
         {
             ["en"] = "Resident intelligence",

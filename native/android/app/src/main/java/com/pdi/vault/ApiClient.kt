@@ -1159,6 +1159,12 @@ object ApiClient {
         return o.getString("embedder")
     }
 
+    suspend fun residentForget(token: String, key: String): Int {
+        val o = JSONObject(request("/resident/embeddings/$key", "DELETE",
+                                   null, token))
+        return o.getInt("vectors_removed")
+    }
+
     suspend fun residentSearch(token: String, query: String): List<ResidentMatch> {
         val o = JSONObject(request("/resident/search", "POST",
             JSONObject().put("query", query), token))

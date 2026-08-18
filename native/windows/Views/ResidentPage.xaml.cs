@@ -31,6 +31,8 @@ public sealed partial class ResidentPage : Page
         EmbedButton.Content = L10n.T("res.embed.go");
         QueryBox.PlaceholderText = L10n.T("res.search.ph");
         SearchButton.Content = L10n.T("res.search.go");
+        ForgetButton.Content = L10n.T("res.forget");
+        ForgetBox.Header = L10n.T("res.forget");
         _ = LoadAsync();
     }
 
@@ -157,6 +159,22 @@ public sealed partial class ResidentPage : Page
         catch (Exception ex) { ShowError(ex); }
     }
 
+    private async void OnForget(object sender, RoutedEventArgs e)
+    {
+        var s = AppState.Current;
+        if (string.IsNullOrEmpty(s.Token)
+            || string.IsNullOrWhiteSpace(ForgetBox.Text)) return;
+        try
+        {
+            var outp = await ApiClient.Shared.ResidentForget(
+                s.Token!, ForgetBox.Text.Trim());
+            StatusText.Text = $"{ForgetBox.Text.Trim()} · {outp.Removed}";
+            StatusText.Visibility = Visibility.Visible;
+            ForgetBox.Text = "";
+        }
+        catch (Exception ex) { ShowError(ex); }
+    }
+
     private async void OnSearch(object sender, RoutedEventArgs e)
     {
         var s = AppState.Current;
@@ -168,6 +186,9 @@ public sealed partial class ResidentPage : Page
                 s.Token!, QueryBox.Text.Trim());
             MatchesText.Text = string.Join("\n", found.Matches
                 .Select(m => $"{m.Key} · {m.Score:F3}"));
+            ForgetBox.Header = L10n.T("res.forget");
+            ForgetBox.Visibility = found.Matches.Length > 0
+                ? Visibility.Visible : Visibility.Collapsed;
         }
         catch (Exception ex) { ShowError(ex); }
     }

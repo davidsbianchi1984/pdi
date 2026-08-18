@@ -2573,7 +2573,14 @@ private fun ResidentPanel(vm: VaultViewModel) {
                 }
             }) { Text(L10n.t("res.search.go", vm.language), color = Pdi.BrandA, fontSize = 13.sp) }
             matches.forEach { m ->
-                Text(m.key + " · " + m.score, color = Pdi.T2, fontSize = 11.sp)
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(m.key + " · " + m.score, color = Pdi.T2, fontSize = 11.sp)
+                    TextButton(onClick = {
+                        vm.call({ ApiClient.residentForget(vm.token!!, m.key) }) {
+                            matches = matches.filter { it.key != m.key }
+                        }
+                    }) { Text(L10n.t("res.forget", vm.language), color = Pdi.Red, fontSize = 10.sp) }
+                }
             }
         }
         error?.let { Text(it, color = Pdi.Red, fontSize = 13.sp) }

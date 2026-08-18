@@ -41,6 +41,9 @@
                     <Button x:Name="SearchButton" Click="OnSearch"
                             Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
                     <TextBlock x:Name="MatchesText" Foreground="{StaticResource PdiT2Brush}" FontSize="12" TextWrapping="Wrap" />
+                    <TextBox x:Name="ForgetBox" Visibility="Collapsed" />
+                    <Button x:Name="ForgetButton" Click="OnForget"
+                            Background="Transparent" Foreground="{StaticResource PdiRed}" />
                 </StackPanel>
             </Border>
 

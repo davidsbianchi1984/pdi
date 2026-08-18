@@ -529,6 +529,13 @@ public sealed class ApiClient
             "/resident/embeddings")
         { Content = JsonContent.Create(new { key, text }) }, token);
 
+    public record ResidentForgetOut(
+        [property: JsonPropertyName("vectors_removed")] int Removed);
+
+    public Task<ResidentForgetOut> ResidentForget(string token, string key) =>
+        Send<ResidentForgetOut>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/resident/embeddings/{key}"), token);
+
     public Task<ResidentSearchOut> ResidentSearch(string token, string query) =>
         Send<ResidentSearchOut>(new HttpRequestMessage(HttpMethod.Post,
             "/resident/search")

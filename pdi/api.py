@@ -773,6 +773,17 @@ def create_app() -> FastAPI:
         except resident_mod.ResidentError as exc:
             raise HTTPException(422, i18n.raised(exc))
 
+    @app.delete("/resident/embeddings/{key:path}")
+    def resident_forget(key: str, prefix: bool = False,
+                        tenant: dict = Depends(_writer)) -> dict:
+        """The other half of embedding: a deleted memory must stop being
+        findable. `?prefix=true` removes everything under the key — the
+        erasure sweeps' call."""
+        try:
+            return resident_mod.forget(tenant, key, prefix=prefix)
+        except resident_mod.ResidentError as exc:
+            raise HTTPException(422, i18n.raised(exc))
+
     @app.post("/resident/search")
     def resident_search(body: ResidentSearch,
                         tenant: dict = Depends(_tenant)) -> dict:

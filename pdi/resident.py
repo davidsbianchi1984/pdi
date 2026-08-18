@@ -206,6 +206,39 @@ def embed(tenant: dict, key: str, text: str) -> dict:
             "note": "the vector is stored; the text is not"}
 
 
+def forget(tenant: dict, key: str, prefix: bool = False) -> dict:
+    """Remove vectors — one key, or everything under it as a prefix.
+
+    The other half of `embed`, and the half erasure stands on. A vector
+    stores a hash and a direction, not the words — but a direction still
+    ranks, and a memory somebody deleted must stop being findable, not
+    merely stop being readable. Prefix mode exists for the tandems' erasure
+    sweeps: a person's memories go in one call, not one round-trip per
+    moment they ever had.
+    """
+    key = (key or "").strip()
+    if not key:
+        raise ResidentError("forgetting needs a key")
+    conn = db.connect()
+    if prefix:
+        # `substr`, not LIKE: keys legitimately carry underscores, which are
+        # LIKE wildcards, and SQLite honors an escape only with an ESCAPE
+        # clause. A character-for-character prefix compare has no wildcard
+        # semantics to defend against.
+        removed = conn.execute(
+            "DELETE FROM resident_vectors WHERE tenant_id=?"
+            " AND substr(key, 1, ?) = ?",
+            (tenant["id"], len(key), key)).rowcount
+    else:
+        removed = conn.execute(
+            "DELETE FROM resident_vectors WHERE tenant_id=? AND key=?",
+            (tenant["id"], key)).rowcount
+    conn.commit()
+    audit.record("resident.forget", tenant_id=tenant["id"],
+                 ref=f"{key}{'*' if prefix else ''}:{removed}")
+    return {"key": key, "prefix": prefix, "vectors_removed": removed}
+
+
 def search(tenant: dict, query: str, top_k: int = 5) -> dict:
     """Cosine over this tenant's vectors, within one embedder's space.
 

@@ -345,6 +345,7 @@ enum L10n {
                           "de": "Übertragungen", "pt": "Transferências", "it": "Trasferimenti",
                           "ja": "転送", "zh": "传输", "hi": "स्थानांतरण", "ar": "التحويلات"],
         "tab.resident": ["en": "Resident", "es": "Residente", "fr": "Résident", "de": "Resident", "pt": "Residente", "it": "Residente", "ja": "レジデント", "zh": "驻留智能", "hi": "रेज़िडेंट", "ar": "المقيم"],
+        "res.forget": ["en": "Forget this memory", "es": "Olvidar este recuerdo", "fr": "Oublier ce souvenir", "de": "Diese Erinnerung vergessen", "pt": "Esquecer esta memória", "it": "Dimentica questo ricordo", "ja": "この記憶を忘れる", "zh": "忘掉这条记忆", "hi": "यह स्मृति भुला दें", "ar": "انسَ هذه الذكرى"],
         "res.title": ["en": "Resident intelligence", "es": "Inteligencia residente", "fr": "Intelligence résidente", "de": "Residente Intelligenz", "pt": "Inteligência residente", "it": "Intelligenza residente", "ja": "レジデント・インテリジェンス", "zh": "驻留智能", "hi": "रेज़िडेंट इंटेलिजेंस", "ar": "الذكاء المقيم"],
         "res.hosting": ["en": "Hosting", "es": "Alojamiento", "fr": "Hébergement", "de": "Hosting", "pt": "Alojamento", "it": "Hosting", "ja": "ホスティング", "zh": "托管", "hi": "होस्टिंग", "ar": "الاستضافة"],
         "res.model": ["en": "Local model", "es": "Modelo local", "fr": "Modèle local", "de": "Lokales Modell", "pt": "Modelo local", "it": "Modello locale", "ja": "ローカルモデル", "zh": "本地模型", "hi": "स्थानीय मॉडल", "ar": "النموذج المحلي"],

@@ -68,6 +68,7 @@ ACTIONS: dict[str, tuple[str, str]] = {
     "resident.fetch": ("agent", "resident fetched an external page (sealed to the vault)"),
     "resident.rows": ("agent", "resident wrote rows into a queryable dataset"),
     "resident.embed": ("agent", "resident stored an embedding (hash of the text, never the text)"),
+    "resident.forget": ("agent", "resident removed embedding vector(s) — one key or a prefix"),
 }
 
 EVENT_FIELDS = {

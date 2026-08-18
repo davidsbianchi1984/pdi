@@ -147,8 +147,19 @@ struct ResidentView: View {
                     }
                 }.disabled(query.isEmpty)
                 ForEach(matches, id: \.key) { m in
-                    Text(m.key + " · " + String((m.score * 1000).rounded() / 1000))
-                        .font(.caption2)
+                    HStack {
+                        Text(m.key + " · " + String((m.score * 1000).rounded() / 1000))
+                            .font(.caption2)
+                        Button(L10n.t("res.forget", state.language)) {
+                            Task {
+                                await run {
+                                    _ = try await ApiClient.shared.residentForget(
+                                        key: m.key, token: state.token ?? "")
+                                    matches.removeAll { $0.key == m.key }
+                                }
+                            }
+                        }.font(.caption2)
+                    }
                 }
 
                 if let status { Text(status).font(.caption) }
