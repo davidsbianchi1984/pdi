@@ -6,6 +6,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **A guard on the translations that are already there.**
+  `refusals_untranslated.txt` counts the sentences with **no** translation yet
+  and only shrinks. Nothing has ever looked at the ones that do, so the whole
+  backlog can reach zero with a Chinese row written in Cyrillic in it and every
+  guard in this estate reports the paydown as complete.
+
+      asked     is every refusal translated
+      mattered  is each translation in the language it is filed under
+
+  Two got through that way and were caught by eye rather than by anything: the
+  word `как` inside a Chinese string and the syllable `각` inside a Japanese
+  one. Both were single characters in otherwise correct sentences, both
+  rendered, and neither failed a test. A reader of that language meets a word
+  from another alphabet at the moment the product is telling them no, which is
+  the worst moment to look unreliable and the reason the refusals were
+  translated first.
+
+  So: per language, the script the language is written in, plus the two
+  failures the backlog file structurally cannot see — a value identical to the
+  English key, and a row that does not carry every language. Deliberately
+  narrow. It cannot tell a good translation from a poor one and does not
+  pretend to; it catches *this is not that language at all*. Byte-identical in
+  QRME, JIM-mini and PDI, like `release_fields.txt`, because the defect is the
+  estate's and so is the check.
+
 ## [0.84.0] - 2026-08-17
 
 ### Changed
