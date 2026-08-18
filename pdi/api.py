@@ -486,8 +486,23 @@ def create_app() -> FastAPI:
 
     @app.delete("/records/{key:path}", status_code=204)
     def delete_record(key: str, tenant: dict = Depends(_writer)) -> None:
+        """Delete one sealed record — and any vector indexed under its key.
+
+        A vector stores a hash and a direction, not the words, but a
+        direction still ranks: a record deleted through this door must not
+        keep answering similarity searches from the resident's index. The
+        tandems' own forget doors already take both halves together; this
+        makes the vault's plain delete keep the same promise for a tenant
+        driving the API directly. Checked before it is done, so the
+        `resident.forget` audit line means a vector actually went.
+        """
         if not vault.delete(tenant, key):
             raise HTTPException(404, "record not found")
+        held = db.connect().execute(
+            "SELECT 1 FROM resident_vectors WHERE tenant_id=? AND key=?",
+            (tenant["id"], key)).fetchone()
+        if held:
+            resident_mod.forget(tenant, key)
 
     @app.get("/records")
     def list_records(tenant: dict = Depends(_tenant)) -> dict:

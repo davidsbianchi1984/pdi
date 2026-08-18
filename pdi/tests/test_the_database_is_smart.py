@@ -329,6 +329,44 @@ def test_another_tenant_cannot_forget_my_vectors(client):
     assert found["matches"] and found["matches"][0]["key"] == "doc/a"
 
 
+def test_deleting_a_record_takes_its_vector_too(client):
+    """The vault's plain delete keeps the resident's promise: a seal
+    deleted through the front door must not keep answering similarity
+    searches from a vector under the same key. The tandems' forget doors
+    already take both halves; this is the same promise for a tenant
+    driving the API directly."""
+    token = new_tenant(client)
+    client.put("/records", json={"key": "care/plan",
+                                 "value": "shoulder rehab twice a week"},
+               headers=auth(token))
+    client.post("/resident/embeddings",
+                json={"key": "care/plan",
+                      "text": "shoulder rehab twice a week"},
+                headers=auth(token))
+    gone = client.delete("/records/care/plan", headers=auth(token))
+    assert gone.status_code == 204, gone.text
+    found = client.post("/resident/search",
+                        json={"query": "shoulder rehab"},
+                        headers=auth(token)).json()
+    assert found["matches"] == []
+    actions = {e["action"] for e in
+               client.get("/audit", headers=auth(token)).json()}
+    assert "resident.forget" in actions
+
+
+def test_an_unembedded_records_delete_stays_off_the_forget_ledger(client):
+    """The `resident.forget` audit line means a vector actually went; a
+    record that never had one deletes without writing it."""
+    token = new_tenant(client)
+    client.put("/records", json={"key": "care/note", "value": "words"},
+               headers=auth(token))
+    gone = client.delete("/records/care/note", headers=auth(token))
+    assert gone.status_code == 204
+    actions = {e["action"] for e in
+               client.get("/audit", headers=auth(token)).json()}
+    assert "resident.forget" not in actions
+
+
 def test_forgetting_lands_on_the_audit_chain(client):
     token = new_tenant(client)
     client.post("/resident/embeddings",

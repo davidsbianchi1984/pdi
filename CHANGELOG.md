@@ -6,6 +6,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **A record's vector dies with the record.** `DELETE /records/{key}`
+  deleted the seal and left any resident vector indexed under the same
+  key ranking — so a record a tenant deleted through the vault's own
+  front door kept answering similarity searches. The tandems' forget
+  doors already take both halves together; now the plain delete keeps
+  the same promise for a tenant driving the API directly, and the
+  `resident.forget` audit line is written only when a vector actually
+  went.
+
+      asked     did the seal leave the vault
+      mattered  did the key stop answering searches
+
 ### Added
 
 - **Forgetting reaches the vectors.** The resident's embedding index had
