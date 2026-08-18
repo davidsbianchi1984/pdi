@@ -1,0 +1,29 @@
+# status: floor — 10 rows
+# ceiling: 10
+#
+# Every SQL statement in pdi/ that touches a tenant-scoped table without
+# constraining tenant_id in the statement itself. Each wears the inline
+# marker `# tenant-unscoped: <reason>` at its execute() site, and each
+# reason is a door that genuinely cannot be tenant-scoped: a bearer secret
+# is the credential (receive/submit/grant tokens), the surface is public by
+# design (a printed beacon code), the caller is the deployment admin, or
+# the statement walks the deployment-wide audit chain whose hashes span
+# tenants on purpose.
+#
+# This is a floor, not a backlog: rows here are decisions, not debts. A new
+# unscoped statement fails `test_every_tenant_rows_reach_is_scoped_or_named`
+# until it is either scoped or argued onto this list — and the ceiling means
+# arguing one on requires a reason good enough to write down.
+#
+#   <file> :: <reason, verbatim from the marker>
+
+audit.py :: the chain is one deployment-wide sequence by design — each entry hashes its predecessor across tenants, which is what makes per-tenant deletion tamper-evident
+audit.py :: verifying the chain means walking all of it — the hashes span tenants on purpose
+beacons.py :: the printed code IS the address — the scan page, QR and ring doors are public by design and disclose only the card
+beacons.py :: the ring is created by a public scan and answered in the same breath, before any tenant credential is in hand
+bequests.py :: activation and admin revoke are deployment-admin doors that reach any tenant's bequest by design
+bequests.py :: the grant token, shown once at activation and hash-matched here, is the estate's credential
+intakes.py :: the submit token, hash-checked in submit(), is the sender's credential
+transfers.py :: the receive token, hash-checked in receive(), is the recipient's credential
+vault.py :: the statement lives in WIPE_RETIRES above, where every value is written WHERE tenant_id=?
+vault.py :: an admin revokes by the token itself — the hash is globally unique and is the whole lookup

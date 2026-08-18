@@ -93,8 +93,19 @@ def create(tenant: dict, grantee_name: str, key_prefixes: list[str],
 
 
 def _row(bid: str):
+    """Any tenant's bequest. Only for the admin doors (activate,
+    admin_revoke) and the read-back after a write that was itself scoped —
+    a tenant-token door goes through `_tenant_row`."""
     return db.connect().execute(
-        "SELECT * FROM bequests WHERE id=?", (bid,)).fetchone()
+        "SELECT * FROM bequests WHERE id=?",  # tenant-unscoped: activation and admin revoke are deployment-admin doors that reach any tenant's bequest by design
+        (bid,)).fetchone()
+
+
+def _tenant_row(bid: str, tenant_id: str):
+    """This tenant's bequest or nothing — the scope is in the SQL."""
+    return db.connect().execute(
+        "SELECT * FROM bequests WHERE id=? AND tenant_id=?",
+        (bid, tenant_id)).fetchone()
 
 
 def out(row) -> dict:
@@ -121,8 +132,8 @@ def for_tenant(tenant: dict) -> list[dict]:
 
 
 def revoke(tenant: dict, bid: str) -> dict:
-    row = _row(bid)
-    if row is None or row["tenant_id"] != tenant["id"]:
+    row = _tenant_row(bid, tenant["id"])
+    if row is None:
         raise BequestError(404, "no such bequest")
     if row["activated_at"]:
         raise BequestError(409, "already activated — an activated grant is "
@@ -130,8 +141,8 @@ def revoke(tenant: dict, bid: str) -> dict:
                                 "tenant token, which may be in an estate's "
                                 "hands by now")
     conn = db.connect()
-    conn.execute("UPDATE bequests SET revoked_at=? WHERE id=?",
-                 (db.utcnow(), bid))
+    conn.execute("UPDATE bequests SET revoked_at=? WHERE id=? AND tenant_id=?",
+                 (db.utcnow(), bid, tenant["id"]))
     conn.commit()
     audit.record("bequest_revoked", tenant_id=tenant["id"], ref=bid)
     return out(_row(bid))
@@ -158,8 +169,8 @@ def activate(bid: str, activation_ref: str) -> dict:
     conn = db.connect()
     conn.execute(
         "UPDATE bequests SET activated_at=?, activation_ref=?, grant_hash=?"
-        " WHERE id=?",
-        (db.utcnow(), activation_ref, _hash(token), bid))
+        " WHERE id=? AND tenant_id=?",
+        (db.utcnow(), activation_ref, _hash(token), bid, row["tenant_id"]))
     conn.commit()
     audit.record("bequest_activated", tenant_id=row["tenant_id"],
                  ref=f"{bid}:{activation_ref}")
@@ -172,8 +183,9 @@ def admin_revoke(bid: str) -> dict:
         raise BequestError(404, "no such bequest")
     conn = db.connect()
     conn.execute(
-        "UPDATE bequests SET revoked_at=?, grant_hash=NULL WHERE id=?",
-        (db.utcnow(), bid))
+        "UPDATE bequests SET revoked_at=?, grant_hash=NULL"
+        " WHERE id=? AND tenant_id=?",
+        (db.utcnow(), bid, row["tenant_id"]))
     conn.commit()
     audit.record("bequest_admin_revoked", tenant_id=row["tenant_id"], ref=bid)
     return out(_row(bid))
@@ -183,7 +195,8 @@ def _grant(token: str):
     if not token:
         raise BequestError(401, "grant token required")
     row = db.connect().execute(
-        "SELECT * FROM bequests WHERE grant_hash=?", (_hash(token),)
+        "SELECT * FROM bequests WHERE grant_hash=?",  # tenant-unscoped: the grant token, shown once at activation and hash-matched here, is the estate's credential
+        (_hash(token),)
     ).fetchone()
     if row is None or row["revoked_at"] or not row["activated_at"]:
         # One refusal for all: a wrong token and a revoked one look alike.

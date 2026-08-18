@@ -80,8 +80,8 @@ def reseal_all() -> dict:
             continue
         aad = f"{r['tenant_id']}:{r['key']}"
         plain = crypto.open_(r["ciphertext"], aad=aad)
-        conn.execute("UPDATE records SET ciphertext=? WHERE id=?",
-                     (crypto.seal(plain, aad=aad), r["id"]))
+        conn.execute("UPDATE records SET ciphertext=? WHERE id=? AND tenant_id=?",
+                     (crypto.seal(plain, aad=aad), r["id"], r["tenant_id"]))
         resealed += 1
     conn.commit()
     audit.record("key.reseal", ref=str(resealed))
@@ -206,7 +206,7 @@ def cascade(conn, tenant_id: str) -> dict[str, int]:
         if table in WIPE_KEEPS:
             continue
         if table in WIPE_RETIRES:
-            n = conn.execute(WIPE_RETIRES[table],
+            n = conn.execute(WIPE_RETIRES[table],  # tenant-unscoped: the statement lives in WIPE_RETIRES above, where every value is written WHERE tenant_id=?
                              (db.utcnow(), tenant_id)).rowcount
             if n:
                 cleared[f"{table} (retired)"] = n
@@ -288,7 +288,7 @@ def restore_tenant(tenant_id: str) -> dict | None:
 def revoke_token(token: str) -> bool:
     conn = db.connect()
     changed = conn.execute(
-        "UPDATE tenant_tokens SET revoked=1 WHERE token=?",
+        "UPDATE tenant_tokens SET revoked=1 WHERE token=?",  # tenant-unscoped: an admin revokes by the token itself — the hash is globally unique and is the whole lookup
         (_hash(token),)).rowcount
     conn.commit()
     if changed:
@@ -312,8 +312,8 @@ def put(tenant: dict, key: str, value: str) -> dict:
     now = db.utcnow()
     if existing:
         conn.execute(
-            "UPDATE records SET ciphertext=?, updated_at=? WHERE id=?",
-            (sealed, now, existing["id"]),
+            "UPDATE records SET ciphertext=?, updated_at=? WHERE id=? AND tenant_id=?",
+            (sealed, now, existing["id"], tenant["id"]),
         )
         rec_id = existing["id"]
     else:

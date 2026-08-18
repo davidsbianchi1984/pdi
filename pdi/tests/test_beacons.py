@@ -248,7 +248,7 @@ def test_a_compromised_voice_cannot_move_the_decision(client, monkeypatch):
     change; the outcome, the state and the door do not."""
     token = new_tenant(client)
     g = _gate(client, token)
-    row = beacons.get(g["id"])
+    row = beacons.by_scan_door(g["id"])
     opened = beacons.ring(row, "access", "let me in")
 
     from pdi import vault
@@ -267,7 +267,7 @@ def test_a_compromised_voice_cannot_move_the_decision(client, monkeypatch):
 def test_decide_is_deterministic_and_takes_no_model(client):
     token = new_tenant(client)
     g = _gate(client, token)
-    row = beacons.get(g["id"])
+    row = beacons.by_scan_door(g["id"])
     opened = beacons.ring(row, "access", "anything at all")
     ring = beacons.ring_row(opened["id"])
 
@@ -282,7 +282,7 @@ def test_the_brief_sent_to_qrme_carries_no_contents(client):
     token = new_tenant_with_baa(client, name="site")
     _transfer(client, token)                   # a record exists to leak
     g = _gate(client, token)
-    row = beacons.get(g["id"])
+    row = beacons.by_scan_door(g["id"])
     opened = beacons.ring(row, "delivery", "parcel for you")
 
     from pdi import vault
@@ -299,7 +299,7 @@ def test_the_brief_sent_to_qrme_carries_no_contents(client):
 def test_an_unreachable_qrme_falls_back_to_the_written_script(client):
     token = new_tenant(client)
     g = _gate(client, token)
-    row = beacons.get(g["id"])
+    row = beacons.by_scan_door(g["id"])
     opened = beacons.ring(row, "access", None)
 
     from pdi import vault
@@ -327,7 +327,7 @@ def test_an_unconfigured_deployment_still_answers_and_still_refuses(client):
 def test_a_ring_is_answered_once(client):
     token = new_tenant(client)
     g = _gate(client, token)
-    row = beacons.get(g["id"])
+    row = beacons.by_scan_door(g["id"])
     opened = beacons.ring(row, "access", None)
 
     from pdi import vault
@@ -528,7 +528,7 @@ def _ring_it(client, token, kind="access", note=None, http=None):
     """Ring a gate through the module, so a fake webhook can be injected."""
     from pdi import vault
     g = _gate(client, token)
-    row = beacons.get(g["id"])
+    row = beacons.by_scan_door(g["id"])
     opened = beacons.ring(row, kind, note)
     tenant = vault.tenant_by_id(row["tenant_id"])
     return gate.answer(beacons.ring_row(opened["id"]), tenant, http=http)
@@ -633,7 +633,10 @@ def test_undelivered_pages_are_listable_and_retryable(client, monkeypatch):
 
     # Configure the channel five minutes later and send it again.
     monkeypatch.setenv("PDI_NOTIFY_URL", "https://pager.example/hook")
-    page = notify.retry(notify.row(out["paged"]["id"]), http=_Webhook())
+    page = notify.retry(
+        notify.row(out["paged"]["id"],
+                   beacons.ring_row(out["paged"]["ring"])["tenant_id"]),
+        http=_Webhook())
     assert page["state"] == "sent"
     assert page["attempts"] == 1
     assert client.get("/gate/pages?undelivered_only=true",

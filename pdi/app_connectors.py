@@ -23,9 +23,12 @@ def entry(provider: str, app: str) -> dict | None:
     return catalog.BY_KEY.get((provider, app))
 
 
-def get(cid: str) -> dict | None:
+def get(cid: str, tenant_id: str) -> dict | None:
+    """This tenant's connector or nothing — the scope is in the SQL, so the
+    statement cannot return another tenant's row for a check to forget."""
     row = db.connect().execute(
-        "SELECT * FROM app_connectors WHERE id=?", (cid,)).fetchone()
+        "SELECT * FROM app_connectors WHERE id=? AND tenant_id=?",
+        (cid, tenant_id)).fetchone()
     return dict(row) if row else None
 
 
@@ -51,7 +54,7 @@ def create(tenant_id: str, e: dict, capabilities: list[str]) -> dict:
          json.dumps(caps), json.dumps(e["directions"]), db.utcnow()),
     )
     conn.commit()
-    return _out(get(cid))
+    return _out(get(cid, tenant_id))
 
 
 def for_tenant(tenant_id: str) -> list[dict]:
@@ -61,8 +64,10 @@ def for_tenant(tenant_id: str) -> list[dict]:
     return [_out(dict(r)) for r in rows]
 
 
-def revoke(cid: str) -> dict:
-    db.connect().execute("UPDATE app_connectors SET status='revoked' WHERE id=?", (cid,))
+def revoke(cid: str, tenant_id: str) -> dict:
+    db.connect().execute(
+        "UPDATE app_connectors SET status='revoked' WHERE id=? AND tenant_id=?",
+        (cid, tenant_id))
     db.connect().commit()
     return {"id": cid, "status": "revoked"}
 
@@ -79,16 +84,18 @@ def ingest(tenant: dict, row: dict, items: list[dict]) -> dict:
         }))
         keys.append(key)
     conn = db.connect()
-    conn.execute("UPDATE app_connectors SET collected = collected + ? WHERE id=?",
-                 (len(keys), row["id"]))
+    conn.execute("UPDATE app_connectors SET collected = collected + ?"
+                 " WHERE id=? AND tenant_id=?",
+                 (len(keys), row["id"], row["tenant_id"]))
     conn.commit()
     return {"connector": row["id"], "app": row["app"], "sealed": len(keys),
             "keys": keys, "note": "collected items are encrypted at rest in the vault"}
 
 
 def invoke(row: dict, capability: str, inp: str | None) -> dict:
-    db.connect().execute("UPDATE app_connectors SET actions = actions + 1 WHERE id=?",
-                         (row["id"],))
+    db.connect().execute(
+        "UPDATE app_connectors SET actions = actions + 1"
+        " WHERE id=? AND tenant_id=?", (row["id"], row["tenant_id"]))
     db.connect().commit()
     return {"connector": row["id"], "provider": row["provider"], "app": row["app"],
             "capability": capability, "directions": json.loads(row["directions"]),

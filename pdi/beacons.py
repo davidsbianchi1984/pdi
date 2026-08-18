@@ -67,8 +67,12 @@ class BeaconError(Exception):
 
 
 def _row(beacon_id: str) -> dict | None:
+    """Any tenant's beacon. Only for the public scan surface and read-backs
+    after a write that was itself scoped — a tenant-token door goes through
+    `get` with the tenant's id."""
     row = db.connect().execute(
-        "SELECT * FROM custody_beacons WHERE id=?", (beacon_id,)).fetchone()
+        "SELECT * FROM custody_beacons WHERE id=?",  # tenant-unscoped: the printed code IS the address — the scan page, QR and ring doors are public by design and disclose only the card
+        (beacon_id,)).fetchone()
     return dict(row) if row else None
 
 
@@ -97,8 +101,9 @@ def _parent(ref_kind: str, ref_id: str, tenant_id: str) -> dict:
     record already knows what governs it, and two sources for one fact is how
     they end up disagreeing on the card a stranger reads.
     """
-    row = transfers.get(ref_id) if ref_kind == "transfer" else intakes.get(ref_id)
-    if row is None or row["tenant_id"] != tenant_id:
+    row = (transfers.get(ref_id, tenant_id) if ref_kind == "transfer"
+           else intakes.get(ref_id, tenant_id))
+    if row is None:
         raise BeaconError(f"no such {ref_kind}")
     return row
 
@@ -153,7 +158,18 @@ def for_tenant(tenant_id: str) -> list[dict]:
     return [_out(dict(r)) for r in rows]
 
 
-def get(beacon_id: str) -> dict | None:
+def get(beacon_id: str, tenant_id: str) -> dict | None:
+    """This tenant's beacon or nothing — the scope is in the SQL, so the
+    statement cannot return another tenant's row for a check to forget."""
+    row = db.connect().execute(
+        "SELECT * FROM custody_beacons WHERE id=? AND tenant_id=?",
+        (beacon_id, tenant_id)).fetchone()
+    return dict(row) if row else None
+
+
+def by_scan_door(beacon_id: str) -> dict | None:
+    """The stranger's fetch: a scanned sticker carries no credential, and
+    the card behind it discloses nothing but what `seal_card` says."""
     return _row(beacon_id)
 
 
@@ -161,8 +177,8 @@ def set_state(row: dict, state: str) -> dict:
     if state not in STATES:
         raise BeaconError(f"state must be one of {', '.join(STATES)}")
     conn = db.connect()
-    conn.execute("UPDATE custody_beacons SET state=? WHERE id=?",
-                 (state, row["id"]))
+    conn.execute("UPDATE custody_beacons SET state=? WHERE id=? AND tenant_id=?",
+                 (state, row["id"], row["tenant_id"]))
     conn.commit()
     transfers._receipt(row["id"], f"state: {state}", None)
     return _out(_row(row["id"]))
@@ -172,7 +188,8 @@ def retire(row: dict) -> dict:
     """Peel the code off. It stops resolving; the record it pointed at is
     untouched, and the chain keeps everything it already recorded."""
     conn = db.connect()
-    conn.execute("UPDATE custody_beacons SET active=0 WHERE id=?", (row["id"],))
+    conn.execute("UPDATE custody_beacons SET active=0 WHERE id=? AND tenant_id=?",
+                 (row["id"], row["tenant_id"]))
     conn.commit()
     transfers._receipt(row["id"], "beacon retired", None)
     audit.record("beacon.retire", tenant_id=row["tenant_id"], ref=row["id"])
@@ -191,8 +208,8 @@ def seal_card(beacon_id: str) -> dict | None:
         return None
 
     conn = db.connect()
-    conn.execute("UPDATE custody_beacons SET scans = scans + 1 WHERE id=?",
-                 (beacon_id,))
+    conn.execute("UPDATE custody_beacons SET scans = scans + 1"
+                 " WHERE id=? AND tenant_id=?", (beacon_id, row["tenant_id"]))
     conn.execute("INSERT INTO beacon_scans (id, beacon_id, at) VALUES (?,?,?)",
                  (db.new_id("bscn"), beacon_id, db.utcnow()))
     conn.commit()
@@ -321,8 +338,20 @@ def ring(row: dict, kind: str, note: str | None = None) -> dict:
 
 
 def ring_row(ring_id: str) -> dict | None:
+    """Any tenant's ring. The scan-side flow (a stranger rang; no credential
+    exists yet) and read-backs after scoped writes — tenant doors use
+    `ring_row_for`."""
     row = db.connect().execute(
-        "SELECT * FROM beacon_rings WHERE id=?", (ring_id,)).fetchone()
+        "SELECT * FROM beacon_rings WHERE id=?",  # tenant-unscoped: the ring is created by a public scan and answered in the same breath, before any tenant credential is in hand
+        (ring_id,)).fetchone()
+    return dict(row) if row else None
+
+
+def ring_row_for(ring_id: str, tenant_id: str) -> dict | None:
+    """This tenant's ring or nothing — the scope is in the SQL."""
+    row = db.connect().execute(
+        "SELECT * FROM beacon_rings WHERE id=? AND tenant_id=?",
+        (ring_id, tenant_id)).fetchone()
     return dict(row) if row else None
 
 
@@ -343,12 +372,11 @@ def ring_out(ring_id: str) -> dict:
 
 
 def rings_for(tenant_id: str, open_only: bool = False) -> list[dict]:
-    sql = "SELECT id FROM beacon_rings WHERE tenant_id=?"
-    if open_only:
-        sql += " AND state='open'"
-    sql += " ORDER BY created_at, rowid"
     return [ring_out(r["id"])
-            for r in db.connect().execute(sql, (tenant_id,)).fetchall()]
+            for r in db.connect().execute(
+                "SELECT id FROM beacon_rings WHERE tenant_id=?"
+                + (" AND state='open'" if open_only else "")
+                + " ORDER BY created_at, rowid", (tenant_id,)).fetchall()]
 
 
 def close_ring(row: dict, state: str, outcome: str | None = None,
@@ -358,9 +386,10 @@ def close_ring(row: dict, state: str, outcome: str | None = None,
     conn = db.connect()
     conn.execute(
         "UPDATE beacon_rings SET state=?, outcome=?, handed_to=?, spoken_by=?,"
-        " vault_key=?, transcript_sha256=?, closed_at=? WHERE id=?",
+        " vault_key=?, transcript_sha256=?, closed_at=?"
+        " WHERE id=? AND tenant_id=?",
         (state, outcome, handed_to, spoken_by, vault_key, transcript_sha256,
-         db.utcnow(), row["id"]))
+         db.utcnow(), row["id"], row["tenant_id"]))
     conn.commit()
     return ring_out(row["id"])
 

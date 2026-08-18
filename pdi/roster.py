@@ -198,7 +198,7 @@ def add(tenant: dict, name: str, role: str = "on-call", days=None,
     # Who can be summoned to a controlled facility is a governance fact, so it
     # lands on the chain like every other one.
     audit.record("gate.roster", tenant_id=tenant["id"], ref=rid)
-    return out(rid)
+    return out(rid, tenant["id"])
 
 
 def remove(tenant: dict, entry_id: str) -> bool:
@@ -212,14 +212,16 @@ def remove(tenant: dict, entry_id: str) -> bool:
     return bool(n)
 
 
-def row(entry_id: str) -> dict | None:
-    r = db.connect().execute("SELECT * FROM gate_roster WHERE id=?",
-                             (entry_id,)).fetchone()
+def row(entry_id: str, tenant_id: str) -> dict | None:
+    """This tenant's roster entry or nothing — the scope is in the SQL."""
+    r = db.connect().execute(
+        "SELECT * FROM gate_roster WHERE id=? AND tenant_id=?",
+        (entry_id, tenant_id)).fetchone()
     return dict(r) if r else None
 
 
-def out(entry_id: str) -> dict:
-    r = row(entry_id)
+def out(entry_id: str, tenant_id: str) -> dict:
+    r = row(entry_id, tenant_id)
     return {
         "id": r["id"],
         "name": r["name"],
@@ -330,7 +332,7 @@ def describe(tenant_id: str, at: datetime | None = None) -> dict:
         "on_now": on_now(tenant_id, at),
         "escalation_order": [p["name"] for p in people],
         "anybody_on_shift": anybody,
-        "roster": [out(e["id"]) for e in entries(tenant_id)],
+        "roster": [out(e["id"], tenant_id) for e in entries(tenant_id)],
         "note": (
             "no roster — hand-offs go to PDI_GATE_ONCALL, the same single "
             "name every tenant shared before a roster could be set"

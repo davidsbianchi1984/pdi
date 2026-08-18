@@ -660,9 +660,10 @@ def adopt_customer_key(tenant_id: str, provider: str,
     conn.execute("DELETE FROM tenant_key_versions WHERE tenant_id=?", (tenant_id,))
     _ensure_keyring(tenant_id, key)
     for rid, rkey, value in plain:
-        conn.execute("UPDATE records SET ciphertext=? WHERE id=?",
+        conn.execute("UPDATE records SET ciphertext=? WHERE id=? AND tenant_id=?",
                      (seal(value, aad=f"{tenant_id}:{rkey}",
-                           tenant_id=tenant_id, customer_key=key), rid))
+                           tenant_id=tenant_id, customer_key=key), rid,
+                      tenant_id))
     conn.commit()
     return {"provider": provider, "resealed": len(plain),
             "custody": custody(tenant_id)}
@@ -691,8 +692,8 @@ def release_customer_key(tenant_id: str, key: bytes | None = None) -> dict:
     conn.execute("DELETE FROM tenant_keys WHERE tenant_id=?", (tenant_id,))
     conn.execute("DELETE FROM tenant_key_versions WHERE tenant_id=?", (tenant_id,))
     for rid, rkey, value in plain:
-        conn.execute("UPDATE records SET ciphertext=? WHERE id=?",
-                     (seal(value, aad=f"{tenant_id}:{rkey}"), rid))
+        conn.execute("UPDATE records SET ciphertext=? WHERE id=? AND tenant_id=?",
+                     (seal(value, aad=f"{tenant_id}:{rkey}"), rid, tenant_id))
     conn.commit()
     return {"provider": "deployment", "resealed": len(plain),
             "custody": custody(tenant_id)}

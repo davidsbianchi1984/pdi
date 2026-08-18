@@ -111,7 +111,9 @@ def sweep() -> dict:
                 "SELECT id, key, updated_at FROM records WHERE tenant_id=?",
                 (t["id"],)).fetchall():
             if _age_days(rec["updated_at"]) >= t["retention_days"]:
-                conn.execute("DELETE FROM records WHERE id=?", (rec["id"],))
+                conn.execute(
+                    "DELETE FROM records WHERE id=? AND tenant_id=?",
+                    (rec["id"], t["id"]))
                 expired_records += 1
                 audit.record("record.expire", tenant_id=t["id"], ref=rec["key"])
 

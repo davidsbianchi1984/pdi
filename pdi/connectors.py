@@ -55,9 +55,12 @@ def _out(row: dict) -> dict:
     }
 
 
-def get(cid: str) -> dict | None:
+def get(cid: str, tenant_id: str) -> dict | None:
+    """This tenant's connector or nothing — the scope is in the SQL, so the
+    statement cannot return another tenant's row for a check to forget."""
     row = db.connect().execute(
-        "SELECT * FROM connectors WHERE id=?", (cid,)).fetchone()
+        "SELECT * FROM connectors WHERE id=? AND tenant_id=?",
+        (cid, tenant_id)).fetchone()
     return dict(row) if row else None
 
 
@@ -73,7 +76,7 @@ def create(tenant_id: str, platform: str, direction: str,
         (cid, tenant_id, platform, direction, handle, json.dumps(scope), db.utcnow()),
     )
     conn.commit()
-    return _out(get(cid))
+    return _out(get(cid, tenant_id))
 
 
 def for_tenant(tenant_id: str) -> list[dict]:
@@ -83,8 +86,10 @@ def for_tenant(tenant_id: str) -> list[dict]:
     return [_out(dict(r)) for r in rows]
 
 
-def revoke(cid: str) -> dict:
-    db.connect().execute("UPDATE connectors SET status='revoked' WHERE id=?", (cid,))
+def revoke(cid: str, tenant_id: str) -> dict:
+    db.connect().execute(
+        "UPDATE connectors SET status='revoked' WHERE id=? AND tenant_id=?",
+        (cid, tenant_id))
     db.connect().commit()
     return {"id": cid, "status": "revoked"}
 
@@ -102,8 +107,9 @@ def ingest(tenant: dict, row: dict, items: list[dict]) -> dict:
         }))
         keys.append(key)
     conn = db.connect()
-    conn.execute("UPDATE connectors SET collected = collected + ? WHERE id=?",
-                 (len(keys), row["id"]))
+    conn.execute("UPDATE connectors SET collected = collected + ?"
+                 " WHERE id=? AND tenant_id=?",
+                 (len(keys), row["id"], row["tenant_id"]))
     conn.commit()
     return {"connector": row["id"], "platform": row["platform"],
             "sealed": len(keys), "keys": keys,
@@ -136,8 +142,8 @@ def fetch_page(tenant: dict, row: dict) -> dict:
 
 def publish(row: dict, content: str, topic: str | None) -> dict:
     conn = db.connect()
-    conn.execute("UPDATE connectors SET published = published + 1 WHERE id=?",
-                 (row["id"],))
+    conn.execute("UPDATE connectors SET published = published + 1"
+                 " WHERE id=? AND tenant_id=?", (row["id"], row["tenant_id"]))
     conn.commit()
     return {"connector": row["id"], "platform": row["platform"],
             "topic": topic, "content": content, "status": "published"}

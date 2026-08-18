@@ -523,7 +523,7 @@ def create_app() -> FastAPI:
     # update on the platform, reachable by a QR beacon.
 
     def _connector_or_404(cid: str, tenant: dict) -> dict:
-        row = connectors.get(cid)
+        row = connectors.get(cid, tenant["id"])
         if row is None or row["tenant_id"] != tenant["id"]:
             raise HTTPException(404, "connector not found")
         return row
@@ -547,7 +547,7 @@ def create_app() -> FastAPI:
     @app.delete("/connectors/{cid}")
     def revoke_connector(cid: str, tenant: dict = Depends(_writer)) -> dict:
         _connector_or_404(cid, tenant)
-        return connectors.revoke(cid)
+        return connectors.revoke(cid, tenant["id"])
 
     @app.post("/connectors/{cid}/ingest", status_code=201)
     def ingest_connector(cid: str, body: ConnectorIngest,
@@ -618,7 +618,7 @@ def create_app() -> FastAPI:
     # connect a catalog app; agents collect (sealed to the vault), act, produce.
 
     def _app_or_404(cid: str, tenant: dict) -> dict:
-        row = app_connectors.get(cid)
+        row = app_connectors.get(cid, tenant["id"])
         if row is None or row["tenant_id"] != tenant["id"]:
             raise HTTPException(404, "app connector not found")
         return row
@@ -640,7 +640,7 @@ def create_app() -> FastAPI:
     @app.delete("/apps/{cid}")
     def revoke_app(cid: str, tenant: dict = Depends(_writer)) -> dict:
         _app_or_404(cid, tenant)
-        return app_connectors.revoke(cid)
+        return app_connectors.revoke(cid, tenant["id"])
 
     @app.post("/apps/{cid}/ingest", status_code=201)
     def ingest_app(cid: str, body: AppCollect, tenant: dict = Depends(_writer)) -> dict:
@@ -725,8 +725,8 @@ def create_app() -> FastAPI:
         return compliance.catalog()
 
     def _transfer_or_404(tid: str, tenant: dict) -> dict:
-        row = transfers.get(tid)
-        if row is None or row["tenant_id"] != tenant["id"]:
+        row = transfers.get(tid, tenant["id"])
+        if row is None:
             raise HTTPException(404, "transfer not found")
         return row
 
@@ -838,7 +838,7 @@ def create_app() -> FastAPI:
         the same header the page they are standing on was rendered from.
         """
         language = i18n.negotiate(accept_language)
-        row = transfers.get(tid)
+        row = transfers.by_receive_door(tid)
         result = None if row is None else transfers.receive(row,
                                                             x_receive_token)
         if result is None:
@@ -853,8 +853,8 @@ def create_app() -> FastAPI:
     # -- inbound intake: a subscriber or partner sends a file IN ------------
 
     def _intake_or_404(iid: str, tenant: dict) -> dict:
-        row = intakes.get(iid)
-        if row is None or row["tenant_id"] != tenant["id"]:
+        row = intakes.get(iid, tenant["id"])
+        if row is None:
             raise HTTPException(404, "intake not found")
         return row
 
@@ -897,7 +897,7 @@ def create_app() -> FastAPI:
                       x_submit_token: str = Header(default="")) -> dict:
         """The subscriber / partner sends their file in with the submit token —
         no tenant credential; the token is the (auditable) authorization."""
-        row = intakes.get(iid)
+        row = intakes.by_submit_door(iid)
         if row is None:
             raise HTTPException(404, "intake not found")
         result = intakes.submit(row, x_submit_token, body.filename, body.content,
@@ -1116,8 +1116,8 @@ def create_app() -> FastAPI:
     # never what is in it. See docs/beacons.md.
 
     def _beacon_or_404(bid: str, tenant: dict) -> dict:
-        row = beacons.get(bid)
-        if row is None or row["tenant_id"] != tenant["id"]:
+        row = beacons.get(bid, tenant["id"])
+        if row is None:
             raise HTTPException(404, "beacon not found")
         return row
 
@@ -1218,7 +1218,7 @@ def create_app() -> FastAPI:
     def beacon_qr(bid: str) -> Response:
         """The printable code. Public: the sticker has to be made before
         anybody scans it, and the card behind it discloses nothing anyway."""
-        row = beacons.get(bid)
+        row = beacons.by_scan_door(bid)
         if row is None or not row["active"]:
             raise HTTPException(404, "this code does not resolve to anything")
         import segno
@@ -1275,7 +1275,7 @@ def create_app() -> FastAPI:
         replace a facility's answer with ours.
         """
         language = i18n.negotiate(accept_language)
-        row = beacons.get(bid)
+        row = beacons.by_scan_door(bid)
         if row is None or not row["active"]:
             raise HTTPException(404, i18n.tr_page(
                 "this code does not resolve to anything", language))
@@ -1354,8 +1354,8 @@ def create_app() -> FastAPI:
     def retry_page(pid: str, tenant: dict = Depends(_writer)) -> dict:
         """Send a queued or failed page again — the channel may have been down
         for a minute, or configured five minutes after the ring."""
-        row = notify.row(pid)
-        if row is None or row["tenant_id"] != tenant["id"]:
+        row = notify.row(pid, tenant["id"])
+        if row is None:
             raise HTTPException(404, "page not found")
         try:
             return notify.retry(row)
@@ -1369,8 +1369,8 @@ def create_app() -> FastAPI:
 
     @app.get("/rings/{rid}/transcript")
     def ring_transcript(rid: str, tenant: dict = Depends(_tenant)) -> dict:
-        row = beacons.ring_row(rid)
-        if row is None or row["tenant_id"] != tenant["id"]:
+        row = beacons.ring_row_for(rid, tenant["id"])
+        if row is None:
             raise HTTPException(404, "ring not found")
         out = gate.transcript(row, tenant)
         if out is None:

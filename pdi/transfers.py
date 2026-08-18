@@ -33,8 +33,23 @@ def _mint() -> tuple[str, str]:
     return token, hashlib.sha256(token.encode()).hexdigest()
 
 
-def get(tid: str) -> dict | None:
-    row = db.connect().execute("SELECT * FROM transfers WHERE id=?", (tid,)).fetchone()
+def get(tid: str, tenant_id: str) -> dict | None:
+    """This tenant's transfer or nothing — the scope is in the SQL, so the
+    statement cannot return another tenant's row for a check to forget."""
+    row = db.connect().execute(
+        "SELECT * FROM transfers WHERE id=? AND tenant_id=?",
+        (tid, tenant_id)).fetchone()
+    return dict(row) if row else None
+
+
+def by_receive_door(tid: str) -> dict | None:
+    """The recipient's fetch. The recipient holds no tenant credential — the
+    receive token, hash-matched before anything is answered, is the whole
+    authorization — so this lookup cannot be tenant-scoped and is guarded by
+    the secret instead of the scope."""
+    row = db.connect().execute(
+        "SELECT * FROM transfers WHERE id=?",  # tenant-unscoped: the receive token, hash-checked in receive(), is the recipient's credential
+        (tid,)).fetchone()
     return dict(row) if row else None
 
 
@@ -87,7 +102,7 @@ def create(tenant: dict, recipient: str, filename: str, content: str,
     db.connect().commit()
     _receipt(tid, "created", tenant.get("name"))
     audit.record("transfer.create", tenant_id=tenant["id"], ref=tid)
-    out = _out(get(tid))
+    out = _out(get(tid, tenant["id"]))
     out["receive_token"] = token                   # shown exactly once
     out["controls"] = compliance.controls_for(programs)
     return out
@@ -113,7 +128,8 @@ def receive(row: dict, token: str):
     sender = {"id": row["tenant_id"]}              # AAD is bound to this tenant
     rec = vault.get(sender, row["vault_key"])
     conn = db.connect()
-    conn.execute("UPDATE transfers SET status='received' WHERE id=?", (row["id"],))
+    conn.execute("UPDATE transfers SET status='received' WHERE id=? AND tenant_id=?",
+                 (row["id"], row["tenant_id"]))
     conn.commit()
     _receipt(row["id"], "received", row["recipient"])
     audit.record("transfer.receive", tenant_id=row["tenant_id"], ref=row["id"])
@@ -149,7 +165,9 @@ def custody(row: dict) -> dict:
 
 
 def revoke(row: dict) -> dict:
-    db.connect().execute("UPDATE transfers SET status='revoked' WHERE id=?", (row["id"],))
+    db.connect().execute(
+        "UPDATE transfers SET status='revoked' WHERE id=? AND tenant_id=?",
+        (row["id"], row["tenant_id"]))
     db.connect().commit()
     _receipt(row["id"], "revoked", None)
     audit.record("transfer.revoke", tenant_id=row["tenant_id"], ref=row["id"])

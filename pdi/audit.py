@@ -97,7 +97,9 @@ def _hash(prev_hash: str, entry: dict) -> str:
 
 def record(action: str, *, tenant_id: str | None = None, ref: str | None = None) -> dict:
     conn = db.connect()
-    row = conn.execute("SELECT hash FROM audit ORDER BY seq DESC LIMIT 1").fetchone()
+    row = conn.execute(
+        "SELECT hash FROM audit ORDER BY seq DESC LIMIT 1"  # tenant-unscoped: the chain is one deployment-wide sequence by design — each entry hashes its predecessor across tenants, which is what makes per-tenant deletion tamper-evident
+    ).fetchone()
     prev_hash = row["hash"] if row else _GENESIS
     entry = {"tenant_id": tenant_id, "action": action, "ref": ref, "at": db.utcnow()}
     h = _hash(prev_hash, entry)
@@ -110,21 +112,22 @@ def record(action: str, *, tenant_id: str | None = None, ref: str | None = None)
     return {**entry, "hash": h}
 
 
-def entries(tenant_id: str | None = None) -> list[dict]:
-    conn = db.connect()
-    if tenant_id:
-        rows = conn.execute(
-            "SELECT * FROM audit WHERE tenant_id=? ORDER BY seq", (tenant_id,)
-        ).fetchall()
-    else:
-        rows = conn.execute("SELECT * FROM audit ORDER BY seq").fetchall()
+def entries(tenant_id: str) -> list[dict]:
+    """One tenant's entries, never the deployment's. The bare branch this
+    function used to carry answered every tenant's rows to whoever forgot
+    the argument — nothing called it, and now nothing can."""
+    rows = db.connect().execute(
+        "SELECT * FROM audit WHERE tenant_id=? ORDER BY seq", (tenant_id,)
+    ).fetchall()
     return [{**dict(r), "category": category(r["action"])} for r in rows]
 
 
 def verify() -> dict:
     """Recompute the chain; report whether it is intact."""
     conn = db.connect()
-    rows = conn.execute("SELECT * FROM audit ORDER BY seq").fetchall()
+    rows = conn.execute(
+        "SELECT * FROM audit ORDER BY seq"  # tenant-unscoped: verifying the chain means walking all of it — the hashes span tenants on purpose
+    ).fetchall()
     prev_hash = _GENESIS
     for r in rows:
         entry = {"tenant_id": r["tenant_id"], "action": r["action"],

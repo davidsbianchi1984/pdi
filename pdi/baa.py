@@ -37,8 +37,9 @@ def record(tenant_id: str, fields: dict) -> dict:
          fields.get("document_sha256"), db.utcnow()))
     conn.commit()
     audit.record("baa.execute", tenant_id=tenant_id, ref=baa_id)
-    return dict(conn.execute("SELECT * FROM baa_records WHERE id=?",
-                             (baa_id,)).fetchone())
+    return dict(conn.execute(
+        "SELECT * FROM baa_records WHERE id=? AND tenant_id=?",
+        (baa_id, tenant_id)).fetchone())
 
 
 def active(tenant_id: str) -> dict | None:

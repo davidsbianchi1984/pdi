@@ -6,6 +6,46 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **A tenant's row is reached through its tenant, in the SQL itself.** The
+  schema has carried `tenant_id` on twenty tables since multi-tenancy
+  arrived; the enforcement was thinner than the description. Forty-six
+  statements read, wrote or deleted rows on those tables keyed by bare
+  `id`, trusting that the id in hand had been fetched tenant-scoped a few
+  lines earlier — usually a route helper fetching the row unscoped and
+  comparing `row["tenant_id"]` in Python afterward. Correct on the day it
+  is written, and one refactor away from not being: a new caller reaches
+  the getter without the helper, a counter bump lands on whatever row the
+  id names, a revoke revokes across the fence.
+
+  Every one of the forty-six now constrains `tenant_id` in the statement —
+  `WHERE id=? AND tenant_id=?` on the reads, the updates, the deletes and
+  the counter bumps across connectors, connected apps, robots, transfers,
+  intakes, bequests, custody beacons, rings, gate pages, the roster, the
+  BAA read-back, retention's record expiry, the vault's reseals and the
+  key-custody rewraps — so a statement cannot return, change or delete
+  another tenant's row for a Python check to forget. The ten that genuinely
+  cannot be scoped — a bearer secret is the credential (receive, submit and
+  grant tokens), the surface is public by design (a printed beacon code),
+  the caller is the deployment admin, or the statement walks the
+  deployment-wide audit chain — wear an inline `# tenant-unscoped:` marker
+  with the reason at the execute() site, recorded with a ceiling in
+  `tenant_unscoped.txt` so the list only grows on purpose. `audit.entries`
+  loses the bare branch that would have answered every tenant's rows to
+  whoever forgot the argument.
+
+  The guard reads the package's own AST — every `execute()` on a
+  tenant-scoped table, tables read from the live schema so a migration
+  cannot open a gap the list never covers — and the live tests drive the
+  fence from outside: two tenants, every by-id door tried with the other
+  tenant's id, expecting exactly the answer a nonexistent id gets, because
+  "not yours" and "not there" must be one answer or the ids themselves
+  leak what exists. One finding was a fence with a real hole's shape:
+  `beacons.place` looked up the transfer or intake a beacon was being
+  printed for by bare id and checked the tenant afterward — the check
+  held, but it was the only thing standing there, and now the SQL is.
+
 ## [0.85.0] - 2026-08-18
 
 ### Added

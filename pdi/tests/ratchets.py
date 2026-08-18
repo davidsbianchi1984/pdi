@@ -147,6 +147,31 @@ def _guard_names() -> int:
     return len(guard_names(TESTS))
 
 
+def _tenant_tables_read() -> int:
+    from .test_the_other_tenants_shelf import _tenant_tables
+    return len(_tenant_tables())
+
+
+def _tenant_statements() -> int:
+    from . import test_the_other_tenants_shelf as m
+    import ast, re
+    tables = m._tenant_tables()
+    count = 0
+    for path in sorted(m.PKG.glob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if (isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Attribute)
+                    and node.func.attr in ("execute", "executemany")
+                    and node.args):
+                for sql in m._branches(node.args[0]):
+                    if sql and any(re.search(rf"\b{t}\b", sql)
+                                   for t in tables):
+                        count += 1
+                        break
+    return count
+
+
 def _files_swept() -> int:
     from .test_a_floor_is_within_sight_of_what_it_measures import parsed_files
     return parsed_files()
@@ -216,6 +241,15 @@ RATCHETS: tuple[Ratchet, ...] = (
             "test functions this suite declares"),
     Ratchet("sweep.files_parsed", 78, _files_swept,
             "test files the bare-floor sweep can read"),
+    # 15 against 20 and 60 against ~112 — the same four-fifths posture as
+    # console.nav_tabs below: room for legitimate removal, none for a
+    # parser that quietly stopped matching.
+    Ratchet("tenant.scoped_tables_read", 15, _tenant_tables_read,
+            "tables the schema scopes to a tenant, read from db.py by the "
+            "isolation guard"),
+    Ratchet("tenant.statements_scanned", 60, _tenant_statements,
+            "SQL statements on tenant-scoped tables the isolation guard "
+            "can parse"),
     # 12 against 15 — four-fifths, and not the 15 this was first written
     # with. A floor set to exactly what is there today is one that fails on
     # the day somebody legitimately removes a tab, which teaches people to

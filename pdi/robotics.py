@@ -100,8 +100,8 @@ def ingest(tenant: dict, row: dict, kind: str, content: str,
                  else row["model"],
     }))
     conn = db.connect()
-    conn.execute("UPDATE robots SET collected = collected + 1 WHERE id=?",
-                 (row["id"],))
+    conn.execute("UPDATE robots SET collected = collected + 1"
+                 " WHERE id=? AND tenant_id=?", (row["id"], tenant["id"]))
     conn.commit()
     audit.record("robot.ingest", tenant_id=tenant["id"], ref=key)
     return {"robot": row["id"], "kind": kind, "sealed": True, "key": key,
@@ -117,7 +117,8 @@ def data_keys(tenant: dict, row: dict) -> list[str]:
 
 def unbind(tenant_id: str, robot_id: str) -> dict:
     conn = db.connect()
-    conn.execute("UPDATE robots SET status='revoked' WHERE id=?", (robot_id,))
+    conn.execute("UPDATE robots SET status='revoked' WHERE id=? AND tenant_id=?",
+                 (robot_id, tenant_id))
     conn.commit()
     audit.record("robot.unbind", tenant_id=tenant_id, ref=robot_id)
     return {"id": robot_id, "status": "revoked",

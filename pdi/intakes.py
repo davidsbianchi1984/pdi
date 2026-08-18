@@ -29,8 +29,23 @@ def _mint() -> tuple[str, str]:
     return token, hashlib.sha256(token.encode()).hexdigest()
 
 
-def get(iid: str) -> dict | None:
-    row = db.connect().execute("SELECT * FROM intakes WHERE id=?", (iid,)).fetchone()
+def get(iid: str, tenant_id: str) -> dict | None:
+    """This tenant's intake or nothing — the scope is in the SQL, so the
+    statement cannot return another tenant's row for a check to forget."""
+    row = db.connect().execute(
+        "SELECT * FROM intakes WHERE id=? AND tenant_id=?",
+        (iid, tenant_id)).fetchone()
+    return dict(row) if row else None
+
+
+def by_submit_door(iid: str) -> dict | None:
+    """The sender's fetch. The party submitting holds no tenant credential —
+    the submit token, hash-matched in submit(), is the whole authorization —
+    so this lookup cannot be tenant-scoped and is guarded by the secret
+    instead of the scope."""
+    row = db.connect().execute(
+        "SELECT * FROM intakes WHERE id=?",  # tenant-unscoped: the submit token, hash-checked in submit(), is the sender's credential
+        (iid,)).fetchone()
     return dict(row) if row else None
 
 
@@ -68,7 +83,7 @@ def create(tenant: dict, from_party: str, party_type: str | None,
     db.connect().commit()
     transfers._receipt(iid, "requested", tenant.get("name"))
     audit.record("intake.request", tenant_id=tenant["id"], ref=iid)
-    out = _out(get(iid))
+    out = _out(get(iid, tenant["id"]))
     out["submit_token"] = token                    # shown exactly once
     out["controls"] = compliance.controls_for(programs)
     return out
@@ -96,8 +111,9 @@ def submit(row: dict, token: str, filename: str, content: str,
         if retention else None
     db.connect().execute(
         "UPDATE intakes SET status='submitted', vault_key=?, filename=?,"
-        " classification=?, expires_at=? WHERE id=?",
-        (vault_key, filename, classification, expires, row["id"]))
+        " classification=?, expires_at=? WHERE id=? AND tenant_id=?",
+        (vault_key, filename, classification, expires, row["id"],
+         row["tenant_id"]))
     db.connect().commit()
     transfers._receipt(row["id"], "submitted", row["from_party"])
     audit.record("intake.submit", tenant_id=row["tenant_id"], ref=row["id"])
@@ -139,7 +155,9 @@ def custody(row: dict) -> dict:
 
 
 def close(row: dict) -> dict:
-    db.connect().execute("UPDATE intakes SET status='closed' WHERE id=?", (row["id"],))
+    db.connect().execute(
+        "UPDATE intakes SET status='closed' WHERE id=? AND tenant_id=?",
+        (row["id"], row["tenant_id"]))
     db.connect().commit()
     transfers._receipt(row["id"], "closed", None)
     audit.record("intake.close", tenant_id=row["tenant_id"], ref=row["id"])

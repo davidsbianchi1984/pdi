@@ -169,7 +169,7 @@ def _record(page_id, ring, decision, urgency, who, on_shift, state, attempts,
     audit.record({"sent": "agent.page", "queued": "agent.page_queued",
                   "failed": "agent.page_failed"}[state],
                  tenant_id=ring["tenant_id"], ref=page_id)
-    return out(page_id)
+    return out(page_id, ring["tenant_id"])
 
 
 def page_handoff(ring: dict, decision: dict, http=None) -> dict:
@@ -235,8 +235,9 @@ def retry(page: dict, http=None) -> dict:
     if not url:
         raise NotifyError("no notification channel is configured")
 
-    ring = db.connect().execute("SELECT * FROM beacon_rings WHERE id=?",
-                                (page["ring_id"],)).fetchone()
+    ring = db.connect().execute(
+        "SELECT * FROM beacon_rings WHERE id=? AND tenant_id=?",
+        (page["ring_id"], page["tenant_id"])).fetchone()
     decision = {"outcome": page["reason"], "handoff_to": page["handed_to"]}
     at = db.utcnow()
     state, err = "sent", None
@@ -249,26 +250,30 @@ def retry(page: dict, http=None) -> dict:
     conn = db.connect()
     conn.execute(
         "UPDATE gate_pages SET state=?, attempts=attempts+1, last_error=?,"
-        " sent_at=? WHERE id=?",
-        (state, err, at if state == "sent" else None, page["id"]))
+        " sent_at=? WHERE id=? AND tenant_id=?",
+        (state, err, at if state == "sent" else None, page["id"],
+         page["tenant_id"]))
     conn.commit()
     audit.record("agent.page" if state == "sent" else "agent.page_failed",
                  tenant_id=page["tenant_id"], ref=page["id"])
-    return out(page["id"])
+    return out(page["id"], page["tenant_id"])
 
 
 class NotifyError(Exception):
     """A page that cannot be sent for a reason the caller should hear."""
 
 
-def row(page_id: str) -> dict | None:
-    r = db.connect().execute("SELECT * FROM gate_pages WHERE id=?",
-                             (page_id,)).fetchone()
+def row(page_id: str, tenant_id: str) -> dict | None:
+    """This tenant's page or nothing — the scope is in the SQL, so the
+    statement cannot return another tenant's row for a check to forget."""
+    r = db.connect().execute(
+        "SELECT * FROM gate_pages WHERE id=? AND tenant_id=?",
+        (page_id, tenant_id)).fetchone()
     return dict(r) if r else None
 
 
-def out(page_id: str) -> dict:
-    r = row(page_id)
+def out(page_id: str, tenant_id: str) -> dict:
+    r = row(page_id, tenant_id)
     return {
         "id": r["id"],
         "ring": r["ring_id"],
@@ -291,9 +296,9 @@ def out(page_id: str) -> dict:
 def for_tenant(tenant_id: str, undelivered_only: bool = False) -> list[dict]:
     """The pages this tenant raised. ``undelivered_only`` is the list somebody
     should be looking at in the morning."""
-    sql = "SELECT id FROM gate_pages WHERE tenant_id=?"
-    if undelivered_only:
-        sql += " AND state != 'sent'"
-    sql += " ORDER BY created_at DESC, rowid DESC"
-    return [out(r["id"])
-            for r in db.connect().execute(sql, (tenant_id,)).fetchall()]
+    return [out(r["id"], tenant_id)
+            for r in db.connect().execute(
+                "SELECT id FROM gate_pages WHERE tenant_id=?"
+                + (" AND state != 'sent'" if undelivered_only else "")
+                + " ORDER BY created_at DESC, rowid DESC",
+                (tenant_id,)).fetchall()]
