@@ -10,7 +10,7 @@ JIM-mini vaults its medical and context payloads here, and QRME seals its
 profile source material — each as its own tenant with its own token. See
 [docs/tandem.md](docs/tandem.md).
 
-**Current release: v0.84.0** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v0.85.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 PDI is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -167,6 +167,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 |---|---|
 | Release | What landed |
 |---|---|
+| **0.85.0** | **The front page reads like a product** — the README cut down to a professional overview at the owner's ask, the console galleries moved whole to `docs/gallery.md`, the release table folded but present, and the guards that held the old page holding the same promises across the pair. No functional changes to the vault itself |
 | **0.84.0** | **The version, and nothing else** — no code changes in this product. JIM-mini took this release on its own: one window over everything a guardian is running, both people having to agree before a link outlives the call, what the offline coach could not settle becoming a paid errand only where it had to, the day as it was taken in measured against what the roster promised before anything was switched on, a room reading cues rather than keeping footage, and two people on one call each with their own second channel. This product skipped 0.83.0 — that release touched nothing here and the number was left where it was rather than cut for the sake of it — which is exactly the drift the version guard exists to prevent, since a box carrying two numbers reports the mismatch to whoever is using it rather than to whoever deployed it. The three come back onto one number here |
 | **0.82.0** | **One page about one machine, and this repository says where it is** — this repository documents running the product on its own; the live beta is four containers on one box, documented once in QRME beside the compose file it describes. An operator standing here at the end of a release had no way to find it. `docs/hosting.md` says where it is, and why there is one copy rather than three — copies of a page about one machine disagree the first time somebody fixes only the one they had open |
 | **0.81.0** | **The sentence that forgot how it was built** — `str()` on a `Templated` returns a plain `str`, which drops the template, so a refusal built by `i18n.fill` and passed on as `HTTPException(403, str(exc))` reaches the reader as bare English in every language, looking exactly like a sentence nobody has translated yet. QRME shipped it on the sentence somebody reads while something is going wrong. Nothing here launders a template that way today, and this release is what keeps that true rather than assumed: `i18n.raised` hands a refusal on in the shape it was raised, and a guard carried by all three products fails any route that reaches for `str()` instead |
