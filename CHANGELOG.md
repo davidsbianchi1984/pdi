@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.86.0] - 2026-08-18
+
 ### Added
 
 - **The database made smart: the resident intelligence.** The stack's three
@@ -6818,6 +6820,7 @@ product of the three-product suite — the storage layer that
   release workflow.
 
 [Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.85.0...HEAD
+[0.86.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.85.0...app-v0.86.0
 [0.85.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.84.0...app-v0.85.0
 [0.84.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.82.0...app-v0.84.0
 [0.82.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.81.0...app-v0.82.0
