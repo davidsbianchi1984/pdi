@@ -27,6 +27,9 @@
             <NavigationViewItem Tag="transfers">
                 <NavigationViewItem.Icon><SymbolIcon Symbol="Send" /></NavigationViewItem.Icon>
             </NavigationViewItem>
+            <NavigationViewItem Tag="resident">
+                <NavigationViewItem.Icon><SymbolIcon Symbol="Repair" /></NavigationViewItem.Icon>
+            </NavigationViewItem>
         </NavigationView.MenuItems>
         <NavigationView.PaneFooter>
             <Button x:Name="SignOutButton" Margin="12" Click="OnSignOut"

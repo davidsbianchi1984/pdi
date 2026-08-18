@@ -450,6 +450,90 @@ public sealed class ApiClient
         Send<ProblemRowsResponse>(
             new HttpRequestMessage(HttpMethod.Get, "/v1/problems"), key);
 
+    // -- the resident intelligence (pdi/resident.py) ------------------------
+    // The agent living in the vault process: planner, closed tool registry,
+    // queryable datasets, embeddings, local-only inference. One engine for a
+    // facility tenant and a standard HTTPS tenant alike.
+
+    public record ResidentTool(
+        [property: JsonPropertyName("name")] string Name,
+        [property: JsonPropertyName("means")] string Means,
+        [property: JsonPropertyName("leaves_host")] bool LeavesHost);
+    public record ResidentPosture(
+        [property: JsonPropertyName("means")] string Means,
+        [property: JsonPropertyName("hosting_mode")] string HostingMode,
+        [property: JsonPropertyName("local_model")] string? LocalModel,
+        [property: JsonPropertyName("embedder")] string Embedder,
+        [property: JsonPropertyName("tools")] ResidentTool[] Tools,
+        [property: JsonPropertyName("privacy")] string Privacy);
+    public record ResidentStep(
+        [property: JsonPropertyName("position")] int Position,
+        [property: JsonPropertyName("title")] string Title,
+        [property: JsonPropertyName("tool")] string Tool,
+        [property: JsonPropertyName("leaves_host")] bool LeavesHost,
+        [property: JsonPropertyName("status")] string Status,
+        [property: JsonPropertyName("summary")] string? Summary,
+        [property: JsonPropertyName("error")] string? Error);
+    public record ResidentTask(
+        [property: JsonPropertyName("id")] string Id,
+        [property: JsonPropertyName("goal")] string Goal,
+        [property: JsonPropertyName("status")] string Status,
+        [property: JsonPropertyName("planned_by")] string PlannedBy,
+        [property: JsonPropertyName("plan_steps")] ResidentStep[] Steps);
+    public record ResidentDataset(
+        [property: JsonPropertyName("dataset")] string Dataset,
+        [property: JsonPropertyName("row_count")] int Rows);
+    public record ResidentEmbedOut(
+        [property: JsonPropertyName("key")] string Key,
+        [property: JsonPropertyName("embedder")] string Embedder);
+    public record ResidentMatch(
+        [property: JsonPropertyName("key")] string Key,
+        [property: JsonPropertyName("score")] double Score);
+    public record ResidentSearchOut(
+        [property: JsonPropertyName("query")] string Query,
+        [property: JsonPropertyName("matches")] ResidentMatch[] Matches);
+    public record ResidentRowsOut(
+        [property: JsonPropertyName("dataset")] string Dataset,
+        [property: JsonPropertyName("dataset_rows")] JsonElement[] Rows);
+
+    public Task<ResidentPosture> ResidentGetPosture(string token) =>
+        Send<ResidentPosture>(new HttpRequestMessage(HttpMethod.Get,
+            "/resident"), token);
+
+    public Task<ResidentTask> ResidentPlan(string token, string goal) =>
+        Send<ResidentTask>(new HttpRequestMessage(HttpMethod.Post,
+            "/resident/tasks")
+        { Content = JsonContent.Create(new { goal }) }, token);
+
+    public Task<ResidentTask[]> ResidentTasks(string token) =>
+        Send<ResidentTask[]>(new HttpRequestMessage(HttpMethod.Get,
+            "/resident/tasks"), token);
+
+    public Task<ResidentTask> ResidentRun(string token, string tid) =>
+        Send<ResidentTask>(new HttpRequestMessage(HttpMethod.Post,
+            $"/resident/tasks/{tid}/run"), token);
+
+    public Task<ResidentDataset[]> ResidentDatasets(string token) =>
+        Send<ResidentDataset[]>(new HttpRequestMessage(HttpMethod.Get,
+            "/resident/datasets"), token);
+
+    // Rows are whatever columns the plan wrote, so they render as the JSON
+    // they are rather than being decoded into a shape this shell invents.
+    public Task<ResidentRowsOut> ResidentRows(string token, string name) =>
+        Send<ResidentRowsOut>(new HttpRequestMessage(HttpMethod.Get,
+            $"/resident/datasets/{name}/rows"), token);
+
+    public Task<ResidentEmbedOut> ResidentEmbed(string token, string key,
+                                                string text) =>
+        Send<ResidentEmbedOut>(new HttpRequestMessage(HttpMethod.Post,
+            "/resident/embeddings")
+        { Content = JsonContent.Create(new { key, text }) }, token);
+
+    public Task<ResidentSearchOut> ResidentSearch(string token, string query) =>
+        Send<ResidentSearchOut>(new HttpRequestMessage(HttpMethod.Post,
+            "/resident/search")
+        { Content = JsonContent.Create(new { query }) }, token);
+
     private async Task<T> Send<T>(HttpRequestMessage req, string token = "")
     {
         if (!string.IsNullOrWhiteSpace(token))

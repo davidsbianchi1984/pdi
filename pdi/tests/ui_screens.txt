@@ -1,4 +1,4 @@
-# status: floor — 17 rows
+# status: floor — 18 rows
 #
 # Which console surface each screen drawing depicts.
 #
@@ -55,3 +55,4 @@ Custody         50
 Bridges         51
 Guiding         52
 Access          57
+Resident        58

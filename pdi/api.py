@@ -27,7 +27,7 @@ from . import (app_connectors, assistant, audit, baa, beacons, bequests,
                landing, mobile, notify, offline, positions,
                problems as problems_mod,
                retention,
-               robotics, roster,
+               resident as resident_mod, robotics, roster,
                terms as terms_mod, transfers, tutorial, vault)
 from .models import (AppCollect, AppConnect, AppInvoke, BAARecordIn,
                      BeaconFound, BeaconPlace, BeaconState,
@@ -38,7 +38,9 @@ from .models import (AppCollect, AppConnect, AppInvoke, BAARecordIn,
                      AccessReportSubmit,
                      DeploymentCreate, FeedbackSubmit, GateRing, IntakeCreate,
                      IntakeSubmit, LanguageChoice, PositionIntake,
-                     TranslateRequest, RecordPut, RetentionSet, RobotBind,
+                     TranslateRequest, RecordPut,
+                     ResidentEmbed, ResidentPlan, ResidentSearch,
+                     RetentionSet, RobotBind,
                      RobotIngest, RosterAdd, SnapshotRestore, TenantCreate,
                      TokenIssue, TransferCreate, GateTimezone)
 
@@ -717,6 +719,67 @@ def create_app() -> FastAPI:
     # A corporation seals a file for a recipient under HIPAA / OSHA / CPNI / …;
     # the recipient retrieves it with a one-shot receive token, every access
     # audited, retention enforced by the strictest program.
+
+    # -- the resident intelligence (pdi/resident.py) ------------------------
+    # The agent living in this process, beside the data: planner, closed
+    # tool registry, queryable datasets, embeddings, local-only inference.
+    # The same doors serve a facility tenant and a standard HTTPS tenant,
+    # because there is one engine and one privacy posture to reach.
+
+    @app.get("/resident")
+    def resident_posture(tenant: dict = Depends(_tenant)) -> dict:
+        """What runs here: the registry, the embedder, whether a local
+        model is present, and this tenant's hosting mode."""
+        return resident_mod.posture(tenant)
+
+    @app.post("/resident/tasks", status_code=201)
+    def resident_plan(body: ResidentPlan, tenant: dict = Depends(_writer)) -> dict:
+        try:
+            return resident_mod.plan(
+                tenant, body.goal,
+                None if body.steps is None else
+                [{"tool": s.tool, "title": s.title, "args": s.args}
+                 for s in body.steps])
+        except resident_mod.ResidentError as exc:
+            raise HTTPException(422, i18n.raised(exc))
+
+    @app.get("/resident/tasks")
+    def resident_tasks(tenant: dict = Depends(_tenant)) -> list[dict]:
+        return resident_mod.tasks(tenant)
+
+    @app.post("/resident/tasks/{tid}/run")
+    def resident_run(tid: str, tenant: dict = Depends(_writer)) -> dict:
+        try:
+            return resident_mod.run(tenant, tid)
+        except resident_mod.ResidentStateError as exc:
+            raise HTTPException(409, i18n.raised(exc))
+        except resident_mod.ResidentError as exc:
+            raise HTTPException(404, i18n.raised(exc))
+
+    @app.get("/resident/datasets")
+    def resident_datasets(tenant: dict = Depends(_tenant)) -> list[dict]:
+        return resident_mod.datasets(tenant)
+
+    @app.get("/resident/datasets/{name}/rows")
+    def resident_rows(name: str, limit: int = 100,
+                      tenant: dict = Depends(_tenant)) -> dict:
+        return resident_mod.read_rows(tenant, name, limit)
+
+    @app.post("/resident/embeddings", status_code=201)
+    def resident_embed(body: ResidentEmbed,
+                       tenant: dict = Depends(_writer)) -> dict:
+        try:
+            return resident_mod.embed(tenant, body.key, body.text)
+        except resident_mod.ResidentError as exc:
+            raise HTTPException(422, i18n.raised(exc))
+
+    @app.post("/resident/search")
+    def resident_search(body: ResidentSearch,
+                        tenant: dict = Depends(_tenant)) -> dict:
+        try:
+            return resident_mod.search(tenant, body.query, body.top_k)
+        except resident_mod.ResidentError as exc:
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.get("/compliance/programs")
     def compliance_programs() -> dict:

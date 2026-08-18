@@ -40,6 +40,7 @@ public sealed partial class ShellPage : Page
             case "robots": ContentFrame.Navigate(typeof(RobotsPage)); break;
             case "connectors": ContentFrame.Navigate(typeof(ConnectorsPage)); break;
             case "transfers": ContentFrame.Navigate(typeof(TransfersPage)); break;
+            case "resident": ContentFrame.Navigate(typeof(ResidentPage)); break;
         }
     }
 

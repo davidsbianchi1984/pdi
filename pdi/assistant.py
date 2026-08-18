@@ -152,6 +152,8 @@ _WALKTHROUGH: dict[str, tuple[tuple[str, ...], str]] = {
 # cannot name a screen the walkthrough does not cover — and a test binds every
 # lesson to an entry here.
 DIRECTIONS: dict[str, tuple[str, ...]] = {
+    'resident': ('resident', 'the agent', 'plan a task', 'datasets',
+                 'vector search', 'embeddings', 'local model'),
     "what_pdi_is": ("overview", "the dashboard", "home", "live tiles"),
     # The five doors the desktop console gained in 0.22.0. Somebody
     # looking for one of these before then was told, correctly, that it

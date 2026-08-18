@@ -247,7 +247,7 @@ RATCHETS: tuple[Ratchet, ...] = (
     Ratchet("tenant.scoped_tables_read", 15, _tenant_tables_read,
             "tables the schema scopes to a tenant, read from db.py by the "
             "isolation guard"),
-    Ratchet("tenant.statements_scanned", 60, _tenant_statements,
+    Ratchet("tenant.statements_scanned", 105, _tenant_statements,
             "SQL statements on tenant-scoped tables the isolation guard "
             "can parse"),
     # 12 against 15 — four-fifths, and not the 15 this was first written

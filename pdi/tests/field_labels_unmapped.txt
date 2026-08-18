@@ -1,4 +1,4 @@
-# status: backlog — 51 rows
+# status: backlog — 56 rows
 #
 # Request-model fields with no row in `i18n._FIELD_LABELS`, so a 422 that
 # names one shows the API's identifier rather than the label on the form.
@@ -27,7 +27,7 @@
 # (`admin`, `preferences`, `workflow`), ids a client fills in from the row it
 # is looking at, enum members, and flags.
 #
-# ceiling: 51
+# ceiling: 56
 activation_ref
 admin
 app
@@ -79,3 +79,13 @@ translatable
 updated_at
 where
 workflow
+
+# The resident plan's internals (0.85.x): a caller-authored step names its
+# tool, title and args programmatically, and steps/top_k are set by the
+# client, never typed into a control. `goal` and `query` are the two typed
+# fields, and they are labelled in _FIELD_LABELS instead.
+args
+steps
+title
+tool
+top_k

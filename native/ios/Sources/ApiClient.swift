@@ -243,6 +243,63 @@ actor ApiClient {
         try await request("/v1/problems", token: key)
     }
 
+    // -- the resident intelligence (pdi/resident.py) ------------------------
+    // The agent living in the vault process: planner, closed tool registry,
+    // queryable datasets, embeddings, local-only inference. One engine for a
+    // facility tenant and a standard HTTPS tenant alike.
+
+    func residentPosture(token: String) async throws -> ResidentPosture {
+        try await request("/resident", token: token)
+    }
+
+    func residentPlan(goal: String, token: String) async throws -> ResidentTask {
+        try await request("/resident/tasks", method: "POST",
+                          body: ["goal": goal], token: token)
+    }
+
+    func residentTasks(token: String) async throws -> [ResidentTask] {
+        try await request("/resident/tasks", token: token)
+    }
+
+    func residentRun(tid: String, token: String) async throws -> ResidentTask {
+        try await request("/resident/tasks/\(tid)/run", method: "POST",
+                          token: token)
+    }
+
+    func residentDatasets(token: String) async throws -> [ResidentDataset] {
+        try await request("/resident/datasets", token: token)
+    }
+
+    /// Rows are whatever columns the plan wrote, so they are shown as the
+    /// JSON they are rather than decoded into a shape this shell invents.
+    func residentRows(name: String, token: String) async throws -> [String] {
+        var req = URLRequest(url: base.appendingPathComponent(
+            "/resident/datasets/\(name)/rows"))
+        req.setValue("Bearer \(token)", forHTTPHeaderField: "authorization")
+        req.setValue(L10n.deviceLanguage, forHTTPHeaderField: "accept-language")
+        let (data, _) = try await URLSession.shared.data(for: req)
+        guard let body = try JSONSerialization.jsonObject(with: data)
+                as? [String: Any],
+              let rows = body["dataset_rows"] as? [[String: Any]] else { return [] }
+        return rows.map { row in
+            (try? JSONSerialization.data(withJSONObject: row,
+                                         options: [.sortedKeys]))
+                .flatMap { String(data: $0, encoding: .utf8) } ?? ""
+        }
+    }
+
+    func residentEmbed(key: String, text: String,
+                       token: String) async throws -> ResidentEmbedOut {
+        try await request("/resident/embeddings", method: "POST",
+                          body: ["key": key, "text": text], token: token)
+    }
+
+    func residentSearch(query: String,
+                        token: String) async throws -> ResidentSearchOut {
+        try await request("/resident/search", method: "POST",
+                          body: ["query": query], token: token)
+    }
+
     private func request<T: Decodable>(_ path: String, method: String = "GET",
                                        body: [String: Any]? = nil,
                                        token: String? = nil) async throws -> T {
@@ -1315,4 +1372,55 @@ struct OfflinePosture: Decodable {
     let external_transmission_possible: Bool
     let local_destinations_allowed: String
     let guarantees: [String]
+}
+
+// The resident intelligence's wire shapes (pdi/resident.py). `leaves_host`
+// travels with every tool and step on purpose: a person deciding whether to
+// run a plan should not have to read Python to learn which steps go outside.
+struct ResidentTool: Decodable {
+    let name: String
+    let means: String
+    let leaves_host: Bool
+}
+struct ResidentPosture: Decodable {
+    let resident: Bool
+    let means: String
+    let hosting_mode: String
+    let in_facility: Bool
+    let local_model: String?
+    let embedder: String
+    let tools: [ResidentTool]
+    let privacy: String
+}
+struct ResidentStepOut: Decodable {
+    let position: Int
+    let title: String
+    let tool: String
+    let leaves_host: Bool
+    let status: String
+    let result_ref: String?
+    let summary: String?
+    let error: String?
+}
+struct ResidentTask: Decodable {
+    let id: String
+    let goal: String
+    let status: String
+    let planned_by: String
+    let plan_steps: [ResidentStepOut]
+}
+struct ResidentDataset: Decodable {
+    let dataset: String
+    let row_count: Int
+    let last_write: String
+}
+struct ResidentEmbedOut: Decodable {
+    let key: String
+    let embedder: String
+    let dim: Int
+}
+struct ResidentMatch: Decodable { let key: String; let score: Double }
+struct ResidentSearchOut: Decodable {
+    let query: String
+    let matches: [ResidentMatch]
 }

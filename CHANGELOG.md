@@ -6,6 +6,44 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The database made smart: the resident intelligence.** The stack's three
+  products talk over HTTP, and for most people that is the right shape. But
+  PDI's whole offer is a place where the bytes live, and for a tenant whose
+  vault sits in our colocation facility, in leased space, or in their own
+  data centre, shipping every question across a network to a separate
+  orchestration service is backwards — the data has gravity, and the
+  intelligence should live where it lives. `pdi/resident.py` is that
+  opposite approach in one process: it **plans multi-step tasks** (a goal in
+  words becomes ordered steps — deterministic rules, readable before
+  anything runs, identical on a host with no model); **calls tools through
+  one closed registry** (fetch, seal, tabulate, embed, search, infer — a
+  plan naming anything else refuses at planning time, and `leaves_host`
+  travels with every tool so nobody reads Python to learn which steps go
+  outside); **writes structured results into tables the app can query**
+  (`table.append` validates flat rows into named datasets, and can derive
+  rows from the text a previous fetch sealed — fetch data, put it in a
+  table, query it, in one plan); **embeds for vector search** (L2-normalised
+  vectors per key, cosine ranking, a deterministic hashed n-gram embedder
+  with no model and a local model's when one is installed — labelled,
+  because two embedders' vectors do not share a space); and **infers
+  locally only** (`PDI_OLLAMA_URL` on this host, or the honest stub that
+  says no model is installed — never a cloud model, because a resident
+  that phones out is not resident).
+
+  The privacy is the vault's own: fetched content is sealed AES-256-GCM
+  and steps carry references; vectors store a hash of the text, never the
+  text; every task, step, fetch, row-write and embedding lands on the
+  audit chain under six new catalogued actions; every statement carries
+  `tenant_id` in the SQL, born after the isolation round with no excuse;
+  and offline mode refuses the one outbound tool at the socket. The same
+  doors serve a facility tenant and a standard HTTPS tenant, because there
+  is one engine and one privacy posture to reach — opting out of a
+  facility costs nothing but the residency. Doors on the console
+  (Resident screen), iOS, Android and Windows (a Resident tab in Sources
+  and the nav), in ten languages.
+
 ### Changed
 
 - **A tenant's row is reached through its tenant, in the SQL itself.** The

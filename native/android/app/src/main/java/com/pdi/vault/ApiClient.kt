@@ -66,6 +66,22 @@ data class IntakeFile(val filename: String?, val content: String?)
 data class SocialConn(val id: String, val platform: String, val direction: String,
                       val handle: String?, val status: String?)
 
+// The resident intelligence's wire shapes (pdi/resident.py). `leavesHost`
+// travels with every tool and step on purpose: a person deciding whether
+// to run a plan should not have to read Python to learn which steps go
+// outside.
+data class ResidentTool(val name: String, val means: String, val leavesHost: Boolean)
+data class ResidentPosture(val means: String, val hostingMode: String,
+                           val localModel: String?, val embedder: String,
+                           val tools: List<ResidentTool>, val privacy: String)
+data class ResidentStep(val position: Int, val title: String, val tool: String,
+                        val leavesHost: Boolean, val status: String,
+                        val summary: String?, val error: String?)
+data class ResidentTask(val id: String, val goal: String, val status: String,
+                        val plannedBy: String, val steps: List<ResidentStep>)
+data class ResidentDataset(val dataset: String, val rows: Int)
+data class ResidentMatch(val key: String, val score: Double)
+
 data class KeyVersion(val generation: Int, val active: Boolean, val createdAt: String?)
 data class KeysInfo(val provider: String, val versions: List<KeyVersion>)
 data class ImproveItem(val category: String, val message: String, val status: String)
@@ -1069,6 +1085,89 @@ object ApiClient {
     private fun connOf(o: JSONObject) = SocialConn(
         o.getString("id"), o.optString("platform", ""), o.optString("direction", ""),
         o.optString("handle", null), o.optString("status", null))
+
+    // -- the resident intelligence (pdi/resident.py) ------------------------
+
+    private fun residentTaskOf(o: JSONObject): ResidentTask {
+        val steps = o.getJSONArray("plan_steps")
+        return ResidentTask(
+            id = o.getString("id"), goal = o.getString("goal"),
+            status = o.getString("status"),
+            plannedBy = o.getString("planned_by"),
+            steps = (0 until steps.length()).map { i ->
+                val s = steps.getJSONObject(i)
+                ResidentStep(
+                    position = s.getInt("position"),
+                    title = s.getString("title"),
+                    tool = s.getString("tool"),
+                    leavesHost = s.getBoolean("leaves_host"),
+                    status = s.getString("status"),
+                    summary = s.optString("summary").takeIf { it.isNotBlank() },
+                    error = s.optString("error").takeIf { it.isNotBlank() })
+            })
+    }
+
+    suspend fun residentPosture(token: String): ResidentPosture {
+        val o = JSONObject(request("/resident", token = token))
+        val tools = o.getJSONArray("tools")
+        return ResidentPosture(
+            means = o.getString("means"),
+            hostingMode = o.getString("hosting_mode"),
+            localModel = o.optString("local_model").takeIf { it.isNotBlank() && it != "null" },
+            embedder = o.getString("embedder"),
+            tools = (0 until tools.length()).map { i ->
+                val tl = tools.getJSONObject(i)
+                ResidentTool(tl.getString("name"), tl.getString("means"),
+                             tl.getBoolean("leaves_host"))
+            },
+            privacy = o.getString("privacy"))
+    }
+
+    suspend fun residentPlan(token: String, goal: String): ResidentTask =
+        residentTaskOf(JSONObject(request("/resident/tasks", "POST",
+            JSONObject().put("goal", goal), token)))
+
+    suspend fun residentTasks(token: String): List<ResidentTask> {
+        val arr = JSONArray(request("/resident/tasks", token = token))
+        return (0 until arr.length()).map { residentTaskOf(arr.getJSONObject(it)) }
+    }
+
+    suspend fun residentRun(token: String, tid: String): ResidentTask =
+        residentTaskOf(JSONObject(
+            request("/resident/tasks/$tid/run", "POST", null, token)))
+
+    suspend fun residentDatasets(token: String): List<ResidentDataset> {
+        val arr = JSONArray(request("/resident/datasets", token = token))
+        return (0 until arr.length()).map {
+            val d = arr.getJSONObject(it)
+            ResidentDataset(d.getString("dataset"), d.getInt("row_count"))
+        }
+    }
+
+    /// Rows are whatever columns the plan wrote, so they are shown as the
+    /// JSON they are rather than decoded into a shape this shell invents.
+    suspend fun residentRows(token: String, name: String): List<String> {
+        val o = JSONObject(request("/resident/datasets/$name/rows",
+                                   token = token))
+        val arr = o.getJSONArray("dataset_rows")
+        return (0 until arr.length()).map { arr.getJSONObject(it).toString() }
+    }
+
+    suspend fun residentEmbed(token: String, key: String, text: String): String {
+        val o = JSONObject(request("/resident/embeddings", "POST",
+            JSONObject().put("key", key).put("text", text), token))
+        return o.getString("embedder")
+    }
+
+    suspend fun residentSearch(token: String, query: String): List<ResidentMatch> {
+        val o = JSONObject(request("/resident/search", "POST",
+            JSONObject().put("query", query), token))
+        val arr = o.getJSONArray("matches")
+        return (0 until arr.length()).map {
+            val m = arr.getJSONObject(it)
+            ResidentMatch(m.getString("key"), m.getDouble("score"))
+        }
+    }
 
     suspend fun connectors(token: String): List<SocialConn> {
         val arr = JSONArray(request("/connectors", token = token))

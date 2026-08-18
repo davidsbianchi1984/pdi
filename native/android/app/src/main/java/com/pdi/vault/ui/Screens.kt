@@ -1972,13 +1972,17 @@ fun SourcesScreen(vm: VaultViewModel) {
     var seg by remember { mutableIntStateOf(0) }
     Column(Modifier.fillMaxSize()) {
         TabRow(selectedTabIndex = seg, containerColor = Pdi.Card, contentColor = Pdi.BrandA) {
-            listOf("tab.robots", "tab.connectors").forEachIndexed { i, t ->
+            listOf("tab.robots", "tab.connectors", "tab.resident").forEachIndexed { i, t ->
                 Tab(selected = seg == i, onClick = { seg = i },
                     text = { Text(L10n.t(t, vm.language), fontSize = 13.sp) })
             }
         }
         Box(Modifier.weight(1f)) {
-            if (seg == 0) RobotsScreen(vm) else ConnectorsPanel(vm)
+            when (seg) {
+                0 -> RobotsScreen(vm)
+                1 -> ConnectorsPanel(vm)
+                else -> ResidentPanel(vm)
+            }
         }
     }
 }
@@ -2462,5 +2466,117 @@ fun VersionGuardBar(language: String) {
                 Text(L10n.t("vg.dismiss", language), color = Pdi.T2, fontSize = 12.sp)
             }
         }
+    }
+}
+
+// ---- The resident intelligence (pdi/resident.py) ----
+//
+// The agent living in the vault process: planner, closed tool registry,
+// queryable datasets, embeddings, local-only inference. The same engine a
+// colocation or own-facility deployment runs beside its data, reached here
+// over the standard service. `leavesHost` renders beside every tool and
+// step, and the posture's sentences are the server's own, verbatim.
+
+@Composable
+private fun ResidentPanel(vm: VaultViewModel) {
+    var posture by remember { mutableStateOf<ResidentPosture?>(null) }
+    var tasks by remember { mutableStateOf<List<ResidentTask>>(emptyList()) }
+    var datasets by remember { mutableStateOf<List<ResidentDataset>>(emptyList()) }
+    var rows by remember { mutableStateOf<List<String>>(emptyList()) }
+    var goal by remember { mutableStateOf("") }
+    var embedKey by remember { mutableStateOf("") }
+    var embedText by remember { mutableStateOf("") }
+    var query by remember { mutableStateOf("") }
+    var matches by remember { mutableStateOf<List<ResidentMatch>>(emptyList()) }
+    var status by remember { mutableStateOf<String?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    fun reload() {
+        vm.call({ ApiClient.residentPosture(vm.token!!) }) { r -> posture = r.getOrNull() }
+        vm.call({ ApiClient.residentTasks(vm.token!!) }) { r -> tasks = r.getOrDefault(emptyList()) }
+        vm.call({ ApiClient.residentDatasets(vm.token!!) }) { r -> datasets = r.getOrDefault(emptyList()) }
+    }
+    LaunchedEffect(Unit) { reload() }
+
+    screenScroll {
+        Text(L10n.t("res.title", vm.language), color = Pdi.Txt, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        posture?.let { po ->
+            Text(po.means, color = Pdi.T2, fontSize = 12.sp)
+            Text(L10n.t("res.hosting", vm.language) + ": " + po.hostingMode +
+                 " · " + L10n.t("res.model", vm.language) + ": " +
+                 (po.localModel ?: L10n.t("res.nomodel", vm.language)) +
+                 " · " + po.embedder, color = Pdi.T2, fontSize = 11.sp)
+            po.tools.forEach { tl ->
+                Text(tl.name + " — " + tl.means + " · " +
+                     L10n.t(if (tl.leavesHost) "res.leaves" else "res.stays", vm.language),
+                    color = Pdi.T2, fontSize = 10.sp)
+            }
+            Text(po.privacy, color = Pdi.T2, fontSize = 10.sp)
+        }
+
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(L10n.t("res.plan", vm.language), color = Pdi.Txt, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+            labeledField(L10n.t("res.plan", vm.language), goal, L10n.t("res.plan.ph", vm.language)) { goal = it }
+            TextButton(onClick = {
+                error = null
+                vm.call({ ApiClient.residentPlan(vm.token!!, goal) }) { r ->
+                    r.onSuccess { goal = "" }.onFailure { error = it.message }
+                    reload()
+                }
+            }) { Text(L10n.t("res.plan.go", vm.language), color = Pdi.BrandA, fontSize = 13.sp) }
+        }
+
+        Text(L10n.t("res.tasks", vm.language), color = Pdi.Txt, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+        tasks.forEach { task ->
+            Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(task.goal + " — " + task.status, color = Pdi.Txt, fontSize = 13.sp)
+                task.steps.forEach { s ->
+                    Text("" + s.position + ". " + s.tool + " — " + s.status +
+                         (if (s.leavesHost) " · " + L10n.t("res.leaves", vm.language) else "") +
+                         (s.summary?.let { " · " + it } ?: "") +
+                         (s.error?.let { " · " + it } ?: ""),
+                        color = if (s.error == null) Pdi.T2 else Pdi.Red, fontSize = 10.sp)
+                }
+                if (task.status == "planned" || task.status == "failed") {
+                    TextButton(onClick = {
+                        vm.call({ ApiClient.residentRun(vm.token!!, task.id) }) { reload() }
+                    }) { Text(L10n.t("res.run", vm.language), color = Pdi.BrandA, fontSize = 12.sp) }
+                }
+            }
+        }
+
+        Text(L10n.t("res.datasets", vm.language), color = Pdi.Txt, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+        datasets.forEach { d ->
+            TextButton(onClick = {
+                vm.call({ ApiClient.residentRows(vm.token!!, d.dataset) }) { r ->
+                    rows = r.getOrDefault(emptyList())
+                }
+            }) { Text(d.dataset + " · " + d.rows, color = Pdi.BrandA, fontSize = 12.sp) }
+        }
+        rows.forEach { Text(it, color = Pdi.T2, fontSize = 10.sp) }
+
+        Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(L10n.t("res.embed", vm.language), color = Pdi.Txt, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+            labeledField(L10n.t("res.embed.key", vm.language), embedKey, L10n.t("res.embed.key", vm.language)) { embedKey = it }
+            labeledField(L10n.t("res.embed.text", vm.language), embedText, L10n.t("res.embed.text", vm.language)) { embedText = it }
+            TextButton(onClick = {
+                error = null
+                vm.call({ ApiClient.residentEmbed(vm.token!!, embedKey, embedText) }) { r ->
+                    r.onSuccess { status = it; embedText = "" }.onFailure { error = it.message }
+                }
+            }) { Text(L10n.t("res.embed.go", vm.language), color = Pdi.BrandA, fontSize = 13.sp) }
+            labeledField(L10n.t("res.search.ph", vm.language), query, L10n.t("res.search.ph", vm.language)) { query = it }
+            TextButton(onClick = {
+                error = null
+                vm.call({ ApiClient.residentSearch(vm.token!!, query) }) { r ->
+                    r.onSuccess { matches = it }.onFailure { error = it.message }
+                }
+            }) { Text(L10n.t("res.search.go", vm.language), color = Pdi.BrandA, fontSize = 13.sp) }
+            matches.forEach { m ->
+                Text(m.key + " · " + m.score, color = Pdi.T2, fontSize = 11.sp)
+            }
+        }
+        error?.let { Text(it, color = Pdi.Red, fontSize = 13.sp) }
+        status?.let { Text(it, color = Pdi.Green, fontSize = 12.sp) }
     }
 }

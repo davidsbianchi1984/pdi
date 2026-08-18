@@ -6,6 +6,7 @@ import { Footsteps } from "./Footsteps";
 import { VersionGuard } from "./VersionGuard";
 import { VaultLight } from "./VaultLight";
 import { Overview } from "./screens/Overview";
+import { Resident } from "./screens/Resident";
 import { Tenants } from "./screens/Tenants";
 import { Records } from "./screens/Records";
 import { Continuity } from "./screens/Continuity";
@@ -21,7 +22,7 @@ import { Bridges } from "./screens/Bridges";
 import { Guiding } from "./screens/Guiding";
 import { Access } from "./screens/Access";
 
-type Tab = "overview" | "tenants" | "records" | "exchange" | "carriers" | "bridges" | "operations" | "continuity" | "positions" | "keys" | "custody" | "audit" | "guiding" | "access" | "settings";
+type Tab = "overview" | "resident" | "tenants" | "records" | "exchange" | "carriers" | "bridges" | "operations" | "continuity" | "positions" | "keys" | "custody" | "audit" | "guiding" | "access" | "settings";
 // Labels live in l10n.ts as `nav.{id}` — the sidebar reads in the visitor's
 // language like everything it leads to, so a screen reader pronounces the
 // tab names in the language the page declares.
@@ -39,6 +40,7 @@ const NAV: { id: Tab; icon: string }[] = [
   { id: "custody", icon: "⚖" },
   { id: "audit", icon: "✓" },
   { id: "guiding", icon: "🧑‍🏫" },
+  { id: "resident", icon: "🧠" },
   { id: "access", icon: "♿" },
   { id: "settings", icon: "⚙" },
 ];
@@ -100,6 +102,7 @@ export function App() {
         {tab === "custody" && <Custody />}
         {tab === "bridges" && <Bridges />}
         {tab === "guiding" && <Guiding />}
+        {tab === "resident" && <Resident />}
         {tab === "access" && <Access />}
         {tab === "settings" && <Settings />}
       </main>

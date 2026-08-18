@@ -994,10 +994,48 @@ def fill(template: str, **slots) -> Templated:
 #: same string in every language.
 MUST_BE_ONE_OF = "{field} must be one of {choices}"
 
+# The resident intelligence's interpolated refusals (pdi/resident.py).
+RESIDENT_MAX_ROWS = ("at most {n} rows per append — send more appends "
+                     "rather than a bigger one")
+RESIDENT_MAX_COLUMNS = "a row may carry at most {n} columns"
+RESIDENT_BAD_COLUMN = ("column {name} — lower-case letters, digits and "
+                       "underscores, starting with a letter")
+RESIDENT_NESTED_COLUMN = ("column {name} holds a nested value; rows are "
+                          "flat so the app can query them")
+RESIDENT_NOTHING_SEALED = "nothing sealed at {key}"
+RESIDENT_BAD_DERIVE = "unknown derivation {how} — lines or csv"
+RESIDENT_MAX_STEPS = "at most {n} steps per task"
+RESIDENT_UNKNOWN_TOOL = "unknown tool {tool} — the registry is: {registry}"
+RESIDENT_TASK_STATE = "this task is {status}"
+RESIDENT_LOST_SPACE = ("the index was embedded by {space} and this host "
+                       "cannot run it now — re-embed, or restore the model")
+
 #: Derived from the table below rather than repeated.
 TEMPLATES = (MUST_BE_ONE_OF,)
 
 _TEMPLATES: dict[str, dict[str, str]] = {
+    # -- the resident intelligence (pdi/resident.py) ------------------------
+    RESIDENT_MAX_ROWS: {
+        'es': "como máximo {n} filas por adición: envía más adiciones en lugar de una mayor", 'fr': "au plus {n} lignes par ajout — envoyez plus d'ajouts plutôt qu'un plus gros", 'de': "höchstens {n} Zeilen pro Anfügen — sende mehr Anfügungen statt eines größeren", 'pt': "no máximo {n} linhas por acréscimo — envie mais acréscimos em vez de um maior", 'it': "al massimo {n} righe per aggiunta: invia più aggiunte anziché una più grande", 'ja': "1回の追加は最大 {n} 行です — 大きな1回ではなく複数回に分けて送ってください", 'zh': "每次追加最多 {n} 行 — 请分多次追加，而不是一次更大的", 'hi': "प्रति एपेंड अधिकतम {n} पंक्तियाँ — एक बड़े के बजाय और एपेंड भेजें", 'ar': "بحد أقصى {n} صفًا لكل إضافة — أرسل إضافات أكثر بدل إضافة أكبر"},
+    RESIDENT_MAX_COLUMNS: {
+        'es': "una fila puede llevar como máximo {n} columnas", 'fr': "une ligne peut porter au plus {n} colonnes", 'de': "eine Zeile darf höchstens {n} Spalten tragen", 'pt': "uma linha pode ter no máximo {n} colunas", 'it': "una riga può portare al massimo {n} colonne", 'ja': "1行が持てるのは最大 {n} 列です", 'zh': "一行最多可有 {n} 列", 'hi': "एक पंक्ति में अधिकतम {n} कॉलम हो सकते हैं", 'ar': "يمكن للصف أن يحمل {n} عمودًا كحد أقصى"},
+    RESIDENT_BAD_COLUMN: {
+        'es': "columna {name}: minúsculas, dígitos y guiones bajos, empezando por una letra", 'fr': "colonne {name} — minuscules, chiffres et tirets bas, commençant par une lettre", 'de': "Spalte {name} — Kleinbuchstaben, Ziffern und Unterstriche, beginnend mit einem Buchstaben", 'pt': "coluna {name} — minúsculas, dígitos e sublinhados, começando por uma letra", 'it': "colonna {name} — minuscole, cifre e trattini bassi, iniziando con una lettera", 'ja': "列 {name} — 小文字・数字・アンダースコアで、先頭は文字にしてください", 'zh': "列 {name} — 小写字母、数字和下划线，且以字母开头", 'hi': "कॉलम {name} — छोटे अक्षर, अंक और अंडरस्कोर, अक्षर से शुरू", 'ar': "العمود {name} — أحرف صغيرة وأرقام وشرطات سفلية، ويبدأ بحرف"},
+    RESIDENT_NESTED_COLUMN: {
+        'es': "la columna {name} contiene un valor anidado; las filas son planas para que la app pueda consultarlas", 'fr': "la colonne {name} contient une valeur imbriquée ; les lignes sont plates pour que l'app puisse les interroger", 'de': "Spalte {name} enthält einen verschachtelten Wert; Zeilen sind flach, damit die App sie abfragen kann", 'pt': "a coluna {name} contém um valor aninhado; as linhas são planas para a app as poder consultar", 'it': "la colonna {name} contiene un valore annidato; le righe sono piatte perché l'app possa interrogarle", 'ja': "列 {name} に入れ子の値があります。アプリが照会できるよう、行はフラットにしてください", 'zh': "列 {name} 含有嵌套值；行必须是扁平的，应用才能查询", 'hi': "कॉलम {name} में नेस्टेड मान है; पंक्तियाँ सपाट होती हैं ताकि ऐप उन्हें क्वेरी कर सके", 'ar': "العمود {name} يحمل قيمة متداخلة؛ الصفوف مسطّحة كي يستطيع التطبيق الاستعلام عنها"},
+    RESIDENT_NOTHING_SEALED: {
+        'es': "no hay nada sellado en {key}", 'fr': "rien n'est scellé à {key}", 'de': "unter {key} ist nichts versiegelt", 'pt': "não há nada selado em {key}", 'it': "non c'è nulla di sigillato in {key}", 'ja': "{key} には何も封緘されていません", 'zh': "{key} 处没有封存任何内容", 'hi': "{key} पर कुछ भी सील नहीं है", 'ar': "لا شيء مختوم عند {key}"},
+    RESIDENT_BAD_DERIVE: {
+        'es': "derivación desconocida {how}: lines o csv", 'fr': "dérivation inconnue {how} — lines ou csv", 'de': "unbekannte Ableitung {how} — lines oder csv", 'pt': "derivação desconhecida {how} — lines ou csv", 'it': "derivazione sconosciuta {how} — lines o csv", 'ja': "不明な派生 {how} — lines か csv にしてください", 'zh': "未知的派生方式 {how} — 仅支持 lines 或 csv", 'hi': "अज्ञात व्युत्पत्ति {how} — lines या csv", 'ar': "اشتقاق غير معروف {how} — إما lines أو csv"},
+    RESIDENT_MAX_STEPS: {
+        'es': "como máximo {n} pasos por tarea", 'fr': "au plus {n} étapes par tâche", 'de': "höchstens {n} Schritte pro Aufgabe", 'pt': "no máximo {n} passos por tarefa", 'it': "al massimo {n} passi per compito", 'ja': "1つのタスクは最大 {n} ステップです", 'zh': "每个任务最多 {n} 个步骤", 'hi': "प्रति कार्य अधिकतम {n} चरण", 'ar': "بحد أقصى {n} خطوة لكل مهمة"},
+    RESIDENT_UNKNOWN_TOOL: {
+        'es': "herramienta desconocida {tool}: el registro es: {registry}", 'fr': "outil inconnu {tool} — le registre est : {registry}", 'de': "unbekanntes Werkzeug {tool} — das Register ist: {registry}", 'pt': "ferramenta desconhecida {tool} — o registo é: {registry}", 'it': "strumento sconosciuto {tool} — il registro è: {registry}", 'ja': "不明なツール {tool} — レジストリは次のとおりです: {registry}", 'zh': "未知工具 {tool} — 注册表为：{registry}", 'hi': "अज्ञात उपकरण {tool} — रजिस्ट्री है: {registry}", 'ar': "أداة غير معروفة {tool} — السجل هو: {registry}"},
+    RESIDENT_TASK_STATE: {
+        'es': "esta tarea está {status}", 'fr': "cette tâche est {status}", 'de': "diese Aufgabe ist {status}", 'pt': "esta tarefa está {status}", 'it': "questo compito è {status}", 'ja': "このタスクは {status} です", 'zh': "此任务处于 {status} 状态", 'hi': "यह कार्य {status} है", 'ar': "هذه المهمة {status}"},
+    RESIDENT_LOST_SPACE: {
+        'es': "el índice fue incrustado por {space} y este host ya no puede ejecutarlo: vuelve a incrustar, o restaura el modelo", 'fr': "l'index a été encodé par {space} et cet hôte ne peut plus l'exécuter — ré-encodez, ou restaurez le modèle", 'de': "der Index wurde von {space} eingebettet und dieser Host kann es jetzt nicht ausführen — bette neu ein oder stelle das Modell wieder her", 'pt': "o índice foi incorporado por {space} e este host já não o consegue executar — reincorpore, ou restaure o modelo", 'it': "l'indice è stato incorporato da {space} e questo host ora non può eseguirlo: re-incorpora, o ripristina il modello", 'ja': "このインデックスは {space} で埋め込まれており、このホストでは現在実行できません — 再埋め込みするか、モデルを復元してください", 'zh': "该索引由 {space} 嵌入，而这台主机现在无法运行它 — 请重新嵌入，或恢复该模型", 'hi': "इंडेक्स {space} से एम्बेड हुआ था और यह होस्ट अभी उसे नहीं चला सकता — फिर से एम्बेड करें, या मॉडल बहाल करें", 'ar': "فُهرس هذا الدليل بواسطة {space} وهذا المضيف لا يستطيع تشغيله الآن — أعد التضمين، أو استعد النموذج"},
+
     MUST_BE_ONE_OF: {
         'es': '{field} debe ser uno de {choices}',
         'fr': "{field} doit être l'un de {choices}",
@@ -1187,6 +1225,38 @@ SERVER_ERROR = ("Something went wrong on our side. "
 #: languages. What is not here is recorded in
 #: `pdi/tests/refusals_untranslated.txt` and ratcheted.
 _REFUSALS: dict[str, dict[str, str]] = {
+    # -- the resident intelligence (pdi/resident.py) ------------------------
+    "a task needs a goal in words": {
+        'es': "una tarea necesita una meta en palabras", 'fr': "une tâche a besoin d'un objectif en mots", 'de': "eine Aufgabe braucht ein Ziel in Worten", 'pt': "uma tarefa precisa de uma meta em palavras", 'it': "un compito ha bisogno di un obiettivo in parole", 'ja': "タスクには言葉で書いた目標が必要です", 'zh': "任务需要用文字写下的目标", 'hi': "कार्य के लिए शब्दों में एक लक्ष्य चाहिए", 'ar': "المهمة تحتاج إلى هدف مكتوب بالكلمات"},
+    "nothing to plan — the goal decomposed to no steps": {
+        'es': "nada que planificar: la meta no se descompuso en ningún paso", 'fr': "rien à planifier — l'objectif ne s'est décomposé en aucune étape", 'de': "nichts zu planen — das Ziel zerfiel in keine Schritte", 'pt': "nada para planear — a meta não se decompôs em passos", 'it': "niente da pianificare: l'obiettivo non si è scomposto in passi", 'ja': "計画するものがありません — 目標がどのステップにも分解されませんでした", 'zh': "没有可规划的内容 — 目标没有分解出任何步骤", 'hi': "योजना बनाने को कुछ नहीं — लक्ष्य किसी चरण में नहीं बँटा", 'ar': "لا شيء للتخطيط — لم يتحلل الهدف إلى أي خطوات"},
+    "no such task": {
+        'es': "no existe esa tarea", 'fr': "aucune tâche de ce nom", 'de': "keine solche Aufgabe", 'pt': "não existe essa tarefa", 'it': "nessun compito del genere", 'ja': "そのようなタスクはありません", 'zh': "没有这个任务", 'hi': "ऐसा कोई कार्य नहीं", 'ar': "لا توجد مهمة كهذه"},
+    "nothing to embed — say a few words first": {
+        'es': "nada que incrustar: di antes unas palabras", 'fr': "rien à encoder — dites d'abord quelques mots", 'de': "nichts einzubetten — sag zuerst ein paar Worte", 'pt': "nada para incorporar — diga primeiro algumas palavras", 'it': "niente da incorporare: di' prima qualche parola", 'ja': "埋め込むものがありません — まず何か言葉を入力してください", 'zh': "没有可嵌入的内容 — 先说几个字", 'hi': "एम्बेड करने को कुछ नहीं — पहले कुछ शब्द कहें", 'ar': "لا شيء للتضمين — قل بضع كلمات أولًا"},
+    "nothing to search for — say a few words first": {
+        'es': "nada que buscar: di antes unas palabras", 'fr': "rien à chercher — dites d'abord quelques mots", 'de': "nichts zu suchen — sag zuerst ein paar Worte", 'pt': "nada para pesquisar — diga primeiro algumas palavras", 'it': "niente da cercare: di' prima qualche parola", 'ja': "検索するものがありません — まず何か言葉を入力してください", 'zh': "没有可搜索的内容 — 先说几个字", 'hi': "खोजने को कुछ नहीं — पहले कुछ शब्द कहें", 'ar': "لا شيء للبحث عنه — قل بضع كلمات أولًا"},
+    "rows must be a non-empty list of flat objects": {
+        'es': "rows debe ser una lista no vacía de objetos planos", 'fr': "rows doit être une liste non vide d'objets plats", 'de': "rows muss eine nicht leere Liste flacher Objekte sein", 'pt': "rows deve ser uma lista não vazia de objetos planos", 'it': "rows deve essere una lista non vuota di oggetti piatti", 'ja': "rows は空でないフラットなオブジェクトのリストにしてください", 'zh': "rows 必须是非空的扁平对象列表", 'hi': "rows को सपाट ऑब्जेक्ट्स की गैर-खाली सूची होना चाहिए", 'ar': "يجب أن تكون rows قائمة غير فارغة من كائنات مسطّحة"},
+    "every row must be a non-empty object": {
+        'es': "cada fila debe ser un objeto no vacío", 'fr': "chaque ligne doit être un objet non vide", 'de': "jede Zeile muss ein nicht leeres Objekt sein", 'pt': "cada linha deve ser um objeto não vazio", 'it': "ogni riga deve essere un oggetto non vuoto", 'ja': "各行は空でないオブジェクトにしてください", 'zh': "每一行都必须是非空对象", 'hi': "हर पंक्ति एक गैर-खाली ऑब्जेक्ट होनी चाहिए", 'ar': "يجب أن يكون كل صف كائنًا غير فارغ"},
+    "dataset names are lower-case letters, digits and underscores, starting with a letter": {
+        'es': "los nombres de conjuntos son minúsculas, dígitos y guiones bajos, empezando por una letra", 'fr': "les noms de jeux de données sont des minuscules, des chiffres et des tirets bas, commençant par une lettre", 'de': "Datensatznamen sind Kleinbuchstaben, Ziffern und Unterstriche, beginnend mit einem Buchstaben", 'pt': "os nomes de conjuntos são minúsculas, dígitos e sublinhados, começando por uma letra", 'it': "i nomi dei dataset sono minuscole, cifre e trattini bassi, iniziando con una lettera", 'ja': "データセット名は小文字・数字・アンダースコアで、先頭は文字にしてください", 'zh': "数据集名称由小写字母、数字和下划线组成，且以字母开头", 'hi': "डेटासेट नाम छोटे अक्षर, अंक और अंडरस्कोर होते हैं, अक्षर से शुरू", 'ar': "أسماء مجموعات البيانات أحرف صغيرة وأرقام وشرطات سفلية، وتبدأ بحرف"},
+    "fetch.url needs an http(s) url": {
+        'es': "fetch.url necesita una url http(s)", 'fr': "fetch.url a besoin d'une url http(s)", 'de': "fetch.url braucht eine http(s)-URL", 'pt': "fetch.url precisa de um url http(s)", 'it': "fetch.url ha bisogno di un url http(s)", 'ja': "fetch.url には http(s) の URL が必要です", 'zh': "fetch.url 需要一个 http(s) 网址", 'hi': "fetch.url को एक http(s) url चाहिए", 'ar': "يحتاج fetch.url إلى عنوان http(s)"},
+    "vault.put needs a key and a value": {
+        'es': "vault.put necesita una clave y un valor", 'fr': "vault.put a besoin d'une clé et d'une valeur", 'de': "vault.put braucht einen Schlüssel und einen Wert", 'pt': "vault.put precisa de uma chave e de um valor", 'it': "vault.put ha bisogno di una chiave e di un valore", 'ja': "vault.put にはキーと値が必要です", 'zh': "vault.put 需要一个键和一个值", 'hi': "vault.put को एक कुंजी और एक मान चाहिए", 'ar': "يحتاج vault.put إلى مفتاح وقيمة"},
+    "embed.text needs a key": {
+        'es': "embed.text necesita una clave", 'fr': "embed.text a besoin d'une clé", 'de': "embed.text braucht einen Schlüssel", 'pt': "embed.text precisa de uma chave", 'it': "embed.text ha bisogno di una chiave", 'ja': "embed.text にはキーが必要です", 'zh': "embed.text 需要一个键", 'hi': "embed.text को एक कुंजी चाहिए", 'ar': "يحتاج embed.text إلى مفتاح"},
+    "embed.text needs text, or a fetch before it": {
+        'es': "embed.text necesita texto, o un fetch antes", 'fr': "embed.text a besoin d'un texte, ou d'un fetch avant lui", 'de': "embed.text braucht Text oder davor einen Fetch", 'pt': "embed.text precisa de texto, ou de um fetch antes", 'it': "embed.text ha bisogno di testo, o di un fetch prima", 'ja': "embed.text にはテキストか、その前のフェッチが必要です", 'zh': "embed.text 需要文本，或在它之前有一次抓取", 'hi': "embed.text को पाठ चाहिए, या उससे पहले एक fetch", 'ar': "يحتاج embed.text إلى نص، أو إلى جلب قبله"},
+    "infer.local needs a prompt, or a step before it": {
+        'es': "infer.local necesita un prompt, o un paso antes", 'fr': "infer.local a besoin d'un prompt, ou d'une étape avant lui", 'de': "infer.local braucht einen Prompt oder davor einen Schritt", 'pt': "infer.local precisa de um prompt, ou de um passo antes", 'it': "infer.local ha bisogno di un prompt, o di un passo prima", 'ja': "infer.local にはプロンプトか、その前のステップが必要です", 'zh': "infer.local 需要一个提示词，或在它之前有一个步骤", 'hi': "infer.local को एक प्रॉम्प्ट चाहिए, या उससे पहले एक चरण", 'ar': "يحتاج infer.local إلى موجّه، أو إلى خطوة قبله"},
+    "table.append needs rows, or derive:'lines'|'csv' after a fetch": {
+        'es': "table.append necesita rows, o derive:'lines'|'csv' tras un fetch", 'fr': "table.append a besoin de rows, ou de derive:'lines'|'csv' après un fetch", 'de': "table.append braucht rows oder derive:'lines'|'csv' nach einem Fetch", 'pt': "table.append precisa de rows, ou de derive:'lines'|'csv' após um fetch", 'it': "table.append ha bisogno di rows, o di derive:'lines'|'csv' dopo un fetch", 'ja': "table.append には rows か、フェッチ後の derive:'lines'|'csv' が必要です", 'zh': "table.append 需要 rows，或在抓取后使用 derive:'lines'|'csv'", 'hi': "table.append को rows चाहिए, या fetch के बाद derive:'lines'|'csv'", 'ar': "يحتاج table.append إلى rows، أو إلى derive:'lines'|'csv' بعد جلب"},
+    "csv derivation needs a header line and rows": {
+        'es': "la derivación csv necesita una línea de cabecera y filas", 'fr': "la dérivation csv a besoin d'une ligne d'en-tête et de lignes", 'de': "die CSV-Ableitung braucht eine Kopfzeile und Zeilen", 'pt': "a derivação csv precisa de uma linha de cabeçalho e de linhas", 'it': "la derivazione csv ha bisogno di una riga di intestazione e di righe", 'ja': "csv 派生にはヘッダー行とデータ行が必要です", 'zh': "csv 派生需要一行表头和数据行", 'hi': "csv व्युत्पत्ति को एक हेडर पंक्ति और पंक्तियाँ चाहिए", 'ar': "يحتاج اشتقاق csv إلى سطر عناوين وصفوف"},
+
     "there is no keyring here to rotate — nothing has been sealed yet": {
         'es': "aquí no hay ningún llavero que rotar: todavía no se ha sellado nada",
         'fr': "il n'y a ici aucun trousseau à faire tourner : rien n'a encore été scellé",
@@ -2060,6 +2130,11 @@ _WHERE_MARKERS = ("body", "query", "path", "header", "cookie")
 #: to the form beats a word invented for them — and is recorded in
 #: `pdi/tests/field_labels_unmapped.txt`.
 _FIELD_LABELS: dict[str, dict[str, str]] = {
+    # The resident screen's two typed fields, worded as the forms ask them.
+    # `goal` is shared vocabulary with the siblings — one word, one label.
+    'goal': {'en': 'Goal', 'es': 'Objetivo', 'fr': 'Objectif', 'de': 'Ziel', 'pt': 'Objetivo', 'it': 'Obiettivo', 'ja': '目標', 'zh': '目标', 'hi': 'लक्ष्य', 'ar': 'الهدف'},
+    'query': {'en': 'Search your vectors', 'es': 'Busca en tus vectores', 'fr': 'Chercher dans vos vecteurs', 'de': 'In deinen Vektoren suchen', 'pt': 'Pesquisar nos seus vetores', 'it': 'Cerca nei tuoi vettori', 'ja': 'ベクトルを検索', 'zh': '搜索你的向量', 'hi': 'अपने वेक्टर खोजें', 'ar': 'ابحث في متجهاتك'},
+
     # The accessibility report's three questions, worded as the form asks
     # them — a refusal that names one of these should read like the form.
     'doing': {'en': 'What were you trying to do?', 'es': '¿Qué intentabas hacer?', 'fr': 'Qu’essayiez-vous de faire ?', 'de': 'Was hast du versucht zu tun?', 'pt': 'O que você estava tentando fazer?', 'it': 'Cosa stavi cercando di fare?', 'ja': '何をしようとしていましたか？', 'zh': '你当时想做什么？', 'hi': 'आप क्या करने की कोशिश कर रहे थे?', 'ar': 'ما الذي كنت تحاول فعله؟'},

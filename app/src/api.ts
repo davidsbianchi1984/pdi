@@ -823,6 +823,50 @@ export const api = {
       "/access/reports", { method: "POST", body }),
   accessReports: (adminToken: string) =>
     req<AccessReports>("/access/reports", { token: adminToken }),
+  // The resident intelligence (pdi/resident.py): the agent living in the
+  // vault process — planner, closed tool registry, queryable datasets,
+  // embeddings, local-only inference. One engine for a facility tenant and
+  // a standard HTTPS tenant alike; these doors are how both reach it.
+  residentPosture: (token: string) =>
+    req<ResidentPosture>("/resident", { token }),
+  residentPlan: (body: { goal: string; steps?: { tool: string;
+                         title?: string; args?: Record<string, unknown> }[] },
+                 token: string) =>
+    req<ResidentTask>("/resident/tasks", { method: "POST", body, token }),
+  residentTasks: (token: string) =>
+    req<ResidentTask[]>("/resident/tasks", { token }),
+  residentRun: (tid: string, token: string) =>
+    req<ResidentTask>(`/resident/tasks/${tid}/run`,
+      { method: "POST", token }),
+  residentDatasets: (token: string) =>
+    req<{ dataset: string; row_count: number; last_write: string }[]>(
+      "/resident/datasets", { token }),
+  residentRows: (name: string, token: string) =>
+    req<{ dataset: string; dataset_rows: Record<string, unknown>[] }>(
+      `/resident/datasets/${name}/rows`, { token }),
+  residentEmbed: (body: { key: string; text: string }, token: string) =>
+    req<{ key: string; embedder: string; dim: number; note: string }>(
+      "/resident/embeddings", { method: "POST", body, token }),
+  residentSearch: (body: { query: string; top_k?: number }, token: string) =>
+    req<{ query: string; embedder: string | null;
+          matches: { key: string; score: number }[] }>(
+      "/resident/search", { method: "POST", body, token }),
+};
+
+export type ResidentPosture = {
+  resident: boolean; means: string; hosting_mode: string;
+  in_facility: boolean; local_model: string | null; embedder: string;
+  tools: { name: string; means: string; leaves_host: boolean }[];
+  privacy: string;
+};
+
+export type ResidentTask = {
+  id: string; goal: string; status: string; planned_by: string;
+  created_at: string; finished_at: string | null;
+  plan_steps: { position: number; title: string; tool: string;
+           args: Record<string, unknown>; leaves_host: boolean;
+           status: string; result_ref: string | null;
+           summary: string | null; error: string | null }[];
 };
 
 /** Accessibility reports, for the deployment's operator. Three answers in

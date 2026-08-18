@@ -274,6 +274,22 @@ LESSONS: tuple[dict, ...] = (
               "shrinks.",
          screens=(57,),
          click="Send a report, then load it back with the admin token."),
+    dict(key="resident", chapter="Running it", title="Resident intelligence",
+         what="The agent living in the vault process, beside the data — no "
+              "separate orchestration service, wherever the vault is "
+              "hosted. A goal in words becomes ordered steps by "
+              "deterministic rules you can read before anything runs; each "
+              "step names a tool from a closed registry, and the ones that "
+              "would leave this host say so. Structured results land in "
+              "datasets you can query, embeddings power a vector search "
+              "that keeps a hash of the text and never the text, and "
+              "inference is local only — a model on this host, or the "
+              "honest stub saying none is installed. Every task, step and "
+              "fetch lands on the audit chain, and offline mode stops the "
+              "one tool that goes outside.",
+         screens=(58,),
+         click="Plan 'fetch a page then rows into table notes', read the "
+               "steps, and run it."),
 )
 
 CHAPTERS = tuple(dict.fromkeys(lesson["chapter"] for lesson in LESSONS))

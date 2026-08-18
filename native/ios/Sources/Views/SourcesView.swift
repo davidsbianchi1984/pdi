@@ -5,6 +5,7 @@ import SwiftUI
 struct SourcesView: View {
     enum Tab: String, CaseIterable {
         case robots = "Robots", connectors = "Connectors"
+        case resident = "resident"
 
         /// The raw value is what the screen switches on; this is what a
         /// person reads. The picker rendered the raw value, so both tabs
@@ -14,6 +15,7 @@ struct SourcesView: View {
             switch self {
             case .robots:     return "tab.robots"
             case .connectors: return "tab.connectors"
+            case .resident:   return "tab.resident"
             }
         }
     }
@@ -33,6 +35,7 @@ struct SourcesView: View {
             switch tab {
             case .robots: RobotsView()
             case .connectors: ConnectorsSection()
+            case .resident: ResidentView()
             }
         }
     }

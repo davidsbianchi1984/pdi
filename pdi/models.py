@@ -368,3 +368,30 @@ class BequestActivate(BaseModel):
     vigil event id, a QRME succession verification, a certificate number."""
 
     activation_ref: str
+
+
+class ResidentStep(BaseModel):
+    """One step of a caller-authored plan. The tool must be on the resident
+    registry — validated at plan time, so a bad plan refuses before it runs."""
+
+    tool: str
+    title: str | None = None
+    args: dict = {}
+
+
+class ResidentPlan(BaseModel):
+    """A goal in words. Steps are optional: absent, the deterministic
+    planner decomposes the goal; present, they are validated the same."""
+
+    goal: str
+    steps: list[ResidentStep] | None = None
+
+
+class ResidentEmbed(BaseModel):
+    key: str
+    text: str
+
+
+class ResidentSearch(BaseModel):
+    query: str
+    top_k: int = 5

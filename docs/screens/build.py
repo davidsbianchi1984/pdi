@@ -1623,6 +1623,18 @@ SCREENS = [
         dict(icon="link", color="amber", k="Becomes tracked work",
              s="a ledger that only shrinks"),
     ]),
+    dict(num=58, title="Resident Intelligence",
+         sub="The agent beside the data",
+         accent="brand", tab=0, cards=[
+        dict(icon="grid", color="brand", k="Plans multi-step tasks",
+             s="deterministic rules, readable before it runs"),
+        dict(icon="link", color="amber", k="One closed tool registry",
+             s="each step says if it leaves the host"),
+        dict(icon="lock", color="silver", k="Tables, vectors, vault",
+             s="rows you can query; vectors keep a hash, not the text"),
+        dict(icon="person", color="green", k="Local inference only",
+             s="a model on this host, or the honest stub"),
+    ]),
 ]
 
 

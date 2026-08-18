@@ -411,6 +411,63 @@ CREATE TABLE IF NOT EXISTS problem_reports (
     PRIMARY KEY (source, app_version, platform, op, status)
 );
 
+-- The resident intelligence (pdi/resident.py): the coach/agent living in
+-- this process, beside the data. A task is a plan of steps; each step names
+-- a tool from the closed registry; structured results land in resident_rows
+-- (the queryable tables) and embeddings in resident_vectors. Every row is
+-- tenant-scoped, because the engine runs inside the same fence as the vault.
+CREATE TABLE IF NOT EXISTS resident_tasks (
+    id          TEXT PRIMARY KEY,
+    tenant_id   TEXT NOT NULL REFERENCES tenants(id),
+    goal        TEXT NOT NULL,
+    planned_by  TEXT NOT NULL,   -- rules-v1 | caller
+    status      TEXT NOT NULL,   -- planned | running | done | failed
+    created_at  TEXT NOT NULL,
+    finished_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS resident_steps (
+    id          TEXT PRIMARY KEY,
+    task_id     TEXT NOT NULL REFERENCES resident_tasks(id),
+    tenant_id   TEXT NOT NULL REFERENCES tenants(id),
+    position    INTEGER NOT NULL,
+    title       TEXT NOT NULL,
+    tool        TEXT NOT NULL,
+    args        TEXT NOT NULL,   -- JSON
+    status      TEXT NOT NULL,   -- planned | done | failed | skipped
+    result_ref  TEXT,            -- a vault key, a dataset name, a vector key
+    summary     TEXT,
+    error       TEXT,
+    finished_at TEXT
+);
+
+-- "Fetch data, put it in a table so the app can query it." One physical
+-- table, many named datasets: this schema adds tables by CREATE IF NOT
+-- EXISTS at boot and never migrates, so the datasets a tenant invents at
+-- runtime are rows here rather than DDL.
+CREATE TABLE IF NOT EXISTS resident_rows (
+    id         TEXT PRIMARY KEY,
+    tenant_id  TEXT NOT NULL REFERENCES tenants(id),
+    dataset    TEXT NOT NULL,
+    row        TEXT NOT NULL,    -- one flat JSON object
+    source_ref TEXT,             -- where it came from (a vault key, a URL)
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS resident_rows_by_dataset
+    ON resident_rows (tenant_id, dataset);
+
+CREATE TABLE IF NOT EXISTS resident_vectors (
+    id          TEXT PRIMARY KEY,
+    tenant_id   TEXT NOT NULL REFERENCES tenants(id),
+    key         TEXT NOT NULL,
+    text_sha256 TEXT NOT NULL,   -- of what was embedded; the text itself is not kept here
+    embedder    TEXT NOT NULL,   -- which algorithm made it; mixed spaces do not compare
+    dim         INTEGER NOT NULL,
+    vector      BLOB NOT NULL,   -- float32 little-endian, L2-normalised
+    created_at  TEXT NOT NULL,
+    UNIQUE (tenant_id, key)
+);
+
 CREATE TABLE IF NOT EXISTS access_reports (
     id         TEXT PRIMARY KEY,
     lang       TEXT NOT NULL DEFAULT 'en',

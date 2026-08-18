@@ -59,6 +59,15 @@ ACTIONS: dict[str, tuple[str, str]] = {
     # Who can be summoned to a controlled facility is a governance fact, not a
     # preference — it belongs on the chain beside who was let in.
     "gate.roster": ("agent", "facility gate roster or timezone changed"),
+    # The resident intelligence (pdi/resident.py): plans, steps and the two
+    # acts an auditor asks about by name — what left the host, and what was
+    # written where the app can query it.
+    "resident.plan": ("agent", "resident task planned (steps stored, nothing run)"),
+    "resident.step": ("agent", "resident step finished (done, failed or skipped)"),
+    "resident.task": ("agent", "resident task finished"),
+    "resident.fetch": ("agent", "resident fetched an external page (sealed to the vault)"),
+    "resident.rows": ("agent", "resident wrote rows into a queryable dataset"),
+    "resident.embed": ("agent", "resident stored an embedding (hash of the text, never the text)"),
 }
 
 EVENT_FIELDS = {
