@@ -864,6 +864,12 @@ export const api = {
   residentInfer: (body: { prompt: string }, token: string) =>
     req<{ model: string; text: string; leaves_host: boolean }>(
       "/resident/infer", { method: "POST", body, token }),
+  // Grounded: the question ranks this tenant's vectors, the matched
+  // seals are read back, and the local model answers from them.
+  residentAsk: (body: { question: string; top_k?: number }, token: string) =>
+    req<{ model: string; text: string; leaves_host: boolean;
+          drew_on: string[] }>(
+      "/resident/ask", { method: "POST", body, token }),
 };
 
 export type ResidentPosture = {

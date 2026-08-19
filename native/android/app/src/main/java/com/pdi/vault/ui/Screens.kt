@@ -2597,6 +2597,14 @@ private fun ResidentPanel(vm: VaultViewModel) {
                     r.onSuccess { status = it }.onFailure { error = it.message }
                 }
             }) { Text(L10n.t("res.infer.go", vm.language), color = Pdi.BrandA, fontSize = 13.sp) }
+            // Grounded: retrieve first, then answer — the keys the answer
+            // stood on ride beside it.
+            TextButton(onClick = {
+                error = null
+                vm.call({ ApiClient.residentAsk(vm.token!!, prompt) }) { r ->
+                    r.onSuccess { status = it }.onFailure { error = it.message }
+                }
+            }) { Text(L10n.t("res.ask.vault", vm.language), color = Pdi.BrandA, fontSize = 13.sp) }
             matches.forEach { m ->
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(m.key + " · " + m.score, color = Pdi.T2, fontSize = 11.sp)

@@ -203,6 +203,20 @@ struct ResidentView: View {
                         }
                     }
                 }.disabled(prompt.isEmpty)
+                // Grounded: retrieve first, then answer — the keys the
+                // answer stood on ride beside it, and an empty list is
+                // said rather than padded.
+                Button(L10n.t("res.ask.vault", state.language)) {
+                    Task {
+                        await run {
+                            let out = try await ApiClient.shared.residentAsk(
+                                question: prompt, token: state.token ?? "")
+                            status = out.model + " · " + out.text
+                                + (out.drew_on.isEmpty ? ""
+                                   : " · " + out.drew_on.joined(separator: " "))
+                        }
+                    }
+                }.disabled(prompt.isEmpty)
 
                 if let status { Text(status).font(.caption) }
                 if let error {

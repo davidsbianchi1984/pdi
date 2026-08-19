@@ -4,6 +4,27 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Ask the vault: grounded answers from what it holds.** The voice door
+  answers from the model's own priors; `POST /resident/ask` retrieves
+  first — the question ranks this tenant's vectors, the matched keys'
+  seals are read back, and the local model answers *from* them, all
+  inside the host. `drew_on` names the keys the answer stood on, because
+  an answer that will be relied on should say what it stood on — and an
+  empty list is said, not padded: a vault holding nothing relevant
+  answers ungrounded and admits it, and a vector whose seal is gone
+  grounds nothing, because a direction alone is not evidence. Another
+  tenant's seals never ground an answer, and the audit line counts
+  characters and keys, quoting neither the question nor the seals. An
+  "answer from what it holds" button beside the ask box on the console
+  and all three shells.
+
+      asked     can the vault answer from its own records
+      mattered  does the evidence, or the question, ever leave the host
+
 ## [0.88.0] - 2026-08-19
 
 ### Added

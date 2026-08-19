@@ -401,3 +401,8 @@ class ResidentSearch(BaseModel):
 
 class ResidentInfer(BaseModel):
     prompt: str
+
+
+class ResidentAsk(BaseModel):
+    question: str
+    top_k: int = 4

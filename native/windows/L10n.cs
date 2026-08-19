@@ -680,6 +680,19 @@ public static class L10n
             ["hi"] = "रद्द करें",
             ["ar"] = "إلغاء",
         },
+        ["res.ask.vault"] = new()
+        {
+            ["en"] = "Answer from what it holds",
+            ["es"] = "Responder con lo que guarda",
+            ["fr"] = "Répondre à partir de ce qu'il détient",
+            ["de"] = "Aus dem Bestand antworten",
+            ["pt"] = "Responder com o que guarda",
+            ["it"] = "Rispondi da ciò che custodisce",
+            ["ja"] = "保管内容から答える",
+            ["zh"] = "凭所存内容作答",
+            ["hi"] = "जो रखा है उसी से जवाब दें",
+            ["ar"] = "أجب مما تحفظه",
+        },
         ["res.search.go"] = new()
         {
             ["en"] = "Search",

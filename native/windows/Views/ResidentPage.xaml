@@ -50,6 +50,8 @@
                     <TextBox x:Name="PromptBox" />
                     <Button x:Name="InferButton" Click="OnInfer"
                             Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
+                    <Button x:Name="AskVaultButton" Click="OnAskVault"
+                            Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
                     <TextBlock x:Name="SpokenText" Foreground="{StaticResource PdiT2Brush}" FontSize="12" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>

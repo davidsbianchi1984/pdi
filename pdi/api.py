@@ -39,7 +39,8 @@ from .models import (AppCollect, AppConnect, AppInvoke, BAARecordIn,
                      DeploymentCreate, FeedbackSubmit, GateRing, IntakeCreate,
                      IntakeSubmit, LanguageChoice, PositionIntake,
                      TranslateRequest, RecordPut,
-                     ResidentEmbed, ResidentInfer, ResidentPlan,
+                     ResidentAsk, ResidentEmbed, ResidentInfer,
+                     ResidentPlan,
                      ResidentSearch,
                      RetentionSet, RobotBind,
                      RobotIngest, RosterAdd, SnapshotRestore, TenantCreate,
@@ -846,6 +847,21 @@ def create_app() -> FastAPI:
         prompt's length, never its words."""
         try:
             return resident_mod.ask(tenant, body.prompt)
+        except resident_mod.ResidentError as exc:
+            raise HTTPException(422, i18n.raised(exc))
+
+    @app.post("/resident/ask")
+    def resident_ask(body: ResidentAsk,
+                     tenant: dict = Depends(_tenant)) -> dict:
+        """An answer drawn from what the vault holds: the question ranks
+        this tenant's vectors, the matched seals are read back, and the
+        local model answers from them — nothing leaves the host, and
+        `drew_on` names the keys the answer stood on (an empty list is
+        said, not padded). The audit line counts characters and keys and
+        quotes neither the question nor the seals."""
+        try:
+            return resident_mod.ask_grounded(tenant, body.question,
+                                             body.top_k)
         except resident_mod.ResidentError as exc:
             raise HTTPException(422, i18n.raised(exc))
 

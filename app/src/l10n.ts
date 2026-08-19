@@ -4414,6 +4414,18 @@ const CHROME: Table = {
     hi: "रद्द करें",
     ar: "إلغاء",
   },
+  "res.ask.vault": {
+    en: "Answer from what it holds",
+    es: "Responder con lo que guarda",
+    fr: "Répondre à partir de ce qu'il détient",
+    de: "Aus dem Bestand antworten",
+    pt: "Responder com o que guarda",
+    it: "Rispondi da ciò che custodisce",
+    ja: "保管内容から答える",
+    zh: "凭所存内容作答",
+    hi: "जो रखा है उसी से जवाब दें",
+    ar: "أجب مما تحفظه",
+  },
   "nav.audit": {
     en: "Audit", es: "Auditoría", fr: "Audit", de: "Prüfung",
     pt: "Auditoria", it: "Audit", ja: "監査", zh: "审计",

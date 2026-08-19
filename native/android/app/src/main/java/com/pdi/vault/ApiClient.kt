@@ -1198,6 +1198,18 @@ object ApiClient {
         return o.getString("model") + " \u00b7 " + o.getString("text")
     }
 
+    // Grounded: the question ranks this tenant's vectors, the matched
+    // seals are read back, and the local model answers from them.
+    suspend fun residentAsk(token: String, question: String): String {
+        val o = JSONObject(request("/resident/ask", "POST",
+            JSONObject().put("question", question), token))
+        val keys = o.getJSONArray("drew_on")
+        val drew = (0 until keys.length()).joinToString(" ") {
+            keys.getString(it) }
+        return o.getString("model") + " \u00b7 " + o.getString("text") +
+            (if (drew.isEmpty()) "" else " \u00b7 " + drew)
+    }
+
     suspend fun connectors(token: String): List<SocialConn> {
         val arr = JSONArray(request("/connectors", token = token))
         return (0 until arr.length()).map { connOf(arr.getJSONObject(it)) }

@@ -603,3 +603,94 @@ def test_another_tenant_cannot_cancel_my_task(client):
     r = client.delete(f"/resident/tasks/{body['id']}", headers=auth(theirs))
     assert r.status_code == 404, r.text
     assert len(client.get("/resident/tasks", headers=auth(mine)).json()) == 1
+
+
+# -- ask the vault: grounded answers from what it holds ----------------------
+
+def _fake_voice(monkeypatch):
+    from pdi import resident
+    seen = {}
+
+    def fake(prompt):
+        seen["prompt"] = prompt
+        return {"model": "local:llama3.2", "text": "twice a week"}
+
+    monkeypatch.setattr(resident, "infer", fake)
+    return seen
+
+
+def test_an_answer_is_drawn_from_what_the_vault_holds(client, monkeypatch):
+    seen = _fake_voice(monkeypatch)
+    token = new_tenant(client)
+    client.put("/records", json={"key": "care/plan",
+                                 "value": "shoulder rehab twice a week"},
+               headers=auth(token))
+    client.post("/resident/embeddings",
+                json={"key": "care/plan",
+                      "text": "shoulder rehab twice a week"},
+                headers=auth(token))
+    out = client.post("/resident/ask",
+                      json={"question": "how often is the shoulder rehab"},
+                      headers=auth(token)).json()
+    assert out["drew_on"] == ["care/plan"]
+    assert out["text"] == "twice a week"
+    assert out["leaves_host"] is False
+    assert "shoulder rehab twice a week" in seen["prompt"]
+    assert "how often is the shoulder rehab" in seen["prompt"]
+
+
+def test_a_vault_holding_nothing_relevant_says_so(client, monkeypatch):
+    """An empty `drew_on` is said, not padded: the answer is ungrounded
+    and admits it, rather than inventing evidence."""
+    seen = _fake_voice(monkeypatch)
+    token = new_tenant(client)
+    out = client.post("/resident/ask", json={"question": "what do you hold"},
+                      headers=auth(token)).json()
+    assert out["drew_on"] == []
+    assert seen["prompt"] == "what do you hold"
+
+
+def test_a_vector_whose_seal_is_gone_grounds_nothing(client, monkeypatch):
+    """The index knows a direction, and a direction alone is not
+    evidence: only a seal that can be read back grounds an answer."""
+    _fake_voice(monkeypatch)
+    token = new_tenant(client)
+    client.post("/resident/embeddings",
+                json={"key": "doc/gone", "text": "the north gate meeting"},
+                headers=auth(token))
+    out = client.post("/resident/ask",
+                      json={"question": "north gate meeting"},
+                      headers=auth(token)).json()
+    assert out["drew_on"] == []
+
+
+def test_another_tenants_seals_never_ground_my_answer(client, monkeypatch):
+    _fake_voice(monkeypatch)
+    mine, theirs = new_tenant(client, "mine"), new_tenant(client, "theirs")
+    client.put("/records", json={"key": "doc/a", "value": "alpha beta gamma"},
+               headers=auth(theirs))
+    client.post("/resident/embeddings",
+                json={"key": "doc/a", "text": "alpha beta gamma"},
+                headers=auth(theirs))
+    out = client.post("/resident/ask", json={"question": "alpha beta"},
+                      headers=auth(mine)).json()
+    assert out["drew_on"] == []
+
+
+def test_the_ask_audit_counts_and_quotes_nothing(client, monkeypatch):
+    _fake_voice(monkeypatch)
+    token = new_tenant(client)
+    secret = "my custody hearing is on Tuesday"
+    client.post("/resident/ask", json={"question": secret},
+                headers=auth(token))
+    events = client.get("/audit", headers=auth(token)).json()
+    lines = [e for e in events if e["action"] == "resident.ask"]
+    assert lines and lines[-1]["ref"] == f"chars:{len(secret)} keys:0"
+    assert all(secret not in str(e) for e in events)
+
+
+def test_an_empty_question_is_refused(client):
+    token = new_tenant(client)
+    r = client.post("/resident/ask", json={"question": "  "},
+                    headers=auth(token))
+    assert r.status_code == 422, r.text

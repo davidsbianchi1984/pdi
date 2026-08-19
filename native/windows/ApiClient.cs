@@ -567,6 +567,19 @@ public sealed class ApiClient
             "/resident/infer")
         { Content = JsonContent.Create(new { prompt }) }, token);
 
+    public record ResidentAnswerOut(
+        [property: JsonPropertyName("model")] string Model,
+        [property: JsonPropertyName("text")] string Text,
+        [property: JsonPropertyName("leaves_host")] bool LeavesHost,
+        [property: JsonPropertyName("drew_on")] string[] DrewOn);
+
+    // Grounded: the question ranks this tenant's vectors, the matched
+    // seals are read back, and the local model answers from them.
+    public Task<ResidentAnswerOut> ResidentAsk(string token, string question) =>
+        Send<ResidentAnswerOut>(new HttpRequestMessage(HttpMethod.Post,
+            "/resident/ask")
+        { Content = JsonContent.Create(new { question }) }, token);
+
     private async Task<T> Send<T>(HttpRequestMessage req, string token = "")
     {
         if (!string.IsNullOrWhiteSpace(token))

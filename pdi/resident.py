@@ -168,6 +168,63 @@ def ask(tenant: dict, prompt: str) -> dict:
             "leaves_host": False}
 
 
+def _grounding_text(value: str) -> str:
+    """The readable heart of a sealed record: memory seals carry `line`,
+    captures carry `text`; a plain string grounds as itself."""
+    try:
+        data = json.loads(value)
+    except ValueError:
+        return value.strip()
+    if isinstance(data, dict):
+        return str(data.get("line") or data.get("text") or "").strip()
+    return ""
+
+
+def ask_grounded(tenant: dict, question: str, top_k: int = 4) -> dict:
+    """An answer drawn from what the vault holds — search, read, infer,
+    all inside this host.
+
+    The voice door answers from the model's own priors; this one retrieves
+    first: the question ranks the tenant's vectors, the matched keys' seals
+    are read back, and the local model answers *from* them — the smart
+    database's whole promise in one door, with nothing leaving the host.
+    `drew_on` names the keys, because an answer that will be relied on
+    should say what it stood on — and an empty list is said, not padded:
+    a vault that holds nothing relevant answers ungrounded and admits it.
+    The audit line counts characters and keys and quotes neither the
+    question nor the seals.
+    """
+    question = (question or "").strip()
+    if not question:
+        raise ResidentError(
+            "say something to ask — an empty prompt generates nothing")
+    top_k = max(1, min(int(top_k), 10))
+    found = search(tenant, question, top_k=top_k)
+    drew_on, context = [], []
+    for m in found.get("matches", []):
+        rec = vault.get(tenant, m["key"])
+        if rec is None:
+            # A vector whose seal is gone grounds nothing: the index knows
+            # a direction, and a direction alone is not evidence.
+            continue
+        text = _grounding_text(rec["value"])
+        if not text:
+            continue
+        drew_on.append(m["key"])
+        context.append(f"[{m['key']}] {text[:500]}")
+    if context:
+        prompt = ("Answer from what this vault holds. Sealed records, "
+                  "nearest the question first:\n" + "\n".join(context)
+                  + "\n\nQuestion: " + question + "\nAnswer: ")
+    else:
+        prompt = question
+    out = infer(prompt[:8000])
+    audit.record("resident.ask", tenant_id=tenant["id"],
+                 ref=f"chars:{len(question)} keys:{len(drew_on)}")
+    return {"model": out["model"], "text": out["text"],
+            "leaves_host": False, "drew_on": drew_on}
+
+
 # --------------------------------------------------------------------------
 # embeddings — one space per embedder, and the label travels with the vector
 # --------------------------------------------------------------------------

@@ -36,6 +36,7 @@ public sealed partial class ResidentPage : Page
         ForgetBox.Header = L10n.T("res.forget");
         PromptBox.PlaceholderText = L10n.T("res.infer.ph");
         InferButton.Content = L10n.T("res.infer.go");
+        AskVaultButton.Content = L10n.T("res.ask.vault");
         _ = LoadAsync();
     }
 
@@ -236,6 +237,24 @@ public sealed partial class ResidentPage : Page
             var spoken = await ApiClient.Shared.ResidentInfer(
                 s.Token!, PromptBox.Text.Trim());
             SpokenText.Text = spoken.Model + " · " + spoken.Text;
+        }
+        catch (Exception ex) { ShowError(ex); }
+    }
+
+    private async void OnAskVault(object sender, RoutedEventArgs e)
+    {
+        // Grounded: retrieve first, then answer — the keys the answer
+        // stood on ride beside it, and an empty list is said.
+        var s = AppState.Current;
+        if (string.IsNullOrEmpty(s.Token)
+            || string.IsNullOrWhiteSpace(PromptBox.Text)) return;
+        try
+        {
+            var answer = await ApiClient.Shared.ResidentAsk(
+                s.Token!, PromptBox.Text.Trim());
+            SpokenText.Text = answer.Model + " · " + answer.Text
+                + (answer.DrewOn.Length == 0 ? ""
+                   : " · " + string.Join(" ", answer.DrewOn));
         }
         catch (Exception ex) { ShowError(ex); }
     }

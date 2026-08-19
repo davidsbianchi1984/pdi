@@ -40,7 +40,7 @@ export function Resident() {
     { key: string; score: number }[] | null>(null);
   const [prompt, setPrompt] = useState("");
   const [spoken, setSpoken] = useState<
-    { model: string; text: string } | null>(null);
+    { model: string; text: string; drew_on?: string[] } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -291,9 +291,26 @@ export function Resident() {
         })}>
           {t("res.infer.go", lang)}
         </button>
+        {/* Grounded: retrieve first, then answer — `drew_on` names the
+            keys the answer stood on, and an empty list is said. */}
+        <button disabled={busy || !prompt.trim()} onClick={act(async () => {
+          const out = await api.residentAsk(
+            { question: prompt.trim() }, token);
+          setSpoken({ model: out.model, text: out.text,
+                      drew_on: out.drew_on });
+        })}>
+          {t("res.ask.vault", lang)}
+        </button>
         {spoken && (
           <p className="small">
             <code>{spoken.model}</code> · {spoken.text}
+            {spoken.drew_on && spoken.drew_on.length > 0 && (
+              <span className="muted small">
+                {" "}· {spoken.drew_on.map((k) => (
+                  <code key={k}>{k} </code>
+                ))}
+              </span>
+            )}
           </p>
         )}
       </div>

@@ -337,6 +337,21 @@ actor ApiClient {
                           body: ["prompt": prompt], token: token)
     }
 
+    struct ResidentAnswer: Decodable {
+        let model: String
+        let text: String
+        let leaves_host: Bool
+        let drew_on: [String]
+    }
+
+    /// Grounded: the question ranks this tenant's vectors, the matched
+    /// seals are read back, and the local model answers from them.
+    func residentAsk(question: String,
+                     token: String) async throws -> ResidentAnswer {
+        try await request("/resident/ask", method: "POST",
+                          body: ["question": question], token: token)
+    }
+
     private func request<T: Decodable>(_ path: String, method: String = "GET",
                                        body: [String: Any]? = nil,
                                        token: String? = nil) async throws -> T {
