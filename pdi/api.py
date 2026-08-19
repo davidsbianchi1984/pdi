@@ -861,7 +861,9 @@ def create_app() -> FastAPI:
         quotes neither the question nor the seals."""
         try:
             return resident_mod.ask_grounded(tenant, body.question,
-                                             body.top_k)
+                                             body.top_k,
+                                             prefix=body.prefix,
+                                             system=body.system)
         except resident_mod.ResidentError as exc:
             raise HTTPException(422, i18n.raised(exc))
 

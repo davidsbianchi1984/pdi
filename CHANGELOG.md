@@ -8,6 +8,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The ask door learns a prefix, and carries a persona.** `prefix`
+  narrows what may ground an answer to keys under it — a character
+  compare like `forget`'s, never a LIKE wildcard — because the tandems'
+  one tenant holds many people's seals, and Alice's question must never
+  ground on Bob's memories. The ranking over-fetches before the wall so
+  one person's nearest moments are not lost behind strangers' in the
+  tenant-wide order. `system` rides ahead of the grounding block so a
+  coach or profile survives being grounded; retrieval ranks only the
+  question.
+
 - **Ask the vault: grounded answers from what it holds.** The voice door
   answers from the model's own priors; `POST /resident/ask` retrieves
   first — the question ranks this tenant's vectors, the matched keys'

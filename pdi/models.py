@@ -406,3 +406,8 @@ class ResidentInfer(BaseModel):
 class ResidentAsk(BaseModel):
     question: str
     top_k: int = 4
+    #: Only keys under this prefix may ground the answer — the tandems'
+    #: per-person wall inside a shared tenant.
+    prefix: str | None = None
+    #: Rides ahead of the grounding block; retrieval ranks only the question.
+    system: str | None = None

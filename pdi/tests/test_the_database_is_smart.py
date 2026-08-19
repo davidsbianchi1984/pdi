@@ -694,3 +694,43 @@ def test_an_empty_question_is_refused(client):
     r = client.post("/resident/ask", json={"question": "  "},
                     headers=auth(token))
     assert r.status_code == 422, r.text
+
+
+def test_a_prefix_walls_the_grounding_to_one_person(client, monkeypatch):
+    """One tenant, many people: Alice's question must never ground on
+    Bob's memories — and the wall is a character compare, so `usr_a/`
+    never swallows `usr_ab/`."""
+    seen = _fake_voice(monkeypatch)
+    token = new_tenant(client)
+    for key, text in (("jim/usr_a/memory/checkin/m1",
+                       "shoulder rehab twice a week"),
+                      ("jim/usr_ab/memory/checkin/m2",
+                       "shoulder surgery next month")):
+        client.put("/records", json={"key": key, "value": text},
+                   headers=auth(token))
+        client.post("/resident/embeddings", json={"key": key, "text": text},
+                    headers=auth(token))
+    out = client.post("/resident/ask", json={
+        "question": "how often is the shoulder rehab",
+        "prefix": "jim/usr_a/"}, headers=auth(token)).json()
+    assert out["drew_on"] == ["jim/usr_a/memory/checkin/m1"]
+    assert "surgery" not in seen["prompt"], (
+        "another person's seal grounded the answer")
+
+
+def test_the_system_prompt_rides_ahead_and_never_ranks(client, monkeypatch):
+    seen = _fake_voice(monkeypatch)
+    token = new_tenant(client)
+    client.put("/records", json={"key": "care/plan",
+                                 "value": "shoulder rehab twice a week"},
+               headers=auth(token))
+    client.post("/resident/embeddings",
+                json={"key": "care/plan",
+                      "text": "shoulder rehab twice a week"},
+                headers=auth(token))
+    out = client.post("/resident/ask", json={
+        "question": "how often is the shoulder rehab",
+        "system": "You are a careful coach."}, headers=auth(token)).json()
+    assert out["drew_on"] == ["care/plan"]
+    assert seen["prompt"].startswith("You are a careful coach.")
+    assert "shoulder rehab twice a week" in seen["prompt"]

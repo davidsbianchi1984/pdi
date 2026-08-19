@@ -180,7 +180,9 @@ def _grounding_text(value: str) -> str:
     return ""
 
 
-def ask_grounded(tenant: dict, question: str, top_k: int = 4) -> dict:
+def ask_grounded(tenant: dict, question: str, top_k: int = 4,
+                 prefix: str | None = None,
+                 system: str | None = None) -> dict:
     """An answer drawn from what the vault holds — search, read, infer,
     all inside this host.
 
@@ -193,15 +195,30 @@ def ask_grounded(tenant: dict, question: str, top_k: int = 4) -> dict:
     a vault that holds nothing relevant answers ungrounded and admits it.
     The audit line counts characters and keys and quotes neither the
     question nor the seals.
+
+    `prefix` narrows what may ground the answer to keys under it — a
+    character compare like `forget`'s, never a LIKE wildcard — for the
+    tandems, whose one tenant holds many people's seals: Alice's question
+    must never ground on Bob's memories. `system` rides ahead of the
+    grounding block so a persona survives being grounded; retrieval ranks
+    only the question.
     """
     question = (question or "").strip()
     if not question:
         raise ResidentError(
             "say something to ask — an empty prompt generates nothing")
     top_k = max(1, min(int(top_k), 10))
-    found = search(tenant, question, top_k=top_k)
+    # Over-fetch when scoping: the prefix filter discards other people's
+    # keys after ranking, and one person's nearest moments may sit behind
+    # many strangers' in the tenant-wide order.
+    found = search(tenant, question,
+                   top_k=top_k * 4 if prefix else top_k)
     drew_on, context = [], []
     for m in found.get("matches", []):
+        if prefix and m["key"][:len(prefix)] != prefix:
+            continue
+        if len(drew_on) >= top_k:
+            break
         rec = vault.get(tenant, m["key"])
         if rec is None:
             # A vector whose seal is gone grounds nothing: the index knows
@@ -218,6 +235,8 @@ def ask_grounded(tenant: dict, question: str, top_k: int = 4) -> dict:
                   + "\n\nQuestion: " + question + "\nAnswer: ")
     else:
         prompt = question
+    if system:
+        prompt = system.strip() + "\n\n" + prompt
     out = infer(prompt[:8000])
     audit.record("resident.ask", tenant_id=tenant["id"],
                  ref=f"chars:{len(question)} keys:{len(drew_on)}")
