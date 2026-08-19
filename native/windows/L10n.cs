@@ -641,6 +641,32 @@ public static class L10n
             ["hi"] = "पूछें",
             ["ar"] = "اسأل",
         },
+        ["res.every"] = new()
+        {
+            ["en"] = "Repeats every (hours)",
+            ["es"] = "Se repite cada (horas)",
+            ["fr"] = "Se répète toutes les (heures)",
+            ["de"] = "Wiederholt sich alle (Stunden)",
+            ["pt"] = "Repete-se a cada (horas)",
+            ["it"] = "Si ripete ogni (ore)",
+            ["ja"] = "繰り返し間隔（時間）",
+            ["zh"] = "重复间隔（小时）",
+            ["hi"] = "हर (घंटे) में दोहराए",
+            ["ar"] = "يتكرر كل (ساعات)",
+        },
+        ["res.next"] = new()
+        {
+            ["en"] = "Next run",
+            ["es"] = "Próxima ejecución",
+            ["fr"] = "Prochaine exécution",
+            ["de"] = "Nächster Lauf",
+            ["pt"] = "Próxima execução",
+            ["it"] = "Prossima esecuzione",
+            ["ja"] = "次の実行",
+            ["zh"] = "下次运行",
+            ["hi"] = "अगली बार",
+            ["ar"] = "التشغيل التالي",
+        },
         ["res.search.go"] = new()
         {
             ["en"] = "Search",

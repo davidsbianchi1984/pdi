@@ -23,6 +23,7 @@ public sealed partial class ResidentPage : Page
         GoalBox.Header = L10n.T("res.plan");
         GoalBox.PlaceholderText = L10n.T("res.plan.ph");
         PlanButton.Content = L10n.T("res.plan.go");
+        EveryBox.PlaceholderText = L10n.T("res.every");
         TasksHeader.Text = L10n.T("res.tasks");
         DatasetsHeader.Text = L10n.T("res.datasets");
         EmbedHeader.Text = L10n.T("res.embed");
@@ -65,7 +66,10 @@ public sealed partial class ResidentPage : Page
                 var panel = new StackPanel { Spacing = 2 };
                 panel.Children.Add(new TextBlock
                 {
-                    Text = $"{task.Goal} — {task.Status}",
+                    Text = $"{task.Goal} — {task.Status}"
+                         + (task.NextRunAt is null ? ""
+                            : " · " + L10n.T("res.next") + " "
+                              + task.NextRunAt[..Math.Min(16, task.NextRunAt.Length)]),
                     FontSize = 13,
                 });
                 foreach (var step in task.Steps)
@@ -80,7 +84,8 @@ public sealed partial class ResidentPage : Page
                         FontSize = 11,
                     });
                 }
-                if (task.Status is "planned" or "failed")
+                if (task.Status is "planned" or "failed"
+                    || (task.Status is "done" && task.EveryHours is not null))
                 {
                     var run = new Button
                     {
@@ -136,8 +141,12 @@ public sealed partial class ResidentPage : Page
             || string.IsNullOrWhiteSpace(GoalBox.Text)) return;
         try
         {
-            await ApiClient.Shared.ResidentPlan(s.Token!, GoalBox.Text.Trim());
+            double? every = double.TryParse(EveryBox.Text.Trim(),
+                out var hours) ? hours : null;
+            await ApiClient.Shared.ResidentPlan(s.Token!, GoalBox.Text.Trim(),
+                every);
             GoalBox.Text = "";
+            EveryBox.Text = "";
             ErrorText.Visibility = Visibility.Collapsed;
             await LoadAsync();
         }

@@ -421,3 +421,131 @@ def test_the_audit_line_counts_characters_and_quotes_nothing(client):
     lines = [e for e in events if e["action"] == "resident.infer"]
     assert lines and lines[-1]["ref"] == f"chars:{len(secret)}"
     assert all(secret not in str(e) for e in events)
+
+# -- standing tasks: the vault keeps its own appointments --------------------
+
+def _standing_plan(client, token, every=1.0, dataset="beats"):
+    r = client.post("/resident/tasks", json={
+        "goal": "keep the ledger fresh",
+        "every_hours": every,
+        "steps": [{"tool": "table.append",
+                   "args": {"dataset": dataset, "rows": [{"beat": "x"}]}}],
+    }, headers=auth(token))
+    assert r.status_code == 201, r.text
+    return r.json()
+
+
+def _make_due(task_id):
+    from pdi import db
+    conn = db.connect()
+    conn.execute("UPDATE resident_tasks SET"
+                 " next_run_at='2000-01-01T00:00:00+00:00' WHERE id=?",
+                 (task_id,))
+    conn.commit()
+
+
+def test_a_standing_task_keeps_its_next_appointment(client):
+    from pdi import db
+    token = new_tenant(client)
+    body = _standing_plan(client, token)
+    assert body["every_hours"] == 1.0
+    assert body["next_run_at"] > db.utcnow()[:16]
+
+
+def test_an_interval_outside_the_window_refuses(client):
+    token = new_tenant(client)
+    r = client.post("/resident/tasks", json={
+        "goal": "g", "every_hours": 0.01,
+        "steps": [{"tool": "table.append",
+                   "args": {"dataset": "d", "rows": [{"a": 1}]}}]},
+        headers=auth(token))
+    assert r.status_code == 422, r.text
+    assert "quarter-hour" in r.text
+
+
+def test_the_pulse_runs_what_is_due_and_reschedules(client):
+    from pdi import db, resident
+    token = new_tenant(client)
+    body = _standing_plan(client, token)
+    _make_due(body["id"])
+    out = resident.pulse()
+    assert out["ran"] == 1 and out["task_ids"] == [body["id"]]
+    after = client.get("/resident/tasks", headers=auth(token)).json()[0]
+    assert after["status"] == "done"
+    assert after["next_run_at"] > db.utcnow()[:16], (
+        "the next appointment was not kept")
+    rows = client.get("/resident/datasets/beats/rows",
+                      headers=auth(token)).json()["dataset_rows"]
+    assert len(rows) == 1
+    actions = {e["action"] for e in
+               client.get("/audit", headers=auth(token)).json()}
+    assert "resident.pulse" in actions
+
+
+def test_the_pulse_runs_a_done_standing_task_again(client):
+    """`done` is a resting state for a standing task, not a terminal one:
+    the steps reset and the same plan executes whole each cycle."""
+    from pdi import resident
+    token = new_tenant(client)
+    body = _standing_plan(client, token)
+    _make_due(body["id"])
+    assert resident.pulse()["ran"] == 1
+    _make_due(body["id"])
+    assert resident.pulse()["ran"] == 1
+    rows = client.get("/resident/datasets/beats/rows",
+                      headers=auth(token)).json()["dataset_rows"]
+    assert len(rows) == 2, "the second cycle did not run the plan whole"
+
+
+def test_the_pulse_leaves_one_shots_and_the_undue_alone(client):
+    from pdi import resident
+    token = new_tenant(client)
+    oneshot = client.post("/resident/tasks", json={
+        "goal": "once", "steps": [{"tool": "table.append",
+                                   "args": {"dataset": "o",
+                                            "rows": [{"a": 1}]}}]},
+        headers=auth(token)).json()
+    _standing_plan(client, token)          # scheduled an hour out — not due
+    assert resident.pulse()["ran"] == 0
+    still = {t["id"]: t["status"] for t in
+             client.get("/resident/tasks", headers=auth(token)).json()}
+    assert still[oneshot["id"]] == "planned"
+
+
+def test_a_deleted_tenants_appointment_never_fires(client):
+    from pdi import resident
+    r = client.post("/tenants", json={"name": "doomed"})
+    token, tenant_id = r.json()["token"], r.json()["id"]
+    body = _standing_plan(client, token)
+    _make_due(body["id"])
+    gone = client.delete(f"/tenants/{tenant_id}", headers=auth(token))
+    assert gone.status_code == 200, gone.text
+    assert resident.pulse()["ran"] == 0
+
+
+def test_a_manual_run_of_a_done_standing_task_is_allowed(client):
+    """The 409 guards one-shot tasks against double-running; a standing
+    task is meant to run again, by hand as much as by the beat."""
+    token = new_tenant(client)
+    standing = _standing_plan(client, token)
+    for _ in range(2):
+        ran = client.post(f"/resident/tasks/{standing['id']}/run",
+                          headers=auth(token))
+        assert ran.status_code == 200, ran.text
+    oneshot = client.post("/resident/tasks", json={
+        "goal": "once", "steps": [{"tool": "table.append",
+                                   "args": {"dataset": "o",
+                                            "rows": [{"a": 1}]}}]},
+        headers=auth(token)).json()
+    client.post(f"/resident/tasks/{oneshot['id']}/run", headers=auth(token))
+    again = client.post(f"/resident/tasks/{oneshot['id']}/run",
+                        headers=auth(token))
+    assert again.status_code == 409, again.text
+
+
+def test_the_posture_counts_the_standing_tasks(client):
+    token = new_tenant(client)
+    _standing_plan(client, token)
+    posture = client.get("/resident", headers=auth(token)).json()
+    assert posture["standing_tasks"] == 1
+    assert posture["pulse_seconds"] is None

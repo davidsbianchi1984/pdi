@@ -252,9 +252,13 @@ actor ApiClient {
         try await request("/resident", token: token)
     }
 
-    func residentPlan(goal: String, token: String) async throws -> ResidentTask {
-        try await request("/resident/tasks", method: "POST",
-                          body: ["goal": goal], token: token)
+    func residentPlan(goal: String, everyHours: Double? = nil,
+                      token: String) async throws -> ResidentTask {
+        var body: [String: Any] = ["goal": goal]
+        // A standing task: the vault re-runs the plan on this interval.
+        if let everyHours { body["every_hours"] = everyHours }
+        return try await request("/resident/tasks", method: "POST",
+                                 body: body, token: token)
     }
 
     func residentTasks(token: String) async throws -> [ResidentTask] {
@@ -1429,6 +1433,9 @@ struct ResidentTask: Decodable {
     let status: String
     let planned_by: String
     let plan_steps: [ResidentStepOut]
+    // Standing tasks: the vault re-runs the plan on this interval itself.
+    let every_hours: Double?
+    let next_run_at: String?
 }
 struct ResidentDataset: Decodable {
     let dataset: String

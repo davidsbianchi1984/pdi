@@ -78,7 +78,8 @@ data class ResidentStep(val position: Int, val title: String, val tool: String,
                         val leavesHost: Boolean, val status: String,
                         val summary: String?, val error: String?)
 data class ResidentTask(val id: String, val goal: String, val status: String,
-                        val plannedBy: String, val steps: List<ResidentStep>)
+                        val plannedBy: String, val nextRunAt: String?,
+                        val steps: List<ResidentStep>)
 data class ResidentDataset(val dataset: String, val rows: Int)
 data class ResidentMatch(val key: String, val score: Double)
 
@@ -1094,6 +1095,8 @@ object ApiClient {
             id = o.getString("id"), goal = o.getString("goal"),
             status = o.getString("status"),
             plannedBy = o.getString("planned_by"),
+            nextRunAt = if (o.isNull("next_run_at")) null
+                        else o.optString("next_run_at"),
             steps = (0 until steps.length()).map { i ->
                 val s = steps.getJSONObject(i)
                 ResidentStep(
@@ -1123,9 +1126,14 @@ object ApiClient {
             privacy = o.getString("privacy"))
     }
 
-    suspend fun residentPlan(token: String, goal: String): ResidentTask =
-        residentTaskOf(JSONObject(request("/resident/tasks", "POST",
-            JSONObject().put("goal", goal), token)))
+    suspend fun residentPlan(token: String, goal: String,
+                             everyHours: Double? = null): ResidentTask {
+        val body = JSONObject().put("goal", goal)
+        // A standing task: the vault re-runs the plan on this interval.
+        if (everyHours != null) body.put("every_hours", everyHours)
+        return residentTaskOf(JSONObject(request("/resident/tasks", "POST",
+            body, token)))
+    }
 
     suspend fun residentTasks(token: String): List<ResidentTask> {
         val arr = JSONArray(request("/resident/tasks", token = token))

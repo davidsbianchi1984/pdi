@@ -2484,6 +2484,7 @@ private fun ResidentPanel(vm: VaultViewModel) {
     var datasets by remember { mutableStateOf<List<ResidentDataset>>(emptyList()) }
     var rows by remember { mutableStateOf<List<String>>(emptyList()) }
     var goal by remember { mutableStateOf("") }
+    var every by remember { mutableStateOf("") }
     var embedKey by remember { mutableStateOf("") }
     var embedText by remember { mutableStateOf("") }
     var query by remember { mutableStateOf("") }
@@ -2518,10 +2519,13 @@ private fun ResidentPanel(vm: VaultViewModel) {
         Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(L10n.t("res.plan", vm.language), color = Pdi.Txt, fontSize = 15.sp, fontWeight = FontWeight.Bold)
             labeledField(L10n.t("res.plan", vm.language), goal, L10n.t("res.plan.ph", vm.language)) { goal = it }
+            // A standing task: the vault keeps the appointment itself.
+            labeledField(L10n.t("res.every", vm.language), every, L10n.t("res.every", vm.language)) { every = it }
             TextButton(onClick = {
                 error = null
-                vm.call({ ApiClient.residentPlan(vm.token!!, goal) }) { r ->
-                    r.onSuccess { goal = "" }.onFailure { error = it.message }
+                vm.call({ ApiClient.residentPlan(vm.token!!, goal,
+                    every.toDoubleOrNull()) }) { r ->
+                    r.onSuccess { goal = ""; every = "" }.onFailure { error = it.message }
                     reload()
                 }
             }) { Text(L10n.t("res.plan.go", vm.language), color = Pdi.BrandA, fontSize = 13.sp) }
@@ -2530,7 +2534,10 @@ private fun ResidentPanel(vm: VaultViewModel) {
         Text(L10n.t("res.tasks", vm.language), color = Pdi.Txt, fontSize = 15.sp, fontWeight = FontWeight.Bold)
         tasks.forEach { task ->
             Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(task.goal + " — " + task.status, color = Pdi.Txt, fontSize = 13.sp)
+                Text(task.goal + " — " + task.status +
+                    (task.nextRunAt?.let { " \u00b7 " +
+                        L10n.t("res.next", vm.language) + " " + it.take(16) } ?: ""),
+                    color = Pdi.Txt, fontSize = 13.sp)
                 task.steps.forEach { s ->
                     Text("" + s.position + ". " + s.tool + " — " + s.status +
                          (if (s.leavesHost) " · " + L10n.t("res.leaves", vm.language) else "") +

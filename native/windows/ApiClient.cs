@@ -479,7 +479,10 @@ public sealed class ApiClient
         [property: JsonPropertyName("goal")] string Goal,
         [property: JsonPropertyName("status")] string Status,
         [property: JsonPropertyName("planned_by")] string PlannedBy,
-        [property: JsonPropertyName("plan_steps")] ResidentStep[] Steps);
+        [property: JsonPropertyName("plan_steps")] ResidentStep[] Steps,
+        // Standing tasks: the vault re-runs the plan on this interval.
+        [property: JsonPropertyName("every_hours")] double? EveryHours = null,
+        [property: JsonPropertyName("next_run_at")] string? NextRunAt = null);
     public record ResidentDataset(
         [property: JsonPropertyName("dataset")] string Dataset,
         [property: JsonPropertyName("row_count")] int Rows);
@@ -500,10 +503,12 @@ public sealed class ApiClient
         Send<ResidentPosture>(new HttpRequestMessage(HttpMethod.Get,
             "/resident"), token);
 
-    public Task<ResidentTask> ResidentPlan(string token, string goal) =>
+    public Task<ResidentTask> ResidentPlan(string token, string goal,
+                                           double? everyHours = null) =>
         Send<ResidentTask>(new HttpRequestMessage(HttpMethod.Post,
             "/resident/tasks")
-        { Content = JsonContent.Create(new { goal }) }, token);
+        { Content = JsonContent.Create(new { goal, every_hours = everyHours }) },
+            token);
 
     public Task<ResidentTask[]> ResidentTasks(string token) =>
         Send<ResidentTask[]>(new HttpRequestMessage(HttpMethod.Get,

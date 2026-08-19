@@ -829,8 +829,9 @@ export const api = {
   // a standard HTTPS tenant alike; these doors are how both reach it.
   residentPosture: (token: string) =>
     req<ResidentPosture>("/resident", { token }),
-  residentPlan: (body: { goal: string; steps?: { tool: string;
-                         title?: string; args?: Record<string, unknown> }[] },
+  residentPlan: (body: { goal: string; every_hours?: number;
+                         steps?: { tool: string; title?: string;
+                                   args?: Record<string, unknown> }[] },
                  token: string) =>
     req<ResidentTask>("/resident/tasks", { method: "POST", body, token }),
   residentTasks: (token: string) =>
@@ -871,6 +872,8 @@ export type ResidentPosture = {
 export type ResidentTask = {
   id: string; goal: string; status: string; planned_by: string;
   created_at: string; finished_at: string | null;
+  /** Standing tasks: the vault re-runs the plan on this interval itself. */
+  every_hours: number | null; next_run_at: string | null;
   plan_steps: { position: number; title: string; tool: string;
            args: Record<string, unknown>; leaves_host: boolean;
            status: string; result_ref: string | null;

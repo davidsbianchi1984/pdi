@@ -71,6 +71,7 @@ import os
 import re
 import struct
 import urllib.request
+from datetime import datetime, timedelta, timezone
 
 from . import audit, db, hosting, i18n, offline, vault
 
@@ -567,15 +568,28 @@ def _decompose(goal: str) -> list[dict]:
     return [_step_from(p) for p in parts[:MAX_STEPS]]
 
 
-def plan(tenant: dict, goal: str, steps: list[dict] | None = None) -> dict:
+def plan(tenant: dict, goal: str, steps: list[dict] | None = None,
+         every_hours: float | None = None) -> dict:
     """A task planned and stored, not yet run — running is its own decision.
 
     Caller-supplied steps are validated against the registry exactly like
-    derived ones: the registry is the boundary either way.
+    derived ones: the registry is the boundary either way. `every_hours`
+    makes it a **standing task**: the vault keeps the appointment itself
+    (`pulse`), re-running the same plan on the interval — the "no separate
+    orchestration service" claim extended to *when*, not just *what*.
     """
     goal = (goal or "").strip()
     if not goal:
         raise ResidentError("a task needs a goal in words")
+    if every_hours is not None:
+        try:
+            every_hours = float(every_hours)
+        except (TypeError, ValueError):
+            raise ResidentError(
+                "a standing task repeats on a number of hours") from None
+        if not 0.25 <= every_hours <= 744:
+            raise ResidentError(
+                "a standing task repeats between a quarter-hour and a month")
     made = steps if steps is not None else _decompose(goal)
     if not made:
         raise ResidentError("nothing to plan — the goal decomposed to no steps")
@@ -588,12 +602,16 @@ def plan(tenant: dict, goal: str, steps: list[dict] | None = None) -> dict:
                           registry=", ".join(sorted(TOOLS))))
     conn = db.connect()
     task_id = db.new_id("rtk")
+    next_run = (
+        (datetime.now(timezone.utc) + timedelta(hours=every_hours)).isoformat()
+        if every_hours is not None else None)
     conn.execute(
         "INSERT INTO resident_tasks (id, tenant_id, goal, planned_by,"
-        " status, created_at) VALUES (?,?,?,?,?,?)",
+        " status, created_at, every_hours, next_run_at)"
+        " VALUES (?,?,?,?,?,?,?,?)",
         (task_id, tenant["id"], goal,
          "caller" if steps is not None else "rules-v1",
-         "planned", db.utcnow()))
+         "planned", db.utcnow(), every_hours, next_run))
     for at, s in enumerate(made, 1):
         conn.execute(
             "INSERT INTO resident_steps (id, task_id, tenant_id, position,"
@@ -619,6 +637,8 @@ def task(tenant: dict, task_id: str) -> dict:
         "id": row["id"], "goal": row["goal"], "status": row["status"],
         "planned_by": row["planned_by"], "created_at": row["created_at"],
         "finished_at": row["finished_at"],
+        "every_hours": row["every_hours"],
+        "next_run_at": row["next_run_at"],
         "plan_steps": [{"position": s["position"], "title": s["title"],
                    "tool": s["tool"], "args": json.loads(s["args"]),
                    "leaves_host": TOOLS[s["tool"]]["leaves_host"]
@@ -642,10 +662,22 @@ def run(tenant: dict, task_id: str) -> dict:
     chain and names itself; the steps after it stay `skipped`, not lied
     about."""
     current = task(tenant, task_id)
-    if current["status"] not in ("planned", "failed"):
+    standing = current["every_hours"] is not None
+    # A standing task is *meant* to run again: `done` is a resting state,
+    # not a terminal one, and its steps reset so the same plan executes
+    # whole each cycle. One-shot tasks keep the stricter contract.
+    if current["status"] not in ("planned", "failed") and not (
+            standing and current["status"] == "done"):
         raise ResidentStateError(
             i18n.fill(i18n.RESIDENT_TASK_STATE, status=current["status"]))
     conn = db.connect()
+    if standing and current["status"] == "done":
+        conn.execute(
+            "UPDATE resident_steps SET status='planned', result_ref=NULL,"
+            " summary=NULL, error=NULL, finished_at=NULL"
+            " WHERE task_id=? AND tenant_id=?", (task_id, tenant["id"]))
+        conn.commit()
+        current = task(tenant, task_id)
     conn.execute(
         "UPDATE resident_tasks SET status='running'"
         " WHERE id=? AND tenant_id=?", (task_id, tenant["id"]))
@@ -686,9 +718,51 @@ def run(tenant: dict, task_id: str) -> dict:
         "UPDATE resident_tasks SET status=?, finished_at=?"
         " WHERE id=? AND tenant_id=?",
         ("failed" if failed else "done", db.utcnow(), task_id, tenant["id"]))
+    if standing:
+        # The next appointment, kept whatever this cycle did: a failing
+        # standing task retries on its interval rather than going silent.
+        conn.execute(
+            "UPDATE resident_tasks SET next_run_at=?"
+            " WHERE id=? AND tenant_id=?",
+            ((datetime.now(timezone.utc)
+              + timedelta(hours=current["every_hours"])).isoformat(),
+             task_id, tenant["id"]))
     conn.commit()
     audit.record("resident.task", tenant_id=tenant["id"], ref=task_id)
     return task(tenant, task_id)
+
+
+def pulse() -> dict:
+    """Run every standing task whose appointment has come — the vault's own
+    heartbeat, inside the process (`PDI_RESIDENT_PULSE` starts the loop).
+
+    Tenants first, then each tenant's due tasks: every statement that
+    touches a tenant-scoped table stays constrained to one tenant, so the
+    isolation fence holds here exactly as it does on the request paths. A
+    task already `running` is left alone — a slow run must not be doubled
+    by the beat that overlaps it.
+    """
+    now = db.utcnow()
+    ran: list[str] = []
+    conn = db.connect()
+    tenants = conn.execute(
+        "SELECT id FROM tenants WHERE deleted_at IS NULL").fetchall()
+    for row in tenants:
+        tenant = {"id": row["id"]}
+        due = conn.execute(
+            "SELECT id FROM resident_tasks WHERE tenant_id=?"
+            " AND every_hours IS NOT NULL AND next_run_at <= ?"
+            " AND status != 'running' ORDER BY next_run_at",
+            (tenant["id"], now)).fetchall()
+        for d in due:
+            try:
+                run(tenant, d["id"])
+            except ResidentError:
+                continue
+            ran.append(d["id"])
+            audit.record("resident.pulse", tenant_id=tenant["id"],
+                         ref=d["id"])
+    return {"ran": len(ran), "task_ids": ran}
 
 
 # --------------------------------------------------------------------------
@@ -706,6 +780,12 @@ def posture(tenant: dict) -> dict:
         "hosting_mode": mode,
         "in_facility": mode in ("colocation", "leased_space", "own_facility"),
         "local_model": local_model(),
+        "standing_tasks": db.connect().execute(
+            "SELECT COUNT(*) AS n FROM resident_tasks WHERE tenant_id=?"
+            " AND every_hours IS NOT NULL",
+            (tenant["id"],)).fetchone()["n"],
+        "pulse_seconds": (float(os.environ["PDI_RESIDENT_PULSE"])
+                          if os.environ.get("PDI_RESIDENT_PULSE") else None),
         "embedder": (f"local:{os.environ.get('PDI_EMBED_MODEL', 'nomic-embed-text')}"
                      if _ollama_url() else HASHED_EMBEDDER),
         "tools": [{"name": name, "means": t["means"],

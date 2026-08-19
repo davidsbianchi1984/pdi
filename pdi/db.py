@@ -423,7 +423,9 @@ CREATE TABLE IF NOT EXISTS resident_tasks (
     planned_by  TEXT NOT NULL,   -- rules-v1 | caller
     status      TEXT NOT NULL,   -- planned | running | done | failed
     created_at  TEXT NOT NULL,
-    finished_at TEXT
+    finished_at TEXT,
+    every_hours REAL,            -- standing tasks: repeat interval
+    next_run_at TEXT             -- standing tasks: the next appointment
 );
 
 CREATE TABLE IF NOT EXISTS resident_steps (
@@ -510,6 +512,13 @@ def _migrate(conn: sqlite3.Connection) -> None:
     # EXISTS will not add it to a vault that already has the table. Defaulting
     # to 1 is right for the rows already there: they predate the roster, so
     # there was exactly one name and it was always the one on duty.
+    # `resident_tasks` shipped in 0.86.0 without the standing-task columns.
+    cols = {r["name"] for r in conn.execute("PRAGMA table_info(resident_tasks)")}
+    if cols and "every_hours" not in cols:
+        conn.execute("ALTER TABLE resident_tasks ADD COLUMN every_hours REAL")
+        conn.execute("ALTER TABLE resident_tasks ADD COLUMN next_run_at TEXT")
+        conn.commit()
+
     cols = {r["name"] for r in conn.execute("PRAGMA table_info(gate_pages)")}
     if cols and "on_shift" not in cols:
         conn.execute("ALTER TABLE gate_pages ADD COLUMN on_shift INTEGER"

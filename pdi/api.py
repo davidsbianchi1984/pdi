@@ -755,7 +755,8 @@ def create_app() -> FastAPI:
                 tenant, body.goal,
                 None if body.steps is None else
                 [{"tool": s.tool, "title": s.title, "args": s.args}
-                 for s in body.steps])
+                 for s in body.steps],
+                every_hours=body.every_hours)
         except resident_mod.ResidentError as exc:
             raise HTTPException(422, i18n.raised(exc))
 
@@ -799,6 +800,28 @@ def create_app() -> FastAPI:
             return resident_mod.forget(tenant, key, prefix=prefix)
         except resident_mod.ResidentError as exc:
             raise HTTPException(422, i18n.raised(exc))
+
+    # The vault's own heartbeat: with PDI_RESIDENT_PULSE set to a number of
+    # seconds, the process re-runs due standing tasks itself — the "no
+    # separate orchestration service" claim extended to *when*, not just
+    # *what*. Unset (tests, ad-hoc runs), nothing ticks and `pulse` stays a
+    # function a caller can drive.
+    _pulse_seconds = os.environ.get("PDI_RESIDENT_PULSE")
+    if _pulse_seconds:
+        @app.on_event("startup")
+        async def _resident_pulse_loop() -> None:
+            import asyncio
+
+            async def beat() -> None:
+                while True:
+                    await asyncio.sleep(float(_pulse_seconds))
+                    try:
+                        resident_mod.pulse()
+                    except Exception:  # noqa: BLE001 — the beat must survive
+                        logging.getLogger("pdi.resident").exception(
+                            "resident pulse failed; next beat continues")
+
+            asyncio.get_running_loop().create_task(beat())
 
     @app.post("/resident/infer")
     def resident_infer(body: ResidentInfer,

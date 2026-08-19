@@ -385,6 +385,8 @@ class ResidentPlan(BaseModel):
 
     goal: str
     steps: list[ResidentStep] | None = None
+    #: A standing task: the vault re-runs the plan on this interval itself.
+    every_hours: float | None = None
 
 
 class ResidentEmbed(BaseModel):

@@ -8,6 +8,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Standing tasks: the vault keeps its own appointments.** A plan can
+  carry `every_hours` (a quarter-hour to a month), and the resident
+  re-runs it on that interval itself — `pulse()` walks the tenants and
+  then each tenant's due tasks, so every statement on a tenant-scoped
+  table stays constrained to one tenant, and `PDI_RESIDENT_PULSE`
+  starts the in-process heartbeat. The "no separate orchestration
+  service" claim extended to *when*, not just *what*: a fetch-and-table
+  errand that refreshes itself weekly needs no cron, no worker, no
+  caller.
+
+      asked     can the vault run its own errands
+      mattered  who has to remember the appointment
+
+  `done` is a resting state for a standing task, not a terminal one:
+  its steps reset and the same plan executes whole each cycle, the next
+  appointment is kept whatever the cycle did (a failing task retries
+  rather than going silent), a run already in flight is never doubled
+  by an overlapping beat, and a deleted tenant's appointments never
+  fire. Every pulse-run lands on the audit chain as `resident.pulse`;
+  the posture reports the standing-task count and the heartbeat
+  interval; and the plan form on the console and all three shells gains
+  the "repeats every (hours)" field, with the next appointment shown on
+  the task and a Run button that standing tasks keep even when done.
+
 - **The voice door: one local turn, straight through.** `infer.local`
   already answered inside plans; `POST /resident/infer` is the same
   engine behind a single door, so the tandems can put the vault's own

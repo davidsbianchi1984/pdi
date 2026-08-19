@@ -31,6 +31,7 @@ export function Resident() {
   const [rows, setRows] = useState<Record<string, unknown>[] | null>(null);
   const [rowsOf, setRowsOf] = useState("");
   const [goal, setGoal] = useState("");
+  const [every, setEvery] = useState("");
   const [embedKey, setEmbedKey] = useState("");
   const [embedText, setEmbedText] = useState("");
   const [embedded, setEmbedded] = useState<string | null>(null);
@@ -120,9 +121,17 @@ export function Resident() {
           <textarea value={goal} onChange={(e) => setGoal(e.target.value)}
                     rows={2} placeholder={t("res.plan.ph", lang)} />
         </label>
+        {/* A standing task: the vault keeps the appointment itself. */}
+        <label>
+          {t("res.every", lang)}
+          <input type="number" min={0.25} max={744} step={0.25} value={every}
+                 onChange={(e) => setEvery(e.target.value)} />
+        </label>
         <button disabled={busy || !goal.trim()} onClick={act(async () => {
-          await api.residentPlan({ goal: goal.trim() }, token);
-          setGoal("");
+          await api.residentPlan(
+            { goal: goal.trim(),
+              ...(every ? { every_hours: Number(every) } : {}) }, token);
+          setGoal(""); setEvery("");
         })}>
           {t("res.plan.go", lang)}
         </button>
@@ -138,6 +147,15 @@ export function Resident() {
             <p className="small">
               <b>{task.goal}</b> — {task.status}
               {" "}<span className="muted">({task.planned_by})</span>
+              {task.every_hours != null && (
+                <span className="muted small">
+                  {" "}· {t("res.every", lang)}: {task.every_hours}
+                  {task.next_run_at && (
+                    <> · {t("res.next", lang)}:{" "}
+                      {task.next_run_at.slice(0, 16)}</>
+                  )}
+                </span>
+              )}
             </p>
             <ol className="small">
               {task.plan_steps.map((s) => (
@@ -149,7 +167,8 @@ export function Resident() {
                 </li>
               ))}
             </ol>
-            {(task.status === "planned" || task.status === "failed") && (
+            {(task.status === "planned" || task.status === "failed"
+              || (task.status === "done" && task.every_hours != null)) && (
               <button disabled={busy} onClick={act(async () => {
                 await api.residentRun(task.id, token);
               })}>

@@ -17,6 +17,7 @@ struct ResidentView: View {
     @State private var rows: [String] = []
     @State private var rowsOf = ""
     @State private var goal = ""
+    @State private var every = ""
     @State private var embedKey = ""
     @State private var embedText = ""
     @State private var query = ""
@@ -59,12 +60,17 @@ struct ResidentView: View {
                 Text(L10n.t("res.plan", state.language)).font(.headline)
                 TextField(L10n.t("res.plan.ph", state.language), text: $goal)
                     .textFieldStyle(.roundedBorder)
+                // A standing task: the vault keeps the appointment itself.
+                TextField(L10n.t("res.every", state.language), text: $every)
+                    .textFieldStyle(.roundedBorder)
                 Button(L10n.t("res.plan.go", state.language)) {
                     Task {
                         await run {
                             _ = try await ApiClient.shared.residentPlan(
-                                goal: goal, token: state.token ?? "")
+                                goal: goal, everyHours: Double(every),
+                                token: state.token ?? "")
                             goal = ""
+                            every = ""
                         }
                     }
                 }.disabled(goal.trimmingCharacters(in: .whitespaces).isEmpty)
@@ -72,7 +78,12 @@ struct ResidentView: View {
                 Text(L10n.t("res.tasks", state.language)).font(.headline)
                 ForEach(tasks, id: \.id) { task in
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(task.goal + " — " + task.status).font(.callout)
+                        Text(task.goal + " — " + task.status
+                             + (task.every_hours != nil
+                                ? " · " + L10n.t("res.next", state.language)
+                                  + " " + String((task.next_run_at ?? "")
+                                                  .prefix(16))
+                                : "")).font(.callout)
                         ForEach(task.plan_steps, id: \.position) { step in
                             Text(String(step.position) + ". " + step.tool
                                  + " — " + step.status
