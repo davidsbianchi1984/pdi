@@ -4,6 +4,25 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **The fetch notices change.** A standing fetch overwrites the same
+  seal each cycle, which kept the page current and lost the one thing a
+  watcher wants to know: did it change? The capture now carries a
+  fingerprint (`sha`), `changed_at` — kept when the content is
+  identical, moved to the fetch time when it differs — and
+  `first_seen_at`, which survives every change. A seal from before
+  fingerprints gets one derived from its own text, so an identical page
+  is never reported changed just because the seal gained a field, and
+  its stand-in dates are its own fetch time, never now. The step
+  summary says which it was: `(first capture)`, `(unchanged)`,
+  `(changed)`.
+
+      asked     did the page change, or was it merely fetched again
+      mattered  a watcher who cannot tell is re-reading, not watching
+
 ## [0.89.0] - 2026-08-19
 
 ### Added

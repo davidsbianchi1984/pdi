@@ -470,18 +470,67 @@ def _fetch_text(url: str) -> str:
     return re.sub(r"[ \t]+", " ", text).strip()
 
 
+def _prior_capture(tenant: dict, key: str) -> dict | None:
+    """The seal this fetch is about to overwrite, if it parses — so a
+    re-fetch can say whether the page actually changed rather than only
+    that it was fetched again."""
+    try:
+        rec = vault.get(tenant, key)
+    except Exception:  # noqa: BLE001 — a lost prior is a first capture
+        return None
+    if rec is None:
+        return None
+    try:
+        prior = json.loads(rec["value"])
+    except (KeyError, TypeError, ValueError):
+        return None
+    return prior if isinstance(prior, dict) else None
+
+
+def _capture_sha(sealed: dict) -> str | None:
+    """A capture's fingerprint — its own when it carries one, derived
+    from its text when it predates fingerprints, so an identical page is
+    never reported changed just because the seal got a new field."""
+    if sealed.get("sha"):
+        return sealed["sha"]
+    text = sealed.get("text")
+    if not isinstance(text, str):
+        return None
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+
+
 def _tool_fetch(tenant: dict, args: dict, ctx: dict) -> dict:
     url = (args.get("url") or "").strip()
     if not url.startswith(("http://", "https://")):
         raise ResidentError("fetch.url needs an http(s) url")
     text = _fetch_text(url)
     key = f"resident/{ctx['task_id']}/{ctx['position']:02d}-fetch"
-    vault.put(tenant, key, json.dumps({"url": url, "text": text,
-                                       "fetched_at": db.utcnow()}))
+    now = db.utcnow()
+    # A standing fetch overwrites the same key each cycle; the fingerprint
+    # is what lets the seal remember *when the page last actually changed*
+    # across those overwrites, not merely when it was last read.
+    sha = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+    prior = _prior_capture(tenant, key)
+    if prior is not None and _capture_sha(prior) == sha:
+        # A prior from before fingerprints has no changed_at; the honest
+        # stand-in is its own fetch time — the page has held at least
+        # that long — never `now`, which would invent a fresh change.
+        changed_at = (prior.get("changed_at") or prior.get("fetched_at")
+                      or now)
+        note = "unchanged"
+    else:
+        changed_at = now
+        note = "changed" if prior is not None else "first capture"
+    first_seen_at = ((prior or {}).get("first_seen_at")
+                     or (prior or {}).get("fetched_at") or now)
+    vault.put(tenant, key, json.dumps({
+        "url": url, "text": text, "fetched_at": now, "sha": sha,
+        "changed_at": changed_at, "first_seen_at": first_seen_at}))
     ctx["last_text"], ctx["last_source"] = text, url
     audit.record("resident.fetch", tenant_id=tenant["id"], ref=url)
     return {"result_ref": key,
-            "summary": f"fetched {len(text)} chars, sealed at {key}"}
+            "summary": f"fetched {len(text)} chars, sealed at {key}"
+                       f" ({note})"}
 
 
 def _tool_vault_put(tenant: dict, args: dict, ctx: dict) -> dict:

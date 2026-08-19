@@ -734,3 +734,86 @@ def test_the_system_prompt_rides_ahead_and_never_ranks(client, monkeypatch):
     assert out["drew_on"] == ["care/plan"]
     assert seen["prompt"].startswith("You are a careful coach.")
     assert "shoulder rehab twice a week" in seen["prompt"]
+
+
+# -- the fetch notices change ------------------------------------------------
+
+def _standing_fetch(client, token, url="https://example.com/menu"):
+    r = client.post("/resident/tasks", json={
+        "goal": "keep an eye on the page",
+        "every_hours": 1.0,
+        "steps": [{"tool": "fetch.url", "args": {"url": url}}],
+    }, headers=auth(token))
+    assert r.status_code == 201, r.text
+    return r.json()
+
+
+def _cycle(client, token, task_id):
+    """One pulse cycle; returns (sealed capture, step summary)."""
+    from pdi import resident
+    _make_due(task_id)
+    assert resident.pulse()["ran"] == 1
+    task = [t for t in client.get("/resident/tasks",
+                                  headers=auth(token)).json()
+            if t["id"] == task_id][0]
+    step = task["plan_steps"][0]
+    sealed = client.get(f"/records/{step['result_ref']}",
+                        headers=auth(token)).json()
+    import json as _json
+    return _json.loads(sealed["value"]), step["summary"]
+
+
+def test_a_recaptured_page_remembers_when_it_last_changed(client,
+                                                          monkeypatch):
+    """A standing fetch overwrites the same seal each cycle; the
+    fingerprint is what lets the capture say when the page last
+    *actually* changed, not merely when it was last read."""
+    from pdi import resident
+    page = {"text": "menu: soup"}
+    monkeypatch.setattr(resident, "_fetch_text", lambda url: page["text"])
+    token = new_tenant(client)
+    body = _standing_fetch(client, token)
+
+    first, summary = _cycle(client, token, body["id"])
+    assert summary.endswith("(first capture)")
+    assert first["sha"] and first["changed_at"] == first["fetched_at"]
+    assert first["first_seen_at"] == first["fetched_at"]
+
+    second, summary = _cycle(client, token, body["id"])
+    assert summary.endswith("(unchanged)")
+    assert second["changed_at"] == first["changed_at"], (
+        "an identical page must keep its change date")
+    assert second["first_seen_at"] == first["first_seen_at"]
+
+    page["text"] = "menu: lemon tart"
+    third, summary = _cycle(client, token, body["id"])
+    assert summary.endswith("(changed)")
+    assert third["sha"] != first["sha"]
+    assert third["changed_at"] == third["fetched_at"]
+    assert third["first_seen_at"] == first["first_seen_at"], (
+        "the first sighting survives every change")
+
+
+def test_an_older_capture_without_a_fingerprint_is_not_reported_changed(
+        client, monkeypatch):
+    """A seal from before fingerprints carries no sha; deriving one from
+    its text keeps an identical page honest — and its stand-in change
+    date is its own fetch time, never now."""
+    import json as _json
+    from pdi import resident
+    monkeypatch.setattr(resident, "_fetch_text", lambda url: "same words")
+    token = new_tenant(client)
+    body = _standing_fetch(client, token)
+    key = f"resident/{body['id']}/01-fetch"
+    r = client.put("/records", json={"key": key, "value": _json.dumps(
+        {"url": "https://example.com/menu", "text": "same words",
+         "fetched_at": "2026-08-01T00:00:00+00:00"})},
+        headers=auth(token))
+    assert r.status_code in (200, 201), r.text
+
+    sealed, summary = _cycle(client, token, body["id"])
+    assert summary.endswith("(unchanged)")
+    assert sealed["changed_at"] == "2026-08-01T00:00:00+00:00", (
+        "the honest stand-in is the prior fetch time")
+    assert sealed["first_seen_at"] == "2026-08-01T00:00:00+00:00"
+    assert sealed["sha"]
