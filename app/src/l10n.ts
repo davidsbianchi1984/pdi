@@ -4402,6 +4402,18 @@ const CHROME: Table = {
     hi: "अगली बार",
     ar: "التشغيل التالي",
   },
+  "res.cancel": {
+    en: "Cancel",
+    es: "Cancelar",
+    fr: "Annuler",
+    de: "Abbrechen",
+    pt: "Cancelar",
+    it: "Annullare",
+    ja: "取り消す",
+    zh: "取消",
+    hi: "रद्द करें",
+    ar: "إلغاء",
+  },
   "nav.audit": {
     en: "Audit", es: "Auditoría", fr: "Audit", de: "Prüfung",
     pt: "Auditoria", it: "Audit", ja: "監査", zh: "审计",

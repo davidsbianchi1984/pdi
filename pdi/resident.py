@@ -732,6 +732,29 @@ def run(tenant: dict, task_id: str) -> dict:
     return task(tenant, task_id)
 
 
+def cancel(tenant: dict, task_id: str) -> dict:
+    """The off switch. A standing task without one is an appointment a
+    tenant can make and never unmake — the beat would keep it forever.
+
+    The task and its steps go; the audit chain and whatever the runs
+    already wrote (dataset rows, sealed fetches) stay, because a cancel
+    ends the future, not the record. A `running` task refuses: the run
+    loop is writing step rows this delete would pull out from under it.
+    """
+    current = task(tenant, task_id)
+    if current["status"] == "running":
+        raise ResidentStateError(
+            i18n.fill(i18n.RESIDENT_TASK_STATE, status=current["status"]))
+    conn = db.connect()
+    conn.execute("DELETE FROM resident_steps WHERE task_id=? AND tenant_id=?",
+                 (task_id, tenant["id"]))
+    conn.execute("DELETE FROM resident_tasks WHERE id=? AND tenant_id=?",
+                 (task_id, tenant["id"]))
+    conn.commit()
+    audit.record("resident.cancel", tenant_id=tenant["id"], ref=task_id)
+    return {"id": task_id, "cancelled": True}
+
+
 def pulse() -> dict:
     """Run every standing task whose appointment has come — the vault's own
     heartbeat, inside the process (`PDI_RESIDENT_PULSE` starts the loop).

@@ -104,6 +104,26 @@ public sealed partial class ResidentPage : Page
                     };
                     panel.Children.Add(run);
                 }
+                if (task.Status is not "running")
+                {
+                    // The off switch: end the task's future; its record stays.
+                    var stop = new Button
+                    {
+                        Content = L10n.T("res.cancel"),
+                        Background = null,
+                    };
+                    var doomed = task.Id;
+                    stop.Click += async (_, _) =>
+                    {
+                        try
+                        {
+                            await ApiClient.Shared.ResidentCancel(s.Token!, doomed);
+                            await LoadAsync();
+                        }
+                        catch (Exception ex) { ShowError(ex); }
+                    };
+                    panel.Children.Add(stop);
+                }
                 TasksList.Items.Add(panel);
             }
 

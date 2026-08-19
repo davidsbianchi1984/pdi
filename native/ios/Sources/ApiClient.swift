@@ -261,6 +261,18 @@ actor ApiClient {
                                  body: body, token: token)
     }
 
+    struct ResidentCancelled: Decodable {
+        let id: String
+        let cancelled: Bool
+    }
+
+    /// The off switch: end a task's future; the record of its runs stays.
+    func residentCancel(tid: String, token: String) async throws
+        -> ResidentCancelled {
+        try await request("/resident/tasks/\(tid)", method: "DELETE",
+                          token: token)
+    }
+
     func residentTasks(token: String) async throws -> [ResidentTask] {
         try await request("/resident/tasks", token: token)
     }

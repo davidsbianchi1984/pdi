@@ -32,6 +32,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the "repeats every (hours)" field, with the next appointment shown on
   the task and a Run button that standing tasks keep even when done.
 
+- **The off switch.** `DELETE /resident/tasks/{tid}` ends a task's
+  future — a standing task stops keeping its appointment — while the
+  audit chain and whatever the runs already wrote (dataset rows, sealed
+  fetches) stay, because a cancel ends the future, not the record. A
+  `running` task answers 409 rather than having its step rows pulled
+  out from under the run loop; another tenant's cancel finds nothing;
+  every cancel lands on the audit chain as `resident.cancel`. Without
+  this, the standing tasks two entries down were appointments a tenant
+  could make and never unmake. A Cancel button on every task row of the
+  console and all three shells.
+
 - **The voice door: one local turn, straight through.** `infer.local`
   already answered inside plans; `POST /resident/infer` is the same
   engine behind a single door, so the tandems can put the vault's own

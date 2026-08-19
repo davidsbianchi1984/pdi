@@ -839,6 +839,10 @@ export const api = {
   residentRun: (tid: string, token: string) =>
     req<ResidentTask>(`/resident/tasks/${tid}/run`,
       { method: "POST", token }),
+  // The off switch: end a task's future; the record of its runs stays.
+  residentCancel: (tid: string, token: string) =>
+    req<{ id: string; cancelled: boolean }>(`/resident/tasks/${tid}`,
+      { method: "DELETE", token }),
   residentDatasets: (token: string) =>
     req<{ dataset: string; row_count: number; last_write: string }[]>(
       "/resident/datasets", { token }),

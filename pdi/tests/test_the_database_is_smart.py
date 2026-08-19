@@ -549,3 +549,57 @@ def test_the_posture_counts_the_standing_tasks(client):
     posture = client.get("/resident", headers=auth(token)).json()
     assert posture["standing_tasks"] == 1
     assert posture["pulse_seconds"] is None
+
+
+# -- the off switch ----------------------------------------------------------
+
+def test_a_cancelled_task_is_gone_and_its_record_is_not(client):
+    from pdi import db
+    token = new_tenant(client)
+    body = _standing_plan(client, token)
+    _make_due(body["id"])
+    from pdi import resident
+    resident.pulse()                       # one cycle wrote its rows
+    r = client.delete(f"/resident/tasks/{body['id']}", headers=auth(token))
+    assert r.status_code == 200, r.text
+    assert r.json() == {"id": body["id"], "cancelled": True}
+    assert client.get("/resident/tasks", headers=auth(token)).json() == []
+    assert db.connect().execute(
+        "SELECT COUNT(*) AS n FROM resident_steps WHERE task_id=?",
+        (body["id"],)).fetchone()["n"] == 0
+    # A cancel ends the future, not the record: the cycle's rows stay.
+    rows = client.get("/resident/datasets/beats/rows",
+                      headers=auth(token)).json()["dataset_rows"]
+    assert len(rows) == 1
+    actions = {e["action"] for e in
+               client.get("/audit", headers=auth(token)).json()}
+    assert "resident.cancel" in actions
+
+
+def test_a_cancelled_appointment_never_fires_again(client):
+    from pdi import resident
+    token = new_tenant(client)
+    body = _standing_plan(client, token)
+    _make_due(body["id"])
+    client.delete(f"/resident/tasks/{body['id']}", headers=auth(token))
+    assert resident.pulse()["ran"] == 0
+
+
+def test_a_running_task_refuses_the_off_switch(client):
+    from pdi import db
+    token = new_tenant(client)
+    body = _standing_plan(client, token)
+    conn = db.connect()
+    conn.execute("UPDATE resident_tasks SET status='running' WHERE id=?",
+                 (body["id"],))
+    conn.commit()
+    r = client.delete(f"/resident/tasks/{body['id']}", headers=auth(token))
+    assert r.status_code == 409, r.text
+
+
+def test_another_tenant_cannot_cancel_my_task(client):
+    mine, theirs = new_tenant(client, "mine"), new_tenant(client, "theirs")
+    body = _standing_plan(client, mine)
+    r = client.delete(f"/resident/tasks/{body['id']}", headers=auth(theirs))
+    assert r.status_code == 404, r.text
+    assert len(client.get("/resident/tasks", headers=auth(mine)).json()) == 1

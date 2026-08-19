@@ -96,15 +96,30 @@ struct ResidentView: View {
                                 .foregroundStyle(step.error == nil
                                                  ? .secondary : Color.red)
                         }
-                        if task.status == "planned" || task.status == "failed" {
-                            Button(L10n.t("res.run", state.language)) {
-                                Task {
-                                    await run {
-                                        _ = try await ApiClient.shared.residentRun(
-                                            tid: task.id, token: state.token ?? "")
+                        HStack {
+                            if task.status == "planned"
+                                || task.status == "failed"
+                                || (task.status == "done"
+                                    && task.every_hours != nil) {
+                                Button(L10n.t("res.run", state.language)) {
+                                    Task {
+                                        await run {
+                                            _ = try await ApiClient.shared.residentRun(
+                                                tid: task.id, token: state.token ?? "")
+                                        }
                                     }
-                                }
-                            }.font(.caption)
+                                }.font(.caption)
+                            }
+                            if task.status != "running" {
+                                Button(L10n.t("res.cancel", state.language)) {
+                                    Task {
+                                        await run {
+                                            _ = try await ApiClient.shared.residentCancel(
+                                                tid: task.id, token: state.token ?? "")
+                                        }
+                                    }
+                                }.font(.caption)
+                            }
                         }
                     }
                 }

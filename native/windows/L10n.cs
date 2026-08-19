@@ -667,6 +667,19 @@ public static class L10n
             ["hi"] = "अगली बार",
             ["ar"] = "التشغيل التالي",
         },
+        ["res.cancel"] = new()
+        {
+            ["en"] = "Cancel",
+            ["es"] = "Cancelar",
+            ["fr"] = "Annuler",
+            ["de"] = "Abbrechen",
+            ["pt"] = "Cancelar",
+            ["it"] = "Annullare",
+            ["ja"] = "取り消す",
+            ["zh"] = "取消",
+            ["hi"] = "रद्द करें",
+            ["ar"] = "إلغاء",
+        },
         ["res.search.go"] = new()
         {
             ["en"] = "Search",

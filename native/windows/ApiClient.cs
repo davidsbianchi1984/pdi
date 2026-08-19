@@ -518,6 +518,15 @@ public sealed class ApiClient
         Send<ResidentTask>(new HttpRequestMessage(HttpMethod.Post,
             $"/resident/tasks/{tid}/run"), token);
 
+    public record ResidentCancelledOut(
+        [property: JsonPropertyName("id")] string Id,
+        [property: JsonPropertyName("cancelled")] bool Cancelled);
+
+    // The off switch: end a task's future; the record of its runs stays.
+    public Task<ResidentCancelledOut> ResidentCancel(string token, string tid) =>
+        Send<ResidentCancelledOut>(new HttpRequestMessage(HttpMethod.Delete,
+            $"/resident/tasks/{tid}"), token);
+
     public Task<ResidentDataset[]> ResidentDatasets(string token) =>
         Send<ResidentDataset[]>(new HttpRequestMessage(HttpMethod.Get,
             "/resident/datasets"), token);

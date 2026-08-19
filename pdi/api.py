@@ -773,6 +773,19 @@ def create_app() -> FastAPI:
         except resident_mod.ResidentError as exc:
             raise HTTPException(404, i18n.raised(exc))
 
+    @app.delete("/resident/tasks/{tid}")
+    def resident_cancel(tid: str, tenant: dict = Depends(_writer)) -> dict:
+        """The off switch: end a task's future — a standing task stops
+        keeping its appointment — while the audit chain and whatever the
+        runs already wrote stay. A running task answers 409 rather than
+        having its step rows pulled out from under the run loop."""
+        try:
+            return resident_mod.cancel(tenant, tid)
+        except resident_mod.ResidentStateError as exc:
+            raise HTTPException(409, i18n.raised(exc))
+        except resident_mod.ResidentError as exc:
+            raise HTTPException(404, i18n.raised(exc))
+
     @app.get("/resident/datasets")
     def resident_datasets(tenant: dict = Depends(_tenant)) -> list[dict]:
         return resident_mod.datasets(tenant)

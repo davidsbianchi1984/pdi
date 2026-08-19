@@ -1135,6 +1135,13 @@ object ApiClient {
             body, token)))
     }
 
+    // The off switch: end a task's future; the record of its runs stays.
+    suspend fun residentCancel(token: String, tid: String): Boolean {
+        val o = JSONObject(request("/resident/tasks/$tid", "DELETE",
+                                   null, token))
+        return o.optBoolean("cancelled")
+    }
+
     suspend fun residentTasks(token: String): List<ResidentTask> {
         val arr = JSONArray(request("/resident/tasks", token = token))
         return (0 until arr.length()).map { residentTaskOf(arr.getJSONObject(it)) }

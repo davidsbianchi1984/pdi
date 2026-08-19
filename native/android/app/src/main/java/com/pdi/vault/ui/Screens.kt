@@ -2545,10 +2545,18 @@ private fun ResidentPanel(vm: VaultViewModel) {
                          (s.error?.let { " · " + it } ?: ""),
                         color = if (s.error == null) Pdi.T2 else Pdi.Red, fontSize = 10.sp)
                 }
-                if (task.status == "planned" || task.status == "failed") {
-                    TextButton(onClick = {
-                        vm.call({ ApiClient.residentRun(vm.token!!, task.id) }) { reload() }
-                    }) { Text(L10n.t("res.run", vm.language), color = Pdi.BrandA, fontSize = 12.sp) }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (task.status == "planned" || task.status == "failed" ||
+                        (task.status == "done" && task.nextRunAt != null)) {
+                        TextButton(onClick = {
+                            vm.call({ ApiClient.residentRun(vm.token!!, task.id) }) { reload() }
+                        }) { Text(L10n.t("res.run", vm.language), color = Pdi.BrandA, fontSize = 12.sp) }
+                    }
+                    if (task.status != "running") {
+                        TextButton(onClick = {
+                            vm.call({ ApiClient.residentCancel(vm.token!!, task.id) }) { reload() }
+                        }) { Text(L10n.t("res.cancel", vm.language), color = Pdi.Red, fontSize = 12.sp) }
+                    }
                 }
             }
         }

@@ -175,6 +175,13 @@ export function Resident() {
                 {t("res.run", lang)}
               </button>
             )}
+            {task.status !== "running" && (
+              <button disabled={busy} onClick={act(async () => {
+                await api.residentCancel(task.id, token);
+              })}>
+                {t("res.cancel", lang)}
+              </button>
+            )}
           </div>
         ))}
       </div>
