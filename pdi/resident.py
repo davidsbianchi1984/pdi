@@ -92,6 +92,10 @@ MAX_STEPS = 20
 MAX_ROWS_PER_APPEND = 500
 MAX_COLUMNS = 64
 
+#: How many past cycles a task's runs ledger keeps. The ledger answers
+#: "lately", not "ever" — the audit chain is the permanent record.
+RUNS_KEPT = 200
+
 _DATASET = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
 
 
@@ -839,10 +843,34 @@ def run(tenant: dict, task_id: str) -> dict:
         conn.commit()
         audit.record("resident.step", tenant_id=tenant["id"],
                      ref=f"{task_id}:{position}")
+    finished_at = db.utcnow()
     conn.execute(
         "UPDATE resident_tasks SET status=?, finished_at=?"
         " WHERE id=? AND tenant_id=?",
-        ("failed" if failed else "done", db.utcnow(), task_id, tenant["id"]))
+        ("failed" if failed else "done", finished_at, task_id, tenant["id"]))
+    # One ledger row per cycle, because a standing task's step rows reset
+    # on the next run: without this, "what did the vault do while you
+    # slept" has no answer beyond the latest state. The note is one line
+    # — the failing step's error, or the last step's summary — never a
+    # copy of anything sealed.
+    after = task(tenant, task_id)["plan_steps"]
+    note = next((s2["error"] for s2 in after if s2["status"] == "failed"),
+                None) or next(
+        (s2["summary"] for s2 in reversed(after)
+         if s2["status"] == "done" and s2["summary"]), None)
+    conn.execute(
+        "INSERT INTO resident_runs (id, tenant_id, task_id, ran_at, status,"
+        " note) VALUES (?,?,?,?,?,?)",
+        (db.new_id("rrun"), tenant["id"], task_id, finished_at,
+         "failed" if failed else "done", (note or "")[:300] or None))
+    # The ledger answers "lately", not "ever": the oldest rows beyond the
+    # window go, and the audit chain stays the permanent record.
+    conn.execute(
+        "DELETE FROM resident_runs WHERE task_id=? AND tenant_id=?"
+        " AND id NOT IN (SELECT id FROM resident_runs"
+        "  WHERE task_id=? AND tenant_id=?"
+        "  ORDER BY ran_at DESC, rowid DESC LIMIT ?)",
+        (task_id, tenant["id"], task_id, tenant["id"], RUNS_KEPT))
     if standing:
         # The next appointment, kept whatever this cycle did: a failing
         # standing task retries on its interval rather than going silent.
@@ -873,11 +901,25 @@ def cancel(tenant: dict, task_id: str) -> dict:
     conn = db.connect()
     conn.execute("DELETE FROM resident_steps WHERE task_id=? AND tenant_id=?",
                  (task_id, tenant["id"]))
+    conn.execute("DELETE FROM resident_runs WHERE task_id=? AND tenant_id=?",
+                 (task_id, tenant["id"]))
     conn.execute("DELETE FROM resident_tasks WHERE id=? AND tenant_id=?",
                  (task_id, tenant["id"]))
     conn.commit()
     audit.record("resident.cancel", tenant_id=tenant["id"], ref=task_id)
     return {"id": task_id, "cancelled": True}
+
+
+def runs(tenant: dict, task_id: str) -> list[dict]:
+    """The task's past cycles, newest first — the answer to "what did the
+    vault do while you slept" that the resetting step rows cannot give.
+    Unknown task: the same refusal every task door gives."""
+    task(tenant, task_id)
+    rows = db.connect().execute(
+        "SELECT * FROM resident_runs WHERE task_id=? AND tenant_id=?"
+        " ORDER BY ran_at DESC, rowid DESC", (task_id, tenant["id"])).fetchall()
+    return [{"id": r["id"], "ran_at": r["ran_at"], "status": r["status"],
+             "note": r["note"]} for r in rows]
 
 
 def pulse() -> dict:

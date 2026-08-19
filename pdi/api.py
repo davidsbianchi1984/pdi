@@ -774,6 +774,16 @@ def create_app() -> FastAPI:
         except resident_mod.ResidentError as exc:
             raise HTTPException(404, i18n.raised(exc))
 
+    @app.get("/resident/tasks/{tid}/runs")
+    def resident_runs(tid: str, tenant: dict = Depends(_tenant)) -> list[dict]:
+        """The task's past cycles, newest first — a standing task's step
+        rows reset each cycle, so this ledger is the only honest answer
+        to "what did the vault do while you slept"."""
+        try:
+            return resident_mod.runs(tenant, tid)
+        except resident_mod.ResidentError as exc:
+            raise HTTPException(404, i18n.raised(exc))
+
     @app.delete("/resident/tasks/{tid}")
     def resident_cancel(tid: str, tenant: dict = Depends(_writer)) -> dict:
         """The off switch: end a task's future — a standing task stops

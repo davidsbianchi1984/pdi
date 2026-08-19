@@ -77,6 +77,8 @@ data class ResidentPosture(val means: String, val hostingMode: String,
 data class ResidentStep(val position: Int, val title: String, val tool: String,
                         val leavesHost: Boolean, val status: String,
                         val summary: String?, val error: String?)
+data class ResidentRun(val id: String, val ranAt: String, val status: String,
+                       val note: String?)
 data class ResidentTask(val id: String, val goal: String, val status: String,
                         val plannedBy: String, val nextRunAt: String?,
                         val steps: List<ResidentStep>)
@@ -1150,6 +1152,16 @@ object ApiClient {
     suspend fun residentRun(token: String, tid: String): ResidentTask =
         residentTaskOf(JSONObject(
             request("/resident/tasks/$tid/run", "POST", null, token)))
+
+    suspend fun residentRuns(token: String, tid: String): List<ResidentRun> {
+        val arr = JSONArray(request("/resident/tasks/$tid/runs", token = token))
+        return (0 until arr.length()).map {
+            val r = arr.getJSONObject(it)
+            ResidentRun(r.getString("id"), r.getString("ran_at"),
+                        r.getString("status"),
+                        if (r.isNull("note")) null else r.optString("note"))
+        }
+    }
 
     suspend fun residentDatasets(token: String): List<ResidentDataset> {
         val arr = JSONArray(request("/resident/datasets", token = token))

@@ -567,6 +567,8 @@ fun ContinuityCard(vm: VaultViewModel) {
     var opsLine by remember { mutableStateOf<String?>(null) }
     var status by remember { mutableStateOf<String?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
+    var runsOf by remember { mutableStateOf<String?>(null) }
+    var runRows by remember { mutableStateOf<List<ResidentRun>>(emptyList()) }
 
     fun reload() {
         vm.call({ ApiClient.bequests(vm.token!!) }) { r ->
@@ -2556,6 +2558,21 @@ private fun ResidentPanel(vm: VaultViewModel) {
                         TextButton(onClick = {
                             vm.call({ ApiClient.residentCancel(vm.token!!, task.id) }) { reload() }
                         }) { Text(L10n.t("res.cancel", vm.language), color = Pdi.Red, fontSize = 12.sp) }
+                    }
+                    TextButton(onClick = {
+                        vm.call({ ApiClient.residentRuns(vm.token!!, task.id) }) { r ->
+                            runsOf = task.id
+                            runRows = r.getOrDefault(emptyList())
+                        }
+                    }) { Text(L10n.t("res.runs", vm.language), color = Pdi.BrandA, fontSize = 12.sp) }
+                }
+                if (runsOf == task.id) {
+                    if (runRows.isEmpty())
+                        Text(L10n.t("res.runs.none", vm.language), color = Pdi.T2, fontSize = 10.sp)
+                    runRows.forEach { r ->
+                        Text(r.ranAt.take(16) + " — " + r.status +
+                             (r.note?.let { " \u00b7 " + it } ?: ""),
+                            color = if (r.status == "failed") Pdi.Red else Pdi.T2, fontSize = 10.sp)
                     }
                 }
             }

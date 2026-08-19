@@ -125,6 +125,33 @@ public sealed partial class ResidentPage : Page
                     };
                     panel.Children.Add(stop);
                 }
+                var rounds = new Button
+                {
+                    Content = L10n.T("res.runs"),
+                    Background = null,
+                };
+                var ledgerOf = task.Id;
+                rounds.Click += async (_, _) =>
+                {
+                    try
+                    {
+                        var rows = await ApiClient.Shared.ResidentRuns(
+                            s.Token!, ledgerOf);
+                        var text = rows.Length == 0
+                            ? L10n.T("res.runs.none")
+                            : string.Join("\n", rows.Select(r =>
+                                r.RanAt[..Math.Min(16, r.RanAt.Length)]
+                                + " — " + r.Status
+                                + (r.Note is null ? "" : " · " + r.Note)));
+                        panel.Children.Add(new TextBlock
+                        {
+                            Text = text, FontSize = 11,
+                            TextWrapping = TextWrapping.Wrap,
+                        });
+                    }
+                    catch (Exception ex) { ShowError(ex); }
+                };
+                panel.Children.Add(rounds);
                 TasksList.Items.Add(panel);
             }
 

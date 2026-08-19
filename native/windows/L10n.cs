@@ -667,6 +667,8 @@ public static class L10n
             ["hi"] = "अगली बार",
             ["ar"] = "التشغيل التالي",
         },
+        ["res.runs"] = new() { ["en"] = "Past rounds", ["es"] = "Rondas anteriores", ["fr"] = "Tours passés", ["de"] = "Vergangene Runden", ["pt"] = "Rondas anteriores", ["it"] = "Giri passati", ["ja"] = "これまでの実行", ["zh"] = "过往轮次", ["hi"] = "पिछले दौर", ["ar"] = "الجولات السابقة" },
+        ["res.runs.none"] = new() { ["en"] = "No rounds yet.", ["es"] = "Aún no hay rondas.", ["fr"] = "Pas encore de tour.", ["de"] = "Noch keine Runden.", ["pt"] = "Ainda não há rondas.", ["it"] = "Ancora nessun giro.", ["ja"] = "まだ実行はありません。", ["zh"] = "还没有任何轮次。", ["hi"] = "अभी कोई दौर नहीं।", ["ar"] = "لا جولات بعد." },
         ["res.cancel"] = new()
         {
             ["en"] = "Cancel",

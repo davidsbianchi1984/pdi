@@ -518,6 +518,18 @@ public sealed class ApiClient
         Send<ResidentTask>(new HttpRequestMessage(HttpMethod.Post,
             $"/resident/tasks/{tid}/run"), token);
 
+    public record ResidentRunRow(
+        [property: JsonPropertyName("id")] string Id,
+        [property: JsonPropertyName("ran_at")] string RanAt,
+        [property: JsonPropertyName("status")] string Status,
+        [property: JsonPropertyName("note")] string? Note);
+
+    // The task's past cycles, newest first — a standing task's step rows
+    // reset each cycle, so the ledger is the only history there is.
+    public Task<ResidentRunRow[]> ResidentRuns(string token, string tid) =>
+        Send<ResidentRunRow[]>(new HttpRequestMessage(HttpMethod.Get,
+            $"/resident/tasks/{tid}/runs"), token);
+
     public record ResidentCancelledOut(
         [property: JsonPropertyName("id")] string Id,
         [property: JsonPropertyName("cancelled")] bool Cancelled);

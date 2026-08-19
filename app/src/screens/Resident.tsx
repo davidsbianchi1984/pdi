@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, ResidentPosture, ResidentTask } from "../api";
+import { api, ResidentPosture, ResidentRun, ResidentTask } from "../api";
 import { useSession } from "../store";
 import { deviceLanguage, Lang, t } from "../l10n";
 
@@ -31,6 +31,8 @@ export function Resident() {
   const [rows, setRows] = useState<Record<string, unknown>[] | null>(null);
   const [rowsOf, setRowsOf] = useState("");
   const [goal, setGoal] = useState("");
+  const [runsOf, setRunsOf] = useState("");
+  const [runs, setRuns] = useState<ResidentRun[] | null>(null);
   const [every, setEvery] = useState("");
   const [embedKey, setEmbedKey] = useState("");
   const [embedText, setEmbedText] = useState("");
@@ -181,6 +183,24 @@ export function Resident() {
               })}>
                 {t("res.cancel", lang)}
               </button>
+            )}
+            <button disabled={busy} onClick={act(async () => {
+              setRunsOf(task.id);
+              setRuns(await api.residentRuns(task.id, token));
+            })}>
+              {t("res.runs", lang)}
+            </button>
+            {runsOf === task.id && runs && (
+              runs.length === 0
+                ? <p className="muted small">{t("res.runs.none", lang)}</p>
+                : <ul className="small">
+                    {runs.map((r) => (
+                      <li key={r.id}>
+                        {r.ran_at.slice(0, 16)} — {r.status}
+                        {r.note && <span className="muted"> · {r.note}</span>}
+                      </li>
+                    ))}
+                  </ul>
             )}
           </div>
         ))}

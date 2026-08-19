@@ -836,6 +836,8 @@ export const api = {
     req<ResidentTask>("/resident/tasks", { method: "POST", body, token }),
   residentTasks: (token: string) =>
     req<ResidentTask[]>("/resident/tasks", { token }),
+  residentRuns: (tid: string, token: string) =>
+    req<ResidentRun[]>(`/resident/tasks/${tid}/runs`, { token }),
   residentRun: (tid: string, token: string) =>
     req<ResidentTask>(`/resident/tasks/${tid}/run`,
       { method: "POST", token }),
@@ -879,6 +881,9 @@ export type ResidentPosture = {
   privacy: string;
 };
 
+export type ResidentRun = {
+  id: string; ran_at: string; status: string; note: string | null;
+};
 export type ResidentTask = {
   id: string; goal: string; status: string; planned_by: string;
   created_at: string; finished_at: string | null;

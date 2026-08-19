@@ -13,6 +13,8 @@ struct ResidentView: View {
     @EnvironmentObject var state: AppState
     @State private var posture: ResidentPosture?
     @State private var tasks: [ResidentTask] = []
+    @State private var runsOf = ""
+    @State private var runRows: [ApiClient.ResidentRunRow]?
     @State private var datasets: [ResidentDataset] = []
     @State private var rows: [String] = []
     @State private var rowsOf = ""
@@ -119,6 +121,30 @@ struct ResidentView: View {
                                         }
                                     }
                                 }.font(.caption)
+                            }
+                            Button(L10n.t("res.runs", state.language)) {
+                                Task {
+                                    runsOf = task.id
+                                    runRows = (try? await ApiClient.shared
+                                        .residentRuns(tid: task.id,
+                                                      token: state.token ?? ""))
+                                        ?? []
+                                }
+                            }.font(.caption)
+                        }
+                        if runsOf == task.id, let rows = runRows {
+                            if rows.isEmpty {
+                                Text(L10n.t("res.runs.none", state.language))
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
+                            ForEach(rows, id: \.id) { r in
+                                Text(String(r.ran_at.prefix(16)) + " — "
+                                     + r.status
+                                     + (r.note.map { " · " + $0 } ?? ""))
+                                    .font(.caption2)
+                                    .foregroundStyle(r.status == "failed"
+                                                     ? Color.red : .secondary)
                             }
                         }
                     }

@@ -428,6 +428,15 @@ CREATE TABLE IF NOT EXISTS resident_tasks (
     next_run_at TEXT             -- standing tasks: the next appointment
 );
 
+CREATE TABLE IF NOT EXISTS resident_runs (
+    id          TEXT PRIMARY KEY,
+    tenant_id   TEXT NOT NULL REFERENCES tenants(id),
+    task_id     TEXT NOT NULL REFERENCES resident_tasks(id),
+    ran_at      TEXT NOT NULL,
+    status      TEXT NOT NULL,   -- done | failed
+    note        TEXT             -- the failing step's error, or the last summary
+);
+
 CREATE TABLE IF NOT EXISTS resident_steps (
     id          TEXT PRIMARY KEY,
     task_id     TEXT NOT NULL REFERENCES resident_tasks(id),

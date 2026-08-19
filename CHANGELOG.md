@@ -23,6 +23,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
       asked     did the page change, or was it merely fetched again
       mattered  a watcher who cannot tell is re-reading, not watching
 
+- **The vault remembers its rounds.** A standing task's step rows reset
+  each cycle — that keeps the plan honest and erases the history, so
+  "what did the vault do while you slept" had no answer beyond the
+  latest state. Every cycle now lands one row on a per-task runs
+  ledger: when it ran, `done` or `failed`, and one line of note — the
+  failing step's error or the last step's summary, never a copy of
+  anything sealed. `GET /resident/tasks/{tid}/runs` reads it newest
+  first, on the console and all three shells; the ledger keeps the
+  last 200 rounds ("lately", not "ever" — the audit chain stays the
+  permanent record), a cancel takes the ledger with the task, and a
+  tenant wipe sweeps it like every tenant-scoped table.
+
+      asked     what did the vault do while you slept
+      mattered  a heartbeat nobody can audit is a rumor
+
 ## [0.89.0] - 2026-08-19
 
 ### Added

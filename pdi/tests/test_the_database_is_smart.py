@@ -817,3 +817,80 @@ def test_an_older_capture_without_a_fingerprint_is_not_reported_changed(
         "the honest stand-in is the prior fetch time")
     assert sealed["first_seen_at"] == "2026-08-01T00:00:00+00:00"
     assert sealed["sha"]
+
+
+# -- the runs ledger: what the vault did while you slept ---------------------
+
+def test_every_cycle_lands_one_row_on_the_runs_ledger(client, monkeypatch):
+    from pdi import resident
+    monkeypatch.setattr(resident, "_fetch_text", lambda url: "same words")
+    token = new_tenant(client)
+    body = _standing_fetch(client, token)
+    _cycle(client, token, body["id"])
+    _cycle(client, token, body["id"])
+    rows = client.get(f"/resident/tasks/{body['id']}/runs",
+                      headers=auth(token))
+    assert rows.status_code == 200, rows.text
+    ledger = rows.json()
+    assert [r["status"] for r in ledger] == ["done", "done"]
+    assert "(unchanged)" in ledger[0]["note"], "newest first"
+    assert "(first capture)" in ledger[1]["note"]
+    assert ledger[0]["ran_at"] >= ledger[1]["ran_at"]
+
+
+def test_a_failed_cycle_names_the_step_that_failed(client, monkeypatch):
+    from pdi import resident
+
+    def refuse(url):
+        raise resident.ResidentError("the wire is down")
+    monkeypatch.setattr(resident, "_fetch_text", refuse)
+    token = new_tenant(client)
+    body = _standing_fetch(client, token)
+    _make_due(body["id"])
+    assert resident.pulse()["ran"] == 1
+    ledger = client.get(f"/resident/tasks/{body['id']}/runs",
+                        headers=auth(token)).json()
+    assert [r["status"] for r in ledger] == ["failed"]
+    assert "the wire is down" in ledger[0]["note"]
+
+
+def test_the_ledger_keeps_lately_not_ever(client, monkeypatch):
+    from pdi import resident
+    monkeypatch.setattr(resident, "_fetch_text", lambda url: "words")
+    monkeypatch.setattr(resident, "RUNS_KEPT", 3)
+    token = new_tenant(client)
+    body = _standing_fetch(client, token)
+    for _ in range(5):
+        _cycle(client, token, body["id"])
+    ledger = client.get(f"/resident/tasks/{body['id']}/runs",
+                        headers=auth(token)).json()
+    assert len(ledger) == 3, "the window is the promise"
+
+
+def test_cancel_takes_the_ledger_with_the_task(client, monkeypatch):
+    from pdi import db as db_mod, resident
+    monkeypatch.setattr(resident, "_fetch_text", lambda url: "words")
+    token = new_tenant(client)
+    body = _standing_fetch(client, token)
+    _cycle(client, token, body["id"])
+    gone = client.delete(f"/resident/tasks/{body['id']}",
+                         headers=auth(token))
+    assert gone.status_code == 200, gone.text
+    assert db_mod.connect().execute(
+        "SELECT COUNT(*) AS n FROM resident_runs").fetchone()["n"] == 0
+    missing = client.get(f"/resident/tasks/{body['id']}/runs",
+                         headers=auth(token))
+    assert missing.status_code == 404
+
+
+def test_another_tenants_ledger_is_a_task_that_does_not_exist(client,
+                                                              monkeypatch):
+    from pdi import resident
+    monkeypatch.setattr(resident, "_fetch_text", lambda url: "words")
+    token = new_tenant(client)
+    body = _standing_fetch(client, token)
+    _cycle(client, token, body["id"])
+    stranger = new_tenant(client)
+    r = client.get(f"/resident/tasks/{body['id']}/runs",
+                   headers=auth(stranger))
+    assert r.status_code == 404, r.text

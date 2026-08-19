@@ -282,6 +282,20 @@ actor ApiClient {
                           token: token)
     }
 
+    struct ResidentRunRow: Decodable {
+        let id: String
+        let ran_at: String
+        let status: String
+        let note: String?
+    }
+
+    /// The task's past cycles, newest first — a standing task's step rows
+    /// reset each cycle, so the ledger is the only history there is.
+    func residentRuns(tid: String, token: String) async throws
+        -> [ResidentRunRow] {
+        try await request("/resident/tasks/\(tid)/runs", token: token)
+    }
+
     func residentDatasets(token: String) async throws -> [ResidentDataset] {
         try await request("/resident/datasets", token: token)
     }
