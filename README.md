@@ -10,7 +10,7 @@ JIM-mini vaults its medical and context payloads here, and QRME seals its
 profile source material — each as its own tenant with its own token. See
 [docs/tandem.md](docs/tandem.md).
 
-**Current release: v0.87.0** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v0.88.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 PDI is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -167,6 +167,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 |---|---|
 | Release | What landed |
 |---|---|
+| **0.88.0** | **The voice door, the standing tasks, and the off switch** — `POST /resident/infer` puts local inference behind a single door so the tandems' coaches and profiles can speak from inside the facility (prompt never leaves the host, audit counts characters and quotes nothing, the stub answers under its own name). A plan can carry `every_hours` and the vault re-runs it itself: `pulse()` walks tenants then each tenant's due tasks so the isolation fence holds on the heartbeat, `PDI_RESIDENT_PULSE` starts the in-process loop, `done` is a resting state whose steps reset each cycle, failures retry, overlapping beats never double a run. And `DELETE /resident/tasks/{tid}` is the off switch: a cancel ends the future, not the record — running refuses, cross-tenant finds nothing, every cancel audited. All of it on the console and all three shells |
 | **0.87.0** | **Forgetting reaches the vectors, everywhere** — the resident's embedding index gets its doors out: `DELETE /resident/embeddings/{key}` takes one vector, `?prefix=true` takes a person's whole shelf in one call (a character-compare prefix, never a LIKE wildcard), another tenant's forget removes nothing, and every forget lands on the audit chain. The tandems stand their erasure sweeps on it, the console and all three shells wear a per-match forget button — and the vault's own front door keeps the same promise: deleting a record takes any vector indexed under its key, through the one `resident.forget` implementation, with the audit line written only when a vector actually went |
 | **0.86.0** | **Tenant isolation in the SQL, and the database made smart** — every one of the forty-six statements that reached tenant-scoped tables by bare id now constrains `tenant_id` in the statement itself, the ten that genuinely cannot wear a written reason with a ceiling, and an AST guard plus live cross-tenant tests hold the fence from both sides. On top of it, the **resident intelligence**: the agent living in the vault process — multi-step plans by deterministic rules, a closed tool registry whose `leaves_host` column travels with every step, structured rows into queryable datasets straight from a fetch, embeddings and cosine search that keep a hash and never the text, and local-only inference with an honest stub — no separate orchestration service, the same doors and privacy over standard HTTPS, on the console and all three shells |
 | **0.85.0** | **The front page reads like a product** — the README cut down to a professional overview at the owner's ask, the console galleries moved whole to `docs/gallery.md`, the release table folded but present, and the guards that held the old page holding the same promises across the pair. No functional changes to the vault itself |
