@@ -4,6 +4,15 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.91.0] - 2026-08-19
+
+### Changed
+
+- Version alignment with the tandems — no functional changes. JIM and
+  QRME carry this release's features (the voice choice honored on the
+  study path, the weekly letters and their completed accounts); the
+  trio versions and releases together.
+
 ## [0.90.0] - 2026-08-19
 
 ### Added
@@ -6969,7 +6978,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.90.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.91.0...HEAD
+[0.91.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.90.0...app-v0.91.0
 [0.90.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.89.0...app-v0.90.0
 [0.89.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.88.0...app-v0.89.0
 [0.88.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.87.0...app-v0.88.0
