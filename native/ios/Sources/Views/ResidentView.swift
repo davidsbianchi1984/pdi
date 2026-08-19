@@ -20,6 +20,7 @@ struct ResidentView: View {
     @State private var embedKey = ""
     @State private var embedText = ""
     @State private var query = ""
+    @State private var prompt = ""
     @State private var matches: [ResidentMatch] = []
     @State private var status: String?
     @State private var error: String?
@@ -161,6 +162,21 @@ struct ResidentView: View {
                         }.font(.caption2)
                     }
                 }
+
+                // The voice door: one local turn, straight through. The
+                // engine that answered rides beside the words.
+                TextField(L10n.t("res.infer.ph", state.language),
+                          text: $prompt)
+                    .textFieldStyle(.roundedBorder)
+                Button(L10n.t("res.infer.go", state.language)) {
+                    Task {
+                        await run {
+                            let out = try await ApiClient.shared.residentInfer(
+                                prompt: prompt, token: state.token ?? "")
+                            status = out.model + " · " + out.text
+                        }
+                    }
+                }.disabled(prompt.isEmpty)
 
                 if let status { Text(status).font(.caption) }
                 if let error {

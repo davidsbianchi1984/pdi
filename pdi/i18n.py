@@ -2134,6 +2134,7 @@ _FIELD_LABELS: dict[str, dict[str, str]] = {
     # `goal` is shared vocabulary with the siblings — one word, one label.
     'goal': {'en': 'Goal', 'es': 'Objetivo', 'fr': 'Objectif', 'de': 'Ziel', 'pt': 'Objetivo', 'it': 'Obiettivo', 'ja': '目標', 'zh': '目标', 'hi': 'लक्ष्य', 'ar': 'الهدف'},
     'query': {'en': 'Search your vectors', 'es': 'Busca en tus vectores', 'fr': 'Chercher dans vos vecteurs', 'de': 'In deinen Vektoren suchen', 'pt': 'Pesquisar nos seus vetores', 'it': 'Cerca nei tuoi vettori', 'ja': 'ベクトルを検索', 'zh': '搜索你的向量', 'hi': 'अपने वेक्टर खोजें', 'ar': 'ابحث في متجهاتك'},
+    'prompt': {'en': 'Say something to ask — it never leaves this host.', 'es': 'Escribe tu pregunta — nunca sale de este servidor.', 'fr': 'Écrivez votre question — elle ne quitte jamais cet hôte.', 'de': 'Schreib deine Frage — sie verlässt diesen Host nie.', 'pt': 'Escreva a sua pergunta — nunca sai deste servidor.', 'it': 'Scrivi la tua domanda — non lascia mai questo host.', 'ja': '質問を入力してください — このホストの外には出ません。', 'zh': '输入你的问题——它绝不会离开这台主机。', 'hi': 'अपना सवाल लिखें — यह इस होस्ट से बाहर कभी नहीं जाता।', 'ar': 'اكتب سؤالك — لا يغادر هذا المضيف أبدًا.'},
 
     # The accessibility report's three questions, worded as the form asks
     # them — a refusal that names one of these should read like the form.

@@ -39,7 +39,8 @@ from .models import (AppCollect, AppConnect, AppInvoke, BAARecordIn,
                      DeploymentCreate, FeedbackSubmit, GateRing, IntakeCreate,
                      IntakeSubmit, LanguageChoice, PositionIntake,
                      TranslateRequest, RecordPut,
-                     ResidentEmbed, ResidentPlan, ResidentSearch,
+                     ResidentEmbed, ResidentInfer, ResidentPlan,
+                     ResidentSearch,
                      RetentionSet, RobotBind,
                      RobotIngest, RosterAdd, SnapshotRestore, TenantCreate,
                      TokenIssue, TransferCreate, GateTimezone)
@@ -796,6 +797,19 @@ def create_app() -> FastAPI:
         erasure sweeps' call."""
         try:
             return resident_mod.forget(tenant, key, prefix=prefix)
+        except resident_mod.ResidentError as exc:
+            raise HTTPException(422, i18n.raised(exc))
+
+    @app.post("/resident/infer")
+    def resident_infer(body: ResidentInfer,
+                       tenant: dict = Depends(_tenant)) -> dict:
+        """One local turn from the vault's own model — the tandems' voice
+        door. The prompt reaches only this host's inference server, the
+        answer says which kind of engine spoke (a facility with no model
+        gets the honest stub sentence), and the audit line carries the
+        prompt's length, never its words."""
+        try:
+            return resident_mod.ask(tenant, body.prompt)
         except resident_mod.ResidentError as exc:
             raise HTTPException(422, i18n.raised(exc))
 

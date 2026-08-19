@@ -307,6 +307,20 @@ actor ApiClient {
                           body: ["query": query], token: token)
     }
 
+    struct ResidentSpoken: Decodable {
+        let model: String
+        let text: String
+        let leaves_host: Bool
+    }
+
+    /// One local turn from the vault's own model — the prompt never
+    /// leaves the host, and the answer names which engine spoke.
+    func residentInfer(prompt: String,
+                       token: String) async throws -> ResidentSpoken {
+        try await request("/resident/infer", method: "POST",
+                          body: ["prompt": prompt], token: token)
+    }
+
     private func request<T: Decodable>(_ path: String, method: String = "GET",
                                        body: [String: Any]? = nil,
                                        token: String? = nil) async throws -> T {

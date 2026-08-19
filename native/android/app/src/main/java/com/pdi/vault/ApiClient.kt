@@ -1175,6 +1175,14 @@ object ApiClient {
         }
     }
 
+    // One local turn from the vault's own model — the prompt never
+    // leaves the host, and the answer names which engine spoke.
+    suspend fun residentInfer(token: String, prompt: String): String {
+        val o = JSONObject(request("/resident/infer", "POST",
+            JSONObject().put("prompt", prompt), token))
+        return o.getString("model") + " \u00b7 " + o.getString("text")
+    }
+
     suspend fun connectors(token: String): List<SocialConn> {
         val arr = JSONArray(request("/connectors", token = token))
         return (0 until arr.length()).map { connOf(arr.getJSONObject(it)) }

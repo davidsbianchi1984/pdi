@@ -37,6 +37,9 @@ export function Resident() {
   const [query, setQuery] = useState("");
   const [matches, setMatches] = useState<
     { key: string; score: number }[] | null>(null);
+  const [prompt, setPrompt] = useState("");
+  const [spoken, setSpoken] = useState<
+    { model: string; text: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -243,6 +246,29 @@ export function Resident() {
               </p>
             ))}
           </>
+        )}
+      </div>
+
+      <div className="card">
+        {/* The voice door: one local turn, straight through. The engine
+            that answered renders beside the words — a stub that spoke
+            under a model's name would be the lie this module exists not
+            to tell. */}
+        <h3>{t("res.infer", lang)}</h3>
+        <textarea value={prompt} rows={2}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder={t("res.infer.ph", lang)} />
+        <button disabled={busy || !prompt.trim()} onClick={act(async () => {
+          const out = await api.residentInfer(
+            { prompt: prompt.trim() }, token);
+          setSpoken({ model: out.model, text: out.text });
+        })}>
+          {t("res.infer.go", lang)}
+        </button>
+        {spoken && (
+          <p className="small">
+            <code>{spoken.model}</code> · {spoken.text}
+          </p>
         )}
       </div>
     </div>

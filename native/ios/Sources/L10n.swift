@@ -364,6 +364,8 @@ enum L10n {
         "res.embed.go": ["en": "Embed", "es": "Incrustar", "fr": "Encoder", "de": "Einbetten", "pt": "Incorporar", "it": "Incorpora", "ja": "埋め込む", "zh": "嵌入", "hi": "एम्बेड करें", "ar": "ضمِّن"],
         "res.search.ph": ["en": "Search your vectors", "es": "Busca en tus vectores", "fr": "Chercher dans vos vecteurs", "de": "In deinen Vektoren suchen", "pt": "Pesquisar nos seus vetores", "it": "Cerca nei tuoi vettori", "ja": "ベクトルを検索", "zh": "搜索你的向量", "hi": "अपने वेक्टर खोजें", "ar": "ابحث في متجهاتك"],
         "res.search.go": ["en": "Search", "es": "Buscar", "fr": "Chercher", "de": "Suchen", "pt": "Pesquisar", "it": "Cerca", "ja": "検索", "zh": "搜索", "hi": "खोजें", "ar": "ابحث"],
+        "res.infer.ph": ["en": "Say something to ask — it never leaves this host.", "es": "Escribe tu pregunta — nunca sale de este servidor.", "fr": "Écrivez votre question — elle ne quitte jamais cet hôte.", "de": "Schreib deine Frage — sie verlässt diesen Host nie.", "pt": "Escreva a sua pergunta — nunca sai deste servidor.", "it": "Scrivi la tua domanda — non lascia mai questo host.", "ja": "質問を入力してください — このホストの外には出ません。", "zh": "输入你的问题——它绝不会离开这台主机。", "hi": "अपना सवाल लिखें — यह इस होस्ट से बाहर कभी नहीं जाता।", "ar": "اكتب سؤالك — لا يغادر هذا المضيف أبدًا."],
+        "res.infer.go": ["en": "Ask", "es": "Preguntar", "fr": "Demander", "de": "Fragen", "pt": "Perguntar", "it": "Chiedere", "ja": "質問する", "zh": "提问", "hi": "पूछें", "ar": "اسأل"],
         "tab.robots": ["en": "Robots", "es": "Robots", "fr": "Robots",
                        "de": "Roboter", "pt": "Robôs", "it": "Robot",
                        "ja": "ロボット", "zh": "机器人", "hi": "रोबोट", "ar": "روبوتات"],

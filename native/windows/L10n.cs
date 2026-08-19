@@ -615,6 +615,32 @@ public static class L10n
             ["hi"] = "अपने वेक्टर खोजें",
             ["ar"] = "ابحث في متجهاتك",
         },
+        ["res.infer.ph"] = new()
+        {
+            ["en"] = "Say something to ask — it never leaves this host.",
+            ["es"] = "Escribe tu pregunta — nunca sale de este servidor.",
+            ["fr"] = "Écrivez votre question — elle ne quitte jamais cet hôte.",
+            ["de"] = "Schreib deine Frage — sie verlässt diesen Host nie.",
+            ["pt"] = "Escreva a sua pergunta — nunca sai deste servidor.",
+            ["it"] = "Scrivi la tua domanda — non lascia mai questo host.",
+            ["ja"] = "質問を入力してください — このホストの外には出ません。",
+            ["zh"] = "输入你的问题——它绝不会离开这台主机。",
+            ["hi"] = "अपना सवाल लिखें — यह इस होस्ट से बाहर कभी नहीं जाता।",
+            ["ar"] = "اكتب سؤالك — لا يغادر هذا المضيف أبدًا.",
+        },
+        ["res.infer.go"] = new()
+        {
+            ["en"] = "Ask",
+            ["es"] = "Preguntar",
+            ["fr"] = "Demander",
+            ["de"] = "Fragen",
+            ["pt"] = "Perguntar",
+            ["it"] = "Chiedere",
+            ["ja"] = "質問する",
+            ["zh"] = "提问",
+            ["hi"] = "पूछें",
+            ["ar"] = "اسأل",
+        },
         ["res.search.go"] = new()
         {
             ["en"] = "Search",

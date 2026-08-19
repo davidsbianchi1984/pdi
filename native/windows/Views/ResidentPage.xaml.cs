@@ -33,6 +33,8 @@ public sealed partial class ResidentPage : Page
         SearchButton.Content = L10n.T("res.search.go");
         ForgetButton.Content = L10n.T("res.forget");
         ForgetBox.Header = L10n.T("res.forget");
+        PromptBox.PlaceholderText = L10n.T("res.infer.ph");
+        InferButton.Content = L10n.T("res.infer.go");
         _ = LoadAsync();
     }
 
@@ -189,6 +191,22 @@ public sealed partial class ResidentPage : Page
             ForgetBox.Header = L10n.T("res.forget");
             ForgetBox.Visibility = found.Matches.Length > 0
                 ? Visibility.Visible : Visibility.Collapsed;
+        }
+        catch (Exception ex) { ShowError(ex); }
+    }
+
+    private async void OnInfer(object sender, RoutedEventArgs e)
+    {
+        // The voice door: one local turn, straight through. The engine
+        // that answered renders beside the words.
+        var s = AppState.Current;
+        if (string.IsNullOrEmpty(s.Token)
+            || string.IsNullOrWhiteSpace(PromptBox.Text)) return;
+        try
+        {
+            var spoken = await ApiClient.Shared.ResidentInfer(
+                s.Token!, PromptBox.Text.Trim());
+            SpokenText.Text = spoken.Model + " · " + spoken.Text;
         }
         catch (Exception ex) { ShowError(ex); }
     }

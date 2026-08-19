@@ -395,3 +395,7 @@ class ResidentEmbed(BaseModel):
 class ResidentSearch(BaseModel):
     query: str
     top_k: int = 5
+
+
+class ResidentInfer(BaseModel):
+    prompt: str

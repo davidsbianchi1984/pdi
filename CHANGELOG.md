@@ -4,6 +4,26 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **The voice door: one local turn, straight through.** `infer.local`
+  already answered inside plans; `POST /resident/infer` is the same
+  engine behind a single door, so the tandems can put the vault's own
+  model in their provider registries and a profile or coach can *speak*
+  from inside the facility. The prompt reaches only this host's
+  inference server and never leaves it; the answer names which engine
+  spoke — a facility with no model gets the honest stub sentence, never
+  a stub wearing a model's name; and the audit line carries the prompt's
+  length, never its words, because an inference ledger that quoted
+  prompts would be a transcript of everything private the tandems route
+  here. A prompt box on the resident screen of the console and all three
+  shells.
+
+      asked     can the tandems generate where the data lives
+      mattered  does the prompt ever leave the building
+
 ## [0.87.0] - 2026-08-19
 
 ### Fixed

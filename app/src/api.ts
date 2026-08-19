@@ -854,6 +854,11 @@ export const api = {
     req<{ query: string; embedder: string | null;
           matches: { key: string; score: number }[] }>(
       "/resident/search", { method: "POST", body, token }),
+  // One local turn from the vault's own model — the prompt never leaves
+  // this host, and the answer names which engine spoke.
+  residentInfer: (body: { prompt: string }, token: string) =>
+    req<{ model: string; text: string; leaves_host: boolean }>(
+      "/resident/infer", { method: "POST", body, token }),
 };
 
 export type ResidentPosture = {

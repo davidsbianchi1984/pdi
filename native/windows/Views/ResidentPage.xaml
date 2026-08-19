@@ -44,6 +44,11 @@
                     <TextBox x:Name="ForgetBox" Visibility="Collapsed" />
                     <Button x:Name="ForgetButton" Click="OnForget"
                             Background="Transparent" Foreground="{StaticResource PdiRed}" />
+                    <!-- The voice door: one local turn, straight through. -->
+                    <TextBox x:Name="PromptBox" />
+                    <Button x:Name="InferButton" Click="OnInfer"
+                            Background="Transparent" Foreground="{StaticResource PdiBrandABrush}" />
+                    <TextBlock x:Name="SpokenText" Foreground="{StaticResource PdiT2Brush}" FontSize="12" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
 

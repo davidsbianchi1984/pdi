@@ -541,6 +541,18 @@ public sealed class ApiClient
             "/resident/search")
         { Content = JsonContent.Create(new { query }) }, token);
 
+    public record ResidentSpokenOut(
+        [property: JsonPropertyName("model")] string Model,
+        [property: JsonPropertyName("text")] string Text,
+        [property: JsonPropertyName("leaves_host")] bool LeavesHost);
+
+    // One local turn from the vault's own model — the prompt never
+    // leaves the host, and the answer names which engine spoke.
+    public Task<ResidentSpokenOut> ResidentInfer(string token, string prompt) =>
+        Send<ResidentSpokenOut>(new HttpRequestMessage(HttpMethod.Post,
+            "/resident/infer")
+        { Content = JsonContent.Create(new { prompt }) }, token);
+
     private async Task<T> Send<T>(HttpRequestMessage req, string token = "")
     {
         if (!string.IsNullOrWhiteSpace(token))

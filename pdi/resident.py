@@ -145,6 +145,28 @@ def infer(prompt: str) -> dict:
     return {"model": f"local:{local_model()}", "text": body.get("response", "")}
 
 
+def ask(tenant: dict, prompt: str) -> dict:
+    """One direct local turn for this tenant — the tandems' voice door.
+
+    `infer.local` already answers inside a plan; this is the same engine
+    behind a single door, so a tandem can put the vault's own model in
+    its provider registry and a profile or coach can *speak* from inside
+    the facility — the prompt reaches only this host's inference server
+    and never leaves it. The audit line carries the prompt's length,
+    never its words: an inference ledger that quoted prompts would be a
+    transcript of everything private the tandems route here.
+    """
+    prompt = (prompt or "").strip()
+    if not prompt:
+        raise ResidentError(
+            "say something to ask — an empty prompt generates nothing")
+    out = infer(prompt[:8000])
+    audit.record("resident.infer", tenant_id=tenant["id"],
+                 ref=f"chars:{len(prompt)}")
+    return {"model": out["model"], "text": out["text"],
+            "leaves_host": False}
+
+
 # --------------------------------------------------------------------------
 # embeddings — one space per embedder, and the label travels with the vector
 # --------------------------------------------------------------------------

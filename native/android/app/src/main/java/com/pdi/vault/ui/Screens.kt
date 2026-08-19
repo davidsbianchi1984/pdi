@@ -2487,6 +2487,7 @@ private fun ResidentPanel(vm: VaultViewModel) {
     var embedKey by remember { mutableStateOf("") }
     var embedText by remember { mutableStateOf("") }
     var query by remember { mutableStateOf("") }
+    var prompt by remember { mutableStateOf("") }
     var matches by remember { mutableStateOf<List<ResidentMatch>>(emptyList()) }
     var status by remember { mutableStateOf<String?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -2572,6 +2573,15 @@ private fun ResidentPanel(vm: VaultViewModel) {
                     r.onSuccess { matches = it }.onFailure { error = it.message }
                 }
             }) { Text(L10n.t("res.search.go", vm.language), color = Pdi.BrandA, fontSize = 13.sp) }
+            // The voice door: one local turn, straight through. The
+            // engine that answered rides beside the words.
+            labeledField(L10n.t("res.infer.ph", vm.language), prompt, L10n.t("res.infer.ph", vm.language)) { prompt = it }
+            TextButton(onClick = {
+                error = null
+                vm.call({ ApiClient.residentInfer(vm.token!!, prompt) }) { r ->
+                    r.onSuccess { status = it }.onFailure { error = it.message }
+                }
+            }) { Text(L10n.t("res.infer.go", vm.language), color = Pdi.BrandA, fontSize = 13.sp) }
             matches.forEach { m ->
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(m.key + " · " + m.score, color = Pdi.T2, fontSize = 11.sp)

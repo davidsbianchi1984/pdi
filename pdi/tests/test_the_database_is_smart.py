@@ -375,3 +375,49 @@ def test_forgetting_lands_on_the_audit_chain(client):
     actions = {e["action"] for e in
                client.get("/audit", headers=auth(token)).json()}
     assert "resident.forget" in actions
+
+# -- the voice door: one local turn, straight through ------------------------
+
+def test_the_voice_door_answers_and_says_which_engine_spoke(client):
+    """A facility with no model installed still gets a working door, and
+    the answer names the stub rather than dressing it up."""
+    token = new_tenant(client)
+    r = client.post("/resident/infer", json={"prompt": "say hello"},
+                    headers=auth(token))
+    assert r.status_code == 200, r.text
+    out = r.json()
+    assert out["model"] == "stub"
+    assert out["leaves_host"] is False
+    assert "No local model" in out["text"]
+
+
+def test_a_local_model_speaks_through_the_voice_door(client, monkeypatch):
+    from pdi import resident
+    monkeypatch.setattr(resident, "infer",
+                        lambda prompt: {"model": "local:llama3.2",
+                                        "text": "hello from the rack"})
+    token = new_tenant(client)
+    out = client.post("/resident/infer", json={"prompt": "say hello"},
+                      headers=auth(token)).json()
+    assert out == {"model": "local:llama3.2", "text": "hello from the rack",
+                   "leaves_host": False}
+
+
+def test_an_empty_prompt_is_refused(client):
+    token = new_tenant(client)
+    r = client.post("/resident/infer", json={"prompt": "   "},
+                    headers=auth(token))
+    assert r.status_code == 422, r.text
+
+
+def test_the_audit_line_counts_characters_and_quotes_nothing(client):
+    """An inference ledger that quoted prompts would be a transcript of
+    everything private the tandems route here."""
+    token = new_tenant(client)
+    secret = "my custody hearing is on Tuesday"
+    client.post("/resident/infer", json={"prompt": secret},
+                headers=auth(token))
+    events = client.get("/audit", headers=auth(token)).json()
+    lines = [e for e in events if e["action"] == "resident.infer"]
+    assert lines and lines[-1]["ref"] == f"chars:{len(secret)}"
+    assert all(secret not in str(e) for e in events)
