@@ -579,6 +579,40 @@ def _tool_fetch_render(tenant: dict, args: dict, ctx: dict) -> dict:
                        f" ({note})"}
 
 
+def _tool_fetch_listen(tenant: dict, args: dict, ctx: dict) -> dict:
+    """The capture with ears: a recording turned into the words said in it.
+
+    The deployment's transcription sidecar (pdi/ears.py) downloads the
+    audio or video and runs a local speech-to-text model; what gets sealed
+    is the words — the same capture shape and change-memory the fetches
+    keep, so a standing listen notices when a recording's words change.
+
+    Unlike the eyes there is no honest stand-in: the shell of a page is
+    still the page's text, but the bytes of a recording are not its words.
+    A deployment without ears, or whose ears fail, fails the step in words
+    — the runs ledger carries the reason, and the lookout's `trouble` line
+    can say it — rather than sealing silence or bytes as a transcript.
+    """
+    url = (args.get("url") or "").strip()
+    if not url.startswith(("http://", "https://")):
+        raise ResidentError("fetch.listen needs an http(s) url")
+    from . import ears
+    try:
+        heard = ears.transcribe(url)
+    except ears.EarsUnavailable as exc:
+        raise ResidentError(f"the vault has no ears for this: {exc}")
+    extra: dict = {"transcribed": True}
+    if heard.get("duration_seconds") is not None:
+        extra["duration_seconds"] = heard["duration_seconds"]
+    if heard.get("language"):
+        extra["language"] = heard["language"]
+    key, note = _seal_capture(tenant, ctx, url, heard["text"], extra)
+    audit.record("resident.fetch", tenant_id=tenant["id"], ref=url)
+    return {"result_ref": key,
+            "summary": f"heard {len(heard['text'])} chars (transcribed), "
+                       f"sealed at {key} ({note})"}
+
+
 def _tool_vault_put(tenant: dict, args: dict, ctx: dict) -> dict:
     key = (args.get("key") or "").strip()
     value = args.get("value")
@@ -678,6 +712,11 @@ TOOLS: dict[str, dict] = {
                               "the plain fetch stands in, and the seal says "
                               "so, when no renderer is deployed",
                      "leaves_host": True, "run": _tool_fetch_render},
+    "fetch.listen": {"means": "fetch a recording and seal the words said "
+                              "in it — transcribed by the deployment's "
+                              "ears; a deployment without ears refuses in "
+                              "words rather than sealing silence or bytes",
+                     "leaves_host": True, "run": _tool_fetch_listen},
     "vault.put": {"means": "seal a value in the vault",
                   "leaves_host": False, "run": _tool_vault_put},
     "vault.get": {"means": "read a sealed value back",
@@ -712,6 +751,13 @@ def _step_from(fragment: str) -> dict:
     on a host with no model at all."""
     low = fragment.lower()
     url = _URL.search(fragment)
+    if url and any(w in low for w in ("listen", "transcribe", "hear")):
+        # "listen" (or "transcribe", "hear") asks for the words said in a
+        # recording — the ears tool, which refuses in words on a
+        # deployment without them. Checked before the fetch verbs so
+        # "fetch and transcribe <url>" hears rather than reads.
+        return {"title": fragment, "tool": "fetch.listen",
+                "args": {"url": url.group().rstrip(".,)")}}
     if url and any(w in low for w in ("fetch", "get", "read", "pull",
                                       "download", "render", "see")):
         # "render" (or "see") asks for the page as a person meets it — the

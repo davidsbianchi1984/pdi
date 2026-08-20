@@ -4,6 +4,31 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **The capture grows ears.** `fetch.render` gave the resident eyes;
+  a recording still answered every fetch with bytes — compressed video
+  sealed where a person hears a sentence. `fetch.listen` joins the
+  vocabulary: the deployment's transcription sidecar (`docker/ears` in
+  the deploy repo, named by `PDI_EARS_URL`) downloads the recording,
+  runs a local speech-to-text model on the facility's own hardware, and
+  what gets sealed is the words — the same capture shape and
+  change-memory the fetches keep, so a standing listen notices when a
+  recording's words change and a re-posted file with the same sentences
+  is not news. Unlike the eyes there is no honest stand-in (the shell
+  of a page is still the page's text; the bytes of a recording are not
+  its words): a deployment without ears refuses in words — the runs
+  ledger carries the reason — rather than sealing silence or bytes as
+  a transcript. The planner hears "listen", "transcribe" and "hear",
+  checked before the fetch verbs so "fetch and transcribe" hears
+  rather than reads, and the published registry says the tool leaves
+  the host.
+
+      asked     what was said in this recording
+      mattered  the words, made at home — never the bytes shipped out
+
 ## [0.93.0] - 2026-08-20
 
 ### Added
@@ -7017,6 +7042,7 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.93.0...HEAD
 [0.93.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.92.0...app-v0.93.0
 [0.92.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.91.0...app-v0.92.0
 [0.91.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.90.0...app-v0.91.0
