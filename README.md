@@ -10,7 +10,7 @@ JIM-mini vaults its medical and context payloads here, and QRME seals its
 profile source material — each as its own tenant with its own token. See
 [docs/tandem.md](docs/tandem.md).
 
-**Current release: v0.92.0** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v0.93.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 PDI is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -167,6 +167,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 |---|---|
 | Release | What landed |
 |---|---|
+| **0.93.0** | **The capture grows eyes, and the ledger stops editing itself** — `fetch.render` joins the resident's vocabulary (the page as a person meets it, sealed with the same change-memory; the plain fetch stands in and the seal says so on a deployment without eyes), and the runs ledger becomes tamper-evident: the database refuses edits, rows chain per task, a verify door walks the links, and every cycle anchors its hash on the permanent audit chain |
 | **0.92.0** | **Version alignment with the tandems** — no functional changes; the trio versions and releases together |
 | **0.91.0** | **Version alignment with the tandems** — no functional changes; the trio versions and releases together |
 | **0.90.0** | **The fetch notices change, and the vault remembers its rounds** — captures carry a fingerprint (`sha`), `changed_at` (kept while content is identical, moved when it differs) and `first_seen_at`, with pre-fingerprint seals never reported changed by the migration itself; each cycle's summary discloses `(first capture)` / `(unchanged)` / `(changed)`. And every cycle lands one row on a per-task runs ledger — when it ran, done or failed, one line of note — read newest first through `GET /resident/tasks/{tid}/runs` behind the tenant fence, last 200 rounds kept, cancel and wipe sweeping it, a "Past rounds" button on the console and all three shells |
