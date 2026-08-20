@@ -4,6 +4,14 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.96.0] - 2026-08-20
+
+- Version alignment: the trio releases together, and this release's
+  changes live in the jim-mini and qrme repositories (the standing voice
+  conversation, the agent's hands on the look, the settings-page device
+  lists, the room picture full-bleed, the reply ceiling back to five).
+  Nothing changed here since 0.94.0.
+
 ## [0.95.0] - 2026-08-20
 
 - Version alignment: the trio releases together, and this release's
@@ -7048,6 +7056,7 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
+[0.96.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.95.0...app-v0.96.0
 [0.95.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.94.0...app-v0.95.0
 [0.94.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.93.0...app-v0.94.0
 [0.93.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.92.0...app-v0.93.0
