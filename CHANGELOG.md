@@ -4,6 +4,24 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **The capture grows eyes.** A JavaScript application answers a plain
+  fetch with an empty shell and a title — a dozen characters standing
+  where a whole console is — so the resident's vocabulary grows
+  `fetch.render`: the page rendered in the deployment's browser, sealed
+  as what a person would see. The eyes are a sidecar the deploy stack
+  ships (`PDI_RENDERER_URL` names it), the vault's own image stays
+  lean, and a deployment without them says so in the seal itself —
+  `rendered: false` with the reason — because an honest shell beats a
+  silent one: a lookout reading the capture can tell "the page says
+  little" from "we could not see". The rendered capture keeps the plain
+  fetch's memory (the fingerprint still says when the page actually
+  changed), the planner hears "render" and "see" as the eyes, and the
+  published registry says all of this in its own description.
+
 ## [0.92.0] - 2026-08-20
 
 Version alignment with the tandems — no functional changes; the
@@ -6986,6 +7004,7 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.92.0...HEAD
 [0.92.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.91.0...app-v0.92.0
 [0.91.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.90.0...app-v0.91.0
 [0.90.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.89.0...app-v0.90.0

@@ -194,9 +194,9 @@ def test_the_posture_names_the_registry_and_what_leaves_the_host(client):
     assert got["resident"] is True
     assert {t["name"] for t in got["tools"]} == set(resident.TOOLS)
     leaves = [t["name"] for t in got["tools"] if t["leaves_host"]]
-    assert leaves == ["fetch.url"], (
+    assert leaves == ["fetch.render", "fetch.url"], (
         "the published registry must say exactly which tools leave the "
-        f"host, and only the fetch does: {leaves}")
+        f"host, and only the two fetches do: {leaves}")
     assert got["hosting_mode"] in ("colocation", "leased_space",
                                    "own_facility", "own_device")
 

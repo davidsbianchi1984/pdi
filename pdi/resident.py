@@ -503,16 +503,15 @@ def _capture_sha(sealed: dict) -> str | None:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
 
 
-def _tool_fetch(tenant: dict, args: dict, ctx: dict) -> dict:
-    url = (args.get("url") or "").strip()
-    if not url.startswith(("http://", "https://")):
-        raise ResidentError("fetch.url needs an http(s) url")
-    text = _fetch_text(url)
+def _seal_capture(tenant: dict, ctx: dict, url: str, text: str,
+                  extra: dict | None = None) -> tuple[str, str]:
+    """Seal one capture and say what changed. Shared by the plain fetch and
+    the rendered one, so both kinds of reading keep the same memory: the
+    fingerprint is what lets the seal remember *when the page last actually
+    changed* across a standing fetch's overwrites, not merely when it was
+    last read."""
     key = f"resident/{ctx['task_id']}/{ctx['position']:02d}-fetch"
     now = db.utcnow()
-    # A standing fetch overwrites the same key each cycle; the fingerprint
-    # is what lets the seal remember *when the page last actually changed*
-    # across those overwrites, not merely when it was last read.
     sha = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
     prior = _prior_capture(tenant, key)
     if prior is not None and _capture_sha(prior) == sha:
@@ -527,13 +526,56 @@ def _tool_fetch(tenant: dict, args: dict, ctx: dict) -> dict:
         note = "changed" if prior is not None else "first capture"
     first_seen_at = ((prior or {}).get("first_seen_at")
                      or (prior or {}).get("fetched_at") or now)
-    vault.put(tenant, key, json.dumps({
-        "url": url, "text": text, "fetched_at": now, "sha": sha,
-        "changed_at": changed_at, "first_seen_at": first_seen_at}))
+    seal = {"url": url, "text": text, "fetched_at": now, "sha": sha,
+            "changed_at": changed_at, "first_seen_at": first_seen_at}
+    seal.update(extra or {})
+    vault.put(tenant, key, json.dumps(seal))
     ctx["last_text"], ctx["last_source"] = text, url
+    return key, note
+
+
+def _tool_fetch(tenant: dict, args: dict, ctx: dict) -> dict:
+    url = (args.get("url") or "").strip()
+    if not url.startswith(("http://", "https://")):
+        raise ResidentError("fetch.url needs an http(s) url")
+    text = _fetch_text(url)
+    key, note = _seal_capture(tenant, ctx, url, text)
     audit.record("resident.fetch", tenant_id=tenant["id"], ref=url)
     return {"result_ref": key,
             "summary": f"fetched {len(text)} chars, sealed at {key}"
+                       f" ({note})"}
+
+
+def _tool_fetch_render(tenant: dict, args: dict, ctx: dict) -> dict:
+    """The capture with eyes: the page rendered as a person meets it.
+
+    A JavaScript application answers a plain fetch with an empty shell and
+    a title — a dozen characters standing where a whole console is — so
+    this tool asks the deployment's rendering sidecar (pdi/renderer.py)
+    instead. A deployment without the sidecar, or whose sidecar fails,
+    falls back to the plain fetch **and the seal says so**: `rendered` is
+    the honest column, and `render_fallback` carries the reason. An honest
+    shell beats a silent one — the lookout reading this capture can tell
+    the difference between "the page says little" and "we could not see".
+    """
+    url = (args.get("url") or "").strip()
+    if not url.startswith(("http://", "https://")):
+        raise ResidentError("fetch.url needs an http(s) url")
+    from . import renderer
+    rendered, fallback = True, None
+    try:
+        text = renderer.render_text(url)
+    except renderer.RendererUnavailable as exc:
+        text = _fetch_text(url)
+        rendered, fallback = False, str(exc)
+    extra: dict = {"rendered": rendered}
+    if fallback:
+        extra["render_fallback"] = fallback
+    key, note = _seal_capture(tenant, ctx, url, text, extra)
+    audit.record("resident.fetch", tenant_id=tenant["id"], ref=url)
+    how = "rendered" if rendered else f"plain fetch stood in: {fallback}"
+    return {"result_ref": key,
+            "summary": f"fetched {len(text)} chars ({how}), sealed at {key}"
                        f" ({note})"}
 
 
@@ -631,6 +673,11 @@ def _tool_infer(tenant: dict, args: dict, ctx: dict) -> dict:
 TOOLS: dict[str, dict] = {
     "fetch.url": {"means": "fetch a page's text and seal it in the vault",
                   "leaves_host": True, "run": _tool_fetch},
+    "fetch.render": {"means": "fetch a page as a person sees it — rendered "
+                              "in the deployment's browser — and seal it; "
+                              "the plain fetch stands in, and the seal says "
+                              "so, when no renderer is deployed",
+                     "leaves_host": True, "run": _tool_fetch_render},
     "vault.put": {"means": "seal a value in the vault",
                   "leaves_host": False, "run": _tool_vault_put},
     "vault.get": {"means": "read a sealed value back",
@@ -666,8 +713,12 @@ def _step_from(fragment: str) -> dict:
     low = fragment.lower()
     url = _URL.search(fragment)
     if url and any(w in low for w in ("fetch", "get", "read", "pull",
-                                      "download")):
-        return {"title": fragment, "tool": "fetch.url",
+                                      "download", "render", "see")):
+        # "render" (or "see") asks for the page as a person meets it — the
+        # eyes tool, which itself says honestly when it had to stand down.
+        tool = ("fetch.render" if any(w in low for w in ("render", "see"))
+                else "fetch.url")
+        return {"title": fragment, "tool": tool,
                 "args": {"url": url.group().rstrip(".,)")}}
     if any(w in low for w in ("table", "tabulate", "rows", "dataset")):
         named = _DATASET_WORD.search(low)
