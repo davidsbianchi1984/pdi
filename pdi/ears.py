@@ -44,6 +44,20 @@ class EarsUnavailable(Exception):
     """No ears on this deployment, or the ears did not answer."""
 
 
+#: URL suffixes that name a recording rather than a page — the same
+#: canonical list the qrme briefcase and lookout read, ported rather than
+#: reinvented so the two stacks call the same bytes a recording. Deduced
+#: from the path alone (query stripped): a page that merely contains a
+#: player is still a page.
+_MEDIA_SUFFIXES = (".mp3", ".mp4", ".m4a", ".wav", ".ogg", ".webm", ".mov",
+                   ".mkv", ".flac", ".aac", ".opus")
+
+
+def looks_like_recording(url: str) -> bool:
+    path = url.split("?", 1)[0].split("#", 1)[0].lower()
+    return path.endswith(_MEDIA_SUFFIXES)
+
+
 def url() -> str | None:
     return os.environ.get("PDI_EARS_URL", "").strip() or None
 

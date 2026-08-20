@@ -534,10 +534,25 @@ def _seal_capture(tenant: dict, ctx: dict, url: str, text: str,
     return key, note
 
 
+def _refuse_a_recording(url: str, tool: str) -> None:
+    """The reading tools do not read recordings. A plain fetch of an .mp4
+    strips markup from compressed video and seals mojibake as a capture —
+    the exact defect the ears were built against, still open on the direct
+    doors after the planner learned to route media to `fetch.listen`. The
+    refusal names that door, because "I cannot" without "here is what can"
+    is the menu problem inside a tool registry."""
+    from . import ears
+    if ears.looks_like_recording(url):
+        raise ResidentError(
+            f"{tool} reads pages, and that url names a recording — "
+            "fetch.listen is the door that hears it")
+
+
 def _tool_fetch(tenant: dict, args: dict, ctx: dict) -> dict:
     url = (args.get("url") or "").strip()
     if not url.startswith(("http://", "https://")):
         raise ResidentError("fetch.url needs an http(s) url")
+    _refuse_a_recording(url, "fetch.url")
     text = _fetch_text(url)
     key, note = _seal_capture(tenant, ctx, url, text)
     audit.record("resident.fetch", tenant_id=tenant["id"], ref=url)
@@ -561,6 +576,7 @@ def _tool_fetch_render(tenant: dict, args: dict, ctx: dict) -> dict:
     url = (args.get("url") or "").strip()
     if not url.startswith(("http://", "https://")):
         raise ResidentError("fetch.url needs an http(s) url")
+    _refuse_a_recording(url, "fetch.render")
     from . import renderer
     rendered, fallback = True, None
     try:

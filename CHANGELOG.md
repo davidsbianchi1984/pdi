@@ -4,6 +4,24 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **The reading tools refuse a recording.** `fetch.listen` was built
+  because a plain fetch of an .mp4 seals compressed video where a
+  person hears a sentence — and the planner learned to route media to
+  it, while the direct doors never did: `fetch.url` or `fetch.render`
+  called straight at a recording still stripped markup from binary and
+  sealed the mojibake as a capture. Both readers now refuse a media
+  URL by name of the door that hears it, on the same canonical suffix
+  list the qrme briefcase and lookout read — ported, not reinvented,
+  so the two stacks call the same bytes a recording.
+
+      asked     can the readers tell a page from a recording
+      mattered  a capture of noise wears the same seal as a capture
+                of words
+
 ## [0.96.0] - 2026-08-20
 
 - Version alignment: the trio releases together, and this release's
@@ -7056,6 +7074,7 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.96.0...HEAD
 [0.96.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.95.0...app-v0.96.0
 [0.95.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.94.0...app-v0.95.0
 [0.94.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.93.0...app-v0.94.0
