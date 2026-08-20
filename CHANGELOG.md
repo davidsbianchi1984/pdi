@@ -4,6 +4,14 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.92.0] - 2026-08-20
+
+Version alignment with the tandems — no functional changes; the
+trio versions and releases together. The release the tandems cut
+carries JIM's far-end rung and QRME's restore drill; the vault's
+own part in that story (the drill that proved its backups and its
+master key) lives on the QRME deploy page, not in this code.
+
 ## [0.91.0] - 2026-08-19
 
 ### Changed
@@ -6978,7 +6986,7 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.91.0...HEAD
+[0.92.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.91.0...app-v0.92.0
 [0.91.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.90.0...app-v0.91.0
 [0.90.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.89.0...app-v0.90.0
 [0.89.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.88.0...app-v0.89.0

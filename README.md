@@ -10,7 +10,7 @@ JIM-mini vaults its medical and context payloads here, and QRME seals its
 profile source material — each as its own tenant with its own token. See
 [docs/tandem.md](docs/tandem.md).
 
-**Current release: v0.91.0** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v0.92.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 PDI is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -167,6 +167,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 |---|---|
 | Release | What landed |
 |---|---|
+| **0.92.0** | **Version alignment with the tandems** — no functional changes; the trio versions and releases together |
 | **0.91.0** | **Version alignment with the tandems** — no functional changes; the trio versions and releases together |
 | **0.90.0** | **The fetch notices change, and the vault remembers its rounds** — captures carry a fingerprint (`sha`), `changed_at` (kept while content is identical, moved when it differs) and `first_seen_at`, with pre-fingerprint seals never reported changed by the migration itself; each cycle's summary discloses `(first capture)` / `(unchanged)` / `(changed)`. And every cycle lands one row on a per-task runs ledger — when it ran, done or failed, one line of note — read newest first through `GET /resident/tasks/{tid}/runs` behind the tenant fence, last 200 rounds kept, cancel and wipe sweeping it, a "Past rounds" button on the console and all three shells |
 | **0.89.0** | **Ask the vault: grounded answers from what it holds** — `POST /resident/ask` retrieves first: the question ranks this tenant's vectors, the matched seals are read back, and the local model answers *from* them, all inside the host, with `drew_on` naming the keys the answer stood on — an empty list said, not padded. The ask door learns a `prefix` (a character compare narrowing what may ground an answer, over-fetched ahead of the wall so one person's nearest moments are not lost behind strangers') and carries a `system` persona ahead of the grounding block, so the tandems' coaches and profiles survive being grounded. The audit counts characters and keys, quoting neither. On the console and all three shells |
