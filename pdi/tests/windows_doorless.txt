@@ -4,3 +4,11 @@
 # emails it); a phone has no business fetching somebody else's
 # collection page, and building it into one would mean telling a
 # person who was sent a single file to install an app.
+
+GET /resident/tasks/{tid}/runs/verify
+# The ledger's chain check, landed with "the runs ledger cannot edit
+# its own account". The
+# console has the door (Resident screen, beside Past rounds); the
+# shells' resident surface has arrived a round late every round, and
+# this verdict line belongs in that same catch-up rather than as one
+# orphaned call ahead of the screen that would hold it.

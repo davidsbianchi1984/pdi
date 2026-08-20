@@ -909,11 +909,28 @@ def run(tenant: dict, task_id: str) -> dict:
                 None) or next(
         (s2["summary"] for s2 in reversed(after)
          if s2["status"] == "done" and s2["summary"]), None)
+    # The row chains to the task's previous cycle the way the audit table
+    # chains deployment-wide: the hash covers the previous hash and every
+    # field, so a rewritten or forged cycle breaks the links (`runs_verify`
+    # walks them). The database itself refuses UPDATE on this table — a
+    # ledger that can edit its own account is a diary in pencil.
+    prev_row = conn.execute(
+        "SELECT hash FROM resident_runs WHERE task_id=? AND tenant_id=?"
+        " ORDER BY ran_at DESC, rowid DESC LIMIT 1",
+        (task_id, tenant["id"])).fetchone()
+    prev_hash = (prev_row["hash"] if prev_row and prev_row["hash"]
+                 else RUNS_GENESIS)
+    run_id = db.new_id("rrun")
+    run_status = "failed" if failed else "done"
+    run_note = (note or "")[:300] or None
+    run_hash = _run_hash(prev_hash, {
+        "id": run_id, "tenant_id": tenant["id"], "task_id": task_id,
+        "ran_at": finished_at, "status": run_status, "note": run_note})
     conn.execute(
         "INSERT INTO resident_runs (id, tenant_id, task_id, ran_at, status,"
-        " note) VALUES (?,?,?,?,?,?)",
-        (db.new_id("rrun"), tenant["id"], task_id, finished_at,
-         "failed" if failed else "done", (note or "")[:300] or None))
+        " note, prev_hash, hash) VALUES (?,?,?,?,?,?,?,?)",
+        (run_id, tenant["id"], task_id, finished_at,
+         run_status, run_note, prev_hash, run_hash))
     # The ledger answers "lately", not "ever": the oldest rows beyond the
     # window go, and the audit chain stays the permanent record.
     conn.execute(
@@ -932,7 +949,11 @@ def run(tenant: dict, task_id: str) -> dict:
               + timedelta(hours=current["every_hours"])).isoformat(),
              task_id, tenant["id"]))
     conn.commit()
-    audit.record("resident.task", tenant_id=tenant["id"], ref=task_id)
+    # The cycle's anchor on the permanent chain: the run row's hash rides
+    # the audit ref, so even a deleted ledger row leaves its shadow where
+    # nothing edits. The ledger answers "lately"; the audit answers "ever".
+    audit.record("resident.task", tenant_id=tenant["id"],
+                 ref=f"{task_id}#{run_hash[:16]}")
     return task(tenant, task_id)
 
 
@@ -959,6 +980,46 @@ def cancel(tenant: dict, task_id: str) -> dict:
     conn.commit()
     audit.record("resident.cancel", tenant_id=tenant["id"], ref=task_id)
     return {"id": task_id, "cancelled": True}
+
+
+#: The chain's first link per task, mirroring the audit table's genesis.
+RUNS_GENESIS = "runs-genesis"
+
+
+def _run_hash(prev_hash: str, entry: dict) -> str:
+    payload = prev_hash + json.dumps(entry, sort_keys=True)
+    return hashlib.sha256(payload.encode()).hexdigest()
+
+
+def runs_verify(tenant: dict, task_id: str) -> dict:
+    """Walk the task's ledger oldest-first and say whether it still tells
+    one connected story: every chained row's hash must recompute from its
+    fields, and every link must hold. The head's own `prev_hash` may point
+    at a row the trim window released — the ledger answers "lately", and
+    the audit chain holds every cycle's anchor forever — so the head link
+    is reported, not judged. Rows minted before the chain existed are
+    counted as `predate_chain`, never guessed at."""
+    task(tenant, task_id)
+    rows = db.connect().execute(
+        "SELECT * FROM resident_runs WHERE task_id=? AND tenant_id=?"
+        " ORDER BY ran_at ASC, rowid ASC", (task_id, tenant["id"])).fetchall()
+    chained = [r for r in rows if r["hash"]]
+    intact, prev = True, None
+    for r in chained:
+        entry = {"id": r["id"], "tenant_id": r["tenant_id"],
+                 "task_id": r["task_id"], "ran_at": r["ran_at"],
+                 "status": r["status"], "note": r["note"]}
+        if _run_hash(r["prev_hash"], entry) != r["hash"]:
+            intact = False
+            break
+        if prev is not None and r["prev_hash"] != prev:
+            intact = False
+            break
+        prev = r["hash"]
+    return {"intact": intact, "entries": len(chained),
+            "predate_chain": len(rows) - len(chained),
+            "window": RUNS_KEPT,
+            "head_prev": chained[0]["prev_hash"] if chained else None}
 
 
 def runs(tenant: dict, task_id: str) -> list[dict]:

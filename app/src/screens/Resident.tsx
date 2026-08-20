@@ -33,6 +33,8 @@ export function Resident() {
   const [goal, setGoal] = useState("");
   const [runsOf, setRunsOf] = useState("");
   const [runs, setRuns] = useState<ResidentRun[] | null>(null);
+  const [ledger, setLedger] = useState<
+    { intact: boolean; entries: number } | null>(null);
   const [every, setEvery] = useState("");
   const [embedKey, setEmbedKey] = useState("");
   const [embedText, setEmbedText] = useState("");
@@ -186,10 +188,26 @@ export function Resident() {
             )}
             <button disabled={busy} onClick={act(async () => {
               setRunsOf(task.id);
+              setLedger(null);
               setRuns(await api.residentRuns(task.id, token));
             })}>
               {t("res.runs", lang)}
             </button>
+            {runsOf === task.id && runs && runs.length > 0 && (
+              <button disabled={busy} onClick={act(async () => {
+                setLedger(await api.residentRunsVerify(task.id, token));
+              })}>
+                {t("res.runs.verify", lang)}
+              </button>
+            )}
+            {runsOf === task.id && ledger && (
+              <p className="muted small">
+                {ledger.intact
+                  ? t("res.runs.intact", lang)
+                      .replace("{n}", String(ledger.entries))
+                  : t("res.runs.broken", lang)}
+              </p>
+            )}
             {runsOf === task.id && runs && (
               runs.length === 0
                 ? <p className="muted small">{t("res.runs.none", lang)}</p>

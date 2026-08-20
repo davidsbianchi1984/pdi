@@ -784,6 +784,19 @@ def create_app() -> FastAPI:
         except resident_mod.ResidentError as exc:
             raise HTTPException(404, i18n.raised(exc))
 
+    @app.get("/resident/tasks/{tid}/runs/verify")
+    def resident_runs_verify(tid: str,
+                             tenant: dict = Depends(_tenant)) -> dict:
+        """Walk the task's runs ledger and say whether it still tells one
+        connected story — every chained row recomputed and every link
+        held. The database already refuses edits on this table; this door
+        is how a tenant checks that deletion did not quietly stand in for
+        editing. Rows from before the chain report as `predate_chain`."""
+        try:
+            return resident_mod.runs_verify(tenant, tid)
+        except resident_mod.ResidentError as exc:
+            raise HTTPException(404, i18n.raised(exc))
+
     @app.delete("/resident/tasks/{tid}")
     def resident_cancel(tid: str, tenant: dict = Depends(_writer)) -> dict:
         """The off switch: end a task's future — a standing task stops

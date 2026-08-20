@@ -8,6 +8,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The runs ledger cannot edit its own account.** Raised by the
+  outside reviewer: the ledger that answers "what did the vault do
+  while you slept" was a mutable table. Now the database itself
+  refuses edits — a trigger aborts any UPDATE with the rule in its own
+  words — each row chains to the task's previous cycle the way the
+  audit table chains the deployment, and `GET /resident/tasks/{id}/
+  runs/verify` walks the links: a forged or deleted row breaks them.
+  The trim window stays the design ("lately", not "ever") and does not
+  read as tampering; rows from before the chain report as predating
+  it, never guessed at; and every cycle anchors its hash on the
+  permanent audit chain, so even a deleted ledger row leaves its
+  shadow where nothing edits.
+
 - **The capture grows eyes.** A JavaScript application answers a plain
   fetch with an empty shell and a title — a dozen characters standing
   where a whole console is — so the resident's vocabulary grows

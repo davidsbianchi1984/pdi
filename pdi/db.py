@@ -434,8 +434,26 @@ CREATE TABLE IF NOT EXISTS resident_runs (
     task_id     TEXT NOT NULL REFERENCES resident_tasks(id),
     ran_at      TEXT NOT NULL,
     status      TEXT NOT NULL,   -- done | failed
-    note        TEXT             -- the failing step's error, or the last summary
+    note        TEXT,            -- the failing step's error, or the last summary
+    -- The ledger chains like the audit table: each row's hash covers the
+    -- previous row's, per task, so a rewritten or forged cycle breaks the
+    -- links (pdi/resident.py `runs_verify`). Rows from before the chain
+    -- have NULL here and the verify door says so instead of guessing.
+    prev_hash   TEXT,
+    hash        TEXT
 );
+
+-- A ledger that can edit its own account is a diary in pencil. Rows are
+-- facts about cycles that happened; a wrong fact is superseded by a new
+-- row, never rewritten — and the database itself refuses, so no future
+-- code path can forget. Deletes stay legal: the trim window, a task's
+-- cancel, and a tenant's erasure are rights, and the chain plus the
+-- permanent audit anchor make silent deletion evident rather than easy.
+CREATE TRIGGER IF NOT EXISTS resident_runs_do_not_edit
+BEFORE UPDATE ON resident_runs
+BEGIN
+    SELECT RAISE(ABORT, 'the runs ledger does not edit its own account');
+END;
 
 CREATE TABLE IF NOT EXISTS resident_steps (
     id          TEXT PRIMARY KEY,
@@ -526,6 +544,16 @@ def _migrate(conn: sqlite3.Connection) -> None:
     if cols and "every_hours" not in cols:
         conn.execute("ALTER TABLE resident_tasks ADD COLUMN every_hours REAL")
         conn.execute("ALTER TABLE resident_tasks ADD COLUMN next_run_at TEXT")
+        conn.commit()
+
+    # `resident_runs` shipped in 0.89.0 as a plain table; the chain columns
+    # arrived with "the ledger cannot edit its own account". Rows already
+    # there keep NULL hashes and the verify door reports them as predating
+    # the chain — honesty over retroactive invention.
+    cols = {r["name"] for r in conn.execute("PRAGMA table_info(resident_runs)")}
+    if cols and "hash" not in cols:
+        conn.execute("ALTER TABLE resident_runs ADD COLUMN prev_hash TEXT")
+        conn.execute("ALTER TABLE resident_runs ADD COLUMN hash TEXT")
         conn.commit()
 
     cols = {r["name"] for r in conn.execute("PRAGMA table_info(gate_pages)")}

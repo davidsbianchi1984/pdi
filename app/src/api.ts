@@ -838,6 +838,12 @@ export const api = {
     req<ResidentTask[]>("/resident/tasks", { token }),
   residentRuns: (tid: string, token: string) =>
     req<ResidentRun[]>(`/resident/tasks/${tid}/runs`, { token }),
+  // The ledger's own audit: recompute every chained round and check the
+  // links — the database refuses edits, and this door is how a tenant
+  // checks that deletion did not quietly stand in for editing.
+  residentRunsVerify: (tid: string, token: string) =>
+    req<{ intact: boolean; entries: number; predate_chain: number }>(
+      `/resident/tasks/${tid}/runs/verify`, { token }),
   residentRun: (tid: string, token: string) =>
     req<ResidentTask>(`/resident/tasks/${tid}/run`,
       { method: "POST", token }),
