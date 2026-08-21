@@ -766,6 +766,15 @@ def _tool_infer(tenant: dict, args: dict, ctx: dict) -> dict:
     if not prompt:
         raise ResidentError("infer.local needs a prompt, or a step before it")
     out = infer(str(prompt)[:8000])
+    if out["model"] == "local-unreachable":
+        # A conversation can absorb this apology — the ask doors hand it
+        # to a person, who reads it and acts. A step ledger cannot: a
+        # plan step that "succeeded" with it would seal the apology as a
+        # capture, feed it to the next step as its input, and mark the
+        # round done — three records saying the opposite of what
+        # happened. The honest step is a failed step, wearing the same
+        # sentence.
+        raise ResidentError(out["text"])
     key = f"resident/{ctx['task_id']}/{ctx['position']:02d}-inference"
     vault.put(tenant, key, json.dumps(out))
     ctx["last_text"] = out["text"]

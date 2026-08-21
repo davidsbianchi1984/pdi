@@ -25,6 +25,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
       asked     is the local model there
       mattered  proven by a round trip, or read off the environment
 
+- **A step that got no model is not a finished step.** The honest
+  `infer` sentence above is right for a conversation — a person reads
+  it and acts. It is wrong for a plan step: an `infer.local` step that
+  "succeeded" with it would seal the apology as a capture, feed it to
+  the next step as its input, and mark the round done — three records
+  saying the opposite of what happened. The step now fails, wearing
+  the same sentence in its error, and the run's ledger row carries it.
+
+      asked     did the model answer this step
+      mattered  a ledger that absorbs an apology is a forged ledger
+
 ## [0.97.0] - 2026-08-21
 
 ### Fixed

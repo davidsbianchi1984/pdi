@@ -133,3 +133,27 @@ def test_infer_answers_a_sentence_when_the_server_dies(monkeypatch):
     assert out["model"] == "local-unreachable"
     assert "did not answer" in out["text"]
     assert "still work" in out["text"]
+
+
+# -- but the step ledger does not absorb the apology --------------------------
+
+def test_a_step_that_got_no_model_is_a_failed_step(client, monkeypatch):
+    """A conversation can absorb the honest sentence — a person reads it
+    and acts. A plan step that "succeeded" with it would seal the apology
+    as a capture, feed it to the next step as its input, and mark the
+    round done: three records saying the opposite of what happened."""
+    monkeypatch.setenv("PDI_OLLAMA_URL", OLLAMA)
+    monkeypatch.setenv("PDI_RESIDENT_MODEL", "llama3.2")
+    _daemon_down(monkeypatch)
+    token = new_tenant(client)
+    planned = client.post("/resident/tasks", json={
+        "goal": "summarise the situation"}, headers=auth(token)).json()
+    assert planned["plan_steps"][0]["tool"] == "infer.local"
+    out = client.post(f"/resident/tasks/{planned['id']}/run",
+                      headers=auth(token)).json()
+    assert out["status"] == "failed"
+    step = out["plan_steps"][0]
+    assert step["status"] == "failed"
+    assert "did not answer" in (step["error"] or ""), (
+        "the failed step should wear the same sentence the ask door "
+        "answers with, so the ledger names the daemon and not a traceback")
