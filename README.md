@@ -10,7 +10,7 @@ JIM-mini vaults its medical and context payloads here, and QRME seals its
 profile source material — each as its own tenant with its own token. See
 [docs/tandem.md](docs/tandem.md).
 
-**Current release: v0.96.0** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v0.97.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 PDI is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -167,6 +167,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 |---|---|
 | Release | What landed |
 |---|---|
+| **0.97.0** | **The reading tools refuse a recording** — `fetch.url` and `fetch.render` pointed at media used to strip markup from binary and seal mojibake as a capture; both now refuse by name of `fetch.listen`, on the same canonical suffix list the qrme briefcase and lookout read (path-only, query stripped — a page containing a player is still a page) |
 | **0.96.0** | **Version alignment** — the trio releases together; this release's changes live in the jim-mini and qrme repositories (the standing voice conversation, the agent's hands on the look, the settings-page device lists, the room picture full-bleed, the reply ceiling back to five), and nothing changed here since 0.94.0 |
 | **0.95.0** | **Version alignment** — the trio releases together; this release's changes live in the qrme repository (the ears arc reaching every briefcase door), and nothing changed here since 0.94.0 |
 | **0.94.0** | **The capture grows ears** — `fetch.listen` joins the resident's vocabulary: the deployment's transcription sidecar turns a recording into the words said in it, on the facility's own hardware, sealed with the same change-memory the fetches keep; a deployment without ears refuses in words rather than sealing silence or bytes, the planner hears "listen", "transcribe" and "hear", and the published registry names the three fetches that leave the host |
