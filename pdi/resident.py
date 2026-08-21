@@ -128,6 +128,49 @@ def local_model() -> str | None:
         "llama3.2" if _ollama_url() else None)
 
 
+def model_standing() -> dict | None:
+    """Whether the configured inference server actually answers — proven,
+    not read off the environment.
+
+    `posture` used to report `local_model` alone, which is the *promise*:
+    the name an operator wrote into `PDI_RESIDENT_MODEL`. Between that
+    promise and an answer sit the two failures the deploy runbook's §8
+    actually produces — the daemon is down (or on the wrong network), or
+    the daemon is up and the model was never pulled — and neither was
+    visible anywhere until an ask failed mid-conversation with a raw
+    socket error.
+
+    One cheap round trip settles both: Ollama's `/api/tags` lists what is
+    pulled, so reaching it proves the daemon and reading it proves the
+    model. `None` when no server is configured — the stub posture is not
+    a failure and gets no diagnosis. Never raises: this feeds a posture
+    read, and a status door that can take its page down is a status door
+    pointed the wrong way.
+    """
+    url = _ollama_url()
+    if not url:
+        return None
+    model = local_model()
+    try:
+        offline.allow(url, "local inference")
+        req = urllib.request.Request(url.rstrip("/") + "/api/tags")
+        with urllib.request.urlopen(req, timeout=3) as resp:  # local only
+            body = json.loads(resp.read().decode("utf-8"))
+        pulled = [str(m.get("name", "")) for m in body.get("models", [])]
+        # Ollama names carry a tag ("llama3.2:1b"); a configured name
+        # without one matches its ":latest" row.
+        here = any(p == model or p.split(":")[0] == model for p in pulled)
+        return {"reachable": True, "model": model, "pulled": here,
+                "note": None if here else
+                (f"the server answers but {model!r} is not pulled — "
+                 f"run: ollama pull {model}")}
+    except Exception as exc:  # noqa: BLE001 — the diagnosis IS the catch
+        return {"reachable": False, "model": model, "pulled": False,
+                "note": (f"the inference server at PDI_OLLAMA_URL did not "
+                         f"answer ({exc}) — check the ollama container is "
+                         "running and on this stack's network")}
+
+
 def infer(prompt: str) -> dict:
     """One local turn. The stub is an answer, not an apology: a facility
     with no model installed still gets a working engine, and the sentence
@@ -145,8 +188,21 @@ def infer(prompt: str) -> dict:
         data=json.dumps({"model": local_model(), "prompt": prompt,
                          "stream": False}).encode(),
         headers={"content-type": "application/json"})
-    with urllib.request.urlopen(req, timeout=60) as resp:  # localhost only
-        body = json.loads(resp.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:  # localhost only
+            body = json.loads(resp.read().decode("utf-8"))
+    except Exception as exc:  # noqa: BLE001 — the sentence names it
+        # A configured server that does not answer used to raise a raw
+        # socket error out of the ask door, mid-conversation, through
+        # whichever tandem routed here. The honest turn says what failed
+        # and what still works, and the model field marks it so a
+        # tandem's answered-by line never claims the local model spoke.
+        return {"model": "local-unreachable",
+                "text": (f"The local inference server did not answer "
+                         f"({exc}). The resident's other tools — search, "
+                         "tables, fetch, the vault — still work; check "
+                         "the ollama container and the pulled model, or "
+                         "clear PDI_OLLAMA_URL to use the stub.")}
     return {"model": f"local:{local_model()}", "text": body.get("response", "")}
 
 
@@ -1144,6 +1200,7 @@ def posture(tenant: dict) -> dict:
         "hosting_mode": mode,
         "in_facility": mode in ("colocation", "leased_space", "own_facility"),
         "local_model": local_model(),
+        "local_model_standing": model_standing(),
         "standing_tasks": db.connect().execute(
             "SELECT COUNT(*) AS n FROM resident_tasks WHERE tenant_id=?"
             " AND every_hours IS NOT NULL",

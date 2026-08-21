@@ -4,6 +4,27 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **The posture proves the model answers.** `GET /resident` reported
+  `local_model` alone — the *promise*, the name an operator wrote into
+  `PDI_RESIDENT_MODEL` — while the two failures the deploy runbook's §8
+  actually produces (daemon down or on the wrong network; daemon up but
+  the model never pulled) stayed invisible until an ask died
+  mid-conversation with a raw socket error. The posture now carries
+  `local_model_standing`: one cheap round trip to the daemon's own
+  `/api/tags` saying reachable-or-not and pulled-or-not, with the fix
+  named in the note (`ollama pull …`, or check the container and the
+  network). And `infer` stops raising: a configured server that does
+  not answer gets a sentence naming what failed and what still works,
+  under model `local-unreachable`, so a tandem's answered-by line never
+  claims the local model spoke.
+
+      asked     is the local model there
+      mattered  proven by a round trip, or read off the environment
+
 ## [0.97.0] - 2026-08-21
 
 ### Fixed
