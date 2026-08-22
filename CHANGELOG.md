@@ -4,6 +4,23 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-08-22
+
+One-point-oh across the trio. Nothing in this repository changed this
+round — the work landed in JIM-mini and QRME — and the number moves anyway,
+because one version names one tested combination of all three. A vault
+that lags its tandems by a digit is a vault somebody has to reason about
+before trusting, and the whole point of the shared number is that nobody
+should have to.
+
+### Changed
+
+- **Version alignment.** 1.0.0, matching JIM-mini and QRME. No functional
+  change: the resident, the sealed prefixes, the runs ledger and the
+  standing tasks are exactly as they were at 0.99.1, and this entry exists
+  so that a reader diffing two tags is told that outright rather than left
+  looking for what moved.
+
 ## [0.99.1] - 2026-08-22
 
 ### Changed
