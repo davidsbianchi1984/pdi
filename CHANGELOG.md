@@ -6,12 +6,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.4.0] - 2026-08-22
 
-Nothing in this repository changed this round. The work landed in the two
-consoles that hold a microphone: a backgrounded tab has its speech
-recogniser ended by the browser without an error, and every light saying it
-was listening went on saying it. The vault has no microphone and nothing to
-fix here. The number moves anyway, because one version names one tested
-combination of all three.
+Almost nothing in this repository changed this round. The work landed in the
+two consoles that hold a microphone and read documents; the vault has neither
+and had nothing to fix there.
+
+What it did contribute is the release guard below. It caught six version
+fields the bump had missed — in all three repos, not only this one — which is
+the whole argument for one number naming one tested combination of all three:
+the check that fails here fails for everybody.
+
+### Fixed
+
+- **Every field a person installs carries this version.** PDI's release guard
+  caught six stale fields the 1.4.0 bump missed, and the same six were stale
+  in all three repos: the numeric build codes (`CURRENT_PROJECT_VERSION`,
+  `versionCode`), the Windows shell manifest's `Version` / `AssemblyVersion`
+  / `FileVersion`, and the README's current-release banner.
+
+      asked     does the project say 1.4.0
+      mattered  does the thing a person installs say it
+
+  `pyproject`, `package.json`, the lock file's own two rows and the FastAPI
+  title are the half a developer looks at, and they had moved. The build
+  codes and the shell manifests are what a store reads and what a person's
+  installer shows, and they had not.
 
 ## [1.3.0] - 2026-08-22
 
