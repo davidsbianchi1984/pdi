@@ -4,6 +4,15 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-08-22
+
+Nothing in this repository changed this round. The work landed in QRME —
+a room somebody sat in, rebuilt the way they described it — and in JIM-mini,
+where the sphere got a way to stop listening that is not also a way to hang
+up. The number moves anyway, because one version names one tested
+combination of all three, and a vault that lags its tandems by a digit is a
+vault somebody has to reason about before trusting.
+
 ## [1.0.0] - 2026-08-22
 
 One-point-oh across the trio. Nothing in this repository changed this
