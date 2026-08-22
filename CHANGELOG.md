@@ -4,6 +4,17 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.99.1] - 2026-08-22
+
+### Changed
+
+- **Version alignment.** The trio releases together and one number names
+  one tested combination of all three, so this repository takes the
+  number without taking a change. This release's work lives in the qrme
+  repository (a room's ear standing open, and not hearing itself) and in
+  jim-mini (the wear app's first build); nothing changed here since
+  0.99.0.
+
 ## [0.99.0] - 2026-08-21
 
 ### Changed
@@ -7115,6 +7126,7 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
+[0.99.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.99.0...app-v0.99.1
 [0.99.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.98.0...app-v0.99.0
 [0.98.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.97.0...app-v0.98.0
 [0.97.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v0.96.0...app-v0.97.0
