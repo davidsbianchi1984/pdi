@@ -10,7 +10,7 @@ JIM-mini vaults its medical and context payloads here, and QRME seals its
 profile source material — each as its own tenant with its own token. See
 [docs/tandem.md](docs/tandem.md).
 
-**Current release: v0.99.1** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v1.0.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 PDI is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -167,6 +167,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 |---|---|
 | Release | What landed |
 |---|---|
+| **1.0.0** | **Version alignment** — the trio releases together and one number names one tested combination of all three; this release's changes live in the qrme and jim-mini repositories, and nothing changed here since 0.99.0 |
 | **0.99.1** | **Version alignment** — the trio releases together; this release's changes live in the qrme and jim-mini repositories, and nothing changed here since 0.99.0 |
 | **0.99.0** | **Version alignment** — the trio releases together; this release's changes live in the jim-mini repository (the wrist becoming a real surface), and nothing changed here since 0.98.0 |
 | **0.98.0** | **The posture proves the model answers** — `GET /resident` carries `local_model_standing`: one round trip to the daemon's own `/api/tags` saying reachable-or-not and pulled-or-not, with the fix named (`ollama pull …`, or the container and network to check); a configured server that dies mid-conversation answers a sentence under model `local-unreachable` instead of a raw socket error — and a plan step that got that sentence is a **failed** step wearing it, never a sealed apology marked done |
