@@ -4,6 +4,18 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-08-22
+
+Nothing in this repository changed this round. The work landed in QRME —
+where a conversation's record moved from the synthetic profile's account to
+the person's — and in JIM-mini, where the voice somebody chose started
+playing on a phone again. The number moves anyway, because one version names
+one tested combination of all three.
+
+Worth noting from here even so: the vault this product provides is what the
+paid tiers of that arrangement mean. A memory sealed in it is never
+contributed to any shared model, whatever switch a person has set.
+
 ## [1.1.0] - 2026-08-22
 
 Nothing in this repository changed this round. The work landed in QRME —
