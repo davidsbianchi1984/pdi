@@ -4,6 +4,15 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-08-22
+
+Nothing in this repository changed this round. The work landed in the two
+consoles that hold a microphone: a backgrounded tab has its speech
+recogniser ended by the browser without an error, and every light saying it
+was listening went on saying it. The vault has no microphone and nothing to
+fix here. The number moves anyway, because one version names one tested
+combination of all three.
+
 ## [1.3.0] - 2026-08-22
 
 Nothing in this repository changed this round. The work landed in QRME —
