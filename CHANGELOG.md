@@ -6,10 +6,25 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.5.0] - 2026-08-23
 
-Nothing in this repository changed this round. An iPhone can speak in a QRME
-room now: the console records and posts the audio where the browser has no
-usable speech recogniser, which also brings the browser's own echo
-cancellation and gives back the barge-in 1.4.1 had to trade away.
+Nothing in this repository changed this round. Three things landed in the
+other two.
+
+An iPhone can speak in a QRME room: that console records and posts the audio
+where the browser has no usable speech recogniser, which also brings the
+browser's own echo cancellation and gives back the barge-in 1.4.1 had to
+trade away.
+
+Interrupting works, and the answer accounts for it. Speaking or typing over a
+reply stops it mid-sentence in both products, and what the person actually
+heard before they cut in now rides to the model — so the next answer picks up
+where they stopped listening rather than from an end nobody reached.
+
+And a filing arrives as words. QRME's reader follows the font's own
+`/ToUnicode` map and a re-arranged `/Differences` encoding, which is the
+difference between a patent application that reads and one that arrives as a
+filename — reported four times. When a document still cannot be read it says
+which kind of unreadable it is, because a scan, a locked file and a font this
+code cannot follow want three different answers and had been getting one.
 
 The number moves anyway, because one version names one tested combination of
 all three.
