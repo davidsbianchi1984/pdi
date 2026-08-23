@@ -6,6 +6,34 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The three refusals a tenant actually reads are translated.** The vault's
+  English-only ledger stood at sixteen. It is thirteen, and the three that
+  left were chosen by the question this estate keeps arriving at from a new
+  direction each round: who is standing in front of this sentence.
+
+      asked     is the refusal translated
+      mattered  is the reader a person or a program
+
+  Three are read by a tenant — the console's *no public address to visit*, and
+  the two key-custody refusals somebody meets when adopting or releasing a
+  customer-managed key. Those are screens a person navigates in a language
+  they chose, and they are translated into all nine now.
+
+  The remaining thirteen are a different kind of sentence, and the ledger now
+  says so rather than leaving a later round to rediscover it. Eight are wire-
+  shape validation that quotes a JSON field name (`'day' must be YYYY-MM-DD`)
+  — the field name is English in every language, and a translated frame around
+  it helps nobody. Two are programming errors that cannot reach an end user at
+  all. Two are operator configuration, exempt on the same reasoning the
+  `PDI_ADMIN_TOKEN` sentence already carried: the fix is the name of an
+  environment variable. Counting those as backlog made the number look like
+  work; naming them makes it look like what it is.
+
+  QRME ran the same sort the same week, where the split was visitor against
+  owner. Here it is person against program.
+
 ### Fixed
 
 - **A prompt too long to send loses evidence, never the question.**

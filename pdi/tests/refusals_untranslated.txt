@@ -1,5 +1,5 @@
-# status: backlog — 16 rows
-# ceiling: 16
+# status: backlog — 13 rows
+# ceiling: 13
 #
 # English refusals — the sentences the vault says when it says no.
 # Checked by test_the_vault_refuses_in_one_language.py, both directions, and
@@ -52,6 +52,44 @@
 #
 # Named here rather than counted in, so 49 cannot be read as the whole number.
 #
+# ## 1.5.x: the three a tenant actually reads
+#
+# Sixteen rows, sorted by the question this estate keeps arriving at from a
+# different direction each time: who is standing in front of this sentence.
+#
+#     asked     is the refusal translated
+#     mattered  is the reader a person or a program
+#
+# Three were read by a tenant and are translated now: the console's *no
+# public address to visit*, and the two key-custody refusals a tenant admin
+# meets when adopting or releasing a customer-managed key. Those are screens
+# somebody navigates in a language they chose.
+#
+# The remaining thirteen are not the same kind of sentence, and translating
+# them would be motion rather than work — recorded here so a later round does
+# not spend itself finding that out again:
+#
+# **Six are wire-shape validation** — `'count' must be a positive integer`,
+# `'day' must be YYYY-MM-DD`, `'fingerprint' must be 8 hex characters`,
+# `'op' must be a string`, `'problems' must be a non-empty list`,
+# `'status' must be an HTTP status code (0 for no answer)` — plus
+# `an error report is an object` and `each problem is an object`. They quote
+# a JSON field name and name a format. The reader is whoever wrote the caller,
+# and if the console raises one it is this product's own bug: the field name
+# is English either way, and a translated frame around it helps nobody.
+#
+# **Two are programming errors** — `PDIClient needs base_url or an injected
+# client` and its QRME twin. These cannot reach an end user at all; they fire
+# when a developer constructs a client wrong.
+#
+# **Two are operator configuration** — `PDI_MASTER_KEY must be base64 of 32
+# bytes` and `provider must be 'held' or 'kms'`. Same reasoning the
+# PDI_ADMIN_TOKEN sentence below was exempted on, and it is recorded there
+# rather than restated: the fix is the name of an environment variable.
+#
+# This is the same sort QRME ran the same week on its own ledger, where the
+# split was visitor against owner. Here it is person against program.
+#
 # ## What stays English by decision
 #
 #     this deployment is reachable beyond localhost but has no PDI_ADMIN_TOKEN
@@ -94,8 +132,5 @@ PDI_MASTER_KEY must be base64 of 32 bytes
 QRMEClient needs base_url or an injected client
 an error report is an object
 each problem is an object
-no public address to visit — reconnect with the account's handle
 provider must be 'held' or 'kms'
 this deployment is reachable beyond localhost but has no PDI_ADMIN_TOKEN set — admin endpoints stay closed until one is configured (see docs/operations.md)
-this tenant already has a customer-managed key; release it before adopting another
-this tenant is already under deployment custody
