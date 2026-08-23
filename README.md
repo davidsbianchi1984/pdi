@@ -10,7 +10,7 @@ JIM-mini vaults its medical and context payloads here, and QRME seals its
 profile source material — each as its own tenant with its own token. See
 [docs/tandem.md](docs/tandem.md).
 
-**Current release: v1.5.0** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v1.6.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 PDI is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -167,6 +167,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 |---|---|
 | Release | What landed |
 |---|---|
+| **1.6.0** | **The three refusals a tenant actually reads are translated** — sixteen English-only rows sorted by whether the reader is a person or a program: three are screens somebody navigates and are translated into all nine, and the thirteen that remain are wire-shape validation, programming errors and operator configuration, named rather than counted; and a prompt too long to send now loses evidence rather than the question |
 | **1.5.0** | **Version alignment** — the trio releases together and one number names one tested combination of all three; this release's changes live in the qrme repository, and nothing changed here since 0.99.0 |
 | **1.4.1** | **Version alignment** — the trio releases together and one number names one tested combination of all three; this release's changes live in the qrme repository, and nothing changed here since 0.99.0 |
 | **1.4.0** | **Version alignment** — the trio releases together and one number names one tested combination of all three; this release's changes live in the jim-mini and qrme repositories (a backgrounded tab no longer draws a stopped microphone as listening), and nothing changed here since 0.99.0 |
