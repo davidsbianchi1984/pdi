@@ -6,6 +6,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-08-23
+
+- There are no functional changes to PDI in this release. The round it
+  belongs to fixed mail-failure handling in JIM-mini and QRME — both of which
+  send letters; this product has no mailer and never opens an SMTP connection,
+  which is why only two mailboxes were bought for the stack. It cuts and says
+  so rather than being padded with restated work, because a note that inflates
+  an empty round teaches people to skim the ones that are not empty.
+
 ## [1.6.0] - 2026-08-23
 
 ### Fixed
@@ -7326,7 +7335,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.6.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.6.1...HEAD
+[1.6.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.6.0...app-v1.6.1
 [1.6.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.5.0...app-v1.6.0
 [1.5.0]: https://github.com/davidsbianchi1984/pdi/commit/eddb07e
 [1.4.1]: https://github.com/davidsbianchi1984/pdi/commit/e749ce5
