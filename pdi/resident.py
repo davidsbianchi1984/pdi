@@ -74,6 +74,7 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 
 from . import audit, db, hosting, i18n, offline, vault
+from . import text as text_mod
 
 #: The embedding this module can always produce: tokens and their character
 #: trigrams hashed into a fixed-width space, signed, accumulated and
@@ -240,6 +241,11 @@ def _grounding_text(value: str) -> str:
     return ""
 
 
+#: How much prompt the local model is given. The question is never what gets
+#: cut to meet it — see the assembly in `ask_grounded`.
+PROMPT_CEILING = 8000
+
+
 def ask_grounded(tenant: dict, question: str, top_k: int = 4,
                  prefix: str | None = None,
                  system: str | None = None) -> dict:
@@ -289,19 +295,69 @@ def ask_grounded(tenant: dict, question: str, top_k: int = 4,
             continue
         drew_on.append(m["key"])
         context.append(f"[{m['key']}] {text[:500]}")
-    if context:
-        prompt = ("Answer from what this vault holds. Sealed records, "
-                  "nearest the question first:\n" + "\n".join(context)
-                  + "\n\nQuestion: " + question + "\nAnswer: ")
+    # Assembled so that the QUESTION is never what gets cut.
+    #
+    #     asked     does the prompt fit
+    #     mattered  is the question still in it
+    #
+    # It was `infer(prompt[:8000])` over a string whose question sat at the
+    # END, after the grounding block, after the caller's `system`. A QRME
+    # persona prompt runs to a few thousand characters, and ten sealed
+    # records to five thousand more; past the ceiling the slice removed the
+    # question outright and the model was handed evidence and no question.
+    # It answered anyway, because a model always does.
+    #
+    # So the parts are sacrificed in a stated order. The question never. The
+    # grounding records dropped WHOLE and from the back — least relevant
+    # first — because half a sealed record wearing a whole one's key is a
+    # worse answer than one fewer record. The caller's persona trimmed last,
+    # at a boundary, and told that it was.
+    head = ("Answer from what this vault holds. Sealed records, "
+            "nearest the question first:\n")
+    tail = "\n\nQuestion: " + question + "\nAnswer: "
+    lead = (system.strip() + "\n\n") if system else ""
+
+    # What the question and the persona need before any evidence is added.
+    fixed = len(lead) + len(head) + len(tail)
+    if fixed > PROMPT_CEILING and lead:
+        # Even with no grounding at all it does not fit. Trim the persona —
+        # never the question — and say so inside it, so a profile that finds
+        # itself thinking in half sentences knows why.
+        room = max(0, PROMPT_CEILING - len(head) - len(tail) - 80)
+        cut_lead, was_cut = text_mod.clipped(system.strip(), room)
+        lead = cut_lead + (
+            "\n[your instructions were longer than this vault can hold and "
+            "were shortened here]\n\n" if was_cut else "\n\n")
+        fixed = len(lead) + len(head) + len(tail)
+
+    kept, room = [], PROMPT_CEILING - fixed
+    for key, block in zip(drew_on, context):
+        if len(block) + 1 > room:
+            break
+        kept.append(block)
+        room -= len(block) + 1
+    # `drew_on` must name what the model actually SAW. Claiming a record that
+    # was dropped is the one dishonesty this door exists to avoid: an answer
+    # relied on should say what it stood on, and a key it never read is not
+    # something it stood on.
+    dropped = drew_on[len(kept):]
+    drew_on = drew_on[:len(kept)]
+
+    if kept:
+        prompt = lead + head + "\n".join(kept) + tail
     else:
-        prompt = question
-    if system:
-        prompt = system.strip() + "\n\n" + prompt
-    out = infer(prompt[:8000])
+        prompt = lead + question
+    out = infer(prompt)
     audit.record("resident.ask", tenant_id=tenant["id"],
-                 ref=f"chars:{len(question)} keys:{len(drew_on)}")
+                 ref=f"chars:{len(question)} keys:{len(drew_on)}"
+                     + (f" dropped:{len(dropped)}" if dropped else ""))
     return {"model": out["model"], "text": out["text"],
-            "leaves_host": False, "drew_on": drew_on}
+            "leaves_host": False, "drew_on": drew_on,
+            # Named rather than silently absent. A caller comparing what it
+            # asked for against what grounded the answer can see the vault
+            # ran out of room, instead of concluding those seals were
+            # irrelevant.
+            "dropped_for_room": dropped}
 
 
 # --------------------------------------------------------------------------

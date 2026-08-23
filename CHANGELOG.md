@@ -4,6 +4,37 @@ All notable changes to PDI are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **A prompt too long to send loses evidence, never the question.**
+  `ask_grounded` ended with `infer(prompt[:8000])` over a string it had built
+  question-LAST: the caller's persona, then the grounding block, then
+  *"Question: …"*. Past the ceiling that slice took the question off the end,
+  and the local model was handed a system prompt, ten sealed records and
+  nothing to answer. It answered anyway — a model always does — and the caller
+  got a confident paragraph with `drew_on` naming every key, as though the
+  whole thing had worked.
+
+      asked     does the prompt fit
+      mattered  is the question still in it
+
+  Reachable rather than theoretical: ten records at five hundred characters is
+  about five thousand, and a QRME persona prompt runs to a few thousand more.
+
+  The parts are sacrificed in a stated order now. The **question**, never. The
+  **records**, dropped whole and from the back, because half a sealed record
+  wearing a whole one's key is a worse answer than one fewer record. The
+  caller's **persona** last, at a boundary, and told that it was, so a profile
+  thinking in half sentences knows why.
+
+  `drew_on` names only what the model actually saw. That list is this door's
+  own promise — *an answer that will be relied on should say what it stood on*
+  — and a key dropped for room is not something it stood on. Dropped keys come
+  back under `dropped_for_room` rather than silently vanishing, so a caller can
+  tell "the vault ran out of room" from "those seals were irrelevant".
+
 ## [1.5.0] - 2026-08-23
 
 Nothing in this repository changed this round. Three things landed in the
