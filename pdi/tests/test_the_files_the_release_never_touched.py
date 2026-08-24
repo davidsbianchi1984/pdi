@@ -441,6 +441,57 @@ def test_every_field_the_checklist_names_carries_this_version():
         + "\n  Every field above is one a person installs or a store reads.")
 
 
+#: A dependency coordinate — `group:artifact:version` inside a Gradle
+#: `implementation(...)`, or the same shape in a plugin line.
+_COORDINATE = re.compile(
+    r'\b(?:implementation|api|compileOnly|runtimeOnly|testImplementation|'
+    r'androidTestImplementation|debugImplementation|kapt|ksp|classpath)\s*\('
+    r'\s*["\']([\w.\-]+):([\w.\-]+):([\w.\-]+)["\']')
+
+
+#: An MSBuild dependency pin — `<PackageReference Include="X" Version="Y" />`.
+#: The same collision as the Gradle coordinate above, in the shape the
+#: Windows shell writes it. Found at 1.6.2, against
+#: `Microsoft.WindowsAppSDK` at `1.6.240923002`: our version is a *prefix*
+#: of theirs, so a substring scan read a Microsoft pin as an unnamed field
+#: of ours. Adding it to the checklist would have been the worst possible
+#: fix — the next bump would have rewritten Microsoft's version.
+_PACKAGE_REF = re.compile(
+    r'<PackageReference\b[^>]*\bInclude\s*=\s*["\'][^"\']+["\']')
+
+
+def _somebody_elses_version(line: str) -> bool:
+    """Is the version on this line a third party's rather than ours?
+
+    A collision, not a missing field. The sibling product cut 1.3.0 on the
+    day `androidx.credentials:credentials` happened to sit at 1.3.0, and
+    this scan read two dependency lines as unnamed version fields and
+    failed the release.
+
+        asked     does this line carry the release version
+        mattered  is it OUR version, or somebody else's package that
+                  happens to sit on the same number
+
+    Carried here rather than left for the day this product collides too:
+    the same scan, the same shells, the same failure waiting on whichever
+    number lands on a pinned dependency first.
+
+    Narrow on purpose. It matches the `group:artifact:version` triple
+    inside a known dependency call, or an MSBuild `<PackageReference>` with
+    an `Include` naming somebody else's package — so a real field is never
+    waved through. A field this scan skips is a field the next release
+    silently fails to write, which is exactly what it exists to prevent.
+
+    The two shapes collide differently and both have now happened. Gradle's
+    collided on an exact match (`androidx.credentials` sat at 1.3.0 the day
+    the sibling cut 1.3.0). MSBuild's collided on a *prefix*: at 1.6.2,
+    `Microsoft.WindowsAppSDK` was pinned at `1.6.240923002`, and a version
+    that is a substring of a longer one reads as present in the line.
+    """
+    return (_COORDINATE.search(line) is not None
+            or _PACKAGE_REF.search(line) is not None)
+
+
 def test_every_version_a_native_shell_ships_is_named_here():
     """The reverse half: a native shell may not carry a version this file has
     not been told about.
@@ -488,6 +539,8 @@ def test_every_version_a_native_shell_ships_is_named_here():
             if version not in line and code not in line:
                 continue
             if line.lstrip().startswith(("#", "//", "<!--")):
+                continue
+            if _somebody_elses_version(line):
                 continue
             if any(re.search(loc, line) for loc in locators):
                 continue
