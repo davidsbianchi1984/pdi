@@ -1,12 +1,21 @@
-# status: ratchet — formal rows still to convert
+# status: at the floor — every row left is a false positive
 #
 # The register is informal: du / tú. Each row is a table and how many of its
 # strings still address the reader formally. The number never goes up.
 #
-# Spanish is finished (23 rows, not the 327 a `su`/`sus` count reported —
-# see the guard's docstring). What remains is German.
+# Spanish is finished (23 rows, not the 327 a `su`/`sus` count reported).
+# German is finished too. Two rows are counted and neither is convertible:
 #
-app/src/l10n.ts 6
-native/android/app/src/main/java/com/pdi/vault/L10n.kt 10
-native/ios/Sources/L10n.swift 10
-native/windows/L10n.cs 11
+#   co.bequests.note  "Sie zu erstellen gewährt nichts" — *to create it*
+#                     grants nothing, about the standing instruction
+#   ntr.intake.sub    "Sie authentifiziert sich mit dem Token" — *she*,
+#                     the counterparty, not the reader
+#
+# Telling those from formal address takes parsing German; a detector that
+# guessed would be worse than one that counts. So they are counted, and
+# named here.
+#
+app/src/l10n.ts 1
+native/android/app/src/main/java/com/pdi/vault/L10n.kt 2
+native/ios/Sources/L10n.swift 2
+native/windows/L10n.cs 2
