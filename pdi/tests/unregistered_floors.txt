@@ -49,6 +49,37 @@
 # The ceiling does not move up. A new bare floor is a new number nothing will
 # ever audit.
 #
+#
+# ## Not floors: a value that is not a size
+#
+# The sweep matches the *shape* `assert <something> >= <int>`, and in the
+# sibling products that shape caught comparisons where the integer is not a
+# size at all — a status code, somebody's age, a heart rate. Those cannot be
+# registered as ratchets, because there is no "four-fifths of what is actually
+# there" to raise them toward.
+#
+#     asked     is this an `assert x >= <int>`
+#     mattered  is the int a floor on something that can grow
+#
+# **This vault has none.** Every comparison in this suite that is not written
+# as `len(...)` or `sum(...)` — `controls`, `n`, `matched`, `reached`,
+# `english + calls` — is still a count of a swept surface, held in a local
+# variable rather than spelled as a call. All of them are floors and all of
+# them belong in `ratchets.py`.
+#
+# The mechanism is carried here anyway, with an empty list, for the reason the
+# platform-claim guard is: the shape spreads by being copied between suites,
+# and the day a status code or an age arrives here the sweep will already know
+# the difference. An empty exemption is not a dormant one — the two guards
+# below run against it every time, and the second is what keeps it empty
+# honestly rather than by luck.
+#
+# `test_every_exempted_comparison_is_still_there` checks each named row is
+# really written somewhere, and `test_a_count_can_never_be_exempted` refuses
+# any exemption whose comparison is against `len(...)` or `sum(...)`: a count
+# of a swept surface is always a floor, whatever prose sits above it. That is
+# the guard that stops this list becoming the place a real floor goes to be
+# excused when somebody wants the backlog number to fall.
 test_a_binding_is_not_a_door.py:134: len(found) > 20
 test_a_form_that_asks_for_it_has_a_label_for_it.py:121: controls > 2000
 test_a_native_binding_is_not_a_door_either.py:181: n > 20
