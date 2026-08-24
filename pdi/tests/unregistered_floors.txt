@@ -1,5 +1,5 @@
-# status: backlog — 51 rows
-# ceiling: 51
+# status: backlog — 36 rows
+# ceiling: 36
 #
 # Every numeric floor in this suite still carrying its own literal: an
 # `assert <something> > <int>` with the number written into the assertion.
@@ -75,28 +75,13 @@ test_the_keys_the_android_client_reads.py:383: len(driven) >= 14
 test_the_member_that_isnt_there.py:277: len(_declared(lang, REPO / decl)) >= 5
 test_the_member_that_isnt_there.py:286: len(keys) >= 12
 test_the_member_that_isnt_there.py:287: len(used) >= 8
-test_the_readme_says_what_shipped.py:127: len(_rows()) >= 40
-test_the_readme_says_what_shipped.py:130: len(_released()) >= 40
 test_the_refusal_names_the_field_on_the_form.py:106: len(found) >= 90
 test_the_refusal_that_handed_the_body_back.py:163: len(found) > 30
 test_the_refusal_that_handed_the_body_back.py:167: reached > 25
 test_the_refusal_that_handed_the_body_back.py:289: len(i18n._VALIDATION) >= 10
 test_the_shape_the_client_expects.py:301: len(_bindings()) >= 15
 test_the_shape_the_client_expects.py:310: len(driven) >= 10
-test_the_shape_the_console_expects.py:402: len(shapes) >= 30
-test_the_shape_the_console_expects.py:403: sum((len(f) for f in shapes.values())) >= 215
-test_the_shape_the_console_expects.py:404: len(_gets()) >= 55
-test_the_shape_the_console_expects.py:454: len(driven) >= 25
-test_the_shape_the_swift_client_expects.py:219: len(_structs()) >= 25
-test_the_shape_the_swift_client_expects.py:220: fields >= 80
-test_the_shape_the_swift_client_expects.py:221: len(_bindings()) >= 14
-test_the_shape_the_swift_client_expects.py:228: len(driven) >= 8
-test_the_shells_still_parse.py:394: len(SWIFT) >= 15
-test_the_shells_still_parse.py:395: len(KOTLIN) >= 6
-test_the_shells_still_parse.py:396: len(CSHARP) >= 13
-test_the_shells_still_parse.py:406: len(XAML) >= 8
-test_the_shells_still_parse.py:409: named >= 88
-test_the_shells_still_parse.py:411: checked >= 30
-test_the_shells_still_parse.py:413: driven >= 78
+test_the_shape_the_console_expects.py:455: len(driven) >= 25
+test_the_shape_the_swift_client_expects.py:229: len(driven) >= 8
 test_the_tabs_are_translated_and_the_screens_are_not.py:539: english + calls >= 50
 test_the_tabs_are_translated_and_the_screens_are_not.py:760: len(rows) >= 10

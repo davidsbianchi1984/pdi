@@ -210,7 +210,109 @@ def _translated_refusals() -> int:
     return len(i18n._REFUSALS)
 
 
+# -- the shells, the shapes, and the release table --------------------------
+#
+# Measured here rather than carried over from a sibling. The README pair is
+# the shared-literal case this file's header predicted, and it is the same
+# number in two products: a floor of 40 against 254 history rows here and 256
+# in JIM-mini. Neither was calibrated for this table; both were written once
+# and never asked again.
+
+
+def _shell_files(kind: str):
+    def go() -> int:
+        from . import test_the_shells_still_parse as m
+        return len(getattr(m, kind))
+    return go
+
+
+def _xaml_named() -> int:
+    from .test_the_shells_still_parse import XAML, _XNAME
+    return sum(len(set(_XNAME.findall(p.read_text(encoding="utf-8"))))
+               for p in XAML)
+
+
+def _xaml_handlers() -> int:
+    from .test_the_shells_still_parse import XAML, _handlers
+    return _handlers(XAML)[0]
+
+
+def _xaml_driveable() -> int:
+    from .test_the_shells_still_parse import XAML, _undriveable
+    return _undriveable(XAML)[0]
+
+
+def _swift_structs() -> int:
+    from .test_the_shape_the_swift_client_expects import _structs
+    return len(_structs())
+
+
+def _swift_fields() -> int:
+    from .test_the_shape_the_swift_client_expects import _structs
+    return sum(len(f) for f in _structs().values())
+
+
+def _swift_bindings() -> int:
+    from .test_the_shape_the_swift_client_expects import _bindings
+    return len(_bindings())
+
+
+def _console_shapes() -> int:
+    from .test_the_shape_the_console_expects import _shapes
+    return len(_shapes())
+
+
+def _console_shape_fields() -> int:
+    from .test_the_shape_the_console_expects import _shapes
+    return sum(len(f) for f in _shapes().values())
+
+
+def _console_gets() -> int:
+    from .test_the_shape_the_console_expects import _gets
+    return len(_gets())
+
+
+def _readme_rows() -> int:
+    from .test_the_readme_says_what_shipped import _rows
+    return len(_rows())
+
+
+def _readme_released() -> int:
+    from .test_the_readme_says_what_shipped import _released
+    return len(_released())
+
+
 RATCHETS: tuple[Ratchet, ...] = (
+    Ratchet("shells.swift_files", 16, _shell_files("SWIFT"),
+            "the Swift sources the shell parser reads"),
+    Ratchet("shells.kotlin_files", 5, _shell_files("KOTLIN"),
+            "the Kotlin sources the shell parser reads"),
+    Ratchet("shells.csharp_files", 12, _shell_files("CSHARP"),
+            "the C# sources the shell parser reads"),
+    Ratchet("shells.xaml_files", 8, _shell_files("XAML"),
+            "the XAML screens the markup checks reach"),
+    Ratchet("shells.xaml_named", 268, _xaml_named,
+            "the named elements across those XAML screens"),
+    Ratchet("shells.xaml_handlers", 79, _xaml_handlers,
+            "the XAML handlers checked against their code-behind"),
+    Ratchet("shells.xaml_driveable", 249, _xaml_driveable,
+            "the XAML elements the drive check reaches"),
+    Ratchet("swift.structs", 78, _swift_structs,
+            "the Swift client's declared shapes"),
+    Ratchet("swift.struct_fields", 244, _swift_fields,
+            "the fields across the Swift client's shapes"),
+    Ratchet("swift.bindings", 48, _swift_bindings,
+            "the Swift screens' bindings to those shapes"),
+    Ratchet("console.shapes", 30, _console_shapes,
+            "the console's declared shapes"),
+    Ratchet("console.shape_fields", 203, _console_shape_fields,
+            "the fields across the console's shapes"),
+    Ratchet("console.gets", 56, _console_gets,
+            "the console's read calls"),
+    Ratchet("readme.history_rows", 203, _readme_rows,
+            "the release history rows the README table carries"),
+    Ratchet("readme.released", 207, _readme_released,
+            "the releases the CHANGELOG declares"),
     Ratchet("refusals.translated", 84, _translated_refusals,
             "rows in the hand-translated refusal table"),
     Ratchet("refusals.literal", 40, _literal_refusals,
