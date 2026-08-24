@@ -629,7 +629,7 @@ const CHROME: Table = {
   },
   "exc.onewaydoor": {
     en: "An intake is a one-way door somebody else walks through. The submit token is theirs, not yours — the same shape as a receive token and for the same reason.",
-    es: "Una recepción es una puerta de un solo sentido por la que pasa otra persona. El token de envío es suyo, no de usted: la misma forma que un token de recepción y por la misma razón.",
+    es: "Una recepción es una puerta de un solo sentido por la que pasa otra persona. El token de envío es suyo, no tuyo: la misma forma que un token de recepción y por la misma razón.",
     fr: "Une réception est une porte à sens unique que quelqu’un d’autre franchit. Le jeton de dépôt est le sien, pas le vôtre — même forme qu’un jeton de réception, et pour la même raison.",
     de: "Eine Annahme ist eine Einbahntür, durch die jemand anderes geht. Das Einreich-Token gehört ihr, nicht Ihnen — dieselbe Form wie ein Empfangs-Token und aus demselben Grund.",
     pt: "Uma receção é uma porta de sentido único por onde outra pessoa passa. O token de envio é dela, não seu — a mesma forma de um token de receção e pela mesma razão.",
