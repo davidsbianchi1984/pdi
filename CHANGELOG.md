@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-08-24
+
 ## [1.7.0] - 2026-08-24
 
 ### Fixed
@@ -7489,7 +7491,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.7.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.0...HEAD
+[1.8.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.7.0...app-v1.8.0
 [1.7.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.6.2...app-v1.7.0
 [1.6.2]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.6.1...app-v1.6.2
 [1.6.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.6.0...app-v1.6.1

@@ -10,7 +10,7 @@ JIM-mini vaults its medical and context payloads here, and QRME seals its
 profile source material — each as its own tenant with its own token. See
 [docs/tandem.md](docs/tandem.md).
 
-**Current release: v1.7.0** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v1.8.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 PDI is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -167,6 +167,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 |---|---|
 | Release | What landed |
 |---|---|
+| **1.8.0** | **Released alongside JIM-mini and QRME**, which carry this round's work. The vault is unchanged and its suite is green over the same tree: 1331 passing. The version moves with its siblings because the three ship as one — a vault a version behind its tandems is a question every deployment has to answer separately |
 | **1.7.0** | **German finishes the informal register** — 33 rows across the console and the three native shells, with the two that stay counted named as third person rather than left as a number. Also: two refusals about the tenant's own key reach a person rather than a log and are hand-translated into all nine languages; the refusal backlog was counting two constructor preconditions raised while the app is wired; and `len(_REFUSALS) >= 8` was a floor against a table of 84, now registered |
 | **1.6.2** | **A script was being escaped like a page** — `_js_literal` html-escaped the JSON it drops inside a `<script>` element, which a browser does not decode there: the value was corrupted and the page was safe only by accident, since the `</script` guard sat after an escape that had already removed what it looked for |
 | **1.6.1** | **No functional changes** — the round fixed mail-failure handling in JIM-mini and QRME; this product has no mailer and never opens an SMTP connection |
