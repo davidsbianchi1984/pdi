@@ -49,6 +49,7 @@ import pathlib
 import re
 
 from .conftest import auth, new_tenant
+from . import ratchets
 
 REPO = pathlib.Path(__file__).resolve().parents[2]
 WINDOWS_CLIENT = REPO / "native/windows/ApiClient.cs"
@@ -298,7 +299,7 @@ def test_the_extractor_finds_this_products_calls():
     """A regex tuned for QRME's `Get(path)` helper finds nothing in this file,
     and nothing found reads as nothing wrong. That is the failure mode this
     assertion exists for."""
-    assert len(_bindings()) >= 15, (
+    assert len(_bindings()) >= ratchets.floor("console.bindings"), (
         f"only {len(_bindings())} GET binding(s) found — this client builds "
         f"its own HttpRequestMessage, and a pattern borrowed from another "
         f"product will not see them")

@@ -282,7 +282,36 @@ def _readme_released() -> int:
     return len(_released())
 
 
+# -- the wire and the console's bindings ------------------------------------
+#
+# Both were holding roughly a quarter of what they measure. `wire.declared` at
+# 45 against 175 is the vault's version of the widest gap this sweep found in
+# the guardian: the names four clients agree on, floored at a number written
+# when there were far fewer of them.
+
+
+def _wire_declared() -> int:
+    from .test_one_name_one_type_on_the_wire import _declared
+    return len(_declared())
+
+
+def _client_bindings() -> int:
+    from .test_the_shape_the_client_expects import _bindings
+    return len(_bindings())
+
+
+def _validation_messages() -> int:
+    from pdi import i18n
+    return len(i18n._VALIDATION)
+
+
 RATCHETS: tuple[Ratchet, ...] = (
+    Ratchet("wire.declared", 140, _wire_declared,
+            "every name declared on the wire, across all four clients"),
+    Ratchet("console.bindings", 51, _client_bindings,
+            "the console screens' bindings to route shapes"),
+    Ratchet("i18n.validation_messages", 8, _validation_messages,
+            "the validation sentences with a row in every language"),
     Ratchet("shells.swift_files", 16, _shell_files("SWIFT"),
             "the Swift sources the shell parser reads"),
     Ratchet("shells.kotlin_files", 5, _shell_files("KOTLIN"),
