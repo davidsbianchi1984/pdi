@@ -1,5 +1,5 @@
-# status: backlog — 52 rows
-# ceiling: 52
+# status: backlog — 51 rows
+# ceiling: 51
 #
 # Every numeric floor in this suite still carrying its own literal: an
 # `assert <something> > <int>` with the number written into the assertion.
@@ -100,4 +100,3 @@ test_the_shells_still_parse.py:411: checked >= 30
 test_the_shells_still_parse.py:413: driven >= 78
 test_the_tabs_are_translated_and_the_screens_are_not.py:539: english + calls >= 50
 test_the_tabs_are_translated_and_the_screens_are_not.py:760: len(rows) >= 10
-test_the_vault_refuses_in_one_language.py:633: len(i18n._REFUSALS) >= 8

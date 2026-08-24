@@ -46,6 +46,8 @@ from pathlib import Path
 
 from pdi import i18n
 
+from . import ratchets
+
 #: Error classes whose messages are refusals a person reads. The class a
 #: sentence is raised through says nothing about who reads it, so they are
 #: counted alongside `HTTPException` details.
@@ -776,7 +778,9 @@ def test_every_translated_refusal_has_every_language():
         "these refusals are missing languages:\n    "
         + "\n    ".join(f"{k[:60]}: {', '.join(v)}"
                         for k, v in sorted(gaps.items())))
-    assert len(i18n._REFUSALS) >= 8
+    # Was a literal 8 against a table of 84 — a floor at a tenth of what it
+    # measures. Registered, so the comparison is made rather than assumed.
+    assert len(i18n._REFUSALS) >= ratchets.floor("refusals.translated")
 
 
 def test_the_recipients_sentence_is_not_translated_twice():
