@@ -1,5 +1,5 @@
-# status: backlog — 11 rows
-# ceiling: 11
+# status: backlog — 9 rows
+# ceiling: 9
 #
 # English refusals — the sentences the vault says when it says no.
 # Checked by test_the_vault_refuses_in_one_language.py, both directions, and
@@ -152,8 +152,6 @@
 'op' must be a string
 'problems' must be a non-empty list
 'status' must be an HTTP status code (0 for no answer)
-PDI_MASTER_KEY must be base64 of 32 bytes
 an error report is an object
 each problem is an object
-provider must be 'held' or 'kms'
 this deployment is reachable beyond localhost but has no PDI_ADMIN_TOKEN set — admin endpoints stay closed until one is configured (see docs/operations.md)

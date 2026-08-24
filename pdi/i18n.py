@@ -1225,6 +1225,14 @@ SERVER_ERROR = ("Something went wrong on our side. "
 #: languages. What is not here is recorded in
 #: `pdi/tests/refusals_untranslated.txt` and ratcheted.
 _REFUSALS: dict[str, dict[str, str]] = {
+    # -- the key a tenant brings (pdi/crypto.py) ----------------------------
+    # Both reach a person: `Custody.tsx` calls `PUT /key`, and a seal
+    # attempted against a misconfigured master key answers whoever asked for
+    # it, not the operator who can fix it.
+    "provider must be 'held' or 'kms'": {
+        'es': "el proveedor debe ser 'held' o 'kms'", 'fr': "le fournisseur doit être 'held' ou 'kms'", 'de': "der Anbieter muss 'held' oder 'kms' sein", 'pt': "o fornecedor tem de ser 'held' ou 'kms'", 'it': "il fornitore deve essere 'held' o 'kms'", 'ja': "プロバイダーは 'held' か 'kms' のいずれかにしてください", 'zh': "提供方必须是 'held' 或 'kms'", 'hi': "प्रदाता 'held' या 'kms' होना चाहिए", 'ar': "يجب أن يكون المزوّد 'held' أو 'kms'"},
+    "PDI_MASTER_KEY must be base64 of 32 bytes": {
+        'es': "PDI_MASTER_KEY debe ser base64 de 32 bytes", 'fr': "PDI_MASTER_KEY doit être du base64 de 32 octets", 'de': "PDI_MASTER_KEY muss Base64 von 32 Bytes sein", 'pt': "PDI_MASTER_KEY tem de ser base64 de 32 bytes", 'it': "PDI_MASTER_KEY deve essere base64 di 32 byte", 'ja': "PDI_MASTER_KEY は 32 バイトの base64 にしてください", 'zh': "PDI_MASTER_KEY 必须是 32 字节的 base64", 'hi': "PDI_MASTER_KEY को 32 बाइट का base64 होना चाहिए", 'ar': "يجب أن يكون PDI_MASTER_KEY ترميز base64 لـ 32 بايت"},
     # -- the resident intelligence (pdi/resident.py) ------------------------
     "a task needs a goal in words": {
         'es': "una tarea necesita una meta en palabras", 'fr': "une tâche a besoin d'un objectif en mots", 'de': "eine Aufgabe braucht ein Ziel in Worten", 'pt': "uma tarefa precisa de uma meta em palavras", 'it': "un compito ha bisogno di un obiettivo in parole", 'ja': "タスクには言葉で書いた目標が必要です", 'zh': "任务需要用文字写下的目标", 'hi': "कार्य के लिए शब्दों में एक लक्ष्य चाहिए", 'ar': "المهمة تحتاج إلى هدف مكتوب بالكلمات"},

@@ -37,6 +37,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   exemption wider than the thing it exempts from. The naming check is what
   reported it.
 
+- **Two refusals about the tenant's own key were English.** `provider must be
+  'held' or 'kms'` and `PDI_MASTER_KEY must be base64 of 32 bytes` both reach a
+  person rather than a log: `Custody.tsx` calls `PUT /key`, and a seal attempted
+  against a misconfigured master key answers whoever asked for it, not the
+  operator who can fix it. Both are hand-translated into all nine languages now.
+
 ### Changed
 
 - **One product, one way of addressing the reader.** German and Spanish both
