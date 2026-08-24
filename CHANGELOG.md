@@ -6,6 +6,57 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.8.1] - 2026-08-24
+
+### Added
+
+- **A guard that reads the translations, not just the count of missing ones.**
+  This product's refusal backlog was paid off rounds ago, and nothing has ever
+  looked at the sentences that replaced the English ones. The ledger counts
+  what is missing and only shrinks, so it can reach zero with a Chinese row
+  written in Cyrillic in it and every guard in this estate would report the
+  paydown as complete.
+
+      asked     is every refusal translated
+      mattered  is each translation in the language it is filed under
+
+  Two got through that way in a sibling product and were caught by eye rather
+  than by anything: `как` inside a Chinese string, `각` inside a Japanese one
+  — single characters in otherwise correct sentences, both of which would have
+  rendered, neither of which would have failed a test. A reader of that
+  language meets a word from another alphabet at the moment the product is
+  telling them no.
+
+  It is deliberately narrow. It cannot tell a good translation from a poor one
+  and does not pretend to; it catches the class that got through twice, which
+  is *this is not that language at all*. It also asks the two questions that
+  are not about script: a value identical to the English key, and a row that
+  does not carry all nine — which the ledger structurally cannot see, because
+  a row is either in it or not.
+
+  Byte-identical in all three products and registered in `shared_guards.txt`,
+  like `release_fields.txt`. The defect is the estate's and so is the check,
+  which is why this product gets it having had no defect of its own.
+
+- **A guard on a claim this console does not yet make.** The sibling products
+  both carried a sentence saying an open capture keeps recording while the
+  window is minimised, written as a universal, with iOS named as the example
+  proving it.
+
+      asked     was the claim tested
+      mattered  was it tested on the platform it was made about
+
+  It was not. iOS Safari suspends the whole page, capture included; the orange
+  dot belongs to a native application, which is the opposite fact.
+  `test_a_claim_about_a_platform.py` reads every TypeScript source in a
+  console and requires any file making the claim to name where it does not
+  hold. This vault has no microphone, so it finds nothing here and passes —
+  which is the point. The claim spread by being copied between consoles, and
+  the day a capture arrives here the sentence that comes with it will meet a
+  guard that was already waiting. The alternative was a row in
+  `guard_divergences.txt`, whose ceiling does not move up and whose own rule
+  is that a new divergence is a fix that did not travel. This one travelled.
+
 ## [1.8.0] - 2026-08-24
 
 ## [1.7.0] - 2026-08-24
@@ -7491,7 +7542,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.1...HEAD
+[1.8.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.0...app-v1.8.1
 [1.8.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.7.0...app-v1.8.0
 [1.7.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.6.2...app-v1.7.0
 [1.6.2]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.6.1...app-v1.6.2
