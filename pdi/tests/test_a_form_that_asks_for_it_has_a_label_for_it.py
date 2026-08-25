@@ -133,7 +133,7 @@ def test_the_scan_can_still_see_the_forms():
     assert controls >= ratchets.floor("form.controls_scanned"), (
         f"the control extractor matched {controls} character(s) across every "
         f"screen — it has stopped seeing form controls")
-    assert len(_asked_for()) >= 3, (
+    assert len(_asked_for()) >= ratchets.floor("form.asked_for"), (
         f"only {len(_asked_for())} field(s) read as form-bound and sent — the "
         f"AND has stopped matching and this guard is checking nothing")
 

@@ -25,6 +25,8 @@ from . import clientpaths
 from .clientpaths import (CONSOLE, NATIVE, VERBS, accepts, calls,
                           methods_for, normalise, paths)
 
+from . import ratchets
+
 # PDI's console is deliberately thin, so its floor is low; the shells carry the
 # real surface. Both are here to catch a pattern that has stopped matching, not
 # to demand growth.
@@ -131,7 +133,7 @@ def test_the_check_is_really_method_aware():
         assert made, f"{lang.name}: no calls extracted at all"
         verbs = {method for method, _ in made}
         assert verbs <= set(VERBS), f"{lang.name}: unexpected verbs {verbs}"
-        assert len(verbs) > 1, (
+        assert len(verbs) >= ratchets.floor("route.verbs_min"), (
             f"{lang.name} reports only {verbs} across {len(made)} calls — its "
             "verb reader has probably stopped matching, which would turn every "
             "call into an unchecked GET"
