@@ -193,6 +193,40 @@ def test_the_extractors_are_reading_something():
             "stopped matching, so an empty result here would mean nothing")
 
 
+def test_the_shell_can_end_what_it_can_begin():
+    """Ported from the siblings, where it was written after finding an iOS
+    screen that links a child to a guardian and cannot unlink one.
+
+    A screen that creates a standing relationship and cannot end it leaves
+    the person who made it dependent on a surface they may not have. This
+    vault's standing relationships are transfers, social connectors and
+    bequests, and today every screen that begins one can end it — this holds
+    that, because the next screen is the one that ships without its other
+    half.
+
+    **Excluding ApiClient.swift**, for the sibling's stated reason: searching
+    a corpus that contains the declaration of a name is how six checks in
+    this audit have been satisfied by the thing they were meant to look past.
+    """
+    ios = REPO / "native/ios/Sources"
+    api = ios / "ApiClient.swift"
+    text = "\n".join(p.read_text(encoding="utf-8", errors="ignore")
+                     for p in ios.rglob("*.swift") if p != api)
+    pairs = [
+        ("createTransfer(", "revokeTransfer(",
+         "a transfer can be offered and never withdrawn"),
+        ("createConnector(", "revokeConnector(",
+         "a social connector can be attached and never detached — a feed "
+         "into the vault that outlives the decision to have it"),
+        ("createBequest(", "revokeBequest(",
+         "a bequest can be made and never revoked while the owner is alive, "
+         "which the route itself allows"),
+    ]
+    broken = [why for begin, end, why in pairs
+              if begin in text and end not in text]
+    assert not broken, "\n    ".join([""] + broken)
+
+
 def test_a_shell_that_can_seal_can_read_back_what_it_sealed():
     """The specific shape this guard was written after finding.
 
