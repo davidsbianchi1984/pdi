@@ -421,10 +421,12 @@ def _android_read_keychars() -> int:
 
 # -- the floors the sweep was too coarse to see -----------------------------
 #
-# `SMALLEST_FLOOR` is five, so `assert n >= 2` never entered the backlog. The
-# cutoff is right about most of what it hides: a two or a three is usually a
-# shape check on a response body, not a floor on a scanned surface. It is
-# wrong about these.
+# `SMALLEST_FLOOR` was five, so `assert n >= 2` never entered the backlog. The
+# cutoff was right about most of what it hid: a two or a three is usually a
+# shape check on a response body, not a floor on a scanned surface. It was
+# wrong about these — and measuring them is what retired the cutoff, which the
+# sweep now replaces with a question about the expression rather than the
+# number.
 #
 #     asked     is this floor big enough to be worth auditing
 #     mattered  is this floor smaller than what it stands over
@@ -537,11 +539,12 @@ RATCHETS: tuple[Ratchet, ...] = (
             "the Android client's writes that meet a declared model"),
     # Registered late, and from outside the backlog. This one floored at four
     # against eleven — a ratio the sweep would have flagged on sight — and the
-    # sweep never saw it, because it ignores floors under `SMALLEST_FLOOR` and
-    # four is under five. That cutoff keeps the backlog free of the threes and
-    # fours that are data checks rather than floors, and it buys that by being
-    # blind to the small floors that are real. There are 113 comparisons under
-    # five across the three suites; this is the one that was measured.
+    # sweep never saw it, because it ignored floors under five and four is
+    # under five. That cutoff kept the backlog free of the threes and fours
+    # that are data checks rather than floors, and it bought that by being
+    # blind to the small floors that are real. Measuring the 113 comparisons
+    # it hid is what retired it: the sweep asks what the left side is now,
+    # not how big the right side is.
     Ratchet("host.egress_sites", 8, _egress_sites,
             "the calls in this package that can put bytes on a wire"),
     Ratchet("android.reads", 46, _android_reads,

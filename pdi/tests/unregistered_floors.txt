@@ -1,5 +1,5 @@
-# status: backlog — 24 rows
-# ceiling: 24
+# status: backlog — 31 rows
+# ceiling: 31
 #
 # Every numeric floor in this suite still carrying its own literal: an
 # `assert <something> > <int>` with the number written into the assertion.
@@ -46,8 +46,24 @@
 # requires knowing what each one measures, which is the work of registering
 # it, which is why they are counted rather than guessed at.
 #
-# The ceiling does not move up. A new bare floor is a new number nothing will
-# ever audit.
+# The ceiling does not move up because a floor was written. It moved up once,
+# here, because the sweep was widened — and the distinction is the whole
+# reason a number like this is worth keeping.
+#
+#     asked     did the backlog grow
+#     mattered  did the suite get worse, or did the instrument get better
+#
+# The sweep used to take any comparison against an integer of five or more.
+# Five stood in for "is this a floor at all", badly: it hid an `assert n >= 2`
+# over a shell building a hundred and twenty-seven requests, and lowering it
+# would have swept in fifty-two assertions about single response bodies that
+# no ratchet could ever measure. It now asks what the left side of the
+# comparison is — a count of something the suite went and found, or a value
+# pulled out of what something returned.
+#
+# Rows that appeared the day that changed were always there. A backlog that
+# only ever falls, when the thing generating it can be narrowed, is a number
+# about the sweep rather than about the suite.
 #
 #
 # ## Not floors: a value that is not a size
@@ -80,18 +96,22 @@
 # of a swept surface is always a floor, whatever prose sits above it. That is
 # the guard that stops this list becoming the place a real floor goes to be
 # excused when somebody wants the backlog number to fall.
+test_a_check_that_cannot_fail_before_the_merge.py:131: len(files) >= 3
 test_a_screen_nothing_opens.py:166: len(found) >= 5
+test_a_screen_nothing_opens.py:283: len(sites) >= 2
 test_a_wiped_tenant_is_gone_from_every_table.py:121: len(before) >= 5
 test_a_wiped_tenant_is_gone_from_every_table.py:175: len(_rows_naming(tid)) >= 5
 test_a_wiped_tenant_is_gone_from_every_table.py:262: len(live) >= 15
-test_keymgmt_retention.py:22: len(rows[0][1]) > 40
+test_native_shells_record_nothing_private.py:138: len(calls) >= 2
 test_one_tenant_cannot_read_another.py:180: len(seen) >= 6
 test_the_body_the_route_requires.py:246: len(writes) >= 38
 test_the_body_the_route_requires.py:247: len(readable) >= 30
 test_the_body_the_route_requires.py:254: len(models) >= 34
 test_the_body_the_route_requires.py:264: matched >= 30
+test_the_desktop_and_the_phone_say_different_things.py:658: len(shared) >= 0
 test_the_files_the_release_never_touched.py:273: len(sorted(REPO.glob('native/ios/Sources/**/*.swift'))) >= 15
 test_the_files_the_release_never_touched.py:274: len(sorted(REPO.glob('native/android/**/*.kt'))) >= 6
+test_the_installer_can_actually_report.py:115: len(steps) >= 3
 test_the_key_the_server_never_sends.py:221: len(vocabulary) >= 500
 test_the_keys_the_android_client_reads.py:386: len(driven) >= 14
 test_the_member_that_isnt_there.py:291: len(keys) >= 12
@@ -99,8 +119,11 @@ test_the_member_that_isnt_there.py:292: len(used) >= 8
 test_the_refusal_names_the_field_on_the_form.py:106: len(found) >= 90
 test_the_refusal_that_handed_the_body_back.py:164: len(found) > 30
 test_the_refusal_that_handed_the_body_back.py:168: reached > 25
+test_the_shape_inside_the_shape.py:482: len(sent) >= 2
 test_the_shape_the_client_expects.py:311: len(driven) >= 10
 test_the_shape_the_console_expects.py:455: len(driven) >= 25
 test_the_shape_the_swift_client_expects.py:229: len(driven) >= 8
 test_the_tabs_are_translated_and_the_screens_are_not.py:539: english + calls >= 50
+test_the_tabs_are_translated_and_the_screens_are_not.py:543: calls >= 1
 test_the_tabs_are_translated_and_the_screens_are_not.py:760: len(rows) >= 10
+test_the_vault_refuses_in_one_language.py:681: len(handlers) >= 4
