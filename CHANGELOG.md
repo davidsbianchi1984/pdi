@@ -6,6 +6,59 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.8.2] - 2026-08-25
+
+### Fixed
+
+- **The last answer does not depend on anything that can fail.** Found by
+  a full suite run, once, order-dependently: the catch-all middleware —
+  the one that turns a crashed route into an answer the console can read —
+  builds its 500 in the reader's language, and the translation is itself a
+  call that can fail. When it did, the exception left the handler,
+  Starlette's outermost layer answered instead, and the 500 went back
+  without the CORS header, so the browser dropped the whole response and
+  the console read a crash as an unreachable backend.
+
+      asked     does the last answer say it in the reader's language
+      mattered  does the last answer leave at all
+
+  The handler is the one place with nobody behind it to try again, so the
+  translation is guarded and the fallback is English and constant. A
+  sentence in the wrong language beats no sentence. The middleware was
+  byte-identical in all three products, so the defect was too, and so is
+  the fix — with a guard each that poisons the translator and checks the
+  product's own answer still leaves.
+
+- **Two assertions that could not fail, and a version nothing compared.**
+  `len(shared) >= 0` stood under a docstring saying the tables share
+  around two hundred strings — the right number was in the prose one line
+  above the wrong one in the code. It is 216, 214 and 212, and the floor
+  holds them now. The fragment floor had the same shape. And `/health`
+  served a `version` field nothing compared to the app's own — the desktop
+  shell adopts a backend already listening on its port only when the
+  version matches, which is how an upgraded sibling once kept meeting the
+  first version's signup. The comparison exists now.
+
+### Added
+
+- **The screens can end what they can begin, and it is held.** Transfers,
+  social connectors and bequests can all be revoked from the screens that
+  create them — true today by care rather than by guard. Ported from the
+  sibling, where it was written after finding an iOS screen that links a
+  child to a guardian and cannot unlink one. PDI's copy carries PDI's own
+  pairs, because the next screen is the one that ships without its other
+  half.
+
+### Changed
+
+- **The suite audits its own floors by kind, not by size.** The floor
+  registry grew from 51 ratchets to 131, each measured against what it
+  stands over every run. The unregistered backlog holds 10 rows, every
+  one needing a live client; the 56 unlabelled fields are verified
+  decisions with a guard; the divergence record reaches zero unread rows,
+  48 of its 114 provably deliberate against this product's own route
+  table and module list.
+
 ## [1.8.1] - 2026-08-24
 
 ### Added
@@ -7542,7 +7595,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.2...HEAD
+[1.8.2]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.1...app-v1.8.2
 [1.8.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.0...app-v1.8.1
 [1.8.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.7.0...app-v1.8.0
 [1.7.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.6.2...app-v1.7.0

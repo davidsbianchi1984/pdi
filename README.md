@@ -10,7 +10,7 @@ JIM-mini vaults its medical and context payloads here, and QRME seals its
 profile source material — each as its own tenant with its own token. See
 [docs/tandem.md](docs/tandem.md).
 
-**Current release: v1.8.1** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v1.8.2** — see [CHANGELOG.md](CHANGELOG.md).
 
 PDI is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -167,6 +167,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 |---|---|
 | Release | What landed |
 |---|---|
+| **1.8.2** | **The last answer does not depend on anything that can fail** — the catch-all that turns a crashed route into an answer the console can read built its 500 through a translator that could itself fail; when it did, the answer left without the CORS header and a crash read as an unreachable backend. Guarded now, with a constant English fallback, in all three products. Also: two assertions that could not fail are floors now, `/health`'s version is compared to the app's own so the desktop shell cannot adopt a stale backend, and the screens' power to end every transfer, connector and bequest they can begin is held by a guard rather than by care |
 | **1.8.1** | **A guard that reads the translations, not just the count of missing ones** — the refusal ledger counts sentences with no translation and only shrinks, so it can reach zero with a Chinese row written in Cyrillic in it and every guard in the estate would call the paydown complete. Two got through that way in a sibling product and were caught by eye: single characters from another alphabet in otherwise correct sentences, both of which rendered and neither of which failed a test. Narrow on purpose — it cannot tell a good translation from a poor one, only that this is not that language at all — and byte-identical in all three products, so this vault gets it having had no defect of its own. A second one holds any console to what it actually tested about a minimised window, and waits here against the day this vault grows a microphone |
 | **1.8.0** | **Released alongside JIM-mini and QRME**, which carry this round's work. The vault is unchanged and its suite is green over the same tree: 1331 passing. The version moves with its siblings because the three ship as one — a vault a version behind its tandems is a question every deployment has to answer separately |
 | **1.7.0** | **German finishes the informal register** — 33 rows across the console and the three native shells, with the two that stay counted named as third person rather than left as a number. Also: two refusals about the tenant's own key reach a person rather than a log and are hand-translated into all nine languages; the refusal backlog was counting two constructor preconditions raised while the app is wired; and `len(_REFUSALS) >= 8` was a floor against a table of 84, now registered |

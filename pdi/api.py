@@ -126,7 +126,7 @@ RECEIVE_NO = "that token does not open anything here"
 RECEIVE_REVOKED = "this transfer has been revoked"
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="Private Data Infrastructure", version="1.8.1")
+    app = FastAPI(title="Private Data Infrastructure", version="1.8.2")
 
     @app.middleware("http")
     async def localize_response_notes(request, call_next):
