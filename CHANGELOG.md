@@ -6,6 +6,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.8.3] - 2026-08-25
+
+### Changed
+
+- **The vault refuses in the reader's language, both ledgers closed.** The
+  41 interpolated refusals `refusal_templates.txt` was holding open become
+  registered templates — twenty-six of them are sentences JIM and QRME
+  already say and arrive with the same frames, so the trio refuses in one
+  voice; seven are the vault's own (the offline pair, the keyring rotation
+  that refuses to seal itself shut, retention, compliance programs,
+  timezones, beacons); the field-worded one-of rows ride `MUST_BE_ONE_OF`
+  with the API's own field name slotted. The nine constants
+  `refusals_untranslated.txt` was holding open join `_REFUSALS` with frames
+  in the nine languages, which closes that ledger too.
+
+      asked     every sentence the vault says when it says no
+      mattered  the reader who picked a language and was answered in English
+
+  The vault's guard learns the siblings' lesson — `i18n.raised` counts as
+  stringifying — and the widened sweep surfaced the resident's two ear
+  sentences and six more constants, all translated; thirty handlers hand
+  the sentence on through `i18n.raised`, and the `refusals.template_calls`
+  floor rises 12 → 45.
+
 ## [1.8.2] - 2026-08-25
 
 ### Fixed
@@ -7595,7 +7619,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.2...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.3...HEAD
+[1.8.3]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.2...app-v1.8.3
 [1.8.2]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.1...app-v1.8.2
 [1.8.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.0...app-v1.8.1
 [1.8.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.7.0...app-v1.8.0
