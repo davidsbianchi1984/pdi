@@ -27,6 +27,23 @@ def test_health(client):
     assert client.get("/health").json()["status"] == "ok"
 
 
+def test_health_reports_the_version(client):
+    """Ported from the siblings, which have carried this since the desktop
+    shell learned to adopt a backend already listening on its port.
+
+    It adopts one only when the version matches its own. This product serves
+    the field and nothing here compared it to anything, so a backend left
+    running from an older install would be adopted by a newer app — which is
+    how an upgraded sibling kept meeting the first version's signup.
+
+        asked     does /health answer
+        mattered  does it say which build answered
+    """
+    from pdi.api import app as _app
+
+    assert client.get("/health").json()["version"] == _app.version
+
+
 def test_the_footsteps_count_tenants(client):
     """The counter in the corner: how many tenants hold a vault here.
 
