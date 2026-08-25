@@ -67,6 +67,43 @@ def test_every_tab_has_a_label():
         + "\n  `t()` falls back to the key, so this shows in every language.")
 
 
+def test_no_key_is_translated_into_ten_languages_and_used_nowhere():
+    """The other direction, which this file's own header has named since it
+    was written and nothing checked: a key in the table that no screen looks
+    up. Ported on the night it found two here — `pr.nocollector`, superseded
+    by the status map's `pr.out.nocollector` and left behind, and
+    `acc.review.sealed`, a label for reports "sealed to the vault" when the
+    route stores them plainly on the deployment and the code beside it says
+    there is no second place to seal to. Ten languages each, read by nobody,
+    one of them describing a design this product deliberately does not have.
+
+    A key is reachable here four ways: a literal lookup, a template-literal
+    prefix, a concatenation prefix — `t("pos.cap." + k)` is this console's
+    own spelling — and a quoted appearance in a status map whose values are
+    keys. The last is covered by counting any quoted appearance outside the
+    table itself, which is also what keeps this from the trap the estate
+    keeps finding: the one corpus excluded is the one that declares the name.
+    """
+    table_src = (SRC / "l10n.ts").read_text(encoding="utf-8")
+    table = set(re.findall(r'^  "([\w.]+)":', table_src, re.M))
+    used, prefixes = set(), set()
+    for screen in list(SRC.rglob("*.tsx")) + list(SRC.rglob("*.ts")):
+        if screen.name == "l10n.ts":
+            continue
+        text = screen.read_text(encoding="utf-8")
+        used |= {k for k in re.findall(r'"([\w.]+)"', text) if k in table}
+        used |= {k for k in re.findall(r"'([\w.]+)'", text) if k in table}
+        prefixes |= set(re.findall(r'\(\s*`([\w.]+)\$\{', text))
+        prefixes |= set(re.findall(r'\(\s*"([\w.]+\.)"\s*\+', text))
+    dead = sorted(k for k in table - used
+                  if not any(k.startswith(p) for p in prefixes))
+    assert not dead, (
+        f"{len(dead)} key(s) are translated and looked up by nothing:\n    "
+        + "\n    ".join(dead)
+        + "\n  Wire them, or delete them — but a translated string nobody "
+          "reads is the English still being read instead.")
+
+
 def test_no_literal_lookup_is_missing_its_row():
     """The general case, of which the tab was one instance.
 
