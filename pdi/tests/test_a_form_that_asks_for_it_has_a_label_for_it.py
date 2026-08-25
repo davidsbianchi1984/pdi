@@ -48,6 +48,8 @@ from pathlib import Path
 from pdi import i18n
 from pdi.tests.test_the_refusal_names_the_field_on_the_form import REPO, _declared
 
+from . import ratchets
+
 SCREENS = REPO / "app/src/screens"
 
 
@@ -69,6 +71,17 @@ def _body_keys(src: str) -> set[str]:
     narrowing that matters is the AND with :func:`_controls`, not this half.
     """
     return set(re.findall(r'^\s*(\w+):\s', src, re.M))
+
+
+def _scanned_controls() -> int:
+    """Characters of form control the extractor matches across every screen.
+
+    A count rather than a set, because what is being guarded is the extractor
+    still seeing markup at all — and lifted here so the floor under it counts
+    what the guard counts.
+    """
+    return sum(len(_controls(p.read_text(encoding="utf-8")))
+               for p in SCREENS.rglob("*.tsx"))
 
 
 def _asked_for() -> dict[str, set[str]]:
@@ -116,9 +129,8 @@ def test_the_scan_can_still_see_the_forms():
     scan of an entire console reporting nothing is far likelier to be broken
     than to be good news — which is what a rewrite of either regex produces.
     """
-    controls = sum(len(_controls(p.read_text(encoding="utf-8")))
-                   for p in SCREENS.rglob("*.tsx"))
-    assert controls > 2_000, (
+    controls = _scanned_controls()
+    assert controls >= ratchets.floor("form.controls_scanned"), (
         f"the control extractor matched {controls} character(s) across every "
         f"screen — it has stopped seeing form controls")
     assert len(_asked_for()) >= 3, (

@@ -1,5 +1,5 @@
-# status: backlog — 32 rows
-# ceiling: 32
+# status: backlog — 24 rows
+# ceiling: 24
 #
 # Every numeric floor in this suite still carrying its own literal: an
 # `assert <something> > <int>` with the number written into the assertion.
@@ -80,18 +80,12 @@
 # of a swept surface is always a floor, whatever prose sits above it. That is
 # the guard that stops this list becoming the place a real floor goes to be
 # excused when somebody wants the backlog number to fall.
-test_a_binding_is_not_a_door.py:134: len(found) > 20
-test_a_form_that_asks_for_it_has_a_label_for_it.py:121: controls > 2000
-test_a_native_binding_is_not_a_door_either.py:181: n > 20
 test_a_screen_nothing_opens.py:166: len(found) >= 5
-test_a_shell_does_not_print_what_it_translated.py:334: len(_shown(spec)) > 100
 test_a_wiped_tenant_is_gone_from_every_table.py:121: len(before) >= 5
 test_a_wiped_tenant_is_gone_from_every_table.py:175: len(_rows_naming(tid)) >= 5
 test_a_wiped_tenant_is_gone_from_every_table.py:262: len(live) >= 15
-test_error_report_carries_nothing_private.py:398: len(segments) > 30
 test_keymgmt_retention.py:22: len(rows[0][1]) > 40
 test_one_tenant_cannot_read_another.py:180: len(seen) >= 6
-test_the_body_the_native_clients_send.py:358: matched >= 9
 test_the_body_the_route_requires.py:246: len(writes) >= 38
 test_the_body_the_route_requires.py:247: len(readable) >= 30
 test_the_body_the_route_requires.py:254: len(models) >= 34
@@ -99,9 +93,7 @@ test_the_body_the_route_requires.py:264: matched >= 30
 test_the_files_the_release_never_touched.py:273: len(sorted(REPO.glob('native/ios/Sources/**/*.swift'))) >= 15
 test_the_files_the_release_never_touched.py:274: len(sorted(REPO.glob('native/android/**/*.kt'))) >= 6
 test_the_key_the_server_never_sends.py:221: len(vocabulary) >= 500
-test_the_keys_the_android_client_reads.py:359: len(reads) >= 16
-test_the_keys_the_android_client_reads.py:360: sum((len(k) for _, k in reads)) >= 28
-test_the_keys_the_android_client_reads.py:383: len(driven) >= 14
+test_the_keys_the_android_client_reads.py:386: len(driven) >= 14
 test_the_member_that_isnt_there.py:291: len(keys) >= 12
 test_the_member_that_isnt_there.py:292: len(used) >= 8
 test_the_refusal_names_the_field_on_the_form.py:106: len(found) >= 90
