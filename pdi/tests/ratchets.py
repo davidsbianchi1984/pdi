@@ -484,7 +484,137 @@ def _form_asked_for() -> int:
     return len(_asked_for())
 
 
+# -- the floors that were already holding ----------------------------------
+#
+# The other half of what widening the sweep turned up, and the half that is
+# easy to leave alone: measured, in band, several at exactly the number they
+# stand over. Nothing here is being corrected.
+#
+#     asked     is this floor wrong
+#     mattered  is anything comparing it to what it measures
+#
+# A floor at 1.00 today is a floor at 0.30 in a year, and the run it starts
+# being wrong on is a run nobody watches. What registering buys one that
+# holds is not a different number — it is the measurement attached, and the
+# audit every run. Each keeps the number it had unless four-fifths of what it
+# measures is higher, because lowering a guard that currently holds tight, to
+# satisfy a convention about where floors usually sit, is following the rule
+# off a cliff.
+
+
+def _workflow_files() -> int:
+    from .test_a_check_that_cannot_fail_before_the_merge import _files
+    return len(_files())
+
+
+def _key_vocabulary() -> int:
+    from .test_the_key_the_server_never_sends import _vocabulary
+    return len(_vocabulary())
+
+
+def _route_writes() -> int:
+    from .test_the_body_the_route_requires import WRITES, _sent
+    return len([w for w in _sent() if w[0] in WRITES])
+
+
+def _route_writes_readable() -> int:
+    from .test_the_body_the_route_requires import WRITES, _sent
+    return len([w for w in _sent() if w[0] in WRITES
+                and w[2] in ("literal", "parameter") and w[3] is not None])
+
+
+def _route_models() -> int:
+    from .test_the_body_the_route_requires import _models
+    return len(_models())
+
+
+def _writes_meeting_a_model() -> int:
+    from .test_the_body_the_route_requires import _writes_meeting_a_model
+    return _writes_meeting_a_model()
+
+
+def _shell_sources(shell: str):
+    def go() -> int:
+        from .test_the_files_the_release_never_touched import _shell_sources
+        return len(_shell_sources(shell))
+    return go
+
+
+def _brushes(half: int):
+    def go() -> int:
+        from .test_the_member_that_isnt_there import _brushes
+        return len(_brushes()[half])
+    return go
+
+
+def _form_declared_fields() -> int:
+    from .test_the_refusal_names_the_field_on_the_form import _declared
+    return len(_declared())
+
+
+def _exception_handlers() -> int:
+    from .test_the_vault_refuses_in_one_language import _handlers
+    return len(_handlers())
+
+
+def _build_steps() -> int:
+    from .test_the_installer_can_actually_report import _build_steps
+    return len(_build_steps())
+
+
+def _shared_with_console(shell: str):
+    def go() -> int:
+        from .test_the_desktop_and_the_phone_say_different_things import (
+            _shared_with_console)
+        return len(_shared_with_console(shell))
+    return go
+
+
+def _thinnest_pin() -> int:
+    from .test_the_shape_inside_the_shape import contract, _pin_rows
+    return min(len(contract(*row)) for row in _pin_rows())
+
+
 RATCHETS: tuple[Ratchet, ...] = (
+    Ratchet("workflow.files", 4, _workflow_files,
+            "the workflow files the gating sweep reads"),
+    Ratchet("key.vocabulary", 796, _key_vocabulary,
+            "the field names the leak check knows to look for"),
+    Ratchet("route.writes", 40, _route_writes,
+            "the write calls the extractor reads off the clients"),
+    Ratchet("route.writes_readable", 31, _route_writes_readable,
+            "the write calls whose body it can actually read"),
+    Ratchet("route.models", 34, _route_models,
+            "the request models FastAPI publishes in the schema"),
+    Ratchet("route.writes_meeting_a_model", 32, _writes_meeting_a_model,
+            "the clients' writes whose verb and shape meet a model"),
+    Ratchet("shell.sources.ios", 16, _shell_sources("ios"),
+            "the Swift sources the release check walks"),
+    Ratchet("shell.sources.android", 6, _shell_sources("android"),
+            "the Kotlin sources the release check walks"),
+    Ratchet("brush.keys", 12, _brushes(0),
+            "the brush keys App.xaml declares"),
+    Ratchet("brush.used", 8, _brushes(1),
+            "the brush keys the screens actually paint with"),
+    Ratchet("form.declared_fields", 92, _form_declared_fields,
+            "the request-model fields the refusal check maps to a control"),
+    Ratchet("api.exception_handlers", 4, _exception_handlers,
+            "the exception handlers `api.py` declares"),
+    Ratchet("installer.build_steps", 3, _build_steps,
+            "the steps that run the packaging command"),
+    # `>= 0`, the third assertion in this estate found unable to fail, and
+    # the second in this product. Its own docstring carried the right number
+    # in prose one line above the wrong one in code.
+    Ratchet("table.shared_with_console.android", 172,
+            _shared_with_console("android"),
+            "the English strings Android's table shares with the console"),
+    Ratchet("table.shared_with_console.ios", 171, _shared_with_console("ios"),
+            "the English strings the iPhone's table shares with the console"),
+    Ratchet("table.shared_with_console.windows", 169,
+            _shared_with_console("windows"),
+            "the English strings the desktop's table shares with the console"),
+    Ratchet("pin.thinnest", 2, _thinnest_pin,
+            "the keys on the thinnest pinned contract"),
     # Per shell, and the reason is in the numbers: this one literal stood
     # over 11, 5 and 140 requests built. It was honest about the
     # iPhone and decoration on the desktop, which is what a single floor

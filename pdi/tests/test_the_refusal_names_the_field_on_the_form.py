@@ -55,6 +55,7 @@ from pathlib import Path
 import pytest
 
 from pdi import i18n
+from . import ratchets
 
 
 def _repo_root() -> Path:
@@ -103,7 +104,7 @@ def test_the_field_scan_is_finding_fields():
     """A guard on the guard: a walk that stopped matching would report every
     field mapped by finding none of them."""
     found = _declared()
-    assert len(found) >= 90, (
+    assert len(found) >= ratchets.floor("form.declared_fields"), (
         f"only {len(found)} request-model field(s) parsed — this product "
         "declares more than two hundred, and the checks below would pass on "
         "almost nothing")

@@ -656,11 +656,11 @@ def test_the_backlog_only_shrinks():
         "guard started at")
 
 
-def test_every_handler_returns_through_the_one_place():
-    """The structural half, and the only part of this file that is a fix.
+def _handlers() -> list[tuple[str, bool]]:
+    """Every `@app.exception_handler` in `api.py`, and whether it returns
+    through `i18n.refuse`.
 
-    Checked structurally rather than by driving each handler: a driven check
-    would cover the ones that exist today and say nothing about the next.
+    Lifted out of the guard so the floor under it walks the same tree.
     """
     tree = ast.parse((PKG / "api.py").read_text(encoding="utf-8"))
     handlers: list[tuple[str, bool]] = []
@@ -678,7 +678,17 @@ def test_every_handler_returns_through_the_one_place():
             for n in ast.walk(node))
         handlers.append((node.name, routed))
 
-    assert len(handlers) >= 4, (
+    return handlers
+
+
+def test_every_handler_returns_through_the_one_place():
+    """The structural half, and the only part of this file that is a fix.
+
+    Checked structurally rather than by driving each handler: a driven check
+    would cover the ones that exist today and say nothing about the next.
+    """
+    handlers = _handlers()
+    assert len(handlers) >= ratchets.floor("api.exception_handlers"), (
         f"only {len(handlers)} exception handlers found in api.py — the "
         "pattern has stopped matching, so this check would pass on nothing")
     astray = sorted(name for name, routed in handlers if not routed)
