@@ -18,6 +18,7 @@ import secrets
 from datetime import datetime, timedelta, timezone
 
 from . import audit, compliance, db, transfers, vault
+from . import i18n
 
 
 class UnknownProgram(Exception):
@@ -70,7 +71,7 @@ def create(tenant: dict, from_party: str, party_type: str | None,
            purpose: str | None, programs: list[str]) -> dict:
     unknown = [p for p in programs if compliance.get(p) is None]
     if unknown:
-        raise UnknownProgram(f"unknown compliance program(s): {unknown}")
+        raise UnknownProgram(i18n.fill(i18n.UNKNOWN_COMPLIANCE_PROGRAMS, got=unknown))
     iid = db.new_id("intk")
     token, token_hash = _mint()
     retention = compliance.retention_days(programs)

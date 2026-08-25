@@ -44,6 +44,7 @@ import time
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from . import db
+from . import i18n
 
 _EPHEMERAL: bytes | None = None
 
@@ -498,9 +499,7 @@ def rewrap(new_kek: bytes, old_kek: bytes | None = None, *,
             opened.append((row["version"], _unwrap(row["wrapped_dek"], old_kek)))
         except Exception as exc:                       # noqa: BLE001
             raise CustomerKeyMismatch(
-                f"the old key does not open key version {row['version']}, so "
-                "this rotation would seal the keyring shut — nothing was "
-                "changed") from exc
+                i18n.fill(i18n.OLD_KEY_SEALS_KEYRING, version=row['version'])) from exc
 
     for version, dek in opened:
         if tenant_id is None:

@@ -21,6 +21,7 @@ import json
 
 from pdi import beacons, gate, notify
 from pdi.tests.conftest import auth, new_tenant, new_tenant_with_baa
+from pdi import i18n
 
 KEY = base64.b64encode(b"k" * 32).decode()
 
@@ -336,7 +337,7 @@ def test_a_ring_is_answered_once(client):
     try:
         gate.answer(beacons.ring_row(opened["id"]), tenant)
     except beacons.BeaconError as exc:
-        assert "already been answered" in str(exc)
+        assert "already been answered" in i18n.raised(exc)
     else:
         raise AssertionError("a closed ring was answered twice")
 

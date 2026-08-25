@@ -23,6 +23,7 @@ import os
 from datetime import datetime, timezone
 
 from . import audit, db, vault
+from . import i18n
 
 WINDOWS = {"7d": 7, "30d": 30, "90d": 90, "180d": 180, "1y": 365, "forever": None}
 
@@ -37,7 +38,7 @@ def parse_window(value) -> int | None:
         n = int(value)
     except (TypeError, ValueError):
         raise ValueError(
-            f"retention must be one of {sorted(WINDOWS)} or a positive day count")
+            i18n.fill(i18n.RETENTION_ONE_OF, choices=sorted(WINDOWS)))
     return None if n <= 0 else n
 
 

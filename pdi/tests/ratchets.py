@@ -724,7 +724,7 @@ RATCHETS: tuple[Ratchet, ...] = (
             "the requests the desktop client builds"),
     Ratchet("ratchet.files", 19, _ratchet_files,
             "the ratchet records this suite keeps"),
-    Ratchet("refusals.template_calls", 12, _template_calls,
+    Ratchet("refusals.template_calls", 45, _template_calls,
             "the `i18n.fill` call sites the conversion left behind"),
     Ratchet("route.verbs_min", 3, _verbs_min,
             "the distinct verbs the thinnest-reading surface reports"),

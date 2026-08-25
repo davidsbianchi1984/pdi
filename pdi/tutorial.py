@@ -42,6 +42,7 @@ it call out to a model provider.
 from __future__ import annotations
 
 from . import db
+from . import i18n
 
 GUIDE = ("PDI's own console guide — not an agent, and not a person. It has no "
          "name and no face, it explains the console and nothing else, and it "
@@ -304,7 +305,7 @@ def _index(key: str) -> int:
     for i, lesson in enumerate(LESSONS):
         if lesson["key"] == key:
             return i
-    raise TutorialError(f"no such step {key!r}")
+    raise TutorialError(i18n.fill(i18n.NO_SUCH_STEP, got=repr(key)))
 
 
 def say(lesson: dict, mode: str = "text") -> dict:
@@ -315,7 +316,7 @@ def say(lesson: dict, mode: str = "text") -> dict:
     drift, and the spoken one would be the one nobody re-read.
     """
     if mode not in MODES:
-        raise TutorialError(f"unknown mode {mode!r} — one of {', '.join(MODES)}")
+        raise TutorialError(i18n.fill(i18n.UNKNOWN_MODE_ONE_OF, got=repr(mode), choices=', '.join(MODES)))
     out = {"key": lesson["key"], "chapter": lesson["chapter"],
            "title": lesson["title"], "click": lesson["click"], "mode": mode}
     if mode == "voice":

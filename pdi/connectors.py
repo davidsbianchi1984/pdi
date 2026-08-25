@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 
 from . import db, scrape, vault
+from . import i18n
 
 _PLATFORM_URL = {
     "instagram": "https://instagram.com/{h}",
@@ -131,7 +132,7 @@ def fetch_page(tenant: dict, row: dict) -> dict:
     page = scrape.extract(scrape.fetch(url))
     parts = [p for p in (page["description"], page["text"]) if p]
     if not (page["title"] or parts):
-        raise ValueError(f"{url} answered with nothing readable")
+        raise ValueError(i18n.fill(i18n.NOTHING_READABLE, url=url))
     body = "\n\n".join(([page["title"]] if page["title"] else []) + parts)
     body += f"\n\nFetched from {url} at {db.utcnow()}"
     out = ingest(tenant, row, [{"content": body, "ref": url}])

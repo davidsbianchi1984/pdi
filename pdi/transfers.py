@@ -22,6 +22,7 @@ import secrets
 from datetime import datetime, timedelta, timezone
 
 from . import audit, compliance, db, vault
+from . import i18n
 
 
 class UnknownProgram(Exception):
@@ -83,7 +84,7 @@ def create(tenant: dict, recipient: str, filename: str, content: str,
            party_type: str | None = None) -> dict:
     unknown = [p for p in programs if compliance.get(p) is None]
     if unknown:
-        raise UnknownProgram(f"unknown compliance program(s): {unknown}")
+        raise UnknownProgram(i18n.fill(i18n.UNKNOWN_COMPLIANCE_PROGRAMS, got=unknown))
     tid = db.new_id("xfer")
     vault_key = f"transfers/{tid}"
     vault.put(tenant, vault_key, content)          # sealed AES-256-GCM at rest

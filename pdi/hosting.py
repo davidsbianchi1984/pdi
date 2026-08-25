@@ -40,6 +40,7 @@ other kind.
 from __future__ import annotations
 
 from . import audit, db
+from . import i18n
 
 # True of every mode. One list, shared, so a mode cannot quietly hold less.
 GUARANTEES: tuple[str, ...] = (
@@ -150,7 +151,7 @@ def choose(tenant_id: str, mode: str, note: str | None = None) -> dict:
     """
     if mode not in MODES:
         raise HostingError(
-            f"unknown hosting mode {mode!r}; one of {', '.join(MODES)}")
+            i18n.fill(i18n.UNKNOWN_CHOICE, field="hosting mode", got=repr(mode), choices=', '.join(MODES)))
     conn = db.connect()
     now = db.utcnow()
     conn.execute(

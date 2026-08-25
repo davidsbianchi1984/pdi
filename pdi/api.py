@@ -45,6 +45,7 @@ from .models import (AppCollect, AppConnect, AppInvoke, BAARecordIn,
                      RetentionSet, RobotBind,
                      RobotIngest, RosterAdd, SnapshotRestore, TenantCreate,
                      TokenIssue, TransferCreate, GateTimezone)
+from . import i18n
 
 
 #: The unhandled-error path logs here and nowhere else: the traceback
@@ -69,7 +70,7 @@ def _tenant(authorization: str = Header(default=""),
     try:
         tenant["customer_key"] = crypto.parse_key(x_tenant_key)
     except crypto.CustomerKeyMismatch as exc:
-        raise HTTPException(400, str(exc)) from exc
+        raise HTTPException(400, i18n.raised(exc)) from exc
     return tenant
 
 
@@ -261,7 +262,7 @@ def create_app() -> FastAPI:
         try:
             payload = problems_mod.screen(await request.json())
         except problems_mod.Rejected as exc:
-            raise HTTPException(422, str(exc)) from exc
+            raise HTTPException(422, i18n.raised(exc)) from exc
         folded = problems_mod.add(payload)
         return {"accepted": True, "problems": len(payload["problems"]),
                 "failures": folded}
@@ -345,7 +346,7 @@ def create_app() -> FastAPI:
         try:
             days = retention.parse_window(body.retention)
         except ValueError as e:
-            raise HTTPException(422, str(e))
+            raise HTTPException(422, i18n.raised(e))
         return vault.create_tenant(body.name, retention_days=days)
 
     @app.post("/seed", status_code=201)
@@ -432,7 +433,7 @@ def create_app() -> FastAPI:
         try:
             return i18n.translate(tenant["id"], body.text, body.to)
         except ValueError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     # -- data plane (tenant-scoped, encrypted at rest) ----------------------
 
@@ -595,11 +596,11 @@ def create_app() -> FastAPI:
         except LookupError as e:
             raise HTTPException(400, str(e))
         except offline.LeftTheHost as e:
-            raise HTTPException(409, str(e))
+            raise HTTPException(409, i18n.raised(e))
         except ValueError as e:
-            raise HTTPException(502, str(e))
+            raise HTTPException(502, i18n.raised(e))
         except Exception as e:                                # noqa: BLE001
-            raise HTTPException(502, f"could not fetch — {e.__class__.__name__}: {e}")
+            raise HTTPException(502, i18n.fill(i18n.COULD_NOT_FETCH, kind=e.__class__.__name__, detail=e))
 
     @app.post("/connectors/{cid}/publish", status_code=201)
     def publish_connector(cid: str, body: ConnectorPublish,
@@ -646,10 +647,10 @@ def create_app() -> FastAPI:
     def connect_app(body: AppConnect, tenant: dict = Depends(_writer)) -> dict:
         e = app_connectors.entry(body.provider, body.app)
         if e is None:
-            raise HTTPException(404, f"unknown connector: {body.provider}/{body.app}")
+            raise HTTPException(404, i18n.fill(i18n.UNKNOWN_CONNECTOR, provider=body.provider, app=body.app))
         unknown = set(body.capabilities) - set(e["capabilities"])
         if unknown:
-            raise HTTPException(422, f"{body.app} does not offer: {sorted(unknown)}")
+            raise HTTPException(422, i18n.fill(i18n.APP_DOES_NOT_OFFER, app=body.app, capabilities=sorted(unknown)))
         return app_connectors.create(tenant["id"], e, body.capabilities)
 
     @app.get("/apps")
@@ -665,7 +666,7 @@ def create_app() -> FastAPI:
     def ingest_app(cid: str, body: AppCollect, tenant: dict = Depends(_writer)) -> dict:
         row = _app_or_404(cid, tenant)
         if "collect" not in json.loads(row["directions"]):
-            raise HTTPException(409, f"{row['app']} does not support collecting context")
+            raise HTTPException(409, i18n.fill(i18n.NO_COLLECT_SUPPORT, app=row['app']))
         if row["status"] != "active":
             raise HTTPException(409, "connector has been revoked")
         return app_connectors.ingest(tenant, row, [i.model_dump() for i in body.items])
@@ -676,8 +677,7 @@ def create_app() -> FastAPI:
         if row["status"] != "active":
             raise HTTPException(409, "connector has been revoked")
         if body.capability not in json.loads(row["capabilities"]):
-            raise HTTPException(422, f"this {row['app']} connector was not granted "
-                                     f"'{body.capability}'")
+            raise HTTPException(422, i18n.fill(i18n.CONNECTOR_NOT_GRANTED_Q, app=row['app'], capability=body.capability))
         return app_connectors.invoke(row, body.capability, body.input)
 
     # -- robots as vault-backed data sources --------------------------------
@@ -701,7 +701,7 @@ def create_app() -> FastAPI:
     def bind_robot(body: RobotBind, tenant: dict = Depends(_writer)) -> dict:
         spec = robotics.get(body.model)
         if spec is None:
-            raise HTTPException(404, f"unknown robot model '{body.model}'")
+            raise HTTPException(404, i18n.fill(i18n.UNKNOWN_ROBOT_MODEL_QUOTED, got=body.model))
         return robotics.create(tenant["id"], spec, body.name)
 
     @app.get("/robots")
@@ -921,7 +921,7 @@ def create_app() -> FastAPI:
                                     body.content, body.programs, body.classification,
                                     body.party_type)
         except transfers.UnknownProgram as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.get("/transfers")
     def list_transfers(tenant: dict = Depends(_tenant)) -> list[dict]:
@@ -1046,7 +1046,7 @@ def create_app() -> FastAPI:
             return intakes.create(tenant, body.from_party, body.party_type,
                                  body.purpose, body.programs)
         except intakes.UnknownProgram as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.get("/intakes")
     def list_intakes(tenant: dict = Depends(_tenant)) -> list[dict]:
@@ -1248,9 +1248,9 @@ def create_app() -> FastAPI:
             return crypto.adopt_customer_key(
                 tenant["id"], body.provider, key, body.config)
         except crypto.CustomerKeyMismatch as exc:
-            raise HTTPException(400, str(exc)) from exc
+            raise HTTPException(400, i18n.raised(exc)) from exc
         except ValueError as exc:
-            raise HTTPException(409, str(exc)) from exc
+            raise HTTPException(409, i18n.raised(exc)) from exc
 
     @app.delete("/key")
     def release_key(tenant: dict = Depends(_writer)) -> dict:
@@ -1263,9 +1263,9 @@ def create_app() -> FastAPI:
         except crypto.CustomerKeyRequired as exc:
             raise HTTPException(428, str(exc)) from exc
         except crypto.CustomerKeyMismatch as exc:
-            raise HTTPException(403, str(exc)) from exc
+            raise HTTPException(403, i18n.raised(exc)) from exc
         except ValueError as exc:
-            raise HTTPException(409, str(exc)) from exc
+            raise HTTPException(409, i18n.raised(exc)) from exc
 
     # -- retention (up to forever) ------------------------------------------
 
@@ -1279,7 +1279,7 @@ def create_app() -> FastAPI:
         try:
             result = retention.set_tenant_retention(tenant_id, body.retention)
         except ValueError as e:
-            raise HTTPException(422, str(e))
+            raise HTTPException(422, i18n.raised(e))
         if result is None:
             raise HTTPException(404, "tenant not found")
         return result
@@ -1308,7 +1308,7 @@ def create_app() -> FastAPI:
                                  body.label, body.disclose, body.programs)
         except beacons.BeaconError as exc:
             raise HTTPException(
-                404 if str(exc).startswith("no such") else 422, str(exc))
+                404 if i18n.raised(exc).startswith("no such") else 422, i18n.raised(exc))
 
     @app.get("/beacons")
     def list_beacons(tenant: dict = Depends(_tenant)) -> list[dict]:
@@ -1328,7 +1328,7 @@ def create_app() -> FastAPI:
         try:
             return beacons.set_state(_beacon_or_404(bid, tenant), body.state)
         except beacons.BeaconError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.delete("/beacons/{bid}")
     def retire_beacon(bid: str, tenant: dict = Depends(_writer)) -> dict:
@@ -1428,7 +1428,7 @@ def create_app() -> FastAPI:
         try:
             out = beacons.found(bid, body.where, body.contact)
         except beacons.BeaconError as exc:
-            raise HTTPException(409, i18n.tr_page(str(exc), language))
+            raise HTTPException(409, i18n.tr_page(i18n.raised(exc), language))
         if out is None:
             raise HTTPException(404, i18n.tr_page(
                 "this code does not resolve to anything", language))
@@ -1462,7 +1462,7 @@ def create_app() -> FastAPI:
         try:
             opened = beacons.ring(row, body.kind, body.note)
         except beacons.BeaconError as exc:
-            raise HTTPException(409, i18n.tr_page(str(exc), language))
+            raise HTTPException(409, i18n.tr_page(i18n.raised(exc), language))
         tenant = vault.tenant_by_id(row["tenant_id"])
         if tenant is None:                       # tenant deleted under a live code
             raise HTTPException(404, i18n.tr_page(
@@ -1496,7 +1496,7 @@ def create_app() -> FastAPI:
             return roster.add(tenant, body.name, body.role, body.days,
                               body.from_time, body.to_time)
         except roster.RosterError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.delete("/gate/roster/{rid}")
     def remove_from_roster(rid: str, tenant: dict = Depends(_writer)) -> dict:
@@ -1513,7 +1513,7 @@ def create_app() -> FastAPI:
         try:
             return roster.set_timezone(tenant, body.timezone)
         except roster.RosterError as exc:
-            raise HTTPException(422, str(exc))
+            raise HTTPException(422, i18n.raised(exc))
 
     @app.get("/gate/channel")
     def gate_channel() -> dict:
@@ -1748,7 +1748,7 @@ def create_app() -> FastAPI:
         try:
             return dock_mod.route(face)
         except dock_mod.DockError as exc:
-            raise HTTPException(404, str(exc)) from None
+            raise HTTPException(404, i18n.raised(exc)) from None
 
     @app.get("/dock/{tenant_id}")
     def dock_settings(tenant_id: str, tenant: dict = Depends(_tenant)) -> dict:
@@ -1765,7 +1765,7 @@ def create_app() -> FastAPI:
             return dock_mod.configure(tenant_id, body.corner, body.state,
                                       body.face, body.faces)
         except dock_mod.DockError as exc:
-            raise HTTPException(422, str(exc)) from None
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     @app.get("/dock/{tenant_id}/face/{name}")
     def dock_face(tenant_id: str, name: str,
@@ -1775,7 +1775,7 @@ def create_app() -> FastAPI:
         try:
             return dock_mod.face(tenant_id, name)
         except dock_mod.DockError as exc:
-            raise HTTPException(422, str(exc)) from None
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     # -- where the vault lives ----------------------------------------------
 
@@ -1808,7 +1808,7 @@ def create_app() -> FastAPI:
         try:
             return hosting.choose(tenant_id, body.mode, body.note)
         except hosting.HostingError as exc:
-            raise HTTPException(422, str(exc)) from None
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     @app.get("/hosting/{tenant_id}/history")
     def hosting_history(tenant_id: str,
@@ -1832,7 +1832,7 @@ def create_app() -> FastAPI:
         try:
             return tutorial.outline(mode)
         except tutorial.TutorialError as exc:
-            raise HTTPException(422, str(exc)) from None
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     @app.get("/console/guide/steps/{key}")
     def console_guide_step(key: str, mode: str = "text") -> dict:
@@ -1840,7 +1840,7 @@ def create_app() -> FastAPI:
         try:
             return tutorial.step(key, mode)
         except tutorial.TutorialError as exc:
-            raise HTTPException(404, str(exc)) from None
+            raise HTTPException(404, i18n.raised(exc)) from None
 
     @app.get("/console/guide/for-screen/{number}")
     def console_guide_for_screen(number: int, mode: str = "text") -> dict:
@@ -1857,7 +1857,7 @@ def create_app() -> FastAPI:
         try:
             return tutorial.start(body.learner_id, body.mode)
         except tutorial.TutorialError as exc:
-            raise HTTPException(422, str(exc)) from None
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     @app.get("/console/guide/progress/{learner_id}")
     def console_guide_progress(learner_id: str, mode: str = "text") -> dict:
@@ -1865,7 +1865,7 @@ def create_app() -> FastAPI:
         try:
             return tutorial.where(learner_id, mode)
         except tutorial.TutorialError as exc:
-            raise HTTPException(422, str(exc)) from None
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     @app.post("/console/guide/done")
     def console_guide_done(body: GuideMark) -> dict:
@@ -1873,7 +1873,7 @@ def create_app() -> FastAPI:
         try:
             return tutorial.mark(body.learner_id, body.lesson, body.mode)
         except tutorial.TutorialError as exc:
-            raise HTTPException(404, str(exc)) from None
+            raise HTTPException(404, i18n.raised(exc)) from None
 
     @app.post("/console/ask")
     def console_ask(body: ConsoleAsk) -> dict:
@@ -1885,7 +1885,7 @@ def create_app() -> FastAPI:
         try:
             return assistant.ask(body.question, body.mode)
         except tutorial.TutorialError as exc:
-            raise HTTPException(422, str(exc)) from None
+            raise HTTPException(422, i18n.raised(exc)) from None
 
     # The console itself, served from this API so a phone loads the UI and
     # calls the API on one origin (no CORS, nothing to configure). Mounted

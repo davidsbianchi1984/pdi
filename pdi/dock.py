@@ -30,6 +30,7 @@ from __future__ import annotations
 import json
 
 from . import db
+from . import i18n
 
 CORNERS: dict[str, str] = {
     "bottom_right": "the default",
@@ -102,13 +103,13 @@ def vocabulary() -> dict:
 
 def route(face: str) -> dict:
     if face not in ROUTES:
-        raise DockError(f"no such face {face!r}; one of {', '.join(FACES)}")
+        raise DockError(i18n.fill(i18n.NO_SUCH_FACE, got=repr(face), choices=', '.join(FACES)))
     return {"face": face, **ROUTES[face], "opens_dock_face": face}
 
 
 def _check_face(face: str) -> None:
     if face not in FACES:
-        raise DockError(f"no such face {face!r}; one of {', '.join(FACES)}")
+        raise DockError(i18n.fill(i18n.NO_SUCH_FACE, got=repr(face), choices=', '.join(FACES)))
 
 
 def settings(tenant_id: str) -> dict:
@@ -134,9 +135,9 @@ def configure(tenant_id: str, corner: str | None = None,
 
     if corner not in CORNERS:
         raise DockError(
-            f"the pane sits in a bottom corner — {', '.join(CORNERS)}")
+            i18n.fill(i18n.PANE_BOTTOM_CORNER, choices=', '.join(CORNERS)))
     if state not in STATES:
-        raise DockError(f"unknown state {state!r}; one of {', '.join(STATES)}")
+        raise DockError(i18n.fill(i18n.UNKNOWN_STATE, got=repr(state), choices=', '.join(STATES)))
     for f in chosen:
         _check_face(f)
     if not chosen:
@@ -144,7 +145,7 @@ def configure(tenant_id: str, corner: str | None = None,
                         "— set the state to 'handle' instead")
     _check_face(face)
     if face not in chosen:
-        raise DockError(f"{face!r} is not one of the faces this dock carries")
+        raise DockError(i18n.fill(i18n.FACE_NOT_CARRIED, got=repr(face)))
 
     conn = db.connect()
     conn.execute(

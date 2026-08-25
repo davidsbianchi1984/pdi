@@ -37,6 +37,7 @@ import json
 from datetime import datetime, timedelta, timezone
 
 from . import audit, compliance, db, intakes, transfers
+from . import i18n
 
 KINDS = ("transfer", "intake", "object", "facility")
 DISCLOSE = ("blind", "contact")
@@ -104,7 +105,7 @@ def _parent(ref_kind: str, ref_id: str, tenant_id: str) -> dict:
     row = (transfers.get(ref_id, tenant_id) if ref_kind == "transfer"
            else intakes.get(ref_id, tenant_id))
     if row is None:
-        raise BeaconError(f"no such {ref_kind}")
+        raise BeaconError(i18n.fill(i18n.NO_SUCH_THING, thing=ref_kind))
     return row
 
 
@@ -113,9 +114,9 @@ def place(tenant: dict, ref_kind: str, ref_id: str | None = None,
           programs: list[str] | None = None) -> dict:
     """Print this carrier — or this gate — onto something."""
     if ref_kind not in KINDS:
-        raise BeaconError(f"ref_kind must be one of {', '.join(KINDS)}")
+        raise BeaconError(i18n.fill(i18n.MUST_BE_ONE_OF, field="ref_kind", choices=', '.join(KINDS)))
     if disclose not in DISCLOSE:
-        raise BeaconError(f"disclose must be one of {', '.join(DISCLOSE)}")
+        raise BeaconError(i18n.fill(i18n.MUST_BE_ONE_OF, field="disclose", choices=', '.join(DISCLOSE)))
     if not label.strip():
         raise BeaconError(
             "a beacon needs a label so its owner can tell their codes apart "
@@ -123,7 +124,7 @@ def place(tenant: dict, ref_kind: str, ref_id: str | None = None,
 
     if ref_kind in ("transfer", "intake"):
         if not ref_id:
-            raise BeaconError(f"a {ref_kind} beacon needs a {ref_kind} to point at")
+            raise BeaconError(i18n.fill(i18n.BEACON_NEEDS_TARGET, kind=ref_kind, what=ref_kind))
         parent = _parent(ref_kind, ref_id, tenant["id"])
         programs = json.loads(parent["programs"])
     else:
@@ -135,7 +136,7 @@ def place(tenant: dict, ref_kind: str, ref_id: str | None = None,
         programs = list(programs or [])
         unknown = [p for p in programs if compliance.get(p) is None]
         if unknown:
-            raise BeaconError(f"unknown compliance program(s): {unknown}")
+            raise BeaconError(i18n.fill(i18n.UNKNOWN_COMPLIANCE_PROGRAMS, got=unknown))
 
     bid = db.new_id("bcn")
     conn = db.connect()
@@ -175,7 +176,7 @@ def by_scan_door(beacon_id: str) -> dict | None:
 
 def set_state(row: dict, state: str) -> dict:
     if state not in STATES:
-        raise BeaconError(f"state must be one of {', '.join(STATES)}")
+        raise BeaconError(i18n.fill(i18n.MUST_BE_ONE_OF, field="state", choices=', '.join(STATES)))
     conn = db.connect()
     conn.execute("UPDATE custody_beacons SET state=? WHERE id=? AND tenant_id=?",
                  (state, row["id"], row["tenant_id"]))
@@ -324,7 +325,7 @@ def ring(row: dict, kind: str, note: str | None = None) -> dict:
     if row["ref_kind"] != "facility":
         raise BeaconError("this code is on a carrier, not a gate")
     if kind not in RING_KINDS:
-        raise BeaconError(f"kind must be one of {', '.join(RING_KINDS)}")
+        raise BeaconError(i18n.fill(i18n.MUST_BE_ONE_OF, field="kind", choices=', '.join(RING_KINDS)))
 
     rid = db.new_id("ring")
     conn = db.connect()

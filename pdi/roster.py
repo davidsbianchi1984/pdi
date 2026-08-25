@@ -49,6 +49,7 @@ import os
 from datetime import datetime, time, timezone
 
 from . import audit, db
+from . import i18n
 
 DAYS = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
 
@@ -85,14 +86,14 @@ def parse_days(spec) -> tuple[str, ...]:
             a, _, b = part.partition("-")
             a, b = a.strip()[:3], b.strip()[:3]
             if a not in DAYS or b not in DAYS:
-                raise RosterError(f"unknown day range {part!r}")
+                raise RosterError(i18n.fill(i18n.UNKNOWN_DAY_RANGE, got=repr(part)))
             i, j = DAYS.index(a), DAYS.index(b)
             # fri-mon wraps the week the same way a night shift wraps a day.
             out.extend(DAYS[i:j + 1] if i <= j else DAYS[i:] + DAYS[:j + 1])
         else:
             d = part[:3]
             if d not in DAYS:
-                raise RosterError(f"unknown day {part!r}")
+                raise RosterError(i18n.fill(i18n.UNKNOWN_DAY, got=repr(part)))
             out.append(d)
     if not out:
         raise RosterError("a shift needs at least one day")
@@ -112,7 +113,7 @@ def parse_time(spec, fallback_t: time) -> time:
             return datetime.strptime(s, fmt).time()
         except ValueError:
             continue
-    raise RosterError(f"unreadable time {spec!r} — use HH:MM")
+    raise RosterError(i18n.fill(i18n.UNREADABLE_TIME, got=repr(spec)))
 
 
 # --- timezone --------------------------------------------------------------
@@ -142,8 +143,7 @@ def set_timezone(tenant: dict, name: str) -> dict:
     name = (name or "UTC").strip()
     if not tz_is_valid(name):
         raise RosterError(
-            f"{name!r} is not a timezone this system knows — use an IANA name "
-            f"like 'Europe/Lisbon'")
+            i18n.fill(i18n.NOT_A_TIMEZONE, got=repr(name)))
     conn = db.connect()
     conn.execute(
         "INSERT INTO gate_settings (tenant_id, timezone, updated_at)"
@@ -177,7 +177,7 @@ def add(tenant: dict, name: str, role: str = "on-call", days=None,
         raise RosterError("a roster entry needs a name")
     role = (role or "on-call").strip()
     if role not in ROLES:
-        raise RosterError(f"role must be one of {', '.join(ROLES)}")
+        raise RosterError(i18n.fill(i18n.MUST_BE_ONE_OF, field="role", choices=', '.join(ROLES)))
     d = parse_days(days)
     f = parse_time(from_time, time(0, 0))
     t = parse_time(to_time, time(23, 59, 59))

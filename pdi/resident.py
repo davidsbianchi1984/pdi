@@ -656,8 +656,7 @@ def _refuse_a_recording(url: str, tool: str) -> None:
     from . import ears
     if ears.looks_like_recording(url):
         raise ResidentError(
-            f"{tool} reads pages, and that url names a recording — "
-            "fetch.listen is the door that hears it")
+            i18n.fill(i18n.FETCH_READS_PAGES, tool=tool))
 
 
 def _tool_fetch(tenant: dict, args: dict, ctx: dict) -> dict:
@@ -728,7 +727,7 @@ def _tool_fetch_listen(tenant: dict, args: dict, ctx: dict) -> dict:
     try:
         heard = ears.transcribe(url)
     except ears.EarsUnavailable as exc:
-        raise ResidentError(f"the vault has no ears for this: {exc}")
+        raise ResidentError(i18n.fill(i18n.VAULT_NO_EARS, detail=exc))
     extra: dict = {"transcribed": True}
     if heard.get("duration_seconds") is not None:
         extra["duration_seconds"] = heard["duration_seconds"]

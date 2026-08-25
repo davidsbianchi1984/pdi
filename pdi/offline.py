@@ -24,6 +24,7 @@ import ipaddress
 import os
 import socket
 import urllib.parse
+from . import i18n
 
 _TRUTHY = {"1", "true", "yes", "on"}
 
@@ -97,9 +98,7 @@ def allow(url: str | None, what: str) -> None:
         return
     where = host or "an unnamed host"
     raise LeftTheHost(
-        f"offline mode is on, so {what} cannot reach {where}. Nothing leaves "
-        "this machine while PDI_OFFLINE is set — point it at a host on this "
-        "network, or turn offline mode off.")
+        i18n.fill(i18n.OFFLINE_UNREACHABLE_HINT, label=what, host=where))
 
 
 def allow_host(host: str | None, what: str) -> None:
@@ -110,8 +109,7 @@ def allow_host(host: str | None, what: str) -> None:
         return
     where = host or "an unnamed host"
     raise LeftTheHost(
-        f"offline mode is on, so {what} cannot reach {where}. Nothing leaves "
-        "this machine while PDI_OFFLINE is set.")
+        i18n.fill(i18n.OFFLINE_UNREACHABLE, label=what, host=where))
 
 
 def status() -> dict:
