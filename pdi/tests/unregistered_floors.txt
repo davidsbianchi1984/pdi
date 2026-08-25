@@ -1,5 +1,5 @@
-# status: backlog — 16 rows
-# ceiling: 16
+# status: backlog — 10 rows
+# ceiling: 10
 #
 # Every numeric floor in this suite still carrying its own literal: an
 # `assert <something> > <int>` with the number written into the assertion.
@@ -96,12 +96,9 @@
 # of a swept surface is always a floor, whatever prose sits above it. That is
 # the guard that stops this list becoming the place a real floor goes to be
 # excused when somebody wants the backlog number to fall.
-test_a_screen_nothing_opens.py:166: len(found) >= 5
-test_a_screen_nothing_opens.py:283: len(sites) >= 2
 test_a_wiped_tenant_is_gone_from_every_table.py:121: len(before) >= 5
 test_a_wiped_tenant_is_gone_from_every_table.py:175: len(_rows_naming(tid)) >= 5
 test_a_wiped_tenant_is_gone_from_every_table.py:262: len(live) >= 15
-test_native_shells_record_nothing_private.py:138: len(calls) >= 2
 test_one_tenant_cannot_read_another.py:180: len(seen) >= 6
 test_the_keys_the_android_client_reads.py:386: len(driven) >= 14
 test_the_refusal_that_handed_the_body_back.py:164: len(found) > 30
@@ -109,6 +106,3 @@ test_the_refusal_that_handed_the_body_back.py:168: reached > 25
 test_the_shape_the_client_expects.py:311: len(driven) >= 10
 test_the_shape_the_console_expects.py:455: len(driven) >= 25
 test_the_shape_the_swift_client_expects.py:229: len(driven) >= 8
-test_the_tabs_are_translated_and_the_screens_are_not.py:539: english + calls >= 50
-test_the_tabs_are_translated_and_the_screens_are_not.py:543: calls >= 1
-test_the_tabs_are_translated_and_the_screens_are_not.py:760: len(rows) >= 10
