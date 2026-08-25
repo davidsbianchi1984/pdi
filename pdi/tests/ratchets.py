@@ -404,6 +404,11 @@ def _body_matched(slug: str):
     return go
 
 
+def _egress_sites() -> int:
+    from .test_nothing_leaves_the_host import _egress_sites
+    return len(_egress_sites())
+
+
 def _android_reads() -> int:
     from .test_the_keys_the_android_client_reads import _reads
     return len(_reads())
@@ -445,6 +450,15 @@ RATCHETS: tuple[Ratchet, ...] = (
             "the iPhone client's writes that meet a declared model"),
     Ratchet("native.body_matched.android", 31, _body_matched("android"),
             "the Android client's writes that meet a declared model"),
+    # Registered late, and from outside the backlog. This one floored at four
+    # against eleven — a ratio the sweep would have flagged on sight — and the
+    # sweep never saw it, because it ignores floors under `SMALLEST_FLOOR` and
+    # four is under five. That cutoff keeps the backlog free of the threes and
+    # fours that are data checks rather than floors, and it buys that by being
+    # blind to the small floors that are real. There are 113 comparisons under
+    # five across the three suites; this is the one that was measured.
+    Ratchet("host.egress_sites", 8, _egress_sites,
+            "the calls in this package that can put bytes on a wire"),
     Ratchet("android.reads", 46, _android_reads,
             "the key reads the Android extractor finds"),
     Ratchet("android.read_keychars", 103, _android_read_keychars,

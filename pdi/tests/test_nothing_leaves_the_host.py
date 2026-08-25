@@ -33,6 +33,8 @@ import pytest
 
 from pdi import offline
 
+from . import ratchets
+
 
 def _repo_root() -> Path:
     for d in Path(__file__).resolve().parents:
@@ -131,11 +133,20 @@ def test_the_extraction_finds_the_paths_out():
     """A guard on the guard. A renamed import makes the walk find nothing, and
     a check over no sites passes while every one of them is ungated."""
     sites = _egress_sites()
-    # Four in this product: three `urlopen` and the UDP socket that reads this
-    # host's own LAN address. The floor is this product's real count, so a
-    # pattern that stops matching drops below it and fires here rather than
-    # letting the check above pass over nothing.
-    assert len(sites) >= 4, (
+    # The floor said four, under a comment saying four was this product's
+    # real count: three `urlopen` and the UDP socket that reads this host's
+    # own LAN address. It is ten `urlopen` and that socket now — the vault
+    # grew a renderer, a scraper, a notifier, an ear and four resident calls,
+    # and the sentence claiming the floor equalled the count stayed put.
+    #
+    #     asked     is the floor this product's real count
+    #     mattered  was it still, once the product had one more
+    #
+    # It sat outside the unregistered-floor sweep the whole time, because
+    # that sweep ignores floors under five and this one was four. A number
+    # too small to be audited is not the same as a number too small to be
+    # wrong.
+    assert len(sites) >= ratchets.floor("host.egress_sites"), (
         f"only {len(sites)} egress site(s) found — the AST walk has stopped "
         "matching, and the check below would pass on nothing")
     names = {name for _, _, name, _ in sites}
