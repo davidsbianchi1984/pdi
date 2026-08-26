@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.8.5] - 2026-08-26
+
+### Changed
+
+- **Cut with the siblings** — no functional change in this product, and no
+  1.8.4 either: this number lands the three level again. QRME took it for
+  the voice its owner set loose, the unclaimable premade voices, the
+  loudness rail and the iPhone ear fork. The three move ahead together, and
+  a box carrying two versions reports the mismatch to whoever is using it.
+
 ## [1.8.3] - 2026-08-25
 
 ### Changed
@@ -7619,7 +7629,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.3...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.5...HEAD
+[1.8.5]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.3...app-v1.8.5
 [1.8.3]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.2...app-v1.8.3
 [1.8.2]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.1...app-v1.8.2
 [1.8.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.0...app-v1.8.1
