@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.8.6] - 2026-08-27
+
+### Changed
+
+- **Cut with the siblings** — no functional change in this product. The
+  estate's shared records caught up: one new deliberate divergence (the
+  address-book replace rule, held by the two products with a book to
+  sync; PDI holds none), ceiling raised to admit it. QRME took the round
+  for the estate; see its notes.
+
 ## [1.8.5] - 2026-08-26
 
 ### Changed
@@ -7629,7 +7639,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.5...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.6...HEAD
+[1.8.6]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.5...app-v1.8.6
 [1.8.5]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.3...app-v1.8.5
 [1.8.3]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.2...app-v1.8.3
 [1.8.2]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.1...app-v1.8.2

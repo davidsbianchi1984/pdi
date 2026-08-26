@@ -10,7 +10,7 @@ JIM-mini vaults its medical and context payloads here, and QRME seals its
 profile source material — each as its own tenant with its own token. See
 [docs/tandem.md](docs/tandem.md).
 
-**Current release: v1.8.5** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v1.8.6** — see [CHANGELOG.md](CHANGELOG.md).
 
 PDI is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -167,6 +167,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 |---|---|
 | Release | What landed |
 |---|---|
+| **1.8.6** | Cut with the siblings — the estate's shared records caught up (one new deliberate divergence: the address-book replace rule, held by the two products with a book) |
 | **1.8.5** | **Cut with the siblings** — no functional change, and no 1.8.4 either: this lands the three level again. QRME took the number for the owner-released voice, the unclaimable premades, the loudness rail and the iPhone ear fork |
 | **1.8.3** | **The vault refuses in the reader's language, both ledgers closed** — the 41 recorded refusals become registered templates, twenty-six of them the very sentences JIM and QRME already say, carried with the same frames so the trio refuses in one voice; the nine constants the untranslated ledger was holding open join `_REFUSALS` in nine languages, closing that ledger too. The widened sweep surfaced the resident's two ear sentences and six more constants, all translated, and the fill-sites floor rises 12 → 45 |
 | **1.8.2** | **The last answer does not depend on anything that can fail** — the catch-all that turns a crashed route into an answer the console can read built its 500 through a translator that could itself fail; when it did, the answer left without the CORS header and a crash read as an unreachable backend. Guarded now, with a constant English fallback, in all three products. Also: two assertions that could not fail are floors now, `/health`'s version is compared to the app's own so the desktop shell cannot adopt a stale backend, and the screens' power to end every transfer, connector and bequest they can begin is held by a guard rather than by care |
