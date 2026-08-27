@@ -13,7 +13,7 @@ and memories — see [docs/tandem.md](docs/tandem.md). A deployment that
 runs PDI alone gets the same thing every tenant gets: custody it can
 prove.
 
-**Current release: v1.8.9** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v1.9.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 PDI is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -160,6 +160,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 |---|---|
 | Release | What landed |
 |---|---|
+| **1.9.0** | Every wire name says one thing — the collision ledger's last two rows close tandem-safe (`sealed_at_rest`, `sealed_count`, `program_keys`) across the backend, the console and all three shells; two floors join the live-measured registry; the front page reorganizes around the vault, the record, the resident and the desk |
 | **1.8.9** | Cut with the siblings — QRME took the round: the avatar registry, the slimmer room strip, the waiting seat, the dock that fits |
 | **1.8.8** | Cut with the siblings — QRME took the dials, the panels' exits, the chooser and the walking room; JIM took the staleness contract and meetings-as-words; both took the address book to their shells |
 | **1.8.7** | Cut with the siblings — QRME took the round: rooms that read links, hand documents back and remember their person; the friends-only circle |

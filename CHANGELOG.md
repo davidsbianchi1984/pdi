@@ -6,6 +6,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-08-27
+
+### Changed
+
+- **Every wire name says one thing.** The collision ledger's last two
+  rows close tandem-safe: custody's sealed record keeps `sealed` (JIM
+  decodes it), write results say `sealed_at_rest`, connector tallies
+  say `sealed_count`, compliance keeps `programs` for its vocabulary
+  while beacons, intakes and transfers carry `program_keys` — across
+  the backend, the console and all three shells.
+- **Two floors joined the registry.** The body-route sweep and the
+  tenant-scoped-table count are ratchets with live measures; the eight
+  rows left in the unregistered-floors ledger are each examined in
+  prose.
+- **The front page reads like the product.** The README reorganizes
+  around the vault, the record, the resident and the desk, keeping the
+  galleries and the release history.
+
 ## [1.8.9] - 2026-08-27
 
 ### Changed
@@ -7673,7 +7691,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.9...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.9.0...HEAD
+[1.9.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.9...app-v1.9.0
 [1.8.9]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.8...app-v1.8.9
 [1.8.8]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.7...app-v1.8.8
 [1.8.7]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.6...app-v1.8.7
