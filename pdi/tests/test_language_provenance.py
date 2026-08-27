@@ -34,7 +34,7 @@ def test_notes_localize_in_responses(client):
                     headers=auth(token)).json()
     assert "cifrados" in r["note"]
     # Structured data is untouched.
-    assert r["sealed"] is True and r["key"].startswith("robot/")
+    assert r["sealed_at_rest"] is True and r["key"].startswith("robot/")
 
 
 def test_japanese_notes_localize(client):

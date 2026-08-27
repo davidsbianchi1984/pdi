@@ -23,7 +23,7 @@ def test_subscriber_submits_file_in(client):
                     headers={"X-Submit-Token": intk["submit_token"]},
                     json={"filename": "id.jpg", "content": "BYTES", "classification": "PII"})
     assert r.status_code == 201, r.text
-    assert r.json()["sealed"] is True
+    assert r.json()["sealed_at_rest"] is True
 
     # The corporation retrieves the sealed file (audited).
     got = client.get(f"/intakes/{intk['id']}/file", headers=auth(token)).json()

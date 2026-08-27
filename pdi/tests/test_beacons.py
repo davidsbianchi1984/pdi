@@ -72,7 +72,7 @@ def test_seal_card_says_it_is_sealed_and_nothing_about_contents(client):
     assert card["under_custody"] is True
     assert card["contents"] is None
     assert "not contents" in card["badge"]
-    assert card["programs"] == ["hipaa"]
+    assert card["program_keys"] == ["hipaa"]
 
     # The whole card, not a chosen field: nothing in it names the payload.
     blob = str(card).lower()
@@ -85,7 +85,7 @@ def test_a_carrier_beacon_inherits_its_records_programs(client):
     xfer = _transfer(client, token, programs=["hipaa", "osha"])
     b = _place(client, token, ref_kind="transfer", ref_id=xfer["id"])
     # Not passed in and not passable: the record already knows what governs it.
-    assert set(b["programs"]) == {"hipaa", "osha"}
+    assert set(b["program_keys"]) == {"hipaa", "osha"}
 
 
 def test_blind_is_the_default_and_hides_the_holder(client):

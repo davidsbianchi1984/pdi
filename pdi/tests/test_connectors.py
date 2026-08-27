@@ -22,7 +22,7 @@ def test_collect_seals_into_the_vault(client):
                   {"content": "Compost tea.", "ref": "p2"}]})
     assert r.status_code == 201, r.text
     out = r.json()
-    assert out["sealed"] == 2
+    assert out["sealed_count"] == 2
 
     # Collected items are now encrypted records in this tenant's vault.
     keys = client.get("/records", headers=auth(token)).json()["keys"]

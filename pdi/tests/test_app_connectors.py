@@ -19,7 +19,7 @@ def test_connect_and_ingest_seals_to_vault(client):
         "items": [{"content": "birthday album", "ref": "a1"},
                   {"content": "beach trip", "ref": "a2"}]})
     assert r.status_code == 201, r.text
-    assert r.json()["sealed"] == 2
+    assert r.json()["sealed_count"] == 2
 
     keys = client.get("/records", headers=auth(token)).json()["keys"]
     app_keys = [k for k in keys if k.startswith("app/apple/photos/")]

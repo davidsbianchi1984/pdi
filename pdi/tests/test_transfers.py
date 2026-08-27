@@ -49,7 +49,7 @@ def test_receive_with_token_and_chain_of_custody(client):
     events = [e["event"] for e in custody["chain_of_custody"]]
     assert events == ["created", "received"]
     assert custody["audit_chain_intact"] is True
-    assert "cpni" in custody["programs"]
+    assert "cpni" in custody["program_keys"]
 
 
 def test_wrong_token_and_unknown_program(client):

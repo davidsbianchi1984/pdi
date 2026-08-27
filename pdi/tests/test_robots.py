@@ -22,7 +22,7 @@ def test_bind_ingest_seals_into_the_vault(client):
                     headers=auth(tok))
     assert r.status_code == 201, r.text
     body = r.json()
-    assert body["sealed"] is True
+    assert body["sealed_at_rest"] is True
     key = body["key"]
     assert key.startswith(f"robot/saros_20/{rob['id']}/map/")
 

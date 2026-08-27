@@ -48,7 +48,7 @@ def test_scrape_seals_the_public_page_into_the_vault(client, monkeypatch):
     r = client.post(f"/connectors/{conn['id']}/scrape", headers=auth(token))
     assert r.status_code == 201, r.text
     out = r.json()
-    assert out["sealed"] == 1
+    assert out["sealed_count"] == 1
     assert out["url"] == "https://instagram.com/dana.grows"
     assert seen["url"] == out["url"]
     assert "Dana Grows" in out["title"]
