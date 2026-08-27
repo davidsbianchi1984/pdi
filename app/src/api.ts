@@ -156,7 +156,7 @@ export interface BeaconRow {
   /** A single value, not a list. `blind` proves custody and says nothing
    *  else; `contact` adds a way to reach whoever holds it. */
   disclose: "blind" | "contact";
-  programs: string[]; state: string; scans: number; active: boolean;
+  program_keys: string[]; state: string; scans: number; active: boolean;
   created_at: string; scan_url: string; qr_svg: string;
 }
 
@@ -164,7 +164,7 @@ export interface BeaconRow {
  *  the code proves custody, it does not open the thing. */
 export interface ScanCard {
   reference: string; kind: string; state: string; under_custody: boolean;
-  programs: string[]; controls: ControlSet; badge: string;
+  program_keys: string[]; controls: ControlSet; badge: string;
   contents: null; note: string; found_url: string;
   held_by?: string | null; label?: string | null;
 }
@@ -180,14 +180,14 @@ export interface CustodyChain {
   controls: ControlSet;
   chain_of_custody: { event: string; actor: string; at: string }[];
   audit_chain_intact: boolean;
-  status?: string; state?: string; programs?: string[];
+  status?: string; state?: string; program_keys?: string[];
   retention_days?: number; retained_until?: string | null;
   [field: string]: unknown;
 }
 
 export interface TransferRow {
   id: string; tenant_id: string; recipient: string; filename: string;
-  size: number; classification?: string | null; programs: string[];
+  size: number; classification?: string | null; program_keys: string[];
   party_type?: string | null; status: string; retention_days: number;
   expires_at?: string | null; created_at: string;
   /** Shown once, on creation only — the listing does not carry it. */
@@ -196,7 +196,7 @@ export interface TransferRow {
 
 export interface IntakeRow {
   id: string; tenant_id: string; from_party: string;
-  party_type?: string | null; purpose?: string | null; programs: string[];
+  party_type?: string | null; purpose?: string | null; program_keys: string[];
   status: string; filename?: string | null;
   classification?: string | null; retention_days: number;
   expires_at?: string | null; created_at: string;
@@ -645,7 +645,7 @@ export const api = {
   submitToIntake: (iid: string, submitToken: string,
                    body: { filename: string; content: string;
                            classification?: string }) =>
-    req<{ id: string; status: string; sealed: boolean; filename: string;
+    req<{ id: string; status: string; sealed_at_rest: boolean; filename: string;
           note: string }>(`/intakes/${iid}/submit`,
       { method: "POST", body, extra: { "x-submit-token": submitToken } }),
 

@@ -57,7 +57,7 @@ def _out(row: dict) -> dict:
         "from_party": row["from_party"],
         "party_type": row["party_type"],
         "purpose": row["purpose"],
-        "programs": json.loads(row["programs"]),
+        "program_keys": json.loads(row["programs"]),
         "status": row["status"],
         "filename": row["filename"],
         "classification": row["classification"],
@@ -118,8 +118,8 @@ def submit(row: dict, token: str, filename: str, content: str,
     db.connect().commit()
     transfers._receipt(row["id"], "submitted", row["from_party"])
     audit.record("intake.submit", tenant_id=row["tenant_id"], ref=row["id"])
-    return {"id": row["id"], "status": "submitted", "sealed": True,
-            "filename": filename, "programs": json.loads(row["programs"]),
+    return {"id": row["id"], "status": "submitted", "sealed_at_rest": True,
+            "filename": filename, "program_keys": json.loads(row["programs"]),
             "note": "your file was sealed in the vault, encrypted at rest"}
 
 
@@ -132,7 +132,7 @@ def read(tenant: dict, row: dict):
     audit.record("intake.read", tenant_id=row["tenant_id"], ref=row["id"])
     return {"id": row["id"], "filename": row["filename"],
             "content": rec["value"] if rec else None,
-            "programs": json.loads(row["programs"])}
+            "program_keys": json.loads(row["programs"])}
 
 
 def custody(row: dict) -> dict:

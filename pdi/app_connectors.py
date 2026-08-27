@@ -88,7 +88,7 @@ def ingest(tenant: dict, row: dict, items: list[dict]) -> dict:
                  " WHERE id=? AND tenant_id=?",
                  (len(keys), row["id"], row["tenant_id"]))
     conn.commit()
-    return {"connector": row["id"], "app": row["app"], "sealed": len(keys),
+    return {"connector": row["id"], "app": row["app"], "sealed_count": len(keys),
             "keys": keys, "note": "collected items are encrypted at rest in the vault"}
 
 

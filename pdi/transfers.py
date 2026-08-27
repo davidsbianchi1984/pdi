@@ -70,7 +70,7 @@ def _out(row: dict) -> dict:
         "filename": row["filename"],
         "size": row["size"],
         "classification": row["classification"],
-        "programs": json.loads(row["programs"]),
+        "program_keys": json.loads(row["programs"]),
         "party_type": row["party_type"],
         "status": row["status"],
         "retention_days": row["retention_days"],
@@ -138,7 +138,7 @@ def receive(row: dict, token: str):
         "id": row["id"],
         "filename": row["filename"],
         "content": rec["value"] if rec else None,
-        "programs": json.loads(row["programs"]),
+        "program_keys": json.loads(row["programs"]),
         "custody": "this retrieval was recorded in the audit chain",
     }
 
@@ -155,7 +155,7 @@ def custody(row: dict) -> dict:
         "recipient": row["recipient"],
         "filename": row["filename"],
         "classification": row["classification"],
-        "programs": programs,
+        "program_keys": programs,
         "controls": compliance.controls_for(programs),
         "retention_days": row["retention_days"],
         "retained_until": row["expires_at"],

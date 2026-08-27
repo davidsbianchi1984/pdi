@@ -105,7 +105,7 @@ private struct OutboundSection: View {
                                 .foregroundStyle(t.status == "revoked" ? Theme.red : Theme.green)
                         }
                         let line = "→ " + t.recipient + " · "
-                            + t.programs.map { $0.uppercased() }.joined(separator: " ")
+                            + t.program_keys.map { $0.uppercased() }.joined(separator: " ")
                         Text(line)
                             .font(.caption).foregroundStyle(Theme.t2)
                         if let exp = t.expires_at {
@@ -293,7 +293,7 @@ private struct IntakeSection: View {
                     if let p = i.purpose {
                         Text(p).font(.caption).foregroundStyle(Theme.t2)
                     }
-                    Text(i.programs.map { $0.uppercased() }.joined(separator: " "))
+                    Text(i.program_keys.map { $0.uppercased() }.joined(separator: " "))
                         .font(.caption2).foregroundStyle(Theme.t3)
                     if i.status == "submitted" {
                         Button(L10n.t("ntr.read", state.language)) { read(i) }

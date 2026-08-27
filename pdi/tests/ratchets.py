@@ -636,7 +636,22 @@ def _tabs_table_rows(shell: str):
     return go
 
 
+def _body_routes_count() -> int:
+    from pdi.api import app
+    from .test_the_refusal_that_handed_the_body_back import _body_routes
+    return len(_body_routes(app))
+
+
+def _tenant_scoped_count() -> int:
+    from pdi import vault
+    return len(vault.tenant_scoped_tables())
+
+
 RATCHETS: tuple[Ratchet, ...] = (
+    Ratchet("routes.body_taking", 30, _body_routes_count,
+            "the body-taking routes the junk sweep drives"),
+    Ratchet("vault.tenant_scoped_tables", 15, _tenant_scoped_count,
+            "the tenant-scoped tables the wipe and isolation scans read"),
     Ratchet("screens.declared.android", 5, _screens_declared("android"),
             "the screens android declares, as the navigation scan reads them"),
     Ratchet("screens.declared.ios", 7, _screens_declared("ios"),

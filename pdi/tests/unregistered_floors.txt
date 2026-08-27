@@ -1,5 +1,5 @@
-# status: backlog — 10 rows
-# ceiling: 10
+# status: backlog — 8 rows
+# ceiling: 8
 #
 # Every numeric floor in this suite still carrying its own literal: an
 # `assert <something> > <int>` with the number written into the assertion.
@@ -96,12 +96,22 @@
 # of a swept surface is always a floor, whatever prose sits above it. That is
 # the guard that stops this list becoming the place a real floor goes to be
 # excused when somebody wants the backlog number to fall.
-test_a_wiped_tenant_is_gone_from_every_table.py:121: len(before) >= 5
-test_a_wiped_tenant_is_gone_from_every_table.py:175: len(_rows_naming(tid)) >= 5
-test_a_wiped_tenant_is_gone_from_every_table.py:262: len(live) >= 15
+# ## after 1.8.9 — every row told apart
+#
+# Two registered: the body-route census (`routes.body_taking`) and the
+# tenant-scoped table census (`vault.tenant_scoped_tables`) — both now
+# audited against what they measure on every run. The eight below stay,
+# examined: each counts how far a live fixture reached — rows a seed
+# actually planted, routes a driven client actually got a 200 from —
+# quantities that exist only while the fixture is running, whose static
+# proxies sit far above the honest reach and would only make decoration.
+# The measurement they need is the drive itself, and the drive is the
+# test they live in.
+#
+test_a_wiped_tenant_is_gone_from_every_table.py:122: len(before) >= 5
+test_a_wiped_tenant_is_gone_from_every_table.py:176: len(_rows_naming(tid)) >= 5
 test_one_tenant_cannot_read_another.py:180: len(seen) >= 6
 test_the_keys_the_android_client_reads.py:386: len(driven) >= 14
-test_the_refusal_that_handed_the_body_back.py:164: len(found) > 30
 test_the_refusal_that_handed_the_body_back.py:168: reached > 25
 test_the_shape_the_client_expects.py:311: len(driven) >= 10
 test_the_shape_the_console_expects.py:455: len(driven) >= 25

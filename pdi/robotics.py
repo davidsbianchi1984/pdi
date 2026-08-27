@@ -104,7 +104,7 @@ def ingest(tenant: dict, row: dict, kind: str, content: str,
                  " WHERE id=? AND tenant_id=?", (row["id"], tenant["id"]))
     conn.commit()
     audit.record("robot.ingest", tenant_id=tenant["id"], ref=key)
-    return {"robot": row["id"], "kind": kind, "sealed": True, "key": key,
+    return {"robot": row["id"], "kind": kind, "sealed_at_rest": True, "key": key,
             "note": "robot data is encrypted at rest in the vault"}
 
 

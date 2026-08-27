@@ -58,6 +58,7 @@ import json
 import pytest
 
 from pdi import audit, db, retention, vault
+from . import ratchets
 
 KEY = base64.b64encode(b"k" * 32).decode()
 
@@ -259,7 +260,7 @@ def test_the_cascade_reads_the_schema_rather_than_a_list(client):
         "AND name NOT LIKE 'sqlite_%'").fetchall()
         if "tenant_id" in [c[1] for c in conn.execute(f"PRAGMA table_info({name})")]}
     assert set(vault.tenant_scoped_tables()) == live
-    assert len(live) >= 15, (
+    assert len(live) >= ratchets.floor("vault.tenant_scoped_tables"), (
         f"only {len(live)} tenant-scoped table(s) found — the scan has stopped "
         f"matching and every check in this file would pass on nothing")
 

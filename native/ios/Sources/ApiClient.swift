@@ -90,7 +90,7 @@ struct Robot: Decodable {
     let collected: Int?
 }
 
-struct IngestResult: Decodable { let sealed: Bool; let key: String }
+struct IngestResult: Decodable { let sealed_at_rest: Bool; let key: String }
 struct RobotData: Decodable { let keys: [String] }
 
 struct ComplianceProgram: Decodable { let key: String; let label: String }
@@ -101,7 +101,7 @@ struct Transfer: Decodable {
     let recipient: String
     let filename: String
     let status: String
-    let programs: [String]
+    let program_keys: [String]
     let retention_days: Int?
     let expires_at: String?
     let receive_token: String?     // present only on creation — shown once
@@ -112,7 +112,7 @@ struct Intake: Decodable {
     let from_party: String
     let purpose: String?
     let status: String
-    let programs: [String]
+    let program_keys: [String]
     let filename: String?
     let submit_token: String?      // present only on creation — shown once
 }
@@ -1314,7 +1314,7 @@ struct ContribCount: Decodable { let count: Int; let keys: [String] }
 struct ContribOut: Decodable {
     let id: String
     let key: String
-    let sealed: Bool
+    let sealed_at_rest: Bool
 }
 
 struct RetentionPolicyOut: Decodable {

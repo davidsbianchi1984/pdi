@@ -1,5 +1,5 @@
-# status: backlog — 2 rows
-# ceiling: 2
+# status: backlog — 0 rows
+# ceiling: 0
 #
 # One wire field name carrying more than one type across this product's API.
 #
@@ -32,5 +32,17 @@
 # meaning its own name, the way `spoken` became `spoken_steps`,
 # `deepened_line` and `spoken`.
 #
-programs
-sealed
+# ## after 1.8.9 — both rows close, and the file reaches zero
+#
+#   programs   the compliance vocabulary's full rows keep the word; the
+#              key lists on beacons, intakes and transfers are
+#              `program_keys` — a key list and a row list stopped
+#              sharing a name.
+#   sealed     the custody seal (the record the JIM tandem decodes) keeps
+#              the word; the write results' booleans are
+#              `sealed_at_rest`, and the connectors' tallies
+#              `sealed_count`. The state string "sealed" on a carrier is
+#              a value, not a field, and stands untouched.
+#
+# Zero rows, ceiling zero: a new two-meaning wire name is a failing
+# guard, not a backlog entry.

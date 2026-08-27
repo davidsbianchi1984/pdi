@@ -124,7 +124,7 @@ export function Exchange() {
               <span className="muted small">
                 → {tr.recipient} ·{" "}
                 {fill("exc.bytes", lang, { n: tr.size })} · {tr.status}
-                {tr.programs.length > 0 ? ` · ${tr.programs.join(", ")}` : ""}
+                {tr.program_keys.length > 0 ? ` · ${tr.program_keys.join(", ")}` : ""}
               </span>
             </div>
             <div className="row">

@@ -1131,7 +1131,7 @@ def create_app() -> FastAPI:
             "kind": body.kind, "payload": body.payload, "ref": body.ref,
             "at": db.utcnow()}))
         audit.record("contribution.add", tenant_id=tenant["id"], ref=body.ref or key)
-        return {"id": contribution_id, "key": key, "ref": body.ref, "sealed": True}
+        return {"id": contribution_id, "key": key, "ref": body.ref, "sealed_at_rest": True}
 
     @app.get("/contributions")
     def list_contributions(tenant: dict = Depends(_tenant)) -> dict:

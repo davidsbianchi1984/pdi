@@ -424,7 +424,7 @@ object ApiClient {
     suspend fun ingest(token: String, rid: String, kind: String, content: String): IngestResult {
         val o = JSONObject(request("/robots/$rid/ingest", "POST",
             JSONObject().put("kind", kind).put("content", content), token))
-        return IngestResult(o.optBoolean("sealed"), o.getString("key"))
+        return IngestResult(o.optBoolean("sealed_at_rest"), o.getString("key"))
     }
 
     suspend fun robotKeys(token: String, rid: String): List<String> {
@@ -436,7 +436,7 @@ object ApiClient {
     // ---- compliance-grade secure transfers ----
 
     private fun transferOf(o: JSONObject): Transfer {
-        val progs = o.optJSONArray("programs")
+        val progs = o.optJSONArray("program_keys")
         return Transfer(o.getString("id"), o.optString("recipient", ""),
             o.optString("filename", ""), o.optString("status", ""),
             (0 until (progs?.length() ?: 0)).map { progs!!.getString(it) },
@@ -1053,7 +1053,7 @@ object ApiClient {
     // ---- secure intake ----
 
     private fun intakeOf(o: JSONObject): Intake {
-        val progs = o.optJSONArray("programs")
+        val progs = o.optJSONArray("program_keys")
         return Intake(o.getString("id"), o.optString("from_party", ""),
             o.optString("purpose", null), o.optString("status", ""),
             (0 until (progs?.length() ?: 0)).map { progs!!.getString(it) },

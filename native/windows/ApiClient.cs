@@ -92,7 +92,7 @@ public record Robot(
     [property: JsonPropertyName("collected")] int Collected);
 
 public record IngestResult(
-    [property: JsonPropertyName("sealed")] bool Sealed,
+    [property: JsonPropertyName("sealed_at_rest")] bool Sealed,
     [property: JsonPropertyName("key")] string Key);
 
 public record RobotData(
@@ -177,7 +177,7 @@ public record ContribCount(
 public record ContribOut(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("key")] string Key,
-    [property: JsonPropertyName("sealed")] bool Sealed);
+    [property: JsonPropertyName("sealed_at_rest")] bool Sealed);
 
 public record RetentionPolicyOut(
     [property: JsonPropertyName("recovery_window")] string RecoveryWindow,
@@ -289,7 +289,7 @@ public record Transfer(
     [property: JsonPropertyName("recipient")] string Recipient,
     [property: JsonPropertyName("filename")] string Filename,
     [property: JsonPropertyName("status")] string Status,
-    [property: JsonPropertyName("programs")] string[] Programs,
+    [property: JsonPropertyName("program_keys")] string[] Programs,
     [property: JsonPropertyName("expires_at")] string? ExpiresAt,
     [property: JsonPropertyName("receive_token")] string? ReceiveToken);
 
@@ -298,7 +298,7 @@ public record Intake(
     [property: JsonPropertyName("from_party")] string FromParty,
     [property: JsonPropertyName("purpose")] string? Purpose,
     [property: JsonPropertyName("status")] string Status,
-    [property: JsonPropertyName("programs")] string[] Programs,
+    [property: JsonPropertyName("program_keys")] string[] Programs,
     [property: JsonPropertyName("filename")] string? Filename,
     [property: JsonPropertyName("submit_token")] string? SubmitToken);
 

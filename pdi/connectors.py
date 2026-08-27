@@ -113,7 +113,7 @@ def ingest(tenant: dict, row: dict, items: list[dict]) -> dict:
                  (len(keys), row["id"], row["tenant_id"]))
     conn.commit()
     return {"connector": row["id"], "platform": row["platform"],
-            "sealed": len(keys), "keys": keys,
+            "sealed_count": len(keys), "keys": keys,
             "note": "collected items are encrypted at rest in the vault"}
 
 
