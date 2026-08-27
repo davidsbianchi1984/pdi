@@ -1,14 +1,17 @@
 # Private Data Infrastructure (PDI)
 
-**A private, encrypted data vault with a tamper-evident audit log and a
-tenant registry.**
+**The vault under everything: encrypted storage, tamper-evident memory,
+and a resident intelligence that works without the data ever leaving.**
 
-PDI is the storage layer the other two products can optionally run on top
-of: sensitive data lives in PDI's encrypted vault instead of their own
-databases, reached only over PDI's HTTP API. Both integrations are live —
-JIM-mini vaults its medical and context payloads here, and QRME seals its
-profile source material — each as its own tenant with its own token. See
-[docs/tandem.md](docs/tandem.md).
+PDI is private data infrastructure — a product on its own, and the
+storage layer the other two run on top of. Sensitive data lives sealed in
+PDI's encrypted vault instead of an application's own database, reached
+only over PDI's HTTP API, one tenant and one token per integrating
+system. Both tandem integrations are live: JIM-mini vaults its medical
+and context payloads here, and QRME seals its profiles' source material
+and memories — see [docs/tandem.md](docs/tandem.md). A deployment that
+runs PDI alone gets the same thing every tenant gets: custody it can
+prove.
 
 **Current release: v1.8.9** — see [CHANGELOG.md](CHANGELOG.md).
 
@@ -26,85 +29,75 @@ US 2025/0265659 A1). See
 
 ## What it provides
 
-- **Private, encrypted data vault** — record values are sealed at rest with
-  AES-256-GCM (`pdi/crypto.py`); only ciphertext touches disk. AAD binds each
-  record to its tenant + key so ciphertext can't be relocated.
-- **Production key management (envelope encryption)** — a key-encryption key
-  (KEK) never touches record data; each **key version** owns a random
-  data-encryption key (DEK) stored only *wrapped* by the KEK. `POST /keys/rotate`
-  mints a new version and re-seals records under it (old versions stay readable
-  until `POST /keys/retire`); `GET /keys` reports versions. The KEK lives in the
-  env (dev) or a **KMS/HSM** in production (`PDI_KEY_PROVIDER=kms`, a loud
-  integration seam — never a silent local fallback).
-- **Retention — from a short window up to forever** — per-tenant record
-  retention (`7d`/`30d`/`90d`/`180d`/`1y`/`forever`, default **forever**) and a
-  global soft-delete recovery window (`PDI_RECOVERY_WINDOW`, default forever);
-  `POST /retention/sweep` expires records/purges tombstoned tenants past their
-  window — `forever` expires nothing. The audit chain is always kept forever
-  (pruning it would break tamper-evidence).
-- **Documented audit event schema** — `GET /audit/schema` returns the field
-  definitions and the full action catalogue (each action's category and
-  meaning); every audit entry carries a derived `category`.
-- **Tenant registry** — each integrating system gets a tenant + bearer token;
-  data is strictly namespaced per tenant (no cross-tenant reads).
-- **Tamper-evident audit log** — every access is recorded in an append-only,
-  SHA-256 hash-chained log; `GET /audit/verify` detects any retroactive edit.
-- **Disaster-recovery snapshot & restore** — `GET /snapshot` exports
-  ciphertext only; `POST /restore` reinserts a snapshot after a loss, with
-  AAD still binding every record to its tenant + key.
-- **Cloud-model contribution intake** — `POST /contributions` seals
-  anonymized model-improvement data from integrating systems under
-  `contributions/{source}/…` keys, encrypted and audit-chained;
-  `GET /contributions` lists the intake ([docs/cloud-model.md](docs/cloud-model.md)).
-- **Position & assistant builder** — `POST /positions` turns a completed
-  AI Integration & Role-Mapping Questionnaire (industry-agnostic) into an
-  assistant *blueprint* — recommended capabilities, an automation-opportunity
-  score, human-in-the-loop guardrails, reskilling paths, and a ready-to-use
-  assistant system-prompt. The raw workforce answers are sealed in the vault
-  under `positions/{id}`; only the derived blueprint is returned. Decision
-  support, never an automated staffing decision
-  ([docs/positions.md](docs/positions.md)).
-- **Custody beacons** — `POST /beacons` prints a code for a physical carrier
-  (a records box, a decommissioned drive, a courier bag) or for the facility
-  door itself, so custody stays visible once a payload has a handle. The seal
-  card at `GET /s/{id}` says a thing is under custody and what governs it, and
-  **never what is in it**. A finder's `POST /s/{id}/found` is a custody
-  receipt, not a message: it lands in the hash-chained audit log, so a gap in
-  a carrier's chain becomes a compliance finding PDI can produce on demand.
-  Plain scans stay off the chain — a barcode gun sweeping a pallet must not
-  fill a tamper-evidence log. Blind by default, because naming the tenant can
-  itself be the disclosure ([docs/beacons.md](docs/beacons.md)).
-- **The agent at the gate** — `POST /s/{id}/ring` triages a facility ring when
-  no human is awake. PDI grows no model: the voice is a QRME profile over HTTP
-  (`PDI_QRME_URL` + `PDI_GATE_PROFILE`), which also means it carries QRME's AI
-  mark, and an unconfigured deployment answers from a written script with no
-  model anywhere near it. **The model is the voice, not the decider** —
-  `gate.decide()` takes no model output, so there is no code path from
-  generated text to a consequential action. The ceiling comes from the
-  `HUMAN_IN_LOOP` set `positions.py` already publishes, and is itself published
-  at `GET /gate/ceiling`: the agent may direct, check, structure a receipt and
-  hand off, and may **never** grant entry, assert identity, override an
-  authorization, or see contents. A hand-off is **delivered**, not merely
-  filed: PDI posts a signed envelope to `PDI_NOTIFY_URL` and, when nobody was
-  reached, says so on the scan page rather than letting *"I've passed this to
-  the on-call contact"* leave somebody waiting in the rain for nobody.
-- **A per-tenant on-call roster** — `POST /gate/roster` sets who answers *this*
-  facility's gate and when, in the tenant's own database rows under the
-  tenant's own token. It replaces one deployment-wide `PDI_GATE_ONCALL` that
-  routed every customer's courier to the same name. Shifts cross midnight
-  correctly (`18:00`–`06:00` belongs to the day it started), the facility's
-  IANA timezone is **refused if unknown** rather than silently read as UTC, and
-  a page that a webhook rejects moves to the next name — with one contact, a
-  failed page was the end of the line.
-- **Role-based access control** — `POST /tenants/{id}/tokens` issues scoped
-  `read`/`write` tokens; read tokens cannot write or delete, and
-  `DELETE /tokens/{token}` revokes instantly.
-- **Tokens hashed at rest** — only the SHA-256 hash of each tenant/scoped
-  token is stored, so a leak of PDI's own database yields no usable
-  credential; the plaintext is shown once at issuance. The admin token is
+**The vault**
+
+- **Encryption at rest, per record** — values sealed with AES-256-GCM
+  (`pdi/crypto.py`); only ciphertext touches disk, and AAD binds each
+  record to its tenant and key so ciphertext cannot be relocated.
+- **Envelope key management** — a key-encryption key that never touches
+  record data wraps per-version data-encryption keys; `POST /keys/rotate`
+  re-seals under a new version, `POST /keys/retire` closes an old one,
+  and production points the KEK at a KMS/HSM (`PDI_KEY_PROVIDER=kms`) —
+  a loud integration seam, never a silent local fallback.
+- **Tenant registry and isolation** — each integrating system gets a
+  tenant and bearer token; data is strictly namespaced with no
+  cross-tenant reads, enforced in every SQL path.
+- **Scoped tokens, hashed at rest** — `read`/`write` tokens per tenant,
+  instant revocation, only SHA-256 hashes stored, the admin token
   compared in constant time.
-- **Deployment record** — models the on-premises vs. colocation (Tier III+)
-  options from the proposal.
+- **Retention, stated and swept** — per-tenant windows from `7d` to
+  `forever`, a global soft-delete recovery window, and a sweep that
+  expires exactly what the windows say. The audit chain is kept forever:
+  pruning it would break tamper-evidence.
+- **Snapshot and restore** — `GET /snapshot` exports ciphertext only;
+  `POST /restore` reinserts after a loss with every AAD binding intact —
+  and a backup you haven't restored from is a belief, so the suite
+  restores one.
+
+**The record**
+
+- **Tamper-evident audit log** — every access lands in an append-only,
+  SHA-256 hash-chained log; `GET /audit/verify` detects any retroactive
+  edit, and `GET /audit/schema` documents every action's category and
+  meaning. The runs ledger cannot edit its own account.
+- **Custody beacons** — printed codes for physical carriers and facility
+  doors; the seal card says a thing is under custody and what governs
+  it, never what is in it, and a finder's scan is a custody receipt on
+  the chain — blind by default, because naming the tenant can itself be
+  the disclosure ([docs/beacons.md](docs/beacons.md)).
+
+**The resident**
+
+- **Inference inside the walls** — a local model answers from sealed
+  records without the records leaving: ranking a person's own seals
+  against a question, generating from them, and reporting honestly when
+  it could not (`grounded`, reachability, pulled-or-not). PDI grows no
+  decider: models speak, they never grant.
+- **Standing tasks** — the vault keeps its own appointments: lookout
+  fetches that re-seal a page's current capture each cycle, with change
+  fingerprints, a runs ledger, and a cancel that really stops.
+- **The capture has eyes and ears** — `fetch.render` captures a page as
+  a person meets it, and video arrives as words, so a lookout can watch
+  a recording.
+- **The agent at the gate** — `POST /s/{id}/ring` triages a facility
+  ring through a QRME profile's voice (marked as AI), from a written
+  script when no model is configured; the ceiling is published, and a
+  hand-off is delivered or honestly reported undelivered. A per-tenant
+  on-call roster answers each facility's own gate.
+
+**The desk**
+
+- **Position & assistant builder** — `POST /positions` turns a completed
+  role-mapping questionnaire into an assistant blueprint: capabilities,
+  an automation-opportunity score, human-in-the-loop guardrails,
+  reskilling paths, and a system prompt — raw answers sealed, only the
+  blueprint returned, decision support and never a staffing decision
+  ([docs/positions.md](docs/positions.md)).
+- **Cloud-model contribution intake** — anonymized model-improvement
+  data sealed under `contributions/…`, encrypted and audit-chained
+  ([docs/cloud-model.md](docs/cloud-model.md)).
+- **Deployment record** — the on-premises vs. colocation (Tier III+)
+  options, modeled.
 
 ## Product surfaces
 
