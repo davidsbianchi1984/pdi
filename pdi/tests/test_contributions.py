@@ -18,7 +18,7 @@ def test_contributions_sealed_and_listed(client):
                     "exchange": [{"role": "interactor", "content": "hi PERSONA"}]}})
     assert r.status_code == 201
     body = r.json()
-    assert body["sealed"] is True and body["key"].startswith("contributions/qrme/")
+    assert body["sealed_at_rest"] is True and body["key"].startswith("contributions/qrme/")
 
     client.post("/contributions", headers=_auth(token), json={
         "source": "jim-mini", "kind": "guidance_outcome",
