@@ -6,6 +6,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.8.8] - 2026-08-27
+
+### Changed
+
+- **Cut with the siblings** — no functional change in this product. QRME
+  took the round's console half: every dial the profile can turn on
+  request, the panels' exits, the phone's own chooser, the room that
+  walks with you. JIM took the staleness contract and meetings arriving
+  as words. Both took the synced address book to their native shells.
+  The three move ahead together, and a box carrying two versions
+  reports the mismatch to whoever is using it.
+
 ## [1.8.7] - 2026-08-27
 
 ### Changed
@@ -7650,7 +7662,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.7...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.8...HEAD
+[1.8.8]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.7...app-v1.8.8
 [1.8.7]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.6...app-v1.8.7
 [1.8.6]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.5...app-v1.8.6
 [1.8.5]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.3...app-v1.8.5
