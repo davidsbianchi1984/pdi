@@ -10,7 +10,7 @@ JIM-mini vaults its medical and context payloads here, and QRME seals its
 profile source material — each as its own tenant with its own token. See
 [docs/tandem.md](docs/tandem.md).
 
-**Current release: v1.8.8** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v1.8.9** — see [CHANGELOG.md](CHANGELOG.md).
 
 PDI is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -167,6 +167,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 |---|---|
 | Release | What landed |
 |---|---|
+| **1.8.9** | Cut with the siblings — QRME took the round: the avatar registry, the slimmer room strip, the waiting seat, the dock that fits |
 | **1.8.8** | Cut with the siblings — QRME took the dials, the panels' exits, the chooser and the walking room; JIM took the staleness contract and meetings-as-words; both took the address book to their shells |
 | **1.8.7** | Cut with the siblings — QRME took the round: rooms that read links, hand documents back and remember their person; the friends-only circle |
 | **1.8.6** | Cut with the siblings — the estate's shared records caught up (one new deliberate divergence: the address-book replace rule, held by the two products with a book) |
