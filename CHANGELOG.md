@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-08-28
+
+### Changed
+
+- **Version alignment.** The trio releases in step; this cut
+  carries no functional change in this repository. QRME 1.10.0
+  ships the avatar round — the second ring on every seat, the
+  full-screen wardrobe, guest styling, the default-faces shelf,
+  and the XR platforms card.
+
 ## [1.9.0] - 2026-08-27
 
 ### Changed
@@ -7691,7 +7701,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.9.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.10.0...HEAD
+[1.10.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.9.0...app-v1.10.0
 [1.9.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.9...app-v1.9.0
 [1.8.9]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.8...app-v1.8.9
 [1.8.8]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.7...app-v1.8.8
