@@ -13,7 +13,7 @@ and memories — see [docs/tandem.md](docs/tandem.md). A deployment that
 runs PDI alone gets the same thing every tenant gets: custody it can
 prove.
 
-**Current release: v2.0.0** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v2.0.1** — see [CHANGELOG.md](CHANGELOG.md).
 
 PDI is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -99,6 +99,79 @@ US 2025/0265659 A1). See
 - **Deployment record** — the on-premises vs. colocation (Tier III+)
   options, modeled.
 
+## The screens you'll meet
+
+The consoles a person actually uses — every major component and
+tool, drawn at phone scale. The desktop workspace, the Android
+tellings and the complete tour of all 58 live in
+[docs/gallery.md](docs/gallery.md).
+
+**First meeting**
+
+<table>
+  <tr>
+    <td align="center" width="25%"><a href="docs/screens/23-welcome.svg"><img src="docs/screens/23-welcome.svg" width="165" alt="Welcome"></a><br><sub><b>23</b> · Welcome<br>a vault introduces itself before it asks for anything</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/20-sign-in.svg"><img src="docs/screens/20-sign-in.svg" width="165" alt="Sign in"></a><br><sub><b>20</b> · Sign in<br>who you are to this facility</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/24-key-setup.svg"><img src="docs/screens/24-key-setup.svg" width="165" alt="Key setup"></a><br><sub><b>24</b> · Key setup<br>the keys made where they will live</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/27-all-set.svg"><img src="docs/screens/27-all-set.svg" width="165" alt="All set"></a><br><sub><b>27</b> · All set<br>sealed, verified, and said so</sub></td>
+  </tr>
+</table>
+
+**The vault itself**
+
+<table>
+  <tr>
+    <td align="center" width="25%"><a href="docs/screens/02-vault.svg"><img src="docs/screens/02-vault.svg" width="165" alt="Vault"></a><br><sub><b>02</b> · Vault<br>what is held, sealed at rest</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/03-store-a-record.svg"><img src="docs/screens/03-store-a-record.svg" width="165" alt="Store a record"></a><br><sub><b>03</b> · Store a record<br>one record in, one seal on it</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/04-encryption.svg"><img src="docs/screens/04-encryption.svg" width="165" alt="Encryption"></a><br><sub><b>04</b> · Encryption<br>the envelope scheme, drawn honestly</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/13-key-management.svg"><img src="docs/screens/13-key-management.svg" width="165" alt="Key management"></a><br><sub><b>13</b> · Key management<br>rotation without a decrypt parade</sub></td>
+  </tr>
+</table>
+
+**Many tenants, one machine**
+
+<table>
+  <tr>
+    <td align="center" width="25%"><a href="docs/screens/05-tenants.svg"><img src="docs/screens/05-tenants.svg" width="165" alt="Tenants"></a><br><sub><b>05</b> · Tenants<br>every tenant its own world</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/06-create-tenant.svg"><img src="docs/screens/06-create-tenant.svg" width="165" alt="Create a tenant"></a><br><sub><b>06</b> · Create a tenant<br>a new world, three fields</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/14-tenant-isolation.svg"><img src="docs/screens/14-tenant-isolation.svg" width="165" alt="Tenant isolation"></a><br><sub><b>14</b> · Tenant isolation<br>enforced in every SQL path, not promised</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/07-access-control.svg"><img src="docs/screens/07-access-control.svg" width="165" alt="Access control"></a><br><sub><b>07</b> · Access control<br>who may touch what, on the record</sub></td>
+  </tr>
+</table>
+
+**The record that cannot lie**
+
+<table>
+  <tr>
+    <td align="center" width="25%"><a href="docs/screens/08-audit-log.svg"><img src="docs/screens/08-audit-log.svg" width="165" alt="Audit log"></a><br><sub><b>08</b> · Audit log<br>every act, chained to the one before</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/09-verify-chain.svg"><img src="docs/screens/09-verify-chain.svg" width="165" alt="Verify the chain"></a><br><sub><b>09</b> · Verify the chain<br>tamper shows; verification is a button</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/40-audit.svg"><img src="docs/screens/40-audit.svg" width="165" alt="Audit"></a><br><sub><b>40</b> · Audit<br>the reviewer's whole view</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/11-snapshot-restore.svg"><img src="docs/screens/11-snapshot-restore.svg" width="165" alt="Snapshot & restore"></a><br><sub><b>11</b> · Snapshot & restore<br>a backup you have restored from is a fact</sub></td>
+  </tr>
+</table>
+
+**The vault made smart**
+
+<table>
+  <tr>
+    <td align="center" width="25%"><a href="docs/screens/58-resident-intelligence.svg"><img src="docs/screens/58-resident-intelligence.svg" width="165" alt="Resident intelligence"></a><br><sub><b>58</b> · Resident intelligence<br>the model lives inside; questions never leave</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/38-gate-agent.svg"><img src="docs/screens/38-gate-agent.svg" width="165" alt="Gate agent"></a><br><sub><b>38</b> · Gate agent<br>the resident that answers at the door</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/18-tandem.svg"><img src="docs/screens/18-tandem.svg" width="165" alt="Tandem"></a><br><sub><b>18</b> · Tandem<br>QRME and JIM-mini remember through here</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/16-your-data.svg"><img src="docs/screens/16-your-data.svg" width="165" alt="Your data"></a><br><sub><b>16</b> · Your data<br>shown to its person, forgettable to the vectors</sub></td>
+  </tr>
+</table>
+
+**Kept honest**
+
+<table>
+  <tr>
+    <td align="center" width="25%"><a href="docs/screens/15-data-promise.svg"><img src="docs/screens/15-data-promise.svg" width="165" alt="The data promise"></a><br><sub><b>15</b> · The data promise<br>what never leaves, in writing</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/47-before-anything-is-sent.svg"><img src="docs/screens/47-before-anything-is-sent.svg" width="165" alt="Before anything is sent"></a><br><sub><b>47</b> · Before anything is sent<br>the notice ahead of the first byte</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/46-what-went-wrong.svg"><img src="docs/screens/46-what-went-wrong.svg" width="165" alt="What went wrong"></a><br><sub><b>46</b> · What went wrong<br>errors reported home, scrubbed</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/17-system-health.svg"><img src="docs/screens/17-system-health.svg" width="165" alt="System health"></a><br><sub><b>17</b> · System health<br>the machine's own pulse</sub></td>
+  </tr>
+</table>
+
 ## Product surfaces
 
 | Surface | Where | Notes |
@@ -160,6 +233,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 |---|---|
 | Release | What landed |
 |---|---|
+| **2.0.1** | **The README shows the product** — a screen for every major component and tool on the front page; tandem release with QRME 2.0.1 and JIM-mini 2.0.1, no functional change to the vault itself |
 | **2.0.0** | Tandem release with QRME 2.0.0 (the avatar round); version alignment across the trio, no functional change in this repository |
 | **1.9.0** | Every wire name says one thing — the collision ledger's last two rows close tandem-safe (`sealed_at_rest`, `sealed_count`, `program_keys`) across the backend, the console and all three shells; two floors join the live-measured registry; the front page reorganizes around the vault, the record, the resident and the desk |
 | **1.8.9** | Cut with the siblings — QRME took the round: the avatar registry, the slimmer room strip, the waiting seat, the dock that fits |
@@ -425,6 +499,15 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 | **0.1.0** | First public release — the **encrypted vault**, envelope encryption & key management, **tamper-evident audit**, tenant registry & RBAC, retention up to forever, and tenant deletion |
 
 </details>
+
+## Made by
+
+Founded, owned and directed by **David Bianchi**
+([davidsbianchi1984](https://github.com/davidsbianchi1984)) — the product
+vision, the data promise this vault enforces, and the tandem design that
+ties PDI to [QRME](https://github.com/davidsbianchi1984/qrme) and
+[JIM-mini](https://github.com/davidsbianchi1984/jim-mini) under one
+version number.
 
 ## License
 

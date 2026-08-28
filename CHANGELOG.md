@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-08-28
+
+### Added
+
+- **The README shows the product** — every major component and tool now
+  carries its screen on the front page, twenty-four drawings across six
+  themes, with the complete tour still in the gallery. Tandem release
+  with QRME 2.0.1 (the eyes and the room society) and JIM-mini 2.0.1
+  (the coach's eye); version alignment across the trio, no functional
+  change to the vault itself.
+
 ## [2.0.0] - 2026-08-28
 
 ### Changed
@@ -7701,7 +7712,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.0.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.0.1...HEAD
+[2.0.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.0.0...app-v2.0.1
 [2.0.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.9.0...app-v2.0.0
 [1.9.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.9...app-v1.9.0
 [1.8.9]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.8.8...app-v1.8.9

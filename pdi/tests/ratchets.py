@@ -743,7 +743,7 @@ RATCHETS: tuple[Ratchet, ...] = (
             "the `i18n.fill` call sites the conversion left behind"),
     Ratchet("route.verbs_min", 3, _verbs_min,
             "the distinct verbs the thinnest-reading surface reports"),
-    Ratchet("gallery.tables", 5, _gallery_tables,
+    Ratchet("gallery.tables", 10, _gallery_tables,
             "the gallery tables the README carries"),
     Ratchet("readme.files", 4, _readme_files,
             "the READMEs the passage check reads"),
