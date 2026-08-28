@@ -6,6 +6,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-08-28
+
+- Tandem release with QRME 2.2.0 (Raise: the three time controls) and
+  JIM-mini 2.2.0; version alignment across the trio, no functional
+  change to the vault itself.
+
 ## [2.1.0] - 2026-08-28
 
 - Tandem release with QRME 2.1.0 (Raise — grow your own); version
@@ -7717,7 +7723,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.1.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.2.0...HEAD
+[2.2.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.1.0...app-v2.2.0
 [2.1.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.0.1...app-v2.1.0
 [2.0.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.0.0...app-v2.0.1
 [2.0.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v1.9.0...app-v2.0.0

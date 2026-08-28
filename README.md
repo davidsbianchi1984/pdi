@@ -13,7 +13,7 @@ and memories — see [docs/tandem.md](docs/tandem.md). A deployment that
 runs PDI alone gets the same thing every tenant gets: custody it can
 prove.
 
-**Current release: v2.1.0** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v2.2.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 PDI is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -233,6 +233,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 |---|---|
 | Release | What landed |
 |---|---|
+| **2.2.0** | Tandem release with QRME 2.2.0 (Raise: the three time controls) and JIM-mini 2.2.0; version alignment across the trio, no functional change to the vault itself |
 | **2.1.0** | Tandem release with QRME 2.1.0 (Raise — grow your own); version alignment across the trio, no functional change to the vault itself |
 | **2.0.1** | **The README shows the product** — a screen for every major component and tool on the front page; tandem release with QRME 2.0.1 and JIM-mini 2.0.1, no functional change to the vault itself |
 | **2.0.0** | Tandem release with QRME 2.0.0 (the avatar round); version alignment across the trio, no functional change in this repository |
