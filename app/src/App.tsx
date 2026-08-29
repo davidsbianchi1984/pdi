@@ -69,6 +69,7 @@ export function App() {
           {NAV.map((n) => (
             <button
               key={n.id}
+              data-tab={n.id}
               className={"nav-item" + (tab === n.id ? " active" : "")}
               onClick={() => setTab(n.id)}
             >

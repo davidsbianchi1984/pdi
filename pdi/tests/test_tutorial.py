@@ -93,7 +93,7 @@ def _drawn() -> set[int]:
     out = set()
     for name in os.listdir(root):
         head = name.split("-", 1)[0]
-        if name.endswith(".svg") and head.isdigit():
+        if name.endswith((".svg", ".png")) and head.isdigit():
             out.add(int(head))
     return out
 

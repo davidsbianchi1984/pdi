@@ -14,8 +14,8 @@ Wide, multi-panel operator views — sidebar nav, live tiles, the hash-chain aud
 
 <table>
   <tr>
-    <td align="center" width="50%"><a href="desktop/01-overview.svg"><img src="desktop/01-overview.svg" width="460" alt="Overview — PDI desktop console"></a><br><sub><b>01</b> · Overview</sub></td>
-    <td align="center" width="50%"><a href="desktop/02-vault.svg"><img src="desktop/02-vault.svg" width="460" alt="Vault — PDI desktop console"></a><br><sub><b>02</b> · Vault</sub></td>
+    <td align="center" width="50%"><a href="desktop/001-overview.png"><img src="desktop/001-overview.png" width="460" alt="Overview — PDI desktop console"></a><br><sub><b>01</b> · Overview</sub></td>
+    <td align="center" width="50%"><a href="desktop/002-records.png"><img src="desktop/002-records.png" width="460" alt="Vault — PDI desktop console"></a><br><sub><b>02</b> · Vault</sub></td>
   </tr>
   <tr>
     <td align="center" width="50%"><a href="desktop/03-audit-log.svg"><img src="desktop/03-audit-log.svg" width="460" alt="Audit Log — PDI desktop console"></a><br><sub><b>03</b> · Audit Log</sub></td>
@@ -37,8 +37,8 @@ The same system, glanceable on a phone. Regenerate with `python3 docs/screens/bu
 
 <table>
 <tr>
-<td align="center" width="25%"><a href="screens/01-overview.svg"><img src="screens/01-overview.svg" width="210" alt="Overview — PDI desktop console"></a><br><sub><b>01</b> · Overview</sub></td>
-<td align="center" width="25%"><a href="screens/02-vault.svg"><img src="screens/02-vault.svg" width="210" alt="Vault — PDI desktop console"></a><br><sub><b>02</b> · Vault</sub></td>
+<td align="center" width="25%"><a href="screens/001-overview.png"><img src="screens/001-overview.png" width="210" alt="Overview — PDI desktop console"></a><br><sub><b>01</b> · Overview</sub></td>
+<td align="center" width="25%"><a href="screens/002-records.png"><img src="screens/002-records.png" width="210" alt="Vault — PDI desktop console"></a><br><sub><b>02</b> · Vault</sub></td>
 <td align="center" width="25%"><a href="screens/03-store-a-record.svg"><img src="screens/03-store-a-record.svg" width="210" alt="Store a Record — PDI desktop console"></a><br><sub><b>03</b> · Store a Record</sub></td>
 <td align="center" width="25%"><a href="screens/04-encryption.svg"><img src="screens/04-encryption.svg" width="210" alt="Encryption — PDI desktop console"></a><br><sub><b>04</b> · Encryption</sub></td>
 </tr>
@@ -48,7 +48,7 @@ The same system, glanceable on a phone. Regenerate with `python3 docs/screens/bu
 
 <table>
 <tr>
-<td align="center" width="25%"><a href="screens/05-tenants.svg"><img src="screens/05-tenants.svg" width="210" alt="Tenants — PDI desktop console"></a><br><sub><b>05</b> · Tenants</sub></td>
+<td align="center" width="25%"><a href="screens/005-tenants.png"><img src="screens/005-tenants.png" width="210" alt="Tenants — PDI desktop console"></a><br><sub><b>05</b> · Tenants</sub></td>
 <td align="center" width="25%"><a href="screens/06-create-tenant.svg"><img src="screens/06-create-tenant.svg" width="210" alt="Create Tenant — PDI desktop console"></a><br><sub><b>06</b> · Create Tenant</sub></td>
 <td align="center" width="25%"><a href="screens/07-access-control.svg"><img src="screens/07-access-control.svg" width="210" alt="Access Control — PDI desktop console"></a><br><sub><b>07</b> · Access Control</sub></td>
 <td align="center" width="25%"><a href="screens/10-contributions.svg"><img src="screens/10-contributions.svg" width="210" alt="Contributions — PDI desktop console"></a><br><sub><b>10</b> · Contributions</sub></td>
@@ -59,7 +59,7 @@ The same system, glanceable on a phone. Regenerate with `python3 docs/screens/bu
 
 <table>
   <tr>
-    <td align="center" width="33%"><a href="screens/08-audit-log.svg"><img src="screens/08-audit-log.svg" width="210" alt="Audit Log — PDI desktop console"></a><br><sub><b>08</b> · Audit Log</sub></td>
+    <td align="center" width="33%"><a href="screens/008-audit.png"><img src="screens/008-audit.png" width="210" alt="Audit Log — PDI desktop console"></a><br><sub><b>08</b> · Audit Log</sub></td>
     <td align="center" width="33%"><a href="screens/09-verify-chain.svg"><img src="screens/09-verify-chain.svg" width="210" alt="Verify Chain — PDI desktop console"></a><br><sub><b>09</b> · Verify Chain</sub></td>
   </tr>
 </table>
@@ -96,7 +96,7 @@ The first-run journey runs **23 Welcome → 22 Log In → 24 Key Setup → 25 Gr
 <table>
 <tr>
 <td align="center" width="25%"><a href="screens/23-welcome.svg"><img src="screens/23-welcome.svg" width="210" alt="Welcome — PDI"></a><br><sub><b>23</b> · Welcome</sub></td>
-<td align="center" width="25%"><a href="screens/24-key-setup.svg"><img src="screens/24-key-setup.svg" width="210" alt="Key Setup — KMS/HSM or master key"></a><br><sub><b>24</b> · Key Setup</sub></td>
+<td align="center" width="25%"><a href="screens/024-keys.png"><img src="screens/024-keys.png" width="210" alt="Key Setup — KMS/HSM or master key"></a><br><sub><b>24</b> · Key Setup</sub></td>
 <td align="center" width="25%"><a href="screens/25-grant-access.svg"><img src="screens/25-grant-access.svg" width="210" alt="Grant Access — scoped tokens"></a><br><sub><b>25</b> · Grant Access</sub></td>
 <td align="center" width="25%"><a href="screens/26-connect-systems.svg"><img src="screens/26-connect-systems.svg" width="210" alt="Connect Systems — QRME & JIM-mini"></a><br><sub><b>26</b> · Connect Systems</sub></td>
 </tr>
@@ -146,24 +146,24 @@ The first-run journey runs **23 Welcome → 22 Log In → 24 Key Setup → 25 Gr
 <td align="center" width="25%"><a href="screens/44-choose-a-home.svg"><img src="screens/44-choose-a-home.svg" width="210" alt="Choose a Home"></a><br><sub><b>44</b> · Choose a Home</sub></td>
 <td align="center" width="25%"><a href="screens/45-request-a-quote.svg"><img src="screens/45-request-a-quote.svg" width="210" alt="Request a Quote"></a><br><sub><b>45</b> · Request a Quote</sub></td>
 <td align="center" width="25%"><a href="screens/46-what-went-wrong.svg"><img src="screens/46-what-went-wrong.svg" width="210" alt="What Went Wrong"></a><br><sub><b>46</b> · What Went Wrong</sub></td>
-<td align="center" width="25%"><a href="screens/47-before-anything-is-sent.svg"><img src="screens/47-before-anything-is-sent.svg" width="210" alt="Before Anything Is Sent"></a><br><sub><b>47</b> · Before Anything Is Sent</sub></td>
+<td align="center" width="25%"><a href="screens/047-before-anything-is-sent.png"><img src="screens/047-before-anything-is-sent.png" width="210" alt="Before Anything Is Sent"></a><br><sub><b>47</b> · Before Anything Is Sent</sub></td>
 </tr>
 <tr>
-<td align="center" width="25%"><a href="screens/48-carriers.svg"><img src="screens/48-carriers.svg" width="210" alt="Carriers"></a><br><sub><b>48</b> · Carriers</sub></td>
-<td align="center" width="25%"><a href="screens/49-exchange.svg"><img src="screens/49-exchange.svg" width="210" alt="Exchange"></a><br><sub><b>49</b> · Exchange</sub></td>
-<td align="center" width="25%"><a href="screens/50-custody.svg"><img src="screens/50-custody.svg" width="210" alt="Custody"></a><br><sub><b>50</b> · Custody</sub></td>
-<td align="center" width="25%"><a href="screens/51-bridges.svg"><img src="screens/51-bridges.svg" width="210" alt="Bridges"></a><br><sub><b>51</b> · Bridges</sub></td>
+<td align="center" width="25%"><a href="screens/048-carriers.png"><img src="screens/048-carriers.png" width="210" alt="Carriers"></a><br><sub><b>48</b> · Carriers</sub></td>
+<td align="center" width="25%"><a href="screens/049-exchange.png"><img src="screens/049-exchange.png" width="210" alt="Exchange"></a><br><sub><b>49</b> · Exchange</sub></td>
+<td align="center" width="25%"><a href="screens/050-custody.png"><img src="screens/050-custody.png" width="210" alt="Custody"></a><br><sub><b>50</b> · Custody</sub></td>
+<td align="center" width="25%"><a href="screens/051-bridges.png"><img src="screens/051-bridges.png" width="210" alt="Bridges"></a><br><sub><b>51</b> · Bridges</sub></td>
 </tr>
 <tr>
-<td align="center" width="25%"><a href="screens/52-guiding.svg"><img src="screens/52-guiding.svg" width="210" alt="Guiding"></a><br><sub><b>52</b> · Guiding</sub></td>
-<td align="center" width="25%"><a href="screens/53-continuity.svg"><img src="screens/53-continuity.svg" width="210" alt="Continuity"></a><br><sub><b>53</b> · Continuity</sub></td>
-<td align="center" width="25%"><a href="screens/54-operations.svg"><img src="screens/54-operations.svg" width="210" alt="Operations"></a><br><sub><b>54</b> · Operations</sub></td>
-<td align="center" width="25%"><a href="screens/55-positions.svg"><img src="screens/55-positions.svg" width="210" alt="Positions"></a><br><sub><b>55</b> · Positions</sub></td>
+<td align="center" width="25%"><a href="screens/052-guiding.png"><img src="screens/052-guiding.png" width="210" alt="Guiding"></a><br><sub><b>52</b> · Guiding</sub></td>
+<td align="center" width="25%"><a href="screens/053-continuity.png"><img src="screens/053-continuity.png" width="210" alt="Continuity"></a><br><sub><b>53</b> · Continuity</sub></td>
+<td align="center" width="25%"><a href="screens/054-operations.png"><img src="screens/054-operations.png" width="210" alt="Operations"></a><br><sub><b>54</b> · Operations</sub></td>
+<td align="center" width="25%"><a href="screens/055-positions.png"><img src="screens/055-positions.png" width="210" alt="Positions"></a><br><sub><b>55</b> · Positions</sub></td>
 </tr>
 <tr>
-<td align="center" width="25%"><a href="screens/56-settings.svg"><img src="screens/56-settings.svg" width="210" alt="Settings"></a><br><sub><b>56</b> · Settings</sub></td>
-<td align="center" width="25%"><a href="screens/57-ability-is-not-a-gate.svg"><img src="screens/57-ability-is-not-a-gate.svg" width="210" alt="Ability Is Not A Gate"></a><br><sub><b>57</b> · Ability Is Not A Gate</sub></td>
-<td align="center" width="25%"><a href="screens/58-resident-intelligence.svg"><img src="screens/58-resident-intelligence.svg" width="210" alt="Resident Intelligence"></a><br><sub><b>58</b> · Resident Intelligence</sub></td>
+<td align="center" width="25%"><a href="screens/056-settings.png"><img src="screens/056-settings.png" width="210" alt="Settings"></a><br><sub><b>56</b> · Settings</sub></td>
+<td align="center" width="25%"><a href="screens/057-access.png"><img src="screens/057-access.png" width="210" alt="Ability Is Not A Gate"></a><br><sub><b>57</b> · Ability Is Not A Gate</sub></td>
+<td align="center" width="25%"><a href="screens/058-resident.png"><img src="screens/058-resident.png" width="210" alt="Resident Intelligence"></a><br><sub><b>58</b> · Resident Intelligence</sub></td>
 </tr>
 </table>
 

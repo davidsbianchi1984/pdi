@@ -25,6 +25,17 @@ README = os.path.join(ROOT, "README.md")
 GALLERY = os.path.join(ROOT, "docs", "gallery.md")
 SCREENS = os.path.join(ROOT, "docs", "screens")
 
+#: A screen is a drawing **or** a photograph. Until 2.7.0 every one of them
+#: was an SVG somebody drew, and these guards spelled that out — they
+#: globbed `*.svg` and would have called a photographed surface a missing
+#: one. The console is now photographed rather than illustrated, so the
+#: file extension is no longer what makes a screen a screen.
+#:
+#:     asked     is there an SVG for this surface
+#:     mattered  is there a picture of this surface
+SCREEN_KINDS = (".svg", ".png")
+
+
 
 def _readme() -> str:
     with open(README, encoding="utf-8") as fh:
@@ -40,7 +51,8 @@ def _pages() -> str:
 
 
 def _on_disk() -> set[str]:
-    return {f for f in os.listdir(SCREENS) if f.endswith(".svg")}
+    return {f for f in os.listdir(SCREENS)
+            if f.endswith(SCREEN_KINDS)}
 
 
 def test_the_stated_screen_count_is_the_real_one():
@@ -56,14 +68,14 @@ def test_the_stated_screen_count_is_the_real_one():
 def test_every_referenced_screen_exists():
     """A broken image is invisible to whoever wrote it — it renders as a small
     box on somebody else's machine."""
-    referenced = set(re.findall(r"(?:docs/)?screens/([\w\-.]+\.svg)", _pages()))
+    referenced = set(re.findall(r"(?:docs/)?screens/([\w\-.]+\.(?:svg|png))", _pages()))
     missing = sorted(referenced - _on_disk())
     assert not missing, ("the README points at screens not on disk:\n  "
                          + "\n  ".join(missing))
 
 
 def test_every_screen_is_shown_somewhere():
-    referenced = set(re.findall(r"(?:docs/)?screens/([\w\-.]+\.svg)", _pages()))
+    referenced = set(re.findall(r"(?:docs/)?screens/([\w\-.]+\.(?:svg|png))", _pages()))
     unshown = sorted(_on_disk() - referenced)
     assert not unshown, ("screens exist that the README never shows:\n  "
                          + "\n  ".join(unshown))
@@ -73,7 +85,7 @@ def test_the_gallery_skips_no_number():
     """Adding a screen to a full three-wide row is how a number stops appearing
     while every file still exists and every link still resolves."""
     numbers: list[int] = []
-    for name in re.findall(r"(?:docs/)?screens/([\w\-.]+\.svg)", _pages()):
+    for name in re.findall(r"(?:docs/)?screens/([\w\-.]+\.(?:svg|png))", _pages()):
         head = name.split("-", 1)[0]
         if head.isdigit() and int(head) not in numbers:
             numbers.append(int(head))
@@ -87,7 +99,8 @@ def test_no_screen_is_named_something_a_url_cannot_carry():
     """A filename becomes a URL in an `<img src>`; a "?" starts a query string
     and the image silently fails to load."""
     bad = sorted(f for f in _on_disk()
-                 if not re.fullmatch(r"[0-9a-z][0-9a-z\-.]*\.svg", f))
+                 if not re.fullmatch(
+                     r"[0-9a-z][0-9a-z\-.]*\.(?:svg|png)", f))
     assert not bad, ("screen files whose names are unsafe in a URL:\n  "
                      + "\n  ".join(bad))
 
