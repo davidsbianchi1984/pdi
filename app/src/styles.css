@@ -201,11 +201,30 @@ label.check input { width: auto; margin-top: 0; }
 .vl-text { font-size: 12px; color: var(--muted, #93a3c0); }
 .vl-min { background: none; border: 0; color: var(--muted, #93a3c0);
   font-size: 16px; line-height: 1; cursor: pointer; padding: 0 2px; }
-.vl-dot { position: fixed; left: 22px; bottom: 22px; width: 40px;
-  height: 40px; border-radius: 50%; z-index: 40; cursor: pointer;
+/* Two elements, and the reason is a phone.
+
+   The dot is a button, and the phone block sets `button { min-height: 44px }`
+   so every control is a real tap target. `min-height` beats `height`, so the
+   22px dot this widget shrinks to on a phone rendered 22 wide and 44 tall —
+   a green ellipse, in answer to a field report asking for a smaller circle.
+   The declared width and height both said 22 and the guard next door read
+   them and passed; nothing here could see the rectangle.
+
+       asked     how big is the dot declared
+       mattered  how big is the dot drawn
+
+   So the button is the tap target and carries no paint, and `.vl-dot-face`
+   is the circle. The target keeps its 44px on a phone and the face shrinks
+   inside it, which is what the report asked for without giving up the thing
+   the 44px is there for. */
+.vl-dot { position: fixed; left: 22px; bottom: 22px; z-index: 40;
+  width: 44px; height: 44px; padding: 0; border: 0; background: none;
+  display: grid; place-items: center; cursor: pointer; }
+.vl-dot-face { width: 40px; height: 40px; border-radius: 50%;
   border: 2px solid rgba(255,255,255,0.25);
   box-shadow: 0 8px 24px rgba(0,0,0,.45); }
-.vl-dot-off { background: #2c3a52; border-color: rgba(255,255,255,0.35); }
+.vl-dot-off .vl-dot-face { background: #2c3a52;
+  border-color: rgba(255,255,255,0.35); }
 
 /* When the device asks for reduced motion, nothing here moves. The
    accessibility statement says so, which makes this rule the sentence's
@@ -249,7 +268,8 @@ label.check input { width: auto; margin-top: 0; }
     bottom: calc(var(--tabbar-h) + 12px + env(safe-area-inset-bottom));
   }
   .vault-light { max-width: calc(100vw - 24px); }
-  .vl-dot {
+  .vl-dot { width: 44px; height: 44px; }
+  .vl-dot-face {
     width: 22px; height: 22px; opacity: 0.75;
     box-shadow: 0 2px 8px rgba(0,0,0,.35);
   }

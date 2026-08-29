@@ -42,7 +42,9 @@ export function VaultLight() {
       <button className="vl-dot vl-dot-off"
               onClick={load}
               aria-label={t("vl.unreachable", lang)}
-              title={t("vl.unreachable", lang)} />
+              title={t("vl.unreachable", lang)}>
+        <span className="vl-dot-face" />
+      </button>
     );
   }
 
@@ -57,9 +59,11 @@ export function VaultLight() {
 
   if (min) {
     return (
-      <button className="vl-dot" style={{ background: color }}
+      <button className="vl-dot"
               onClick={() => setMinimized(false)}
-              aria-label={t("vl.show", lang)} title={t("vl.title", lang)} />
+              aria-label={t("vl.show", lang)} title={t("vl.title", lang)}>
+        <span className="vl-dot-face" style={{ background: color }} />
+      </button>
     );
   }
 

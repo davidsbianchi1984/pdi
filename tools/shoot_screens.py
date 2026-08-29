@@ -46,6 +46,21 @@ gap nobody notices.
 
 Run it with ``python tools/shoot_screens.py`` from the repository root,
 with ``app/dist`` built (``npm run build`` in ``app/``).
+## The build is a step, not a sentence
+
+It builds the console first, and that is not a convenience. The build used
+to be a requirement written in prose — *run `npm run build` first* — and the
+harness served whatever was already in `app/dist` without ever looking at
+how old it was. So a gallery could be re-shot to show a stylesheet fix, and
+photograph a bundle from days earlier, and every capture would look exactly
+as convincing as one that showed the fix. It happened, in the round that
+replaced drawings with photographs precisely *because* a photograph looks
+like evidence.
+
+    asked     is the console built
+    mattered  is the console built from what is on disk now
+
+A prose requirement is a requirement somebody skips.
 """
 
 from __future__ import annotations
@@ -69,6 +84,24 @@ OUT = REPO / "docs" / "screens"
 #: Doubled so the capture is legible when GitHub scales it into a gallery.
 VIEWPORT = {"width": 430, "height": 932}
 SCALE = 2
+
+
+def build_console() -> None:
+    """`npm run build`, every run, before anything is photographed.
+
+    Not conditional on a timestamp comparison: a source file can be older
+    than the bundle and still not be in it — a dependency bump, an aborted
+    build, a file restored from git. The build is a few seconds and the
+    thing it protects is whether these pictures mean anything.
+    """
+    app = REPO / "app"
+    print("building the console…", flush=True)
+    done = subprocess.run(["npm", "run", "build"], cwd=app,
+                          capture_output=True, text=True)
+    if done.returncode != 0:
+        raise SystemExit(
+            "the console did not build, so there is nothing honest to "
+            f"photograph:\n{done.stdout[-2000:]}\n{done.stderr[-2000:]}")
 
 
 def start_backend() -> subprocess.Popen:
@@ -209,6 +242,7 @@ def main(shots: list[tuple[str, str, str]]) -> None:
     """``shots`` is (screen number, tab id, filename stem)."""
     from playwright.sync_api import sync_playwright
 
+    build_console()
     proc = start_backend()
     written = 0
     try:
