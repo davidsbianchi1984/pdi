@@ -1,6 +1,6 @@
 [project]
 name = "pdi"
-version = "2.3.1"
+version = "2.7.0"
 description = "Private Data Infrastructure — encrypted vault, tenant isolation, tamper-evident audit"
 readme = "README.md"
 requires-python = ">=3.11"
