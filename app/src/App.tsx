@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSession } from "./store";
 import { deviceLanguage, Lang, t } from "./l10n";
 import { ProblemNotice } from "./ProblemNotice";
@@ -53,11 +53,30 @@ export function App() {
   // the page in the language it is actually written in — index.html ships
   // lang="en" and the app renders ten languages under it.
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
+  // How tall the bottom bar is, published for the stylesheet to read. On a
+  // phone the sidebar IS the bottom of the screen, and everything fixed
+  // down there has to clear it. `76px` was a guess, and the bar is as tall
+  // as its labels — they are translated into ten languages and the longer
+  // ones wrap to two lines and push it past 76. So the bar is measured
+  // rather than guessed, and re-measured when the language or the
+  // orientation changes it. A browser without ResizeObserver keeps the
+  // `--tabbar-h` that styles.css declares, which is the old guess.
+  const bar = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const el = bar.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const publish = () => document.documentElement.style.setProperty(
+      "--tabbar-h", `${Math.round(el.getBoundingClientRect().height)}px`);
+    publish();
+    const watching = new ResizeObserver(publish);
+    watching.observe(el);
+    return () => watching.disconnect();
+  }, []);
   return (
     <div className="app">
       <VersionGuard />
       <Footsteps />
-      <aside className="sidebar">
+      <aside className="sidebar" ref={bar}>
         <div className="brand">
           <span className="orb" />
           <div>

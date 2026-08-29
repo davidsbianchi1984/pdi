@@ -4,6 +4,12 @@
   --brand: #38bdf8; --brand2: #7dd3fc; --cyan: #9fd8e8;
   --amber: #ffb84d; --green: #7bc47f; --red: #e0687a;
   --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, system-ui, sans-serif;
+  /* How tall the phone tab bar is. The bar measures itself and overwrites
+     this on the root element (see `App.tsx`); the value here is what a
+     browser without ResizeObserver gets. Declared rather than spelled as
+     a fallback at each place that reads it: a number repeated inside
+     `calc()` is one nobody can find to change. */
+  --tabbar-h: 76px;
 }
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; }
@@ -142,26 +148,10 @@ label.check input { width: auto; margin-top: 0; }
   input, textarea, select { font-size: 16px; }
   button { min-height: 44px; }
 
-  /* The vault light is fixed to the viewport, and on a phone the sidebar
-     is a bottom bar — so at this width the light was sitting on top of the
-     first three tabs. A field report: "It seems to be blocking the PDI
-     menus." The bar is a 52px tap target inside 6px of padding, so the
-     light stands clear of 64px of it plus the home indicator. */
-  .vault-light, .vl-dot {
-    bottom: calc(76px + env(safe-area-inset-bottom));
-    left: 12px;
-  }
-  .vault-light { max-width: calc(100vw - 24px); }
-  /* Second report, same photograph one state along: "Same thing with the
-     small green circle when minimized." Minimized was not small — a 40px
-     solid disc with a heavy shadow, parked over whatever the screen was
-     trying to say. On a phone it becomes a true dot and loses the shadow:
-     still pressable, no longer furniture. QRME's lights settled here after
-     the same report. */
-  .vl-dot {
-    width: 22px; height: 22px; opacity: 0.75;
-    box-shadow: 0 2px 8px rgba(0,0,0,.35);
-  }
+  /* The vault light's phone rules are NOT here. They are at the end of
+     this file, after the base `.vault-light`/`.vl-dot` rules they
+     override, because they used to be here and that is why they never
+     applied. See the block down there for the whole account. */
 }
 
 /* The version-mismatch banner — visible on every screen until the older
@@ -224,5 +214,43 @@ label.check input { width: auto; margin-top: 0; }
   *, *::before, *::after {
     animation: none !important;
     transition: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   The vault light, above the tab bar — and this time the rule applies.
+
+   Two field reports produced this, both photographs of the PDI beta on a
+   phone. The first: "It seems to be blocking the PDI menus" — the light
+   sitting squarely over the first three tabs, taking the taps. The second,
+   one state along: "Same thing with the small green circle when minimized"
+   — the minimized state was a 40px solid disc with a heavy shadow, which
+   is not minimized, only quieter.
+
+   Both were answered, in a rule written inside the layout media block two
+   hundred lines above `.vault-light { bottom: 22px }`. Same specificity,
+   later wins. **The answer never once applied**, in either state, and the
+   comment above it explained the fix a reader could not see working.
+
+       asked     is there a rule that lifts the light off the bar
+       mattered  is that the rule the browser uses
+
+   So the phone rules live here, after everything they override. The
+   second thing is the number: `76px` was a guess about the bar's height,
+   and the bar is as tall as its labels, which are translated into ten
+   languages and wrap sooner in the longer ones. The bar measures itself
+   and publishes `--tabbar-h` (see `App.tsx`); the `76px` `:root` declares
+   is what a browser with no ResizeObserver gets, which is the case the
+   guess was written for.
+   --------------------------------------------------------------------- */
+@media (max-width: 760px) {
+  .vault-light, .vl-dot {
+    left: 12px;
+    bottom: calc(var(--tabbar-h) + 12px + env(safe-area-inset-bottom));
+  }
+  .vault-light { max-width: calc(100vw - 24px); }
+  .vl-dot {
+    width: 22px; height: 22px; opacity: 0.75;
+    box-shadow: 0 2px 8px rgba(0,0,0,.35);
   }
 }

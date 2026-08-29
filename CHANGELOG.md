@@ -8,6 +8,34 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [2.7.0] - 2026-08-29
 
+### Fixed
+
+- **Two field reports were answered by a rule the browser never used.**
+  *"It seems to be blocking the PDI menus"* — the vault light sitting over
+  the first three tabs of the bottom bar on a phone — and, one state
+  along, *"Same thing with the small green circle when minimized."* Both
+  were answered in the same round, in a phone rule written two hundred
+  lines above the base `.vault-light { bottom: 22px }`. Same specificity,
+  later wins. **Neither answer ever applied**, in either state, and both
+  reports were closed against a fix that a person reading the file could
+  see and a browser could not.
+  - The phone rules now sit at the end of the stylesheet, after everything
+    they override. The clearance is measured rather than guessed: the bar
+    is as tall as its labels, which are translated into ten languages, so
+    it measures itself and publishes `--tabbar-h` rather than trusting the
+    old `76px`.
+  - `test_nothing_floats_over_a_control` reads the stylesheet for which
+    rule *wins*. The guard that already asked this question,
+    `test_the_light_sat_on_the_menu`, asked whether a lifting rule exists
+    — it existed — and that is why two answered reports stayed broken for
+    two releases.
+
+### Changed
+
+- **The front-page gallery is photographs of the running vault**, not
+  drawings of it — 16 screens shot against a real backend, a real build
+  and a real enrolment.
+
 ### Changed
 
 - **The trio returns to one number.** Every README in this estate promises
