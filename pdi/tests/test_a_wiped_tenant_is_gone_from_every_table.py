@@ -119,7 +119,7 @@ def test_a_wipe_leaves_no_row_naming_the_tenant_anywhere(client):
     against the four statements somebody wrote first."""
     tid, _ = _busy_tenant(client)
     before = _rows_naming(tid)
-    assert len(before) >= 5, (
+    assert len(before) >= ratchets.floor("wipe.busy_tenant_tables"), (
         f"the fixture only reached {sorted(before)} — it is not exercising "
         f"enough of the schema to prove anything about a cascade")
 
@@ -173,7 +173,8 @@ def test_the_retention_sweep_leaves_no_row_either(client, monkeypatch):
     """The unwatched path. An operator reads a wipe's response; nobody reads
     the sweep's, which is why it is the worse place for a short list."""
     tid, _ = _busy_tenant(client)
-    assert len(_rows_naming(tid)) >= 5
+    assert len(_rows_naming(tid)) >= ratchets.floor(
+        "wipe.busy_tenant_tables")
     client.delete(f"/tenants/{tid}?mode=soft")
 
     # Recovery window of zero days: the soft-deleted tenant is immediately

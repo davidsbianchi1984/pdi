@@ -122,14 +122,161 @@ def _markup_strings() -> int:
     return scanned()
 
 
+# -- measures that have to run to be counted ---------------------------------
+#
+# Five floors in `unregistered_floors.txt` stood under *what a live drive
+# reached*, and every other measure in this file is a static scan. A scan of
+# the population is the wrong denominator for them: most of a client's
+# templates carry an id the fixture cannot substitute and are unreachable by
+# construction, so measuring 8 against the Swift client's bindings would
+# demand a floor above anything the drive can ever reach.
+#
+#     asked     how much of this client exists
+#     mattered  how much of it did the probe actually reach
+#
+# The two erase measures came here for a different reason. Both read
+# `db.connect()`, which answers about whichever database the process is
+# pointed at — inside the suite one fixture's temporary file, chosen by
+# whatever ran last; alone, the repository's own. The number moved with the
+# run, so the audit compared each floor against a different quantity every
+# time and could report on neither. They get a vault of their own.
+#
+#     asked     is the floor near what it measures
+#     mattered  is it measuring the same thing twice
+
+
+def _in_a_fresh_vault(work):
+    """Run `work()` against an empty PDI, then put the room back.
+
+    The environment is borrowed and restored: this runs inside a suite whose
+    own fixtures point `PDI_DB` at their own temporary files, and a measure
+    that left the pointer moved would be a guard breaking the run it audits.
+    A master key is minted for the same reason the client fixture mints one —
+    without it nothing seals, and a vault that cannot seal answers every one
+    of these routes with an empty list.
+    """
+    import base64
+    import os
+    import pathlib
+    import tempfile
+
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
+    from pdi import db as pdi_db
+
+    kept = {name: os.environ.get(name)
+            for name in ("PDI_DB", "PDI_MASTER_KEY", "PDI_ADMIN_TOKEN")}
+    with tempfile.TemporaryDirectory() as tmp:
+        os.environ["PDI_DB"] = str(pathlib.Path(tmp) / "pdi.db")
+        os.environ["PDI_MASTER_KEY"] = base64.b64encode(
+            AESGCM.generate_key(bit_length=256)).decode()
+        pdi_db.reset()
+        try:
+            return work()
+        finally:
+            pdi_db.reset()
+            for name, value in kept.items():
+                if value is None:
+                    os.environ.pop(name, None)
+                else:
+                    os.environ[name] = value
+            pdi_db.reset()
+
+
+def _driving(work):
+    """Run `work(client, token, key)` against a throwaway vault and count.
+
+    The scene comes from the guards' own `_standing`, so the measure and the
+    guard it audits drive the same tenant rather than two setups that agree
+    until the day one of them changes.
+    """
+    def go() -> int:
+        from fastapi.testclient import TestClient
+
+        def driven() -> int:
+            from pdi.api import create_app
+            from .test_the_shape_the_client_expects import _standing
+            with TestClient(create_app()) as client:
+                return work(client, *_standing(client))
+
+        return _in_a_fresh_vault(driven)
+    return go
+
+
+def _reached(module: str):
+    """The bindings one client's drive actually got an answer out of."""
+    def work(client, token, key) -> int:
+        from importlib import import_module
+        driven = import_module(f".{module}", __package__)._drive(
+            client, token, key)
+        return sum(1 for row in driven if row[-1] is not None)
+    return _driving(work)
+
+
+def _bodies_validated() -> int:
+    """The body-taking routes the canary sweep got as far as validation on."""
+    def work(client, _token, _key) -> int:
+        from .test_the_refusal_that_handed_the_body_back import _sweep
+        return _sweep(client)[1]
+    return _driving(work)()
+
+
+def _busy_tenant_tables() -> int:
+    """The tables a tenant that has actually used the product appears in.
+
+    The floor under it asks whether the wipe fixture exercises enough of the
+    schema to prove anything about a cascade, and the schema grows. Five was
+    written when it was most of them.
+    """
+    def work(client, _token, _key) -> int:
+        from .test_a_wiped_tenant_is_gone_from_every_table import (
+            _busy_tenant, _rows_naming)
+        tid, _ = _busy_tenant(client)
+        return len(_rows_naming(tid))
+    return _driving(work)()
+
+
+def _isolation_routes_seen() -> int:
+    """The routes the isolation sweep finds a tenant's own data on.
+
+    Its own deployment rather than the shared one: this is the file that says
+    in its own docstring why the ordinary client fixture would make it report
+    a result it never measured — an admin token set, and callers off-machine.
+    """
+    def go() -> int:
+        import os
+
+        from fastapi.testclient import TestClient
+
+        from . import test_one_tenant_cannot_read_another as m
+
+        # The admin token is part of that file's deployment, and
+        # `_in_a_fresh_vault` puts it back with the rest.
+        os.environ["PDI_ADMIN_TOKEN"] = m.ADMIN
+        from pdi.api import create_app
+        with TestClient(create_app(), client=m.FROM_THE_NETWORK) as client:
+            alpha, _ = m._two_tenants(client)
+            made = m._seed(client, alpha)
+            seen, _ = m._read_sweep(
+                client, made,
+                {"authorization": f"Bearer {alpha['token']}"})
+            return len(seen)
+
+    return _in_a_fresh_vault(go)
+
+
 def _erase_planted() -> int:
-    from .test_an_erase_is_measured_against_the_schema import plantable
-    return plantable()
+    def go():
+        from .test_an_erase_is_measured_against_the_schema import plantable
+        return plantable()
+    return _in_a_fresh_vault(go)
 
 
 def _erase_scoped() -> int:
-    from .test_an_erase_is_measured_against_the_schema import scoped_tables
-    return len(scoped_tables())
+    def go():
+        from .test_an_erase_is_measured_against_the_schema import scoped_tables
+        return len(scoped_tables())
+    return _in_a_fresh_vault(go)
 
 
 def _route_shapes() -> int:
@@ -877,9 +1024,27 @@ RATCHETS: tuple[Ratchet, ...] = (
             "TypeScript sources the console sink sweep reads"),
     Ratchet("console.calls_typed", 90, _calls_typed,
             "console calls that declare the shape they expect back"),
-    Ratchet("erase.tables_planted", 14, _erase_planted,
+    Ratchet("swift.driven", 21,
+            _reached("test_the_shape_the_swift_client_expects"),
+            "the Swift bindings the shape drive gets an answer out of"),
+    Ratchet("windows.driven", 23,
+            _reached("test_the_shape_the_client_expects"),
+            "the Windows records the shape drive gets an answer out of"),
+    Ratchet("console.driven", 25,
+            _reached("test_the_shape_the_console_expects"),
+            "the console read calls the shape drive gets an answer out of"),
+    Ratchet("android.driven", 28,
+            _reached("test_the_keys_the_android_client_reads"),
+            "the Android reads the key drive gets an answer out of"),
+    Ratchet("routes.body_validated", 28, _bodies_validated,
+            "the body-taking routes the canary sweep reaches validation on"),
+    Ratchet("wipe.busy_tenant_tables", 5, _busy_tenant_tables,
+            "the tables a tenant that has used the product appears in"),
+    Ratchet("isolation.routes_seen", 11, _isolation_routes_seen,
+            "the routes the isolation sweep finds a tenant's own data on"),
+    Ratchet("erase.tables_planted", 18, _erase_planted,
             "tables this suite can put a probe row into"),
-    Ratchet("erase.scoped_tables", 16, _erase_scoped,
+    Ratchet("erase.scoped_tables", 18, _erase_scoped,
             "tables the schema scopes to a single tenant"),
     Ratchet("route.declared_shapes", 105, _route_shapes,
             "routes whose answer is decisively a list or an object"),

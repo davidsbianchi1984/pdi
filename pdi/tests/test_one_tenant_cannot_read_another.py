@@ -42,6 +42,7 @@ import re
 import pytest
 from fastapi.testclient import TestClient
 
+from . import ratchets
 from .clientpaths import all_routes
 
 #: What tenant alpha's data says. If any of it reaches bravo, the sweep says so.
@@ -177,7 +178,7 @@ def test_the_sweep_can_see_what_it_is_looking_for(deployed):
     made = _seed(deployed, alpha)
     seen, _ = _read_sweep(deployed, made,
                           {"authorization": f"Bearer {alpha['token']}"})
-    assert len(seen) >= 6, (
+    assert len(seen) >= ratchets.floor("isolation.routes_seen"), (
         f"the sweep found alpha's own data on only {len(seen)} routes. It is "
         "not looking at anything, and the isolation check below would pass on "
         f"a product it never asked. Seeded: {sorted(made)}")

@@ -1,5 +1,5 @@
-# status: backlog — 8 rows
-# ceiling: 8
+# status: backlog — 0 rows
+# ceiling: 0
 #
 # Every numeric floor in this suite still carrying its own literal: an
 # `assert <something> > <int>` with the number written into the assertion.
@@ -34,6 +34,45 @@
 # Those are now in `ratchets.py`, registered with the way to measure the same
 # quantity, and audited every run. The rows below are what is left.
 #
+# ## 2.7.1: the file empties, and the vault's own three were the interesting ones
+#
+# Five of the eight were the drive-reach floors the sibling products carry —
+# `the scan reaches a real share`, standing under what a live drive got an
+# answer out of. They had stayed outside `ratchets.py` because every other
+# measure here is a static scan, and a scan of the *population* is the wrong
+# denominator: most of a client's templates carry an id the fixture cannot
+# substitute and are unreachable by construction. So those five measures
+# drive.
+#
+#     swift.driven             8 -> 21   against 29 reached
+#     windows.driven          10 -> 23   against 31
+#     console.driven          25 -> 25   against 32   already honest
+#     android.driven          14 -> 28   against 38
+#     routes.body_validated   25 -> 28   against 38
+#
+# The three this vault has and its siblings do not were the ones worth the
+# afternoon, because both are floors under how much of the schema a *safety*
+# guard exercises:
+#
+#     wipe.busy_tenant_tables  5 ->  5   against 6 tables   already honest
+#     isolation.routes_seen    6 -> 11   against 15 routes
+#
+# The second is the one to read twice. `len(seen) >= 6` stands under the
+# sweep that proves one tenant cannot read another's data — and the sweep
+# reaches fifteen routes. At six, nine of them could have stopped being
+# looked at and the isolation check would still have reported a clean
+# product it never asked. That is the exact sentence the assertion's own
+# message warns about, written under a number that could not enforce it.
+#
+# And the erase pair came along for the reason they had in both siblings:
+# both read `db.connect()`, which answers about whichever database the
+# process is pointed at, so the audit compared each floor against a
+# different quantity every run. They measure a vault of their own now.
+#
+#     asked     is the floor near what it measures
+#     mattered  is it measuring the same thing twice
+#
+
 # ## How a row leaves this file
 #
 # Register it in `ratchets.py` with a `measure` callable and change the
@@ -108,11 +147,3 @@
 # The measurement they need is the drive itself, and the drive is the
 # test they live in.
 #
-test_a_wiped_tenant_is_gone_from_every_table.py:122: len(before) >= 5
-test_a_wiped_tenant_is_gone_from_every_table.py:176: len(_rows_naming(tid)) >= 5
-test_one_tenant_cannot_read_another.py:180: len(seen) >= 6
-test_the_keys_the_android_client_reads.py:386: len(driven) >= 14
-test_the_refusal_that_handed_the_body_back.py:168: reached > 25
-test_the_shape_the_client_expects.py:311: len(driven) >= 10
-test_the_shape_the_console_expects.py:455: len(driven) >= 25
-test_the_shape_the_swift_client_expects.py:229: len(driven) >= 8

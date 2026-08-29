@@ -308,7 +308,7 @@ def test_the_extractor_finds_this_products_calls():
 def test_the_scan_reaches_a_real_share_of_the_bindings(client):
     token, key = _standing(client)
     driven = [m for _, _, m in _drive(client, token, key) if m is not None]
-    assert len(driven) >= 10, (
+    assert len(driven) >= ratchets.floor("windows.driven"), (
         f"only {len(driven)} binding(s) were reachable — the fixture or the "
         f"extractor has stopped working")
 
