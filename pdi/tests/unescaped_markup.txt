@@ -1,4 +1,4 @@
-# status: backlog — 5 rows
+# status: backlog — 1 row
 #
 # Every interpolation into markup whose value the sweep cannot see reach an
 # escape. Written by `test_a_page_never_prints_what_it_was_given.py`.
@@ -30,6 +30,39 @@
 #
 # It does not read prose as markup: `http://localhost:<port>` in a WebAuthn
 # diagnostic is a sentence, and the first draft called it a page.
+#
+# ## 2.7.2: four of the five were the sweep's blind spots, not the page's
+#
+# Every row here was read as *a composite the analysis cannot follow*, and
+# that was true. What was not asked is whether the analysis should be able
+# to follow it. Four of the five were ordinary safe shapes:
+#
+#   a join over a comprehension   `"".join(f"<b>{escape(p)}</b>" for p in ps)`
+#   a list built by append        `out = [...]`, `out.append(...)`, joined
+#   a translated template         `t("… {holder}").format(holder=escape(h))`
+#   a private function's parameter  `_page(title, body)` — read at its callers
+#
+# and a `%` mapping of escaped values. None of them is a hard question; each
+# was simply a node type the walk returned False on, and the record filled up
+# with correct code because the reader was narrow.
+#
+#     asked     can this expression be followed
+#     mattered  should it have to be written differently to be
+#
+# Two of those widenings needed the walk to get more careful rather than more
+# generous. A list is only as safe as everything appended to it, so `append`
+# and `extend` are collected as more elements and anything else that touches
+# the name — a subscript assignment, an `insert`, a pass into a call that
+# could append inside — disqualifies it: an unmodelled mutation must never
+# read as safety. And a private function's parameter is as safe as the worst
+# thing any caller passes, checked at every call site, and only for a name
+# that is private *and* imported nowhere else.
+#
+# The remaining row is the honest one. `{body}` in `_page` is now followed
+# to its three callers, and every part of every one of them is followed
+# except `pagehead.script_open()` — a call into another module. This
+# analysis does not cross module boundaries, and saying so is better than
+# widening until it can be told nothing.
 #
 # ## How a row leaves this file
 #
@@ -69,8 +102,4 @@
 # reading the code are how that begins.
 #
 # ceiling: 5
-landing.py: {_rows(card, language)}
 landing.py: {body}
-landing.py: {chips}
-landing.py: {options}
-landing.py: {who}
