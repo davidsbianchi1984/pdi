@@ -6,6 +6,29 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **`test_a_media_query_adds_no_specificity.py`, carried by all three
+  products.** This defect has shipped four times across the estate — the
+  `.vault-light` lift fixed here, `.help-fab` in JIM-mini, and
+  `.talk-panel` and `.waveform` in QRME — and no test said a word about
+  any of them. Each time somebody wrote the override, read it back, and had
+  every reason to believe it worked; the browser disagreed because a media
+  query adds no specificity, so between two rules on the identical selector
+  the later one wins on source order alone.
+
+      asked     is there a rule that overrides it
+      mattered  is that the rule the browser uses
+
+  The check compares only *textually identical* selectors, so a hit is never
+  a specificity judgement call. `.dock .thing` beating `.thing` is the
+  cascade working and is not reported. Three of its four tests are about the
+  checker rather than the sheet — it fails on a sample that has the defect,
+  passes the same sample reordered, and leaves a more specific later
+  selector alone — because a checker whose only evidence is a green run is
+  not evidence. This console is clean; the guard is here so it stays that
+  way.
+
 ## [2.7.1] - 2026-08-30
 
 ### Fixed
