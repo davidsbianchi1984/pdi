@@ -6,6 +6,38 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.7.1] - 2026-08-30
+
+### Fixed
+
+- **Both field reports about the vault light are answered for the first
+  time.** *"It seems to be blocking the PDI menus"* and, one state along,
+  *"Same thing with the small green circle when minimized."* Both were
+  answered in the same round, in a phone rule written two hundred lines
+  above the base `.vault-light { bottom: 22px }`. Same specificity, later
+  wins — neither answer had ever applied.
+  - The phone rules sit at the end of the stylesheet now, and the clearance
+    is measured rather than guessed: the bar publishes `--tabbar-h` rather
+    than being assumed 76px tall.
+  - The dot then turned out to render 22 wide and 44 tall — an ellipse. It
+    is a `<button>`, and the phone block sets `button { min-height: 44px }`
+    so every control is a real tap target; `min-height` beats `height`. The
+    button is the tap target now and carries no paint; a face inside it is
+    the circle.
+
+- **The screenshot harness builds the console before photographing it.**
+  The build was a requirement written in prose and never checked, so a
+  gallery could be re-shot to show a fix and photograph a bundle from days
+  earlier.
+
+### Changed
+
+- **Every numeric floor in the suite is registered and audited.** Eight
+  rows left `unregistered_floors.txt`, including the floor under the sweep
+  that proves one tenant cannot read another's data: it stood at six of the
+  fifteen routes that sweep reaches, so nine could have stopped being
+  looked at with the isolation check still passing.
+
 ## [2.7.0] - 2026-08-29
 
 ### Fixed
@@ -7776,7 +7808,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.7.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.7.1...HEAD
+[2.7.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.7.0...app-v2.7.1
 [2.7.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.3.1...app-v2.7.0
 [2.3.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.3.0...app-v2.3.1
 [2.3.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.2.0...app-v2.3.0
