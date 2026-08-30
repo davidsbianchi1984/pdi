@@ -39,7 +39,7 @@ The same system, glanceable on a phone. Regenerate with `python3 docs/screens/bu
 <tr>
 <td align="center" width="25%"><a href="screens/001-overview.png"><img src="screens/001-overview.png" width="210" alt="Overview — PDI desktop console"></a><br><sub><b>01</b> · Overview</sub></td>
 <td align="center" width="25%"><a href="screens/002-records.png"><img src="screens/002-records.png" width="210" alt="Vault — PDI desktop console"></a><br><sub><b>02</b> · Vault</sub></td>
-<td align="center" width="25%"><a href="screens/03-store-a-record.svg"><img src="screens/03-store-a-record.svg" width="210" alt="Store a Record — PDI desktop console"></a><br><sub><b>03</b> · Store a Record</sub></td>
+<td align="center" width="25%"><a href="screens/3-store-a-record.png"><img src="screens/3-store-a-record.png" width="210" alt="Store a Record — PDI desktop console"></a><br><sub><b>03</b> · Store a Record</sub></td>
 <td align="center" width="25%"><a href="screens/04-encryption.svg"><img src="screens/04-encryption.svg" width="210" alt="Encryption — PDI desktop console"></a><br><sub><b>04</b> · Encryption</sub></td>
 </tr>
 </table>
@@ -137,7 +137,7 @@ The first-run journey runs **23 Welcome → 22 Log In → 24 Key Setup → 25 Gr
 <td align="center" width="25%"><a href="screens/39-gate-agents.svg"><img src="screens/39-gate-agents.svg" width="210" alt="Gate Agents"></a><br><sub><b>39</b> · Gate Agents</sub></td>
 </tr>
 <tr>
-<td align="center" width="25%"><a href="screens/40-audit.svg"><img src="screens/40-audit.svg" width="210" alt="Audit with the agent overlay"></a><br><sub><b>40</b> · Audit · overlay</sub></td>
+<td align="center" width="25%"><a href="screens/40-audit-accepted.png"><img src="screens/40-audit-accepted.png" width="210" alt="Audit with the agent overlay"></a><br><sub><b>40</b> · Audit · overlay</sub></td>
 <td align="center" width="25%"><a href="screens/41-console-guide.svg"><img src="screens/41-console-guide.svg" width="210" alt="Console Guide"></a><br><sub><b>41</b> · Console Guide</sub></td>
 <td align="center" width="25%"><a href="screens/42-where-it-lives.svg"><img src="screens/42-where-it-lives.svg" width="210" alt="Where It Lives"></a><br><sub><b>42</b> · Where It Lives</sub></td>
 <td align="center" width="25%"><a href="screens/43-the-corner-pane.svg"><img src="screens/43-the-corner-pane.svg" width="210" alt="The Corner Pane"></a><br><sub><b>43</b> · The Corner Pane</sub></td>
@@ -145,7 +145,7 @@ The first-run journey runs **23 Welcome → 22 Log In → 24 Key Setup → 25 Gr
 <tr>
 <td align="center" width="25%"><a href="screens/44-choose-a-home.svg"><img src="screens/44-choose-a-home.svg" width="210" alt="Choose a Home"></a><br><sub><b>44</b> · Choose a Home</sub></td>
 <td align="center" width="25%"><a href="screens/45-request-a-quote.svg"><img src="screens/45-request-a-quote.svg" width="210" alt="Request a Quote"></a><br><sub><b>45</b> · Request a Quote</sub></td>
-<td align="center" width="25%"><a href="screens/46-what-went-wrong.svg"><img src="screens/46-what-went-wrong.svg" width="210" alt="What Went Wrong"></a><br><sub><b>46</b> · What Went Wrong</sub></td>
+<td align="center" width="25%"><a href="screens/46-what-went-wrong.png"><img src="screens/46-what-went-wrong.png" width="210" alt="What Went Wrong"></a><br><sub><b>46</b> · What Went Wrong</sub></td>
 <td align="center" width="25%"><a href="screens/047-before-anything-is-sent.png"><img src="screens/047-before-anything-is-sent.png" width="210" alt="Before Anything Is Sent"></a><br><sub><b>47</b> · Before Anything Is Sent</sub></td>
 </tr>
 <tr>

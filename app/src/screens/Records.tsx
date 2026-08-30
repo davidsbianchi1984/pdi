@@ -66,7 +66,7 @@ export function Records({ go }: { go: (tab: "tenants") => void }) {
         </span>
       </header>
 
-      <div className="card">
+      <div className="card" data-screen="3">
         <h3>{t("rec.seal.head", lang)}</h3>
         <label>{t("rec.key", lang)}
           <input value={key} onChange={(e) => setKey(e.target.value)} />

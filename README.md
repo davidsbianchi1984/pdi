@@ -122,7 +122,7 @@ tellings and the complete tour of all 58 live in
 <table>
   <tr>
     <td align="center" width="25%"><a href="docs/screens/002-records.png"><img src="docs/screens/002-records.png" width="165" alt="Vault"></a><br><sub><b>02</b> · Vault<br>what is held, sealed at rest</sub></td>
-    <td align="center" width="25%"><a href="docs/screens/03-store-a-record.svg"><img src="docs/screens/03-store-a-record.svg" width="165" alt="Store a record"></a><br><sub><b>03</b> · Store a record<br>one record in, one seal on it</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/3-store-a-record.png"><img src="docs/screens/3-store-a-record.png" width="165" alt="Store a record"></a><br><sub><b>03</b> · Store a record<br>one record in, one seal on it</sub></td>
     <td align="center" width="25%"><a href="docs/screens/04-encryption.svg"><img src="docs/screens/04-encryption.svg" width="165" alt="Encryption"></a><br><sub><b>04</b> · Encryption<br>the envelope scheme, drawn honestly</sub></td>
     <td align="center" width="25%"><a href="docs/screens/13-key-management.svg"><img src="docs/screens/13-key-management.svg" width="165" alt="Key management"></a><br><sub><b>13</b> · Key management<br>rotation without a decrypt parade</sub></td>
   </tr>
@@ -145,7 +145,7 @@ tellings and the complete tour of all 58 live in
   <tr>
     <td align="center" width="25%"><a href="docs/screens/008-audit.png"><img src="docs/screens/008-audit.png" width="165" alt="Audit log"></a><br><sub><b>08</b> · Audit log<br>every act, chained to the one before</sub></td>
     <td align="center" width="25%"><a href="docs/screens/09-verify-chain.svg"><img src="docs/screens/09-verify-chain.svg" width="165" alt="Verify the chain"></a><br><sub><b>09</b> · Verify the chain<br>tamper shows; verification is a button</sub></td>
-    <td align="center" width="25%"><a href="docs/screens/40-audit.svg"><img src="docs/screens/40-audit.svg" width="165" alt="Audit"></a><br><sub><b>40</b> · Audit<br>the reviewer's whole view</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/40-audit-accepted.png"><img src="docs/screens/40-audit-accepted.png" width="165" alt="Audit"></a><br><sub><b>40</b> · Audit<br>the reviewer's whole view</sub></td>
     <td align="center" width="25%"><a href="docs/screens/11-snapshot-restore.svg"><img src="docs/screens/11-snapshot-restore.svg" width="165" alt="Snapshot & restore"></a><br><sub><b>11</b> · Snapshot & restore<br>a backup you have restored from is a fact</sub></td>
   </tr>
 </table>
@@ -167,7 +167,7 @@ tellings and the complete tour of all 58 live in
   <tr>
     <td align="center" width="25%"><a href="docs/screens/15-data-promise.svg"><img src="docs/screens/15-data-promise.svg" width="165" alt="The data promise"></a><br><sub><b>15</b> · The data promise<br>what never leaves, in writing</sub></td>
     <td align="center" width="25%"><a href="docs/screens/047-before-anything-is-sent.png"><img src="docs/screens/047-before-anything-is-sent.png" width="165" alt="Before anything is sent"></a><br><sub><b>47</b> · Before anything is sent<br>the notice ahead of the first byte</sub></td>
-    <td align="center" width="25%"><a href="docs/screens/46-what-went-wrong.svg"><img src="docs/screens/46-what-went-wrong.svg" width="165" alt="What went wrong"></a><br><sub><b>46</b> · What went wrong<br>errors reported home, scrubbed</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/46-what-went-wrong.png"><img src="docs/screens/46-what-went-wrong.png" width="165" alt="What went wrong"></a><br><sub><b>46</b> · What went wrong<br>errors reported home, scrubbed</sub></td>
     <td align="center" width="25%"><a href="docs/screens/17-system-health.svg"><img src="docs/screens/17-system-health.svg" width="165" alt="System health"></a><br><sub><b>17</b> · System health<br>the machine's own pulse</sub></td>
   </tr>
 </table>

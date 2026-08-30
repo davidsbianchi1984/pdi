@@ -165,6 +165,99 @@ def open_tab(page, tab: str) -> bool:
 
 
 
+def answer_the_notice(page) -> None:
+    """Answer the problem-reporting consent card, if it is asking.
+
+    Idempotent: on a browser that has already answered, nothing matches
+    and this does nothing. It is called before every card portrait because
+    a recipe that clears `localStorage` puts the card right back, and
+    every capture after that one would carry it.
+    """
+    for label in ("That's fine", "No thanks", "Yes, send them"):
+        button = page.query_selector(f"text={label}")
+        if button:
+            button.click()
+            page.wait_for_timeout(400)
+            return
+
+
+def tuck_the_widgets(page) -> None:
+    """Minimise the floating widgets, the way a person does — pressed, not
+    hidden, so what is photographed stays a state the product can be in."""
+    for control in (".wl-min", ".vl-min", ".uw-min"):
+        minimise = page.query_selector(control)
+        if minimise:
+            minimise.evaluate("el => el.click()")
+            page.wait_for_timeout(200)
+
+
+#: Screens that are a card on a screen, not a screen of their own.
+#:
+#: The census lets one component own several numbers — `Records 2,3`,
+#: `Audit 8,40` — because a component draws more than one thing a person
+#: meets. The tab captures the whole page; these are the parts of it the
+#: gallery numbers separately, and until now every one was a drawing for
+#: the same reason: the camera could photograph a page and nothing smaller.
+#:
+#:     asked     can the camera reach every page
+#:     mattered  can it reach everything the gallery numbers
+#:
+#: Found by `data-screen="<number>"` on the element that owns it — the same
+#: shape as the nav's `data-tab`, and for the same reason: a marker in the
+#: markup is a thing the camera and the reader can both check.
+ELEMENTS: tuple[tuple[str, str, str, tuple[str, ...]], ...] = (
+    ("3", "store-a-record", "records", ()),
+    ("40", "audit-accepted", "audit", ()),
+    ("46", "what-went-wrong", "settings", ()),
+)
+
+
+#: What the shell floats over every screen, hidden while a card sits for
+#: its portrait: an element screenshot is a crop of the rendered page, so
+#: anything `position: fixed` lands in the picture. Hiding it here hides
+#: nothing from the gallery — each is on every page capture.
+FURNITURE = (".help-fab", ".help-panel", ".vault-light", ".vl-dot",
+             ".underway", ".uw-dot", ".footsteps")
+
+
+def hide_furniture(page) -> None:
+    page.evaluate(
+        """(sel) => {
+          const style = document.createElement('style');
+          style.id = 'pdi-camera-hide';
+          style.textContent = sel.join(',') + '{visibility:hidden!important}';
+          document.head.appendChild(style);
+        }""", list(FURNITURE))
+
+
+def show_furniture(page) -> None:
+    page.evaluate(
+        """() => {
+          const style = document.getElementById('pdi-camera-hide');
+          if (style) style.remove();
+        }""")
+
+
+def shoot_element(page, session, number, start, presses) -> bool:
+    """Photograph one card, and refuse to photograph the wrong one."""
+    page.evaluate("s => localStorage.setItem('pdi.session', s)",
+                  json.dumps(session))
+    if not open_tab(page, start):
+        print(f"  ? could not open the {start} tab")
+        return False
+    answer_the_notice(page)
+    tuck_the_widgets(page)
+    for press in presses:
+        target = page.query_selector(press)
+        if target is None:
+            print(f"  ? nothing matched {press}")
+            return False
+        target.evaluate("el => el.click()")
+        page.wait_for_timeout(700)
+    page.wait_for_timeout(600)
+    return page.query_selector(f'[data-screen="{number}"]') is not None
+
+
 def census() -> dict[str, int]:
     """Which screen number each console surface is, per `ui_screens.txt`.
 
@@ -326,6 +419,24 @@ def main(shots: list[tuple[str, str, str]]) -> None:
                 page.screenshot(path=str(target), full_page=True)
                 written += 1
                 print(f"  {target.name}")
+
+            # The cards. Same refusal as the pages: a recipe whose element
+            # is not on the page writes nothing and says so.
+            for number, stem, start, presses in ELEMENTS:
+                if not shoot_element(page, session, number, start, presses):
+                    print(f"  ! {number}-{stem}: never reached — "
+                          "nothing written")
+                    continue
+                el = page.query_selector(f'[data-screen="{number}"]')
+                el.scroll_into_view_if_needed()
+                page.wait_for_timeout(250)
+                target = OUT / f"{number}-{stem}.png"
+                hide_furniture(page)
+                el.screenshot(path=str(target))
+                show_furniture(page)
+                written += 1
+                print(f"  {target.name}")
+
             browser.close()
     finally:
         proc.terminate()

@@ -6,6 +6,31 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The camera can photograph a card, not just a page, and this console's
+  gallery is complete.** The census lets one component own several numbers
+  — `Records 2,3`, `Audit 8,40` — because a component draws more than one
+  thing a person meets, and until now the camera could reach a page and
+  nothing smaller. All three of this product's remaining drawings were
+  states of that kind: storing a record (3), an accepted audit (40), and
+  what went wrong (46).
+
+      asked     can the camera reach every tab
+      mattered  can it reach everything the gallery numbers
+
+  A state is found by `data-screen="<number>"` on the element that owns it
+  — the same shape as the nav's `data-tab`, and for the same reason: a
+  marker in the markup is a thing the camera and the reader can both
+  check, where a selector guessed from outside silently starts matching
+  the wrong card. Card portraits hide the shell's fixed furniture while
+  they sit, because an element screenshot is a crop of the rendered page.
+
+  **No drawing in this product now stands in for a screen the console
+  has.** The other thirty-eight depict screens nothing here owns; see
+  `superseded_drawings.txt` for why removing them is a decision about what
+  a screen number means rather than a cleanup.
+
 ## [2.8.0] - 2026-08-30
 
 ### Added
