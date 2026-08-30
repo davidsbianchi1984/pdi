@@ -36,136 +36,53 @@ The same system, glanceable on a phone. Regenerate with `python3 docs/screens/bu
 **The vault**
 
 <table>
-<tr>
-<td align="center" width="25%"><a href="screens/001-overview.png"><img src="screens/001-overview.png" width="210" alt="Overview — PDI desktop console"></a><br><sub><b>01</b> · Overview</sub></td>
-<td align="center" width="25%"><a href="screens/002-records.png"><img src="screens/002-records.png" width="210" alt="Vault — PDI desktop console"></a><br><sub><b>02</b> · Vault</sub></td>
-<td align="center" width="25%"><a href="screens/3-store-a-record.png"><img src="screens/3-store-a-record.png" width="210" alt="Store a Record — PDI desktop console"></a><br><sub><b>03</b> · Store a Record</sub></td>
-<td align="center" width="25%"><a href="screens/04-encryption.svg"><img src="screens/04-encryption.svg" width="210" alt="Encryption — PDI desktop console"></a><br><sub><b>04</b> · Encryption</sub></td>
-</tr>
+  <tr>
+    <td align="center" width="25%"><a href="screens/01-overview.png"><img src="screens/01-overview.png" width="210" alt="Overview — PDI desktop console"></a><br><sub><b>01</b> · Overview</sub></td>
+    <td align="center" width="25%"><a href="screens/02-records.png"><img src="screens/02-records.png" width="210" alt="Vault — PDI desktop console"></a><br><sub><b>02</b> · Vault</sub></td>
+    <td align="center" width="25%"><a href="screens/03-store-a-record.png"><img src="screens/03-store-a-record.png" width="210" alt="Store a Record — PDI desktop console"></a><br><sub><b>03</b> · Store a Record</sub></td>
+    <td align="center" width="25%"><a href="screens/04-tenants.png"><img src="screens/04-tenants.png" width="210" alt="Tenants — PDI desktop console"></a><br><sub><b>04</b> · Tenants</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="33%"><a href="screens/05-audit.png"><img src="screens/05-audit.png" width="210" alt="Audit Log — PDI desktop console"></a><br><sub><b>05</b> · Audit Log</sub></td>
+    <td align="center" width="25%"><a href="screens/06-keys.png"><img src="screens/06-keys.png" width="210" alt="Key Setup — KMS/HSM or master key"></a><br><sub><b>06</b> · Key Setup</sub></td>
+    <td align="center" width="25%"><a href="screens/07-audit-accepted.png"><img src="screens/07-audit-accepted.png" width="210" alt="Audit with the agent overlay"></a><br><sub><b>07</b> · Audit · overlay</sub></td>
+    <td align="center" width="25%"><a href="screens/08-what-went-wrong.png"><img src="screens/08-what-went-wrong.png" width="210" alt="What Went Wrong"></a><br><sub><b>08</b> · What Went Wrong</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="25%"><a href="screens/09-before-anything-is-sent.png"><img src="screens/09-before-anything-is-sent.png" width="210" alt="Before Anything Is Sent"></a><br><sub><b>09</b> · Before Anything Is Sent</sub></td>
+    <td align="center" width="25%"><a href="screens/10-carriers.png"><img src="screens/10-carriers.png" width="210" alt="Carriers"></a><br><sub><b>10</b> · Carriers</sub></td>
+    <td align="center" width="25%"><a href="screens/11-exchange.png"><img src="screens/11-exchange.png" width="210" alt="Exchange"></a><br><sub><b>11</b> · Exchange</sub></td>
+    <td align="center" width="25%"><a href="screens/12-custody.png"><img src="screens/12-custody.png" width="210" alt="Custody"></a><br><sub><b>12</b> · Custody</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="25%"><a href="screens/13-bridges.png"><img src="screens/13-bridges.png" width="210" alt="Bridges"></a><br><sub><b>13</b> · Bridges</sub></td>
+    <td align="center" width="25%"><a href="screens/14-guiding.png"><img src="screens/14-guiding.png" width="210" alt="Guiding"></a><br><sub><b>14</b> · Guiding</sub></td>
+    <td align="center" width="25%"><a href="screens/15-continuity.png"><img src="screens/15-continuity.png" width="210" alt="Continuity"></a><br><sub><b>15</b> · Continuity</sub></td>
+    <td align="center" width="25%"><a href="screens/16-operations.png"><img src="screens/16-operations.png" width="210" alt="Operations"></a><br><sub><b>16</b> · Operations</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="25%"><a href="screens/17-positions.png"><img src="screens/17-positions.png" width="210" alt="Positions"></a><br><sub><b>17</b> · Positions</sub></td>
+    <td align="center" width="25%"><a href="screens/18-settings.png"><img src="screens/18-settings.png" width="210" alt="Settings"></a><br><sub><b>18</b> · Settings</sub></td>
+    <td align="center" width="25%"><a href="screens/19-access.png"><img src="screens/19-access.png" width="210" alt="Ability Is Not A Gate"></a><br><sub><b>19</b> · Ability Is Not A Gate</sub></td>
+    <td align="center" width="25%"><a href="screens/20-resident.png"><img src="screens/20-resident.png" width="210" alt="Resident Intelligence"></a><br><sub><b>20</b> · Resident Intelligence</sub></td>
+  </tr>
 </table>
 
 **Tenants, access & intake**
 
-<table>
-<tr>
-<td align="center" width="25%"><a href="screens/005-tenants.png"><img src="screens/005-tenants.png" width="210" alt="Tenants — PDI desktop console"></a><br><sub><b>05</b> · Tenants</sub></td>
-<td align="center" width="25%"><a href="screens/06-create-tenant.svg"><img src="screens/06-create-tenant.svg" width="210" alt="Create Tenant — PDI desktop console"></a><br><sub><b>06</b> · Create Tenant</sub></td>
-<td align="center" width="25%"><a href="screens/07-access-control.svg"><img src="screens/07-access-control.svg" width="210" alt="Access Control — PDI desktop console"></a><br><sub><b>07</b> · Access Control</sub></td>
-<td align="center" width="25%"><a href="screens/10-contributions.svg"><img src="screens/10-contributions.svg" width="210" alt="Contributions — PDI desktop console"></a><br><sub><b>10</b> · Contributions</sub></td>
-</tr>
-</table>
-
 **Audit & integrity**
-
-<table>
-  <tr>
-    <td align="center" width="33%"><a href="screens/008-audit.png"><img src="screens/008-audit.png" width="210" alt="Audit Log — PDI desktop console"></a><br><sub><b>08</b> · Audit Log</sub></td>
-    <td align="center" width="33%"><a href="screens/09-verify-chain.svg"><img src="screens/09-verify-chain.svg" width="210" alt="Verify Chain — PDI desktop console"></a><br><sub><b>09</b> · Verify Chain</sub></td>
-  </tr>
-</table>
 
 **Operations & deployment**
 
-<table>
-<tr>
-<td align="center" width="25%"><a href="screens/11-snapshot-restore.svg"><img src="screens/11-snapshot-restore.svg" width="210" alt="Snapshot & Restore — PDI desktop console"></a><br><sub><b>11</b> · Snapshot & Restore</sub></td>
-<td align="center" width="25%"><a href="screens/12-deployment.svg"><img src="screens/12-deployment.svg" width="210" alt="Deployment — PDI desktop console"></a><br><sub><b>12</b> · Deployment</sub></td>
-<td align="center" width="25%"><a href="screens/13-key-management.svg"><img src="screens/13-key-management.svg" width="210" alt="Key Management — PDI desktop console"></a><br><sub><b>13</b> · Key Management</sub></td>
-<td align="center" width="25%"><a href="screens/17-system-health.svg"><img src="screens/17-system-health.svg" width="210" alt="System Health — PDI desktop console"></a><br><sub><b>17</b> · System Health</sub></td>
-</tr>
-</table>
-
 **Isolation, the promise & the tandem**
-
-<table>
-<tr>
-<td align="center" width="25%"><a href="screens/14-tenant-isolation.svg"><img src="screens/14-tenant-isolation.svg" width="210" alt="Tenant Isolation — PDI desktop console"></a><br><sub><b>14</b> · Tenant Isolation</sub></td>
-<td align="center" width="25%"><a href="screens/15-data-promise.svg"><img src="screens/15-data-promise.svg" width="210" alt="Data Promise — PDI desktop console"></a><br><sub><b>15</b> · Data Promise</sub></td>
-<td align="center" width="25%"><a href="screens/16-your-data.svg"><img src="screens/16-your-data.svg" width="210" alt="Your Data — PDI desktop console"></a><br><sub><b>16</b> · Your Data</sub></td>
-<td align="center" width="25%"><a href="screens/18-tandem.svg"><img src="screens/18-tandem.svg" width="210" alt="Tandem — PDI desktop console"></a><br><sub><b>18</b> · Tandem</sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="screens/19-design-system.svg"><img src="screens/19-design-system.svg" width="210" alt="Design System — PDI desktop console"></a><br><sub><b>19</b> · Design System</sub></td>
-</tr>
-</table>
 
 **First-run setup**
 
 The first-run journey runs **23 Welcome → 22 Log In → 24 Key Setup → 25 Grant Access → 26 Connect Systems → 27 All Set**, then opens the console.
 
-<table>
-<tr>
-<td align="center" width="25%"><a href="screens/23-welcome.svg"><img src="screens/23-welcome.svg" width="210" alt="Welcome — PDI"></a><br><sub><b>23</b> · Welcome</sub></td>
-<td align="center" width="25%"><a href="screens/024-keys.png"><img src="screens/024-keys.png" width="210" alt="Key Setup — KMS/HSM or master key"></a><br><sub><b>24</b> · Key Setup</sub></td>
-<td align="center" width="25%"><a href="screens/25-grant-access.svg"><img src="screens/25-grant-access.svg" width="210" alt="Grant Access — scoped tokens"></a><br><sub><b>25</b> · Grant Access</sub></td>
-<td align="center" width="25%"><a href="screens/26-connect-systems.svg"><img src="screens/26-connect-systems.svg" width="210" alt="Connect Systems — QRME & JIM-mini"></a><br><sub><b>26</b> · Connect Systems</sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="screens/27-all-set.svg"><img src="screens/27-all-set.svg" width="210" alt="All Set — the vault is live"></a><br><sub><b>27</b> · All Set</sub></td>
-</tr>
-</table>
-
 **Operator session lifecycle**
 
-<table>
-  <tr>
-    <td align="center" width="33%"><a href="screens/20-sign-in.svg"><img src="screens/20-sign-in.svg" width="210" alt="Sign In — PDI desktop console"></a><br><sub><b>20</b> · Sign In</sub></td>
-    <td align="center" width="33%"><a href="screens/21-sign-out.svg"><img src="screens/21-sign-out.svg" width="210" alt="Sign Out — PDI desktop console"></a><br><sub><b>21</b> · Sign Out</sub></td>
-    <td align="center" width="33%"><a href="screens/22-log-in.svg"><img src="screens/22-log-in.svg" width="210" alt="Log In — Apple, Google or email"></a><br><sub><b>22</b> · Log In</sub></td>
-  </tr>
-</table>
-
 **Connectors — social platforms & AI-integrated apps**
-
-<table>
-<tr>
-<td align="center" width="25%"><a href="screens/28-connectors.svg"><img src="screens/28-connectors.svg" width="210" alt="Connectors — collect & publish"></a><br><sub><b>28</b> · Connectors</sub></td>
-<td align="center" width="25%"><a href="screens/29-connected-apps.svg"><img src="screens/29-connected-apps.svg" width="210" alt="Connected Apps"></a><br><sub><b>29</b> · Connected Apps</sub></td>
-<td align="center" width="25%"><a href="screens/30-compliance-transfers.svg"><img src="screens/30-compliance-transfers.svg" width="210" alt="Compliance Transfers"></a><br><sub><b>30</b> · Compliance Transfers</sub></td>
-<td align="center" width="25%"><a href="screens/31-secure-intake.svg"><img src="screens/31-secure-intake.svg" width="210" alt="Secure Intake"></a><br><sub><b>31</b> · Secure Intake</sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="screens/32-files-photos.svg"><img src="screens/32-files-photos.svg" width="210" alt="Files & Photos"></a><br><sub><b>32</b> · Files &amp; Photos</sub></td>
-<td align="center" width="25%"><a href="screens/33-apple-intelligence.svg"><img src="screens/33-apple-intelligence.svg" width="210" alt="Apple Intelligence"></a><br><sub><b>33</b> · Apple Intelligence</sub></td>
-<td align="center" width="25%"><a href="screens/34-google-gemini.svg"><img src="screens/34-google-gemini.svg" width="210" alt="Google Gemini"></a><br><sub><b>34</b> · Google Gemini</sub></td>
-<td align="center" width="25%"><a href="screens/35-microsoft-copilot.svg"><img src="screens/35-microsoft-copilot.svg" width="210" alt="Microsoft Copilot"></a><br><sub><b>35</b> · Microsoft Copilot</sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="screens/36-robot-data-vault.svg"><img src="screens/36-robot-data-vault.svg" width="210" alt="Robot Data Vault"></a><br><sub><b>36</b> · Robot Data Vault</sub></td>
-<td align="center" width="25%"><a href="screens/37-custody-beacons.svg"><img src="screens/37-custody-beacons.svg" width="210" alt="Custody Beacons"></a><br><sub><b>37</b> · Custody Beacons</sub></td>
-<td align="center" width="25%"><a href="screens/38-gate-agent.svg"><img src="screens/38-gate-agent.svg" width="210" alt="Gate Agent"></a><br><sub><b>38</b> · Gate Agent</sub></td>
-<td align="center" width="25%"><a href="screens/39-gate-agents.svg"><img src="screens/39-gate-agents.svg" width="210" alt="Gate Agents"></a><br><sub><b>39</b> · Gate Agents</sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="screens/40-audit-accepted.png"><img src="screens/40-audit-accepted.png" width="210" alt="Audit with the agent overlay"></a><br><sub><b>40</b> · Audit · overlay</sub></td>
-<td align="center" width="25%"><a href="screens/41-console-guide.svg"><img src="screens/41-console-guide.svg" width="210" alt="Console Guide"></a><br><sub><b>41</b> · Console Guide</sub></td>
-<td align="center" width="25%"><a href="screens/42-where-it-lives.svg"><img src="screens/42-where-it-lives.svg" width="210" alt="Where It Lives"></a><br><sub><b>42</b> · Where It Lives</sub></td>
-<td align="center" width="25%"><a href="screens/43-the-corner-pane.svg"><img src="screens/43-the-corner-pane.svg" width="210" alt="The Corner Pane"></a><br><sub><b>43</b> · The Corner Pane</sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="screens/44-choose-a-home.svg"><img src="screens/44-choose-a-home.svg" width="210" alt="Choose a Home"></a><br><sub><b>44</b> · Choose a Home</sub></td>
-<td align="center" width="25%"><a href="screens/45-request-a-quote.svg"><img src="screens/45-request-a-quote.svg" width="210" alt="Request a Quote"></a><br><sub><b>45</b> · Request a Quote</sub></td>
-<td align="center" width="25%"><a href="screens/46-what-went-wrong.png"><img src="screens/46-what-went-wrong.png" width="210" alt="What Went Wrong"></a><br><sub><b>46</b> · What Went Wrong</sub></td>
-<td align="center" width="25%"><a href="screens/047-before-anything-is-sent.png"><img src="screens/047-before-anything-is-sent.png" width="210" alt="Before Anything Is Sent"></a><br><sub><b>47</b> · Before Anything Is Sent</sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="screens/048-carriers.png"><img src="screens/048-carriers.png" width="210" alt="Carriers"></a><br><sub><b>48</b> · Carriers</sub></td>
-<td align="center" width="25%"><a href="screens/049-exchange.png"><img src="screens/049-exchange.png" width="210" alt="Exchange"></a><br><sub><b>49</b> · Exchange</sub></td>
-<td align="center" width="25%"><a href="screens/050-custody.png"><img src="screens/050-custody.png" width="210" alt="Custody"></a><br><sub><b>50</b> · Custody</sub></td>
-<td align="center" width="25%"><a href="screens/051-bridges.png"><img src="screens/051-bridges.png" width="210" alt="Bridges"></a><br><sub><b>51</b> · Bridges</sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="screens/052-guiding.png"><img src="screens/052-guiding.png" width="210" alt="Guiding"></a><br><sub><b>52</b> · Guiding</sub></td>
-<td align="center" width="25%"><a href="screens/053-continuity.png"><img src="screens/053-continuity.png" width="210" alt="Continuity"></a><br><sub><b>53</b> · Continuity</sub></td>
-<td align="center" width="25%"><a href="screens/054-operations.png"><img src="screens/054-operations.png" width="210" alt="Operations"></a><br><sub><b>54</b> · Operations</sub></td>
-<td align="center" width="25%"><a href="screens/055-positions.png"><img src="screens/055-positions.png" width="210" alt="Positions"></a><br><sub><b>55</b> · Positions</sub></td>
-</tr>
-<tr>
-<td align="center" width="25%"><a href="screens/056-settings.png"><img src="screens/056-settings.png" width="210" alt="Settings"></a><br><sub><b>56</b> · Settings</sub></td>
-<td align="center" width="25%"><a href="screens/057-access.png"><img src="screens/057-access.png" width="210" alt="Ability Is Not A Gate"></a><br><sub><b>57</b> · Ability Is Not A Gate</sub></td>
-<td align="center" width="25%"><a href="screens/058-resident.png"><img src="screens/058-resident.png" width="210" alt="Resident Intelligence"></a><br><sub><b>58</b> · Resident Intelligence</sub></td>
-</tr>
-</table>
 
 **For enterprises:** PDI offers compliance-grade secure file transfer for corporations (carriers, healthcare, financial, public sector) — files sealed under HIPAA / OSHA / CPNI / PCI-DSS and more, with audited chain of custody and enforced retention, in both directions: outbound transfers and inbound secure intake from subscribers and partners. See [docs/enterprise.md](docs/enterprise.md).
 

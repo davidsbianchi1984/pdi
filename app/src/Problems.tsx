@@ -60,7 +60,7 @@ export function Problems() {
   const unsent = (payload.problems as Problem[]).length;
 
   return (
-    <div className="card" data-screen="46">
+    <div className="card" data-screen="8">
       <h3>{t("pr.title", lang)}</h3>
       <p className="muted small">{t("pr.note", lang)}</p>
 

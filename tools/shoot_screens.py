@@ -207,8 +207,8 @@ def tuck_the_widgets(page) -> None:
 #: markup is a thing the camera and the reader can both check.
 ELEMENTS: tuple[tuple[str, str, str, tuple[str, ...]], ...] = (
     ("3", "store-a-record", "records", ()),
-    ("40", "audit-accepted", "audit", ()),
-    ("46", "what-went-wrong", "settings", ()),
+    ("7", "audit-accepted", "audit", ()),
+    ("8", "what-went-wrong", "settings", ()),
 )
 
 

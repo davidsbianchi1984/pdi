@@ -88,7 +88,7 @@ export function Audit() {
       {/* Section 10, on demand, delivered whether or not it is clean.
           The client runs this on their own deployment — that is the whole
           difference between a guarantee and a vendor assurance. */}
-      <div className="card" data-screen="40">
+      <div className="card" data-screen="7">
         <h3>{t("au.accept.title", lang)}</h3>
         <p className="muted small">{t("au.accept.blurb", lang)}</p>
         <button onClick={async () => {

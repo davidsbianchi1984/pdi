@@ -34,25 +34,25 @@
 # first time since the column was seeded. `unaudited` is not a status a new
 # component may use.
 
-Audit           8,40
-Keys            24
+Audit           5,7
+Keys            6
 Overview        1
-Tenants         5
+Tenants         4
 
-Continuity      53
-Operations      54
-Positions       55
+Continuity      15
+Operations      16
+Positions       17
 Records         2,3
-Settings        56
+Settings        18
 
-Problems        46
-ProblemNotice   47
+Problems        8
+ProblemNotice   9
 
 # The five that closed the console backlog.
-Carriers        48
-Exchange        49
-Custody         50
-Bridges         51
-Guiding         52
-Access          57
-Resident        58
+Carriers        10
+Exchange        11
+Custody         12
+Bridges         13
+Guiding         14
+Access          19
+Resident        20
