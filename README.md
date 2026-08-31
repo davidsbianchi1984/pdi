@@ -13,7 +13,7 @@ and memories — see [docs/tandem.md](docs/tandem.md). A deployment that
 runs PDI alone gets the same thing every tenant gets: custody it can
 prove.
 
-**Current release: v2.8.0** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v2.9.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 PDI is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -218,6 +218,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 |---|---|
 | Release | What landed |
 |---|---|
+| **2.9.0** | Cut with the siblings — QRME took the round: a room holds the second key to what the synthetic people in it may reach, and the AI and VERIFIED marks left the image pixels for the surface that draws them. No functional changes to this vault: it stores and seals, it draws no faces, and nothing here holds a room |
 | **2.8.0** | A guard against the defect that has now shipped four times across the three products: a media query adds no specificity, so an override written inside one is beaten by any later rule on the same selector. This console is already clean; three of the guard's four tests check the checker rather than the sheet, because a checker whose only evidence is a green run is not evidence. |
 | **2.7.1** | Both field reports about the vault light are answered for the first time. The lift off the tab bar and the shrink to a dot were written above the rules they override and never applied; the dot then rendered as an ellipse because a tap-target minimum beat its declared height. The clearance is measured from the bar, the dot is a circle inside a full-size target, and the camera builds before it shoots. |
 | **2.7.0** | **The trio returns to one number** — every README here promises that one version names one tested combination of all three products, and three hands rounds cut in QRME alone quietly ended that: 2.6.0 there, 2.3.1 in this vault and in JIM-mini. All three are cut at 2.7.0 rather than each at its own next number, because a gap in a sequence is something a reader can see and account for, and a banner claiming alignment while the three disagree is the convention advertising itself while not being kept. No functional change to the vault itself. |

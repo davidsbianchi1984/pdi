@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.9.0] - 2026-08-31
+
 ### Added
 
 - **The camera can photograph a card, not just a page, and this console's
@@ -7858,7 +7860,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.8.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.9.0...HEAD
+[2.9.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.8.0...app-v2.9.0
 [2.8.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.7.1...app-v2.8.0
 [2.7.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.7.0...app-v2.7.1
 [2.7.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.3.1...app-v2.7.0
