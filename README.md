@@ -103,7 +103,7 @@ US 2025/0265659 A1). See
 
 The consoles a person actually uses — every major component and
 tool, drawn at phone scale. The desktop workspace, the Android
-tellings and the complete tour of all 58 live in
+tellings and the complete tour of all 20 live in
 [docs/gallery.md](docs/gallery.md).
 
 **First meeting**

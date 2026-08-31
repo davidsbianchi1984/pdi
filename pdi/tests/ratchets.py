@@ -890,8 +890,15 @@ RATCHETS: tuple[Ratchet, ...] = (
             "the `i18n.fill` call sites the conversion left behind"),
     Ratchet("route.verbs_min", 3, _verbs_min,
             "the distinct verbs the thinnest-reading surface reports"),
-    Ratchet("gallery.tables", 10, _gallery_tables,
-            "the gallery tables the README carries"),
+    Ratchet("gallery.tables", 2, _gallery_tables,
+            "the gallery tables the README carries — two, since the round "
+            "that stopped featuring drawings of screens nobody built: the "
+            "census ran to 58 numbers and this console draws 20, and the "
+            "other 38 came out. A floor is meant to follow the thing it "
+            "measures down when the shrink is real, and what this one is "
+            "still for is the case its guard names — a regex rewrite that "
+            "matched nothing would report every gallery in perfect shape "
+            "by finding none of them"),
     Ratchet("readme.files", 4, _readme_files,
             "the READMEs the passage check reads"),
     Ratchet("form.asked_for", 5, _form_asked_for,
