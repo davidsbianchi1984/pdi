@@ -216,8 +216,12 @@ def test_finishing_says_so(client):
 
 
 def test_a_screen_can_ask_which_lesson_it_is(client):
-    r = client.get("/console/guide/for-screen/8").json()
+    r = client.get("/console/guide/for-screen/5").json()
     assert r["key"] == "audit"
+    # And the other direction of the renumbering that retired the 58-set:
+    # screen 8 is What Went Wrong now, not the audit log.
+    r = client.get("/console/guide/for-screen/8").json()
+    assert r["key"] == "problems"
     assert client.get("/console/guide/for-screen/9999").status_code == 404
 
 
@@ -291,7 +295,7 @@ def test_asking_where_something_is_gets_directions(client):
     out = client.post("/console/ask",
                       json={"question": "where is the audit log"}).json()
     assert out["directions"]["lesson"] == "audit"
-    assert 8 in out["directions"]["screens"]
+    assert 5 in out["directions"]["screens"]
 
 
 def test_an_ordinary_question_still_gets_an_answer(client):

@@ -225,6 +225,20 @@ def test_the_where_marker_is_still_dropped():
     assert not said.startswith("body"), said
 
 
+#: Field names the two products share by spelling and not by meaning. The
+#: drift guard below reads a matching name as a ported row, and for these it
+#: is not one: each product's label is right where it stands, and forcing
+#: either wording onto the other would mislabel a real form. Every entry
+#: carries its reason, and a row whose collision has been resolved fails the
+#: guard's own check that the divergence still exists — an exemption must
+#: not outlive the thing it excuses.
+NOT_THE_SAME_WORD = {
+    "key": "here a record's address in the vault ('Key'); in QRME a "
+           "connector's or grant's id, labelled by what a person is "
+           "choosing ('What it may reach')",
+}
+
+
 def test_the_shared_vocabulary_matches_the_sibling_products():
     """One wording across three products.
 
@@ -252,6 +266,15 @@ def test_the_shared_vocabulary_matches_the_sibling_products():
         if not m:
             continue                      # this product's own field
         theirs = dict(re.findall(r"'(\w+)': '((?:[^'\\]|\\.)*)'", m.group(1)))
+        if field in NOT_THE_SAME_WORD:
+            # A recorded name collision, not a ported row — but the record
+            # must stay true: the moment the two products agree, the row
+            # here is stale and comes out.
+            assert any(theirs.get(lang) != ours for lang, ours in row.items()
+                       if lang in theirs), (
+                f"{field} no longer diverges from QRME — remove it from "
+                f"NOT_THE_SAME_WORD")
+            continue
         for lang, ours in row.items():
             if lang in theirs and theirs[lang] != ours:
                 drifted.append(f"{field}[{lang}]: {ours!r} here, {theirs[lang]!r} there")

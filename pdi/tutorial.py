@@ -61,77 +61,77 @@ LESSONS: tuple[dict, ...] = (
          what="An encrypted vault, a tamper-evident audit log, and a tenant "
               "registry. Other systems store their sensitive data here "
               "instead of in their own database, reached only over this API.",
-         screens=(1, 15, 19, 23),
+         screens=(1, 9),
          click="Open Overview and read the live tiles."),
     dict(key="sign_in", chapter="Standing it up", title="Getting in",
          what="Signing in to the console, and signing out of it. The console "
               "is an operator surface: it never shows a record's contents, "
               "because the operator is not who the record belongs to.",
-         screens=(20, 21, 22),
+         screens=(18,),
          click="Sign in, then look at what the console does not show you."),
     dict(key="vault", chapter="The vault", title="The vault itself",
          what="Records go in sealed and come out only for a caller holding "
               "the right key. What you can see here is that a record exists, "
               "how big it is and when it moved — never what it says.",
-         screens=(2, 3, 16),
+         screens=(2, 3),
          click="Store a record, then try to read it back without the key."),
     dict(key="encryption", chapter="The vault", title="Encryption and keys",
          what="AES-256-GCM, with the option that matters: bring your own key. "
               "A customer key travels per request and is never stored, so a "
               "copy of this database is not a copy of the data.",
-         screens=(4, 13, 24),
+         screens=(6,),
          click="Set a customer key and watch a read fail without it."),
     dict(key="tenants", chapter="Who may reach it", title="Tenants and tokens",
          what="Each integrating system is a tenant with its own bearer token "
               "and its own namespace. One tenant cannot read another's "
               "records — not by policy, but because the query is scoped "
               "before it runs.",
-         screens=(5, 6, 7, 14, 25),
+         screens=(4,),
          click="Create a tenant and try its token against another's data."),
     dict(key="audit", chapter="Proving it", title="The audit log",
          what="Every access appends a hash-chained entry. Verifying the chain "
               "tells you whether anything was altered or removed — including "
               "by whoever runs the server.",
-         screens=(8, 9, 40),
+         screens=(5, 7),
          click="Verify the chain, then read what a break would look like."),
     dict(key="retention", chapter="Proving it", title="Keeping and deleting",
          what="Retention windows, snapshots and restore. A deletion that "
               "leaves the audit trail intact is the only kind worth having.",
-         screens=(11, 30),
+         screens=(16,),
          click="Set a retention window and read what it will remove."),
     dict(key="connect", chapter="Connected systems", title="Connectors",
          what="The systems that store data here — QRME's profile source "
               "material, JIM-mini's medical payloads — each as its own tenant "
               "with its own token.",
-         screens=(10, 18, 26, 28, 29),
+         screens=(13, 18),
          click="Open the tandem page and follow one payload end to end."),
     dict(key="apps", chapter="Connected systems", title="Apps and assistants",
          what="Apple Intelligence, Gemini and Copilot can be pointed at a "
               "tenant. What they get is what the tenant may see, which is not "
               "everything in the vault.",
-         screens=(33, 34, 35),
+         screens=(13,),
          click="Connect one and read the scope it is granted."),
     dict(key="intake", chapter="Taking data in", title="Secure intake",
          what="A form, a file or a photo arriving from outside, sealed on the "
               "way in rather than after it lands.",
-         screens=(31, 32),
+         screens=(11,),
          click="Open an intake and watch where the sealing happens."),
     dict(key="robots", chapter="Out in the world", title="Robots and custody",
          what="A robot body's data vaulted like anything else, and custody "
               "beacons for the things that move between people.",
-         screens=(36, 37),
+         screens=(10, 13),
          click="Bind a robot and read what it may write."),
     dict(key="gate", chapter="Out in the world", title="The agent at the gate",
          what="Somebody rings the facility door at 2am. The agent settles "
               "what a wrong answer could not break, and hands a person "
               "everything else. The decision is made in code before a model "
               "is asked to put it into words.",
-         screens=(38, 39),
+         screens=(10,),
          click="Open a ring and read which outcomes it may not choose."),
     dict(key="health", chapter="Running it", title="Deployment and health",
          what="Where it runs, whether it is well, and what to look at first "
               "when it is not.",
-         screens=(12, 17),
+         screens=(16,),
          click="Open Deployment and read the health checks."),
     dict(key="hosting", chapter="Running it", title="Where it lives",
          what="Four places a vault can sit: our facility, leased space in one "
@@ -141,7 +141,7 @@ LESSONS: tuple[dict, ...] = (
               "is your hardware. The encryption, the audit chain and BYOK are "
               "identical on all four — what differs is uptime and who is "
               "responsible for backups.",
-         screens=(42, 44, 45),
+         screens=(12,),
          click="Open Where It Lives and read who holds what up."),
     dict(key="dock", chapter="Running it", title="The pane in the corner",
          what="The pinned lights panel, with a lid on it and four more faces: "
@@ -149,7 +149,7 @@ LESSONS: tuple[dict, ...] = (
               "held, how many tenants are live. Counts and states only — it "
               "cannot read a record, and under a customer-managed key nobody "
               "at this console can. It shows and it routes; it never acts.",
-         screens=(43,),
+         screens=(14,),
          click="Tap the helper button and cycle the faces."),
     dict(key="problems", chapter="Running it", title="What went wrong",
          what="When a request fails, the console writes down the operation and "
@@ -164,13 +164,13 @@ LESSONS: tuple[dict, ...] = (
               "the aggregate — every client's failures folded into counters, "
               "no messages to leak — behind PDI_PROBLEMS_KEY, or freely from "
               "the backend's own machine.",
-         screens=(46, 47),
+         screens=(8, 9),
          click="Open Settings and press 'Show me exactly what would be shared'."),
     dict(key="all_set", chapter="Running it", title="Ready",
          what="The end of the setup path, and where to go back to. Every "
               "screen carries the guide, so a part of this can be re-read on "
               "its own.",
-         screens=(27, 41),
+         screens=(14,),
          click="Ask the guide about anything you are looking at."),
 
     # The five that closed the console backlog. Eighty-four routes the
@@ -186,7 +186,7 @@ LESSONS: tuple[dict, ...] = (
               "holder reads and they cannot alter. `contents` is null on "
               "every card and no setting changes that. The card says it in "
               "its own words: this code proves custody, not contents.",
-         screens=(48,),
+         screens=(10,),
          click="Place a code, then press 'What a scanner sees'."),
     dict(key="exchange", chapter="Running it", title="Exchange",
          what="What leaves sealed, and what is asked to come in. Neither the "
@@ -196,7 +196,7 @@ LESSONS: tuple[dict, ...] = (
               "party submitting to an intake is a records office, and "
               "neither is the tenant. Both tokens are shown exactly once, in "
               "the response that creates the thing, and never served again.",
-         screens=(49,),
+         screens=(11,),
          click="Seal something out, then receive it the way the recipient "
                "would."),
     dict(key="custody", chapter="Running it", title="Custody",
@@ -208,7 +208,7 @@ LESSONS: tuple[dict, ...] = (
               "because the customer holds the key: that number is the honest "
               "measure of bring-your-own-key, because it is how much of the "
               "vault the operator could not touch even when asked to.",
-         screens=(50,),
+         screens=(12,),
          click="Read the first line, then press Reseal and read what it "
                "skipped."),
     dict(key="bridges", chapter="Running it", title="Bridges",
@@ -219,7 +219,7 @@ LESSONS: tuple[dict, ...] = (
               "a count and a set of keys and never contents: a vault holding "
               "a thing is not the same as a vault showing it to whoever asks "
               "for the list.",
-         screens=(51,),
+         screens=(13,),
          click="Seed a demo tenant, then look at what its robot sent in."),
     dict(key="guiding", chapter="Running it", title="Guiding",
          what="The console's own guide, the pane in its corner, and the "
@@ -231,7 +231,7 @@ LESSONS: tuple[dict, ...] = (
               "performs no machine translation, returning `engine: none` "
               "with a note saying so rather than implying a capability the "
               "vault does not have.",
-         screens=(52,),
+         screens=(14,),
          click="Ask it where the audit log is, then ask it what is in a "
                "record."),
     dict(key="continuity", chapter="Running it", title="Continuity",
@@ -240,28 +240,28 @@ LESSONS: tuple[dict, ...] = (
               "delay; redeeming is the heir's, with their own token. The "
               "suite gateway sits beside it with a ceiling — who is on "
               "shift, and a record of everything it sent.",
-         screens=(53,),
+         screens=(15,),
          click="Write a bequest, then read what activation will not skip."),
     dict(key="operations", chapter="Running it", title="Operations",
          what="The coordination journal: plans QRME sealed into this "
               "tenant's vault, readable in place and never exported to be "
               "read. Every read here goes through the ordinary audited "
               "path, so the chain carries these like any others.",
-         screens=(54,),
+         screens=(16,),
          click="Open an entry and find its read in the audit log."),
     dict(key="positions", chapter="Running it", title="Positions",
          what="The role questionnaire — industry typed in your own words, "
               "daily workflow, what a decision needs and who oversees it. "
               "The assistant blueprint is built from those answers rather "
               "than from a template picked by industry.",
-         screens=(55,),
+         screens=(17,),
          click="Fill one in and read the blueprint it produces."),
     dict(key="settings", chapter="Running it", title="Settings",
          what="The console's own plumbing: which backend it faces, an admin "
               "token held for this session only, a QR that carries the "
               "session to a phone, and the way out — tokens dropped, "
               "nothing kept.",
-         screens=(56,),
+         screens=(18,),
          click="Scan the QR and watch the same session open on a phone."),
     dict(key="access", chapter="Running it", title="Ability is not a gate",
          what="The accessibility statement and its report door. If how a "
@@ -273,7 +273,7 @@ LESSONS: tuple[dict, ...] = (
               "this deployment, and the admin token reads them back — an "
               "accepted report becomes a row in a backlog that only "
               "shrinks.",
-         screens=(57,),
+         screens=(19,),
          click="Send a report, then load it back with the admin token."),
     dict(key="resident", chapter="Running it", title="Resident intelligence",
          what="The agent living in the vault process, beside the data — no "
@@ -288,7 +288,7 @@ LESSONS: tuple[dict, ...] = (
               "honest stub saying none is installed. Every task, step and "
               "fetch lands on the audit chain, and offline mode stops the "
               "one tool that goes outside.",
-         screens=(58,),
+         screens=(20,),
          click="Plan 'fetch a page then rows into table notes', read the "
                "steps, and run it."),
 )

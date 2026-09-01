@@ -73,9 +73,9 @@ NEVER: dict[str, str] = {
 }
 
 ROUTES: dict[str, dict] = {
-    "helper": {"screen": 41, "path": "/console/guide",
+    "helper": {"screen": 14, "path": "/console/guide",
                "title": "Console Guide"},
-    "agents": {"screen": 39, "path": "/gate/agents", "title": "Gate Agents"},
+    "agents": {"screen": 10, "path": "/gate/agents", "title": "Gate Agents"},
     "chain": {"screen": 9, "path": "/audit/verify", "title": "Verify Chain"},
     "vault": {"screen": 2, "path": "/vault", "title": "Vault"},
     "tenants": {"screen": 5, "path": "/tenants", "title": "Tenants"},
