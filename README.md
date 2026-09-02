@@ -13,7 +13,7 @@ and memories — see [docs/tandem.md](docs/tandem.md). A deployment that
 runs PDI alone gets the same thing every tenant gets: custody it can
 prove.
 
-**Current release: v2.9.0** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v3.0.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 PDI is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -218,6 +218,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 |---|---|
 | Release | What landed |
 |---|---|
+| **3.0.0** | **Every avenue functions properly inside the apps** — the celebration release, cut with the siblings under the same gate: a person who has never seen this code picks any road and drives it to the end without finding a wall. `tools/walkthrough.py` is that person made repeatable — twenty steps over real doors: a record sealed, read back, and listed, the audit chain verified intact, the key versions reported and a rotation re-sealed, the snapshot exported, retention swept, the resident's posture read and a question answered or honestly refused, the positions desk, a beacon printed and its card fetched the way a stranger's browser would fetch it, the gate's ceiling — an honest refusal counted as a pass, a silent dead end as a wall. Twenty steps, zero walls, six photographs of the driven console in `docs/walkthrough/`. |
 | **2.9.0** | **The camera reaches everything the gallery numbers** — the census lets one component own several numbers, because a component draws more than one thing a person meets, and until now the camera could reach a page and nothing smaller. The three remaining drawings were states of that kind: storing a record, an accepted audit, and what went wrong. A state is found by `data-screen` on the element that owns it — a marker in the markup is a thing the camera and the reader can both check, where a selector guessed from outside silently starts matching the wrong card. No drawing in this product now stands in for a screen the console has. |
 | **2.8.0** | A guard against the defect that has now shipped four times across the three products: a media query adds no specificity, so an override written inside one is beaten by any later rule on the same selector. This console is already clean; three of the guard's four tests check the checker rather than the sheet, because a checker whose only evidence is a green run is not evidence. |
 | **2.7.1** | Both field reports about the vault light are answered for the first time. The lift off the tab bar and the shrink to a dot were written above the rules they override and never applied; the dot then rendered as an ellipse because a tap-target minimum beat its declared height. The clearance is measured from the bar, the dot is a circle inside a full-size target, and the camera builds before it shoots. |

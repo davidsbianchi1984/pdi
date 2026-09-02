@@ -6,6 +6,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-09-02
+
+### Added
+
+- **The vault's walkthrough: every road driven, and photographed
+  driven.** The gate for this number is a person, not a checklist —
+  someone who has never seen this code opens the console, picks any
+  road, and drives it to the end without finding a wall.
+  `tools/walkthrough.py` is that person made repeatable: it builds the
+  console, starts the backend, seeds a tenant, and drives twenty steps
+  over real doors — a record sealed, read back intact, and listed; the
+  audit chain verified; the key versions reported and a rotation
+  re-sealing the vault under the new version; the snapshot exported;
+  retention swept; the resident's posture read and a question answered
+  or honestly refused; the positions desk; a beacon printed for a
+  facility and its card then fetched raw, the way a stranger's browser
+  would fetch it, because that door serves a page and not a payload;
+  and the gate's published ceiling — counting an honest refusal as a
+  pass and a silent dead end as a wall. Twenty steps, zero walls. Six
+  photographs of the driven console land in `docs/walkthrough/`.
+
+### Changed
+
+- **3.0.0 is cut with the siblings, and it means the same thing in all
+  three houses.** Every avenue functions properly inside the apps —
+  not new roads, the ones already drawn, all of them, working.
+
 ## [2.9.0] - 2026-08-31
 
 ### Added
@@ -7860,7 +7887,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.9.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.0.0...HEAD
+[3.0.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.9.0...app-v3.0.0
 [2.9.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.8.0...app-v2.9.0
 [2.8.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.7.1...app-v2.8.0
 [2.7.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.7.0...app-v2.7.1
