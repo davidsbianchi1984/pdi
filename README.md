@@ -208,6 +208,31 @@ See [docs/hosting.md](docs/hosting.md) and
 | [docs/releasing.md](docs/releasing.md) | How releases are cut. |
 | [docs/gallery.md](docs/gallery.md) | The full desktop and mobile console gallery. |
 
+## The console, driven
+
+Every picture below was photographed while `tools/walkthrough.py` drove
+the 3.0.0 release gate: a live backend, a tenant seeded during the run,
+and whatever the drive put on screen still on it. Nothing here is
+staged — the records pane holds the record the harness actually sealed,
+the audit pane shows the chain verifying it, and the custody pane
+carries the beacon it printed. Re-take the set with
+`python3 tools/walkthrough.py`.
+
+<table>
+<tr>
+<td align="center" width="50%"><a href="docs/walkthrough/01-overview.png"><img src="docs/walkthrough/01-overview.png" width="460" alt="Overview — the vault's front page"></a><br><sub>Overview — the vault's front page</sub></td>
+<td align="center" width="50%"><a href="docs/walkthrough/02-records.png"><img src="docs/walkthrough/02-records.png" width="460" alt="Records — the sealed record"></a><br><sub>Records — the sealed record</sub></td>
+</tr>
+<tr>
+<td align="center" width="50%"><a href="docs/walkthrough/03-audit.png"><img src="docs/walkthrough/03-audit.png" width="460" alt="Audit — the chain, intact"></a><br><sub>Audit — the chain, intact</sub></td>
+<td align="center" width="50%"><a href="docs/walkthrough/04-keys.png"><img src="docs/walkthrough/04-keys.png" width="460" alt="Keys — rotated during the drive"></a><br><sub>Keys — rotated during the drive</sub></td>
+</tr>
+<tr>
+<td align="center" width="50%"><a href="docs/walkthrough/05-custody.png"><img src="docs/walkthrough/05-custody.png" width="460" alt="Custody — the printed beacon"></a><br><sub>Custody — the printed beacon</sub></td>
+<td align="center" width="50%"><a href="docs/walkthrough/06-resident.png"><img src="docs/walkthrough/06-resident.png" width="460" alt="Resident — the vault answering"></a><br><sub>Resident — the vault answering</sub></td>
+</tr>
+</table>
+
 ## Release history
 
 <details>
