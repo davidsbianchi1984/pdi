@@ -13,7 +13,7 @@ and memories — see [docs/tandem.md](docs/tandem.md). A deployment that
 runs PDI alone gets the same thing every tenant gets: custody it can
 prove.
 
-**Current release: v3.1.1** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v3.1.2** — see [CHANGELOG.md](CHANGELOG.md).
 
 PDI is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -56,17 +56,23 @@ closing passage fail the build when they drift from the product.
 ### The mechanisms on file
 
 The numbered mechanisms in
-[docs/invention-disclosure.md](docs/invention-disclosure.md), with where
-each lives:
+[docs/invention-disclosure.md](docs/invention-disclosure.md). Each row
+names the technical problem in the machine, the particular structure this
+code uses to solve it, what that structure changes about how the machine
+behaves, and where the structure is reduced to practice and held by a
+test. None of them is a business arrangement written down in software or
+a step a person could take with a filing cabinet; each is a specific
+arrangement of keys, records, credentials and audit entries inside a
+running system, and each is photographed on the screens below.
 
-| § | Mechanism | Reduced to practice in |
-|---|---|---|
-| 1 | Personal encrypted vault as the custody layer of a product family | `pdi/crypto.py`, `pdi/vault.py` — `test_one_tenant_cannot_read_another.py`, `test_a_wiped_tenant_is_gone_from_every_table.py` |
-| 2 | Custody posture as a plan property, not a deployment property | `pdi/compliance.py`, `pdi/baa.py` |
-| 3 | Hosting spectrum with identical API surface | `pdi/hosting.py` — `test_hosting.py`, `test_hosting_modes.py` |
-| 4 | Bequests — vault access that begins at attestation | `pdi/bequests.py` — `test_bequests.py` |
-| 6 | Continuity: reviewer-gated succession joined to guardian and vault | `pdi/acceptance.py`, `pdi/transfers.py` |
-| — | The operations journal, a view and never a side door | `pdi/audit.py` |
+| § | The technical problem | The particular solution, as built | What it changes in the machine | Reduced to practice in |
+|---|---|---|---|---|
+| 1 | Three products that share a person's records must each hold them, and whichever holds them in the clear is the one a breach reads. | One **individually keyed encrypted vault** is the seal point for the family: a guardian's biometric events, tandem exchanges and clinical captures are sealed at write time under an envelope whose key-encryption key never touches a record, with per-record provenance and a hash-chained audit history read back through a custody viewer scoped to the record owner. | The products keep pointers and audit entries; the plaintext exists only inside the vault's decryption path. One tenant's rows are unreadable to another, and a wiped tenant is gone from every table. | `pdi/crypto.py`, `pdi/vault.py` — `test_one_tenant_cannot_read_another.py`, `test_a_wiped_tenant_is_gone_from_every_table.py`, `test_the_other_tenants_shelf.py` |
+| 2 | Whether a person's data is vaulted is decided by how a server was deployed, which the person cannot see and an operator can change. | Custody is a **property of the plan**: a free platform-custody tier holds nothing private and says so at every surface, paid tiers seal every write; the gate sits at the plan boundary, so a deployment cannot change a person's custody without changing their plan. | The custody promise a screen shows is the custody the write path enforces, and a BAA is a plan property the same way. | `pdi/compliance.py`, `pdi/baa.py` — `test_baa.py`, `test_hosting.py` |
+| 3 | Moving a vault from shared hosting to a person's own device changes the API the products call, so upgrading custody breaks the products. | The **same vault API** is served across free colocation, leased space, self-hosting and the person's own device; the hosting mode is a property of the deployment the clients read, not a different surface, and admin key rotation is performed from the product apps themselves. | Custody can be upgraded without any product changing a call; the mode is reported and tested rather than assumed. | `pdi/hosting.py` — `test_hosting.py`, `test_hosting_modes.py`, `test_byok.py` |
+| 4 | Access granted in advance for a person's absence is a credential that exists now, and a credential that exists can be used now. | A **bequest** names a grantee, a bounded set of key scopes and a condition, and **no credential exists until the condition is attested**: the grant token is minted at activation by the operator against a mandatory attestation reference recorded in the audit chain; it is read-only, bounded to its scopes, revocable, and a customer-held key stays part of the estate. | A dormant bequest cannot be exercised, stolen or guessed, because there is nothing to steal; activation leaves an audit entry naming what was attested. | `pdi/bequests.py` — `test_bequests.py`, `test_the_grant_outlived_the_vault.py` |
+| 6 | A profile whose owner cannot authorize anything has no way to change hands, and an unwatched profile keeps acting in the owner's name. | Succession is **gated by a reviewer holding a verification reference** rather than the owner's token; with no named successor the profile sunsets to a frozen memorial; the same attestation reference joins the guardian's silence vigil (JIM-mini) and the vault's bequest activation (PDI). | One attested event carries a person's absence through all three products, and a profile is never an orphan that keeps posting. | `pdi/acceptance.py`, `pdi/transfers.py` — `test_transfers.py`, `test_a_guarantee_nobody_reruns_is_marketing.py`; QRME `test_memorial.py` |
+| — | A journal of what was done to a tenant's records is a second way to read those records, and a second door is a door the audit does not see. | The operations journal is **a view over the ordinary audited decryption path**: every journal entry is read exactly as a direct read would be, so each journal read lands on the tamper-evident hash-chained audit log. | The journal adds no door; reading the journal is itself in the journal. | `pdi/audit.py`, `GET /operations` — `test_operations.py` |
 
 ### Where each highlight is proven
 
@@ -343,6 +349,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 |---|---|
 | Release | What landed |
 |---|---|
+| **3.1.2** | **The mechanisms are set out for examination** — each names the technical problem, the solution as built, what it changes in the machine and the test that holds it. No functional changes to PDI; cut with the siblings |
 | **3.1.1** | **No functional changes to PDI — cut with the siblings.** JIM-mini's image gained what its box runs; the three products keep one number. |
 | **3.1.0** | **Cut with the siblings, and the README for examination** — no functional changes to PDI. JIM-mini, QRME and PDI are cut together at one number from here; the README carries the filing, the components, the mechanisms on file and where each highlight is proven, and the console was photographed again from the current build. |
 | **3.0.1** | **The resident learns from the corpus** — the tandems bank every exchange a person consents to and seal it here in bundles; three resident tools make them the vault's own. `corpus.learn` indexes every example beside the vault's vectors, so a grounded answer stands on what the coach actually said to this person — idempotent and bounded per cycle, so a standing task grows the index over time. `corpus.export` seals a fine-tune set in the chat shape every trainer reads and records it in `training_sets`. `corpus.train` hands a set to the trainer at `PDI_TRAINER_URL` — a local sidecar, the same standing as the inference server — and with none wired holds the set with the sentence that says so, rather than pretending a model was trained; offline mode keeps it home. The planner knows the verbs, `GET /resident` counts bundles, learned examples and sets and names the trainer, and the audit chain carries the three acts by name. |

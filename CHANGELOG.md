@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.1.2] - 2026-09-03
+
+### Documentation
+
+- **The mechanisms, in the shape an examiner reads.** The mechanisms on
+  file are each set out as the technical problem in the machine, the
+  particular solution as built, what it changes in the machine, and where
+  it is reduced to practice and held by a test.
+- Cut with the siblings: the three products keep one number.
+
 ## [3.1.1] - 2026-09-03
 
 ### Changed
@@ -7937,7 +7947,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.1.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.1.2...HEAD
+[3.1.2]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.1.1...app-v3.1.2
 [3.1.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.1.0...app-v3.1.1
 [3.1.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.0.1...app-v3.1.0
 [3.0.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.0.0...app-v3.0.1
