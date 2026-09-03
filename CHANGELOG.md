@@ -6,6 +6,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.1.1] - 2026-09-03
+
+### Changed
+
+- **No functional changes to PDI — cut with the siblings.** JIM-mini's
+  image gained what its box runs (pytest, and `JIM_SOURCE_DIR` naming the
+  tree); the three products keep one number.
+
 ## [3.1.0] - 2026-09-03
 
 ### Changed
@@ -7929,7 +7937,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.1.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.1.1...HEAD
+[3.1.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.1.0...app-v3.1.1
 [3.1.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.0.1...app-v3.1.0
 [3.0.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.0.0...app-v3.0.1
 [3.0.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.9.0...app-v3.0.0
