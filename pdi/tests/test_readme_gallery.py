@@ -50,9 +50,27 @@ def _pages() -> str:
         return _readme() + fh.read()
 
 
+#: A slice of a screen, not a screen. Screens taller than the glass are
+#: also saved a phone height at a time (`shoot_page` in the camera), and
+#: those parts are shown in the gallery's own section — counting them as
+#: screens would make the stated count wrong by however many slices the
+#: longest screens happen to need.
+_A_PART = re.compile(r"-part\d+\.[a-z]+$")
+
+
 def _on_disk() -> set[str]:
-    return {f for f in os.listdir(SCREENS)
-            if f.endswith(SCREEN_KINDS)}
+    """Everything in the folder — screens and the parts of long ones.
+
+    The reference checks below want this whole set: a part the gallery
+    points at has to exist like any other picture. Only the *count* asks
+    a narrower question, and asks it through `_screens_on_disk`.
+    """
+    return {f for f in os.listdir(SCREENS) if f.endswith(SCREEN_KINDS)}
+
+
+def _screens_on_disk() -> set[str]:
+    """The screens, without the slices of the long ones."""
+    return {f for f in _on_disk() if not _A_PART.search(f)}
 
 
 def test_the_stated_screen_count_is_the_real_one():
@@ -60,9 +78,9 @@ def test_the_stated_screen_count_is_the_real_one():
     src = _pages()
     stated = re.search(r"every one of the (\d+) mobile screens", src)
     assert stated, "the README no longer states a screen count in the expected shape"
-    assert int(stated.group(1)) == len(_on_disk()), (
+    assert int(stated.group(1)) == len(_screens_on_disk()), (
         f"the README says {stated.group(1)} mobile screens; "
-        f"{len(_on_disk())} are drawn")
+        f"{len(_screens_on_disk())} are drawn")
 
 
 def test_every_referenced_screen_exists():

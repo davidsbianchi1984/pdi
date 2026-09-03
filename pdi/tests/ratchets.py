@@ -890,8 +890,12 @@ RATCHETS: tuple[Ratchet, ...] = (
             "the `i18n.fill` call sites the conversion left behind"),
     Ratchet("route.verbs_min", 3, _verbs_min,
             "the distinct verbs the thinnest-reading surface reports"),
-    Ratchet("gallery.tables", 2, _gallery_tables,
-            "the gallery tables the README carries — two, since the round "
+    Ratchet("gallery.tables", 4, _gallery_tables,
+            "the gallery tables the README carries — four, since the "
+            "round that photographs a screen whole: a screen taller than "
+            "the glass is also sliced a phone height at a time, and each "
+            "long screen's slices are a table of their own. It was two, "
+            "since the round "
             "that stopped featuring drawings of screens nobody built: the "
             "census ran to 58 numbers and this console draws 20, and the "
             "other 38 came out. A floor is meant to follow the thing it "

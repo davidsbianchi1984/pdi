@@ -86,3 +86,63 @@ The first-run journey runs **23 Welcome → 22 Log In → 24 Key Setup → 25 Gr
 
 **For enterprises:** PDI offers compliance-grade secure file transfer for corporations (carriers, healthcare, financial, public sector) — files sealed under HIPAA / OSHA / CPNI / PCI-DSS and more, with audited chain of custody and enforced retention, in both directions: outbound transfers and inbound secure intake from subscribers and partners. See [docs/enterprise.md](docs/enterprise.md).
 
+## Long screens, in parts
+
+Screens taller than the glass they are read on, sliced a phone height at a time so every part reads at full size. The whole-screen capture of each is in the tour above.
+
+<!-- long-screens:begin -->
+**11** · exchange
+
+<table>
+  <tr><td align="center" width="50%" valign="top"><a href="screens/11-exchange-part1.png"><img src="screens/11-exchange-part1.png" width="150" alt="exchange part 1"></a><br><sub>part 1 of 2</sub></td><td align="center" width="50%" valign="top"><a href="screens/11-exchange-part2.png"><img src="screens/11-exchange-part2.png" width="150" alt="exchange part 2"></a><br><sub>part 2 of 2</sub></td></tr>
+</table>
+
+**12** · custody
+
+<table>
+  <tr><td align="center" width="25%" valign="top"><a href="screens/12-custody-part1.png"><img src="screens/12-custody-part1.png" width="150" alt="custody part 1"></a><br><sub>part 1 of 4</sub></td><td align="center" width="25%" valign="top"><a href="screens/12-custody-part2.png"><img src="screens/12-custody-part2.png" width="150" alt="custody part 2"></a><br><sub>part 2 of 4</sub></td><td align="center" width="25%" valign="top"><a href="screens/12-custody-part3.png"><img src="screens/12-custody-part3.png" width="150" alt="custody part 3"></a><br><sub>part 3 of 4</sub></td><td align="center" width="25%" valign="top"><a href="screens/12-custody-part4.png"><img src="screens/12-custody-part4.png" width="150" alt="custody part 4"></a><br><sub>part 4 of 4</sub></td></tr>
+</table>
+
+**13** · bridges
+
+<table>
+  <tr><td align="center" width="50%" valign="top"><a href="screens/13-bridges-part1.png"><img src="screens/13-bridges-part1.png" width="150" alt="bridges part 1"></a><br><sub>part 1 of 2</sub></td><td align="center" width="50%" valign="top"><a href="screens/13-bridges-part2.png"><img src="screens/13-bridges-part2.png" width="150" alt="bridges part 2"></a><br><sub>part 2 of 2</sub></td></tr>
+</table>
+
+**14** · guiding
+
+<table>
+  <tr><td align="center" width="50%" valign="top"><a href="screens/14-guiding-part1.png"><img src="screens/14-guiding-part1.png" width="150" alt="guiding part 1"></a><br><sub>part 1 of 2</sub></td><td align="center" width="50%" valign="top"><a href="screens/14-guiding-part2.png"><img src="screens/14-guiding-part2.png" width="150" alt="guiding part 2"></a><br><sub>part 2 of 2</sub></td></tr>
+</table>
+
+**15** · continuity
+
+<table>
+  <tr><td align="center" width="33%" valign="top"><a href="screens/15-continuity-part1.png"><img src="screens/15-continuity-part1.png" width="150" alt="continuity part 1"></a><br><sub>part 1 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/15-continuity-part2.png"><img src="screens/15-continuity-part2.png" width="150" alt="continuity part 2"></a><br><sub>part 2 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/15-continuity-part3.png"><img src="screens/15-continuity-part3.png" width="150" alt="continuity part 3"></a><br><sub>part 3 of 3</sub></td></tr>
+</table>
+
+**17** · positions
+
+<table>
+  <tr><td align="center" width="33%" valign="top"><a href="screens/17-positions-part1.png"><img src="screens/17-positions-part1.png" width="150" alt="positions part 1"></a><br><sub>part 1 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/17-positions-part2.png"><img src="screens/17-positions-part2.png" width="150" alt="positions part 2"></a><br><sub>part 2 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/17-positions-part3.png"><img src="screens/17-positions-part3.png" width="150" alt="positions part 3"></a><br><sub>part 3 of 3</sub></td></tr>
+</table>
+
+**18** · settings
+
+<table>
+  <tr><td align="center" width="33%" valign="top"><a href="screens/18-settings-part1.png"><img src="screens/18-settings-part1.png" width="150" alt="settings part 1"></a><br><sub>part 1 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/18-settings-part2.png"><img src="screens/18-settings-part2.png" width="150" alt="settings part 2"></a><br><sub>part 2 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/18-settings-part3.png"><img src="screens/18-settings-part3.png" width="150" alt="settings part 3"></a><br><sub>part 3 of 3</sub></td></tr>
+</table>
+
+**19** · access
+
+<table>
+  <tr><td align="center" width="50%" valign="top"><a href="screens/19-access-part1.png"><img src="screens/19-access-part1.png" width="150" alt="access part 1"></a><br><sub>part 1 of 2</sub></td><td align="center" width="50%" valign="top"><a href="screens/19-access-part2.png"><img src="screens/19-access-part2.png" width="150" alt="access part 2"></a><br><sub>part 2 of 2</sub></td></tr>
+</table>
+
+**20** · resident
+
+<table>
+  <tr><td align="center" width="33%" valign="top"><a href="screens/20-resident-part1.png"><img src="screens/20-resident-part1.png" width="150" alt="resident part 1"></a><br><sub>part 1 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/20-resident-part2.png"><img src="screens/20-resident-part2.png" width="150" alt="resident part 2"></a><br><sub>part 2 of 3</sub></td><td align="center" width="33%" valign="top"><a href="screens/20-resident-part3.png"><img src="screens/20-resident-part3.png" width="150" alt="resident part 3"></a><br><sub>part 3 of 3</sub></td></tr>
+</table>
+
+<!-- long-screens:end -->
