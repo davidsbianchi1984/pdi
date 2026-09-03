@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-09-03
+
+### Changed
+
+- **No functional changes to PDI — cut with the siblings.** JIM-mini,
+  QRME and PDI are cut together at 3.1.0, so a box carrying the three
+  products carries one version. What changed here since 3.0.1 is the
+  README for examination — the filing, the components, the mechanisms
+  on file, where each highlight is proven — and the console photographed
+  again from the current build.
+
 ## [3.0.1] - 2026-09-03
 
 ### Added
@@ -7918,7 +7929,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.0.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.1.0...HEAD
+[3.1.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.0.1...app-v3.1.0
 [3.0.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.0.0...app-v3.0.1
 [3.0.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.9.0...app-v3.0.0
 [2.9.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.8.0...app-v2.9.0

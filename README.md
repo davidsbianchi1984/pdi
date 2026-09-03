@@ -13,7 +13,7 @@ and memories — see [docs/tandem.md](docs/tandem.md). A deployment that
 runs PDI alone gets the same thing every tenant gets: custody it can
 prove.
 
-**Current release: v3.0.1** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v3.1.0** — see [CHANGELOG.md](CHANGELOG.md).
 
 PDI is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -304,6 +304,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 |---|---|
 | Release | What landed |
 |---|---|
+| **3.1.0** | **Cut with the siblings, and the README for examination** — no functional changes to PDI. JIM-mini, QRME and PDI are cut together at one number from here; the README carries the filing, the components, the mechanisms on file and where each highlight is proven, and the console was photographed again from the current build. |
 | **3.0.1** | **The resident learns from the corpus** — the tandems bank every exchange a person consents to and seal it here in bundles; three resident tools make them the vault's own. `corpus.learn` indexes every example beside the vault's vectors, so a grounded answer stands on what the coach actually said to this person — idempotent and bounded per cycle, so a standing task grows the index over time. `corpus.export` seals a fine-tune set in the chat shape every trainer reads and records it in `training_sets`. `corpus.train` hands a set to the trainer at `PDI_TRAINER_URL` — a local sidecar, the same standing as the inference server — and with none wired holds the set with the sentence that says so, rather than pretending a model was trained; offline mode keeps it home. The planner knows the verbs, `GET /resident` counts bundles, learned examples and sets and names the trainer, and the audit chain carries the three acts by name. |
 | **3.0.0** | **Every avenue functions properly inside the apps** — the celebration release, cut with the siblings under the same gate: a person who has never seen this code picks any road and drives it to the end without finding a wall. `tools/walkthrough.py` is that person made repeatable — twenty steps over real doors: a record sealed, read back, and listed, the audit chain verified intact, the key versions reported and a rotation re-sealed, the snapshot exported, retention swept, the resident's posture read and a question answered or honestly refused, the positions desk, a beacon printed and its card fetched the way a stranger's browser would fetch it, the gate's ceiling — an honest refusal counted as a pass, a silent dead end as a wall. Twenty steps, zero walls, six photographs of the driven console in `docs/walkthrough/`. |
 | **2.9.0** | **The camera reaches everything the gallery numbers** — the census lets one component own several numbers, because a component draws more than one thing a person meets, and until now the camera could reach a page and nothing smaller. The three remaining drawings were states of that kind: storing a record, an accepted audit, and what went wrong. A state is found by `data-screen` on the element that owns it — a marker in the markup is a thing the camera and the reader can both check, where a selector guessed from outside silently starts matching the wrong card. No drawing in this product now stands in for a screen the console has. |
