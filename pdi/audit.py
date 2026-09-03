@@ -69,6 +69,10 @@ ACTIONS: dict[str, tuple[str, str]] = {
     "resident.rows": ("agent", "resident wrote rows into a queryable dataset"),
     "resident.embed": ("agent", "resident stored an embedding (hash of the text, never the text)"),
     "resident.forget": ("agent", "resident removed embedding vector(s) — one key or a prefix"),
+    # What the resident makes of the tandems' banked corpus (3.0.1).
+    "resident.learn": ("agent", "resident indexed the sealed training corpus — examples learned beside the vault's vectors"),
+    "resident.export": ("agent", "resident sealed a fine-tune set from the corpus"),
+    "resident.train": ("agent", "resident handed a sealed training set to the local trainer"),
 }
 
 EVENT_FIELDS = {

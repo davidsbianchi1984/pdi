@@ -6,6 +6,37 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.0.1] - 2026-09-03
+
+### Added
+
+- **The resident learns from the corpus.** The tandems bank every
+  exchange a person consents to (`jim/corpus.py`) and seal it here in
+  bundles — `jim/{user}/corpus/{run}`, each holding examples of system,
+  prompt and completion. Until now the resident held them the way it
+  holds any record: sealed and unread. Three tools on the closed registry
+  make them the vault's own (`pdi/resident.py`):
+  * `corpus.learn` — every example becomes a sealed record of its own
+    under `resident/corpus/` and a vector beside it, so `search.vectors`
+    ranks it and a grounded ask stands on it. Idempotent (an example
+    already learned is counted, not learned twice) and bounded per
+    cycle (`MAX_LEARN`), so a standing task — "learn from the corpus
+    every day" — grows the index over time.
+  * `corpus.export` — the corpus sealed as a fine-tune set, one
+    chat-shaped JSON line per example (system, user, assistant), under
+    `resident/corpus/sets/` and recorded in the `training_sets` dataset.
+    An empty corpus refuses in words.
+  * `corpus.train` — a set handed to the trainer at `PDI_TRAINER_URL`, a
+    local sidecar with the same standing as the inference server, past
+    the offline gate; the job it names is recorded in `training_jobs`.
+    With no trainer wired the step holds the set and says so — a
+    resting answer, not a failure — rather than pretending a model was
+    trained. A trainer that refuses is a failed step in words.
+  The planner knows the verbs; `GET /resident` carries a `corpus` block
+  (bundles, learned, sets, trainer, `trainer_ready`); the audit chain
+  carries `resident.learn`, `resident.export` and `resident.train` by
+  name; and the resident never mistakes its own records for a bundle.
+
 ## [3.0.0] - 2026-09-02
 
 ### Added
@@ -7887,7 +7918,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.0.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.0.1...HEAD
+[3.0.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.0.0...app-v3.0.1
 [3.0.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.9.0...app-v3.0.0
 [2.9.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.8.0...app-v2.9.0
 [2.8.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v2.7.1...app-v2.8.0

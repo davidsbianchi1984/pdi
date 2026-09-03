@@ -51,6 +51,16 @@ embedder is that model; without one it is a deterministic hashed n-gram
 embedding — labelled, because vectors from two embedders do not share a
 space and pretending otherwise ranks garbage confidently.
 
+**It learns from the corpus (3.0.1).** The tandems bank every exchange a
+person consents to as a training corpus and seal it here in bundles
+(`jim/corpus.py`). ``corpus.learn`` opens those bundles and indexes every
+example beside the vault's own vectors, so a grounded answer can stand on
+what the coach actually said to this person; ``corpus.export`` seals a
+fine-tune set in the chat format every trainer reads; ``corpus.train``
+hands a set to the trainer at ``PDI_TRAINER_URL`` — a local sidecar, the
+same standing as the inference server — and, when none is wired, says so
+in words rather than pretending a model was trained.
+
 ## The privacy posture
 
 Fetched content is sealed into the vault (AES-256-GCM, AAD-bound) and steps
@@ -92,6 +102,16 @@ MAX_FETCH_BYTES = 512 * 1024
 MAX_STEPS = 20
 MAX_ROWS_PER_APPEND = 500
 MAX_COLUMNS = 64
+
+#: A bundle the tandems seal their training corpus in carries this in its
+#: key (`jim/{user}/corpus/{run}`); what the resident makes of a bundle
+#: lives under its own prefix so the two can never be mistaken.
+CORPUS_MARK = "/corpus/"
+LEARNED_PREFIX = "resident/corpus/"
+SETS_PREFIX = "resident/corpus/sets/"
+#: Examples one learn cycle takes in. A corpus of ten thousand is learned
+#: over cycles, which is what a standing task is for.
+MAX_LEARN = 500
 
 #: How many past cycles a task's runs ledger keeps. The ledger answers
 #: "lately", not "ever" — the audit chain is the permanent record.
@@ -567,6 +587,189 @@ def read_rows(tenant: dict, dataset: str, limit: int = 100) -> dict:
 
 
 # --------------------------------------------------------------------------
+# the corpus — what the tandems banked, learned here
+# --------------------------------------------------------------------------
+
+def trainer_url() -> str | None:
+    """The local trainer, if the operator pointed at one. Read from the
+    environment only, like the inference server: never probed for."""
+    return os.environ.get("PDI_TRAINER_URL") or None
+
+
+def corpus_bundles(tenant: dict, prefix: str = "") -> list[str]:
+    """The sealed training bundles this tenant holds — the tandems' keys,
+    never the resident's own learned records or sets."""
+    return [k for k in vault.list_keys(tenant)
+            if CORPUS_MARK in k and not k.startswith(LEARNED_PREFIX)
+            and k.startswith(prefix or "")]
+
+
+def _bundle_examples(tenant: dict, key: str) -> list[dict]:
+    rec = vault.get(tenant, key)
+    if rec is None:
+        return []
+    try:
+        data = json.loads(rec["value"])
+    except ValueError:
+        return []
+    rows = data.get("examples") if isinstance(data, dict) else None
+    out = []
+    for ex in rows or []:
+        if not isinstance(ex, dict):
+            continue
+        prompt = str(ex.get("prompt") or "").strip()
+        completion = str(ex.get("completion") or "").strip()
+        if prompt and completion:
+            out.append({"system": str(ex.get("system") or "").strip(),
+                        "prompt": prompt, "completion": completion,
+                        "source": str(ex.get("source") or ""),
+                        "provider": str(ex.get("provider") or ""),
+                        "at": str(ex.get("at") or "")})
+    return out
+
+
+def learn(tenant: dict, prefix: str = "", limit: int = MAX_LEARN) -> dict:
+    """Index the corpus: every example in every bundle becomes a sealed
+    record of its own under `resident/corpus/` and a vector beside it, so
+    `search.vectors` ranks it and a grounded ask stands on it. Idempotent
+    — an example already learned is counted, not learned twice — and
+    bounded by ``limit`` per cycle."""
+    bundles = corpus_bundles(tenant, prefix)
+    known = set(k for k in vault.list_keys(tenant)
+                if k.startswith(LEARNED_PREFIX) and not k.startswith(SETS_PREFIX))
+    learned = already = seen = 0
+    for bundle in bundles:
+        run_id = bundle.rsplit("/", 1)[-1]
+        for i, ex in enumerate(_bundle_examples(tenant, bundle)):
+            seen += 1
+            key = f"{LEARNED_PREFIX}{run_id}/{i:04d}"
+            if key in known:
+                already += 1
+                continue
+            if learned >= limit:
+                continue
+            vault.put(tenant, key, json.dumps({
+                "line": f"Q: {ex['prompt']}\nA: {ex['completion']}",
+                "system": ex["system"], "source": ex["source"],
+                "provider": ex["provider"], "at": ex["at"], "bundle": bundle}))
+            embed(tenant, key, f"{ex['prompt']} {ex['completion']}")
+            learned += 1
+    audit.record("resident.learn", tenant_id=tenant["id"],
+                 ref=f"{len(bundles)}:{learned}")
+    return {"bundles": len(bundles), "examples": seen, "learned": learned,
+            "already": already, "left": max(0, seen - already - learned),
+            "index_prefix": LEARNED_PREFIX}
+
+
+def export_set(tenant: dict, prefix: str = "") -> dict:
+    """Seal a fine-tune set: every example, one JSON line each, in the
+    chat shape every trainer reads (system, user, assistant). The set is
+    a record like any other — read back through the vault, erased with
+    it — and the `training_sets` dataset says it exists."""
+    bundles = corpus_bundles(tenant, prefix)
+    lines, n = [], 0
+    for bundle in bundles:
+        for ex in _bundle_examples(tenant, bundle):
+            messages = []
+            if ex["system"]:
+                messages.append({"role": "system", "content": ex["system"]})
+            messages.append({"role": "user", "content": ex["prompt"]})
+            messages.append({"role": "assistant", "content": ex["completion"]})
+            lines.append(json.dumps({"messages": messages}, ensure_ascii=False))
+            n += 1
+    if not n:
+        raise ResidentError("the corpus holds no examples to export yet")
+    body = "\n".join(lines) + "\n"
+    key = f"{SETS_PREFIX}{db.new_id('set')}.jsonl"
+    vault.put(tenant, key, body)
+    append_rows(tenant, "training_sets", [{
+        "set_ref": key, "examples": n, "bundles": len(bundles),
+        "trainer": trainer_url() or "", "at": db.utcnow()}], source_ref=key)
+    audit.record("resident.export", tenant_id=tenant["id"], ref=f"{key}:{n}")
+    return {"set_ref": key, "examples": n, "bundles": len(bundles),
+            "bytes": len(body.encode("utf-8")), "format": "chat-jsonl"}
+
+
+def train(tenant: dict, set_ref: str) -> dict:
+    """Hand a sealed set to the trainer. No trainer wired is an answer,
+    not a failure: the set stands sealed and the sentence says what would
+    connect one. With one wired, the set is posted past the offline gate
+    (a local sidecar, like inference) and the job it names is recorded."""
+    rec = vault.get(tenant, set_ref) if set_ref else None
+    if rec is None or not set_ref.startswith(SETS_PREFIX):
+        raise ResidentError("corpus.train needs a training set — export one first")
+    url = trainer_url()
+    if not url:
+        return {"submitted": False, "set_ref": set_ref, "job": None,
+                "reason": ("no trainer is wired — set PDI_TRAINER_URL to a "
+                           "local trainer and the set is handed to it; until "
+                           "then it stands sealed, ready to be handed over")}
+    offline.allow(url, "local training")
+    req = urllib.request.Request(
+        url.rstrip("/") + "/train",
+        data=json.dumps({"set": rec["value"], "format": "chat-jsonl",
+                         "base_model": local_model() or ""}).encode(),
+        headers={"content-type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:  # local sidecar
+            body = json.loads(resp.read().decode("utf-8"))
+    except Exception as exc:  # noqa: BLE001 — named, then refused
+        raise ResidentError("the trainer did not accept the set") from exc
+    job = str(body.get("job") or body.get("id") or "")
+    append_rows(tenant, "training_jobs", [{
+        "set_ref": set_ref, "job": job, "trainer": url, "at": db.utcnow()}],
+        source_ref=set_ref)
+    audit.record("resident.train", tenant_id=tenant["id"], ref=f"{set_ref}:{job}")
+    return {"submitted": True, "set_ref": set_ref, "job": job, "trainer": url}
+
+
+def corpus_posture(tenant: dict) -> dict:
+    keys = vault.list_keys(tenant)
+    return {
+        "bundles": sum(1 for k in keys if CORPUS_MARK in k
+                       and not k.startswith(LEARNED_PREFIX)),
+        "learned": sum(1 for k in keys if k.startswith(LEARNED_PREFIX)
+                       and not k.startswith(SETS_PREFIX)),
+        "sets": sum(1 for k in keys if k.startswith(SETS_PREFIX)),
+        "trainer": trainer_url(),
+        "trainer_ready": bool(trainer_url()),
+        "note": ("the tandems seal what a person consented to bank; learn "
+                 "indexes it so grounded answers stand on it, export seals "
+                 "a fine-tune set, and train hands a set to the trainer at "
+                 "PDI_TRAINER_URL — or says none is wired"),
+    }
+
+
+def _tool_learn(tenant: dict, args: dict, ctx: dict) -> dict:
+    out = learn(tenant, str(args.get("prefix") or ""),
+                int(args.get("limit") or MAX_LEARN))
+    ctx["last_text"] = json.dumps(out)
+    return {"result_ref": LEARNED_PREFIX,
+            "summary": (f"{out['learned']} example(s) learned from "
+                        f"{out['bundles']} bundle(s); {out['already']} "
+                        f"already known, {out['left']} left for the next cycle")}
+
+
+def _tool_export(tenant: dict, args: dict, ctx: dict) -> dict:
+    out = export_set(tenant, str(args.get("prefix") or ""))
+    ctx["last_set"] = out["set_ref"]
+    ctx["last_text"] = out["set_ref"]
+    return {"result_ref": out["set_ref"],
+            "summary": f"{out['examples']} example(s) sealed as a fine-tune set"}
+
+
+def _tool_train(tenant: dict, args: dict, ctx: dict) -> dict:
+    set_ref = str(args.get("set_ref") or ctx.get("last_set") or "")
+    out = train(tenant, set_ref)
+    ctx["last_text"] = json.dumps(out)
+    if not out["submitted"]:
+        return {"result_ref": set_ref,
+                "summary": "held: " + out["reason"]}
+    return {"result_ref": set_ref,
+            "summary": f"handed to the trainer; job {out['job'] or 'unnamed'}"}
+
+
+# --------------------------------------------------------------------------
 # tools — the closed registry
 # --------------------------------------------------------------------------
 
@@ -866,6 +1069,16 @@ TOOLS: dict[str, dict] = {
     "infer.local": {"means": "one turn of local inference (or the honest "
                              "stub when no model is installed)",
                     "leaves_host": False, "run": _tool_infer},
+    "corpus.learn": {"means": "index the tandems' sealed training corpus so "
+                              "grounded answers stand on it",
+                     "leaves_host": False, "run": _tool_learn},
+    "corpus.export": {"means": "seal the corpus as a fine-tune set in the "
+                               "chat format every trainer reads",
+                      "leaves_host": False, "run": _tool_export},
+    "corpus.train": {"means": "hand a sealed set to the trainer at "
+                              "PDI_TRAINER_URL (a local sidecar, like "
+                              "inference), or say honestly that none is wired",
+                     "leaves_host": False, "run": _tool_train},
 }
 
 
@@ -902,6 +1115,18 @@ def _step_from(fragment: str) -> dict:
                 else "fetch.url")
         return {"title": fragment, "tool": tool,
                 "args": {"url": url.group().rstrip(".,)")}}
+    # The corpus verbs, before the table and embed verbs: "learn from the
+    # corpus" indexes, "export the training set" seals a set, and "train"
+    # — the verb, not "training set" — hands the set over, or says no
+    # trainer is wired.
+    if re.search(r"\btrain\b", low) and "training set" not in low:
+        return {"title": fragment, "tool": "corpus.train", "args": {}}
+    if "corpus" in low or "training set" in low or "fine-tune" in low \
+            or "finetune" in low:
+        if any(w in low for w in ("export", "training set", "fine-tune",
+                                  "finetune")):
+            return {"title": fragment, "tool": "corpus.export", "args": {}}
+        return {"title": fragment, "tool": "corpus.learn", "args": {}}
     if any(w in low for w in ("table", "tabulate", "rows", "dataset")):
         named = _DATASET_WORD.search(low)
         return {"title": fragment, "tool": "table.append",
@@ -1276,6 +1501,7 @@ def posture(tenant: dict) -> dict:
         "tools": [{"name": name, "means": t["means"],
                    "leaves_host": t["leaves_host"]}
                   for name, t in sorted(TOOLS.items())],
+        "corpus": corpus_posture(tenant),
         "privacy": ("fetched content is sealed in the vault and steps carry "
                     "references; dataset rows are queryable by design and "
                     "written only by this tenant's token; vectors store a "

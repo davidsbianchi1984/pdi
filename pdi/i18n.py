@@ -1676,6 +1676,40 @@ SERVER_ERROR = ("Something went wrong on our side. "
 #: languages. What is not here is recorded in
 #: `pdi/tests/refusals_untranslated.txt` and ratcheted.
 _REFUSALS: dict[str, dict[str, str]] = {
+    # What the resident makes of the corpus (pdi/resident.py, 3.0.1).
+    'the corpus holds no examples to export yet': {
+        'es': 'el corpus aún no contiene ejemplos que exportar',
+        'fr': "le corpus ne contient pas encore d'exemples à exporter",
+        'de': 'der Korpus enthält noch keine Beispiele zum Exportieren',
+        'pt': 'o corpus ainda não tem exemplos para exportar',
+        'it': 'il corpus non contiene ancora esempi da esportare',
+        'ja': 'コーパスにはまだエクスポートできる例がありません',
+        'zh': '语料库尚无可导出的示例',
+        'hi': 'कॉर्पस में अभी निर्यात करने के लिए कोई उदाहरण नहीं',
+        'ar': 'لا يحوي المتن أمثلة للتصدير بعد',
+    },
+    'corpus.train needs a training set — export one first': {
+        'es': 'corpus.train necesita un conjunto de entrenamiento — exporta uno primero',
+        'fr': "corpus.train a besoin d'un jeu d'entraînement — exportez-en un d'abord",
+        'de': 'corpus.train braucht einen Trainingssatz — exportiere zuerst einen',
+        'pt': 'corpus.train precisa de um conjunto de treino — exporta um primeiro',
+        'it': 'corpus.train ha bisogno di un set di addestramento — esportane uno prima',
+        'ja': 'corpus.train には学習セットが必要です — 先にエクスポートしてください',
+        'zh': 'corpus.train 需要一个训练集 — 请先导出一个',
+        'hi': 'corpus.train को एक प्रशिक्षण सेट चाहिए — पहले एक निर्यात करें',
+        'ar': 'يحتاج corpus.train إلى مجموعة تدريب — صدّر واحدة أولًا',
+    },
+    'the trainer did not accept the set': {
+        'es': 'el entrenador no aceptó el conjunto',
+        'fr': "l'entraîneur n'a pas accepté le jeu",
+        'de': 'der Trainer hat den Satz nicht angenommen',
+        'pt': 'o treinador não aceitou o conjunto',
+        'it': 'il trainer non ha accettato il set',
+        'ja': 'トレーナーがセットを受け付けませんでした',
+        'zh': '训练器未接受该训练集',
+        'hi': 'ट्रेनर ने सेट स्वीकार नहीं किया',
+        'ar': 'لم يقبل المدرِّب المجموعة',
+    },
     # -- the key a tenant brings (pdi/crypto.py) ----------------------------
     # Both reach a person: `Custody.tsx` calls `PUT /key`, and a seal
     # attempted against a misconfigured master key answers whoever asked for
