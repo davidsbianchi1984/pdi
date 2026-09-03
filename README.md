@@ -13,7 +13,7 @@ and memories — see [docs/tandem.md](docs/tandem.md). A deployment that
 runs PDI alone gets the same thing every tenant gets: custody it can
 prove.
 
-**Current release: v3.1.2** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v3.1.3** — see [CHANGELOG.md](CHANGELOG.md).
 
 PDI is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -358,6 +358,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 |---|---|
 | Release | What landed |
 |---|---|
+| **3.1.3** | **For examination** — every highlight names its problem, implementation, numbers and test. No functional changes; cut with the siblings |
 | **3.1.2** | **The mechanisms are set out for examination** — each names the technical problem, the solution as built, what it changes in the machine and the test that holds it. No functional changes to PDI; cut with the siblings |
 | **3.1.1** | **No functional changes to PDI — cut with the siblings.** JIM-mini's image gained what its box runs; the three products keep one number. |
 | **3.1.0** | **Cut with the siblings, and the README for examination** — no functional changes to PDI. JIM-mini, QRME and PDI are cut together at one number from here; the README carries the filing, the components, the mechanisms on file and where each highlight is proven, and the console was photographed again from the current build. |
