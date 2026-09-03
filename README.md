@@ -162,10 +162,18 @@ each lives:
 
 ## The screens you'll meet
 
-The consoles a person actually uses — every major component and
-tool, drawn at phone scale. The desktop workspace, the Android
+The consoles a person actually uses — every component and tool,
+photographed at phone scale from the current build. The desktop workspace, the Android
 tellings and the complete tour of all 20 live in
 [docs/gallery.md](docs/gallery.md).
+
+**The vault at a glance**
+
+<table>
+  <tr>
+    <td align="center" width="25%"><a href="docs/screens/01-overview.png"><img src="docs/screens/01-overview.png" width="165" alt="Overview"></a><br><sub><b>01</b> · Overview<br>what the vault holds, what it is doing, and what stands behind it</sub></td>
+  </tr>
+</table>
 
 **First meeting**
 
@@ -206,6 +214,37 @@ tellings and the complete tour of all 20 live in
 <table>
   <tr>
     <td align="center" width="25%"><a href="docs/screens/20-resident.png"><img src="docs/screens/20-resident.png" width="165" alt="Resident intelligence"></a><br><sub><b>20</b> · Resident intelligence<br>the model lives inside; questions never leave</sub></td>
+  </tr>
+</table>
+
+**Sealed transfer, both directions**
+
+<table>
+  <tr>
+    <td align="center" width="25%"><a href="docs/screens/10-carriers.png"><img src="docs/screens/10-carriers.png" width="165" alt="Carriers"></a><br><sub><b>10</b> · Carriers<br>a sealed thing, and the code on the outside of it</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/11-exchange.png"><img src="docs/screens/11-exchange.png" width="165" alt="Exchange"></a><br><sub><b>11</b> · Exchange<br>what leaves sealed, and what is asked to come in</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/12-custody.png"><img src="docs/screens/12-custody.png" width="165" alt="Custody"></a><br><sub><b>12</b> · Custody<br>chain of custody on every transfer, kept by the vault</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/13-bridges.png"><img src="docs/screens/13-bridges.png" width="165" alt="Bridges"></a><br><sub><b>13</b> · Bridges<br>the connectors to platforms and integrated apps, each a named door</sub></td>
+  </tr>
+</table>
+
+**Running the vault**
+
+<table>
+  <tr>
+    <td align="center" width="25%"><a href="docs/screens/14-guiding.png"><img src="docs/screens/14-guiding.png" width="165" alt="Guiding"></a><br><sub><b>14</b> · Guiding<br>the guided path through what the vault needs from an operator</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/15-continuity.png"><img src="docs/screens/15-continuity.png" width="165" alt="Continuity &amp; gateway"></a><br><sub><b>15</b> · Continuity &amp; gateway<br>backups, the restore drill, and the gateway the tandems reach</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/16-operations.png"><img src="docs/screens/16-operations.png" width="165" alt="Operations"></a><br><sub><b>16</b> · Operations<br>the operations journal: every round the vault kept, on the record</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/17-positions.png"><img src="docs/screens/17-positions.png" width="165" alt="Positions"></a><br><sub><b>17</b> · Positions<br>AI integration and role mapping, the answers sealed in the vault</sub></td>
+  </tr>
+</table>
+
+**The operator's own controls**
+
+<table>
+  <tr>
+    <td align="center" width="25%"><a href="docs/screens/18-settings.png"><img src="docs/screens/18-settings.png" width="165" alt="Settings"></a><br><sub><b>18</b> · Settings<br>the operator's controls, each one documented where it is set</sub></td>
+    <td align="center" width="25%"><a href="docs/screens/19-access.png"><img src="docs/screens/19-access.png" width="165" alt="Ability is not a gate"></a><br><sub><b>19</b> · Ability is not a gate<br>what a caller may do, decided by grant and never by capability alone</sub></td>
   </tr>
 </table>
 
