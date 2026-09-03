@@ -29,7 +29,12 @@ US 2025/0265659 A1). See
 
 ## For examination
 
-This page is written to be checked, not believed. Every `.png` under
+This page is written to be checked, not believed, and it is written for
+an examiner. Every section grounds the product in three things: the
+**technical problem** in the machine, the **implementation** as built —
+named modules, named constants, named tests — and a **measurable effect**
+that follows from the implementation and not from a description of it.
+Every `.png` under
 `docs/screens/` and `docs/walkthrough/` is a capture of the running
 console taken by `tools/shoot_screens.py` and `tools/walkthrough.py`
 against a live backend; an `.svg` is a design drawing and is captioned
@@ -76,16 +81,20 @@ running system, and each is photographed on the screens below.
 
 ### Where each highlight is proven
 
-| Highlight | Module | Test | Screen |
-|---|---|---|---|
-| Nothing leaves the host | `pdi/offline.py` | `test_nothing_leaves_the_host.py` | 09 |
-| Keys rotate and retire; retention is stated and swept | `pdi/crypto.py`, `pdi/retention.py` | `test_keymgmt_retention.py` | 06 |
-| Custody beacons and the gate | `pdi/beacons.py`, `pdi/gate.py` | `test_beacons.py` | 12 |
-| The resident answers from sealed records | `pdi/resident.py` | `test_the_resident_learns_from_the_corpus.py` | 20 |
-| The capture grows ears | `pdi/ears.py` | `test_the_capture_grows_ears.py` | 20 |
-| The position and assistant builder | `pdi/positions.py` | `test_positions.py` | 17 |
-| Another tenant's shelf stays theirs | `pdi/vault.py` | `test_the_other_tenants_shelf.py` | 04 |
-| Ability is not a gate | `app/` | `test_ability_is_not_a_gate.py` | 19 |
+Each row: the technical problem, the implementation with its own numbers, the test that holds it, and the photograph.
+
+| Highlight | The technical problem | As built, with its numbers | Test | Screen |
+|---|---|---|---|---|
+| Nothing leaves the host | A privacy promise made in prose leaks through one forgotten HTTP call. | `pdi/offline.py` refuses every non-loopback connect at the socket layer while the gate is up. | `test_nothing_leaves_the_host.py` | 09 |
+| Keys rotate and retire; retention is stated and swept | A key that never rotates is a key whose compromise is permanent; a retention promise nobody sweeps is a sentence. | `pdi/crypto.py` seals each record under AES-256-GCM with a per-scope data key wrapped by the key-encryption key (12-byte nonce, the key never on a record), caches the KEK for `KEK_CACHE_SECONDS = 300`; `pdi/retention.py` keeps `WINDOWS` of 7, 30, 90, 180 and 365 days or forever and sweeps them. | `test_keymgmt_retention.py`, `test_byok.py` | 06 |
+| Custody beacons and the gate | A code printed at a venue that resolves after custody changed is a leak in ink. | `pdi/beacons.py` and `pdi/gate.py` resolve a beacon only while its custody row stands; taking it down deactivates rather than deletes. | `test_beacons.py` | 12 |
+| The audit chain | A log an operator can edit is a log of what the operator wanted. | `pdi/audit.py` chains every event by SHA-256 over the previous hash from a 64-zero genesis; a changed row breaks every hash after it. | `test_a_guarantee_nobody_reruns_is_marketing.py` | 05 |
+| The resident answers from sealed records | A model that answers from its training answers about somebody else. | `pdi/resident.py` runs inference inside the vault's own process over decrypted records that never leave it. | `test_the_resident_learns_from_the_corpus.py` | 20 |
+| The capture grows ears | A vault that keeps only text loses what was said. | `pdi/ears.py` turns audio and video into words on the deployment's own machine before sealing. | `test_the_capture_grows_ears.py` | 20 |
+| The position and assistant builder | An assistant with no stated position answers from whoever asked last. | `pdi/positions.py` keeps a position as rows the assistant is built from and cites. | `test_positions.py` | 17 |
+| Another tenant's shelf stays theirs | One SQL path without a tenant clause is every tenant's data. | `pdi/vault.py` scopes every query by tenant; the guard reads every SQL path in the tree. | `test_the_other_tenants_shelf.py`, `test_one_tenant_cannot_read_another.py` | 04 |
+| Bequests that begin at attestation | A credential granted in advance exists now. | `pdi/bequests.py` mints the grant only on `CONDITIONS` of `executor` or `attestation`, read-only, scoped, and refused once the vault is closed. | `test_bequests.py`, `test_the_grant_outlived_the_vault.py` | 15 |
+| Ability is not a gate | A screen that needs a mouse locks out the person the vault belongs to. | `app/` exposes every control to keyboard and reader; the guard reads the markup. | `test_ability_is_not_a_gate.py` | 19 |
 
 ## What it provides
 
