@@ -272,7 +272,7 @@ See [docs/hosting.md](docs/hosting.md) and
 ## The console, driven
 
 Every picture below was photographed while `tools/walkthrough.py` drove
-the 3.0.0 release gate: a live backend, a tenant seeded during the run,
+the 3.0.1 release gate: a live backend, a tenant seeded during the run,
 and whatever the drive put on screen still on it. Nothing here is
 staged — the records pane holds the record the harness actually sealed,
 the audit pane shows the chain verifying it, and the custody pane
