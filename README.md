@@ -27,6 +27,60 @@ for Known Conditions* (US 19/038,196, published as US 2025/0246290 A1) and
 US 2025/0265659 A1). See
 [docs/invention-disclosure.md](docs/invention-disclosure.md).
 
+## For examination
+
+This page is written to be checked, not believed. Every `.png` under
+`docs/screens/` and `docs/walkthrough/` is a capture of the running
+console taken by `tools/shoot_screens.py` and `tools/walkthrough.py`
+against a live backend; an `.svg` is a design drawing and is captioned
+as one. The suite (`python -m pytest`) reads this file — the release
+banner, the release table, the gallery, the stated screen count and the
+closing passage fail the build when they drift from the product.
+
+### Components
+
+| Component | Where | What it is |
+|---|---|---|
+| API server | `pdi/` | FastAPI over SQLite: the vault, keys, tenants, tokens, retention, snapshot and restore, the audit chain, the offline gate. |
+| The seal | `pdi/crypto.py`, `pdi/vault.py` | AES-256-GCM per record with the tenant and key version bound into the AAD; envelope keys under a KEK that production points at a KMS or HSM. |
+| The record | `pdi/audit.py` | The append-only, SHA-256 hash-chained log every access lands on, verified on demand. |
+| The resident | `pdi/resident.py` | A local model that answers from sealed records without the records leaving: search, grounded asks, standing tasks, and the corpus it learns from. |
+| The capture's eyes and ears | `pdi/renderer.py`, `pdi/ears.py`, `pdi/scrape.py` | A page captured as a person meets it, and video arriving as words. |
+| Custody in the physical world | `pdi/beacons.py`, `pdi/gate.py`, `pdi/roster.py` | Printed custody beacons, a finder's scan as a receipt on the chain, and the agent at the facility gate with its on-call roster. |
+| Succession and continuity | `pdi/bequests.py`, `pdi/acceptance.py`, `pdi/transfers.py` | Vault access that begins at attestation, and reviewer-gated succession. |
+| The desk | `pdi/positions.py`, `pdi/assistant.py` | The position and assistant builder: a questionnaire into a blueprint, raw answers sealed. |
+| Operator console | `app/` | React and TypeScript, ten languages; the 20 numbered screens photographed below. |
+| iOS, Android, Windows shells, desktop app | `native/`, `python -m pdi desktop` | Native shells at parity with the console; packaged installers on the releases page. |
+| The tandem | `pdi/qrme_client.py`, the JIM-mini and QRME clients | One tenant and one token per integrating system; both integrations live. |
+
+### The mechanisms on file
+
+The numbered mechanisms in
+[docs/invention-disclosure.md](docs/invention-disclosure.md), with where
+each lives:
+
+| § | Mechanism | Reduced to practice in |
+|---|---|---|
+| 1 | Personal encrypted vault as the custody layer of a product family | `pdi/crypto.py`, `pdi/vault.py` — `test_one_tenant_cannot_read_another.py`, `test_a_wiped_tenant_is_gone_from_every_table.py` |
+| 2 | Custody posture as a plan property, not a deployment property | `pdi/compliance.py`, `pdi/baa.py` |
+| 3 | Hosting spectrum with identical API surface | `pdi/hosting.py` — `test_hosting.py`, `test_hosting_modes.py` |
+| 4 | Bequests — vault access that begins at attestation | `pdi/bequests.py` — `test_bequests.py` |
+| 6 | Continuity: reviewer-gated succession joined to guardian and vault | `pdi/acceptance.py`, `pdi/transfers.py` |
+| — | The operations journal, a view and never a side door | `pdi/audit.py` |
+
+### Where each highlight is proven
+
+| Highlight | Module | Test | Screen |
+|---|---|---|---|
+| Nothing leaves the host | `pdi/offline.py` | `test_nothing_leaves_the_host.py` | 09 |
+| Keys rotate and retire; retention is stated and swept | `pdi/crypto.py`, `pdi/retention.py` | `test_keymgmt_retention.py` | 06 |
+| Custody beacons and the gate | `pdi/beacons.py`, `pdi/gate.py` | `test_beacons.py` | 12 |
+| The resident answers from sealed records | `pdi/resident.py` | `test_the_resident_learns_from_the_corpus.py` | 20 |
+| The capture grows ears | `pdi/ears.py` | `test_the_capture_grows_ears.py` | 20 |
+| The position and assistant builder | `pdi/positions.py` | `test_positions.py` | 17 |
+| Another tenant's shelf stays theirs | `pdi/vault.py` | `test_the_other_tenants_shelf.py` | 04 |
+| Ability is not a gate | `app/` | `test_ability_is_not_a_gate.py` | 19 |
+
 ## What it provides
 
 **The vault**
@@ -79,6 +133,13 @@ US 2025/0265659 A1). See
 - **The capture has eyes and ears** — `fetch.render` captures a page as
   a person meets it, and video arrives as words, so a lookout can watch
   a recording.
+- **The resident learns from the corpus** — the tandems bank every
+  exchange a person consents to and seal it here in bundles; `corpus.learn`
+  indexes them beside the vault's vectors so a grounded answer stands on
+  what the coach actually said to this person, `corpus.export` seals a
+  fine-tune set, and `corpus.train` hands it to a trainer at
+  `PDI_TRAINER_URL` — or holds it with the sentence that says none is
+  wired, never pretending a model was trained.
 - **The agent at the gate** — `POST /s/{id}/ring` triages a facility
   ring through a QRME profile's voice (marked as AI), from a written
   script when no model is configured; the ceiling is published, and a
