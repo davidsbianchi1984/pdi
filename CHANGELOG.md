@@ -14,8 +14,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   GitHub's database, and a downloaded copy of the repository arrived
   without either. `docs/github/` is that record, checked in:
   `RELEASE-NOTES.md` (255 releases, 56,665 words), `PULL-REQUESTS.md`
-  (202 pull requests with their conversation comments, 44,446 words),
-  `REVIEW-THREADS.md` and `repository.json`. `docs/github/harvest.py`
+  (203 pull requests with their conversation comments), `REVIEW-THREADS.md`
+  and `repository.json`. GitHub renders a markdown file as a formatted page
+  up to 512 KiB and shows plain text above it, and the release history
+  passes that on its own, so the long pages are written as evenly sized
+  numbered parts under an index rather than as one file nobody's phone will
+  render. `docs/github/harvest.py`
   reads the owner and repository from the `origin` remote and rewrites
   every page from the REST API, so the folder can be refreshed rather
   than hand-maintained, and it closes its index on the same passage
