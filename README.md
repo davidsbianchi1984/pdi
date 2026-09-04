@@ -41,6 +41,10 @@ against a live backend; an `.svg` is a design drawing and is captioned
 as one. The suite (`python -m pytest`) reads this file — the release
 banner, the release table, the gallery, the stated screen count and the
 closing passage fail the build when they drift from the product.
+The writing GitHub holds and a clone does not — every release note
+and every pull request body — is checked in under
+[`docs/github/`](docs/github/), so the argument for each change
+travels with the code.
 
 ### Components
 
