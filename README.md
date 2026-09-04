@@ -70,14 +70,61 @@ a step a person could take with a filing cabinet; each is a specific
 arrangement of keys, records, credentials and audit entries inside a
 running system, and each is photographed on the screens below.
 
-| § | The technical problem | The particular solution, as built | What it changes in the machine | Reduced to practice in |
-|---|---|---|---|---|
-| 1 | Three products that share a person's records must each hold them, and whichever holds them in the clear is the one a breach reads. | One **individually keyed encrypted vault** is the seal point for the family: a guardian's biometric events, tandem exchanges and clinical captures are sealed at write time under an envelope whose key-encryption key never touches a record, with per-record provenance and a hash-chained audit history read back through a custody viewer scoped to the record owner. | The products keep pointers and audit entries; the plaintext exists only inside the vault's decryption path. One tenant's rows are unreadable to another, and a wiped tenant is gone from every table. | `pdi/crypto.py`, `pdi/vault.py` — `test_one_tenant_cannot_read_another.py`, `test_a_wiped_tenant_is_gone_from_every_table.py`, `test_the_other_tenants_shelf.py` |
-| 2 | Whether a person's data is vaulted is decided by how a server was deployed, which the person cannot see and an operator can change. | Custody is a **property of the plan**: a free platform-custody tier holds nothing private and says so at every surface, paid tiers seal every write; the gate sits at the plan boundary, so a deployment cannot change a person's custody without changing their plan. | The custody promise a screen shows is the custody the write path enforces, and a BAA is a plan property the same way. | `pdi/compliance.py`, `pdi/baa.py` — `test_baa.py`, `test_hosting.py` |
-| 3 | Moving a vault from shared hosting to a person's own device changes the API the products call, so upgrading custody breaks the products. | The **same vault API** is served across free colocation, leased space, self-hosting and the person's own device; the hosting mode is a property of the deployment the clients read, not a different surface, and admin key rotation is performed from the product apps themselves. | Custody can be upgraded without any product changing a call; the mode is reported and tested rather than assumed. | `pdi/hosting.py` — `test_hosting.py`, `test_hosting_modes.py`, `test_byok.py` |
-| 4 | Access granted in advance for a person's absence is a credential that exists now, and a credential that exists can be used now. | A **bequest** names a grantee, a bounded set of key scopes and a condition, and **no credential exists until the condition is attested**: the grant token is minted at activation by the operator against a mandatory attestation reference recorded in the audit chain; it is read-only, bounded to its scopes, revocable, and a customer-held key stays part of the estate. | A dormant bequest cannot be exercised, stolen or guessed, because there is nothing to steal; activation leaves an audit entry naming what was attested. | `pdi/bequests.py` — `test_bequests.py`, `test_the_grant_outlived_the_vault.py` |
-| 6 | A profile whose owner cannot authorize anything has no way to change hands, and an unwatched profile keeps acting in the owner's name. | Succession is **gated by a reviewer holding a verification reference** rather than the owner's token; with no named successor the profile sunsets to a frozen memorial; the same attestation reference joins the guardian's silence vigil (JIM-mini) and the vault's bequest activation (PDI). | One attested event carries a person's absence through all three products, and a profile is never an orphan that keeps posting. | `pdi/acceptance.py`, `pdi/transfers.py` — `test_transfers.py`, `test_a_guarantee_nobody_reruns_is_marketing.py`; QRME `test_memorial.py` |
-| — | A journal of what was done to a tenant's records is a second way to read those records, and a second door is a door the audit does not see. | The operations journal is **a view over the ordinary audited decryption path**: every journal entry is read exactly as a direct read would be, so each journal read lands on the tamper-evident hash-chained audit log. | The journal adds no door; reading the journal is itself in the journal. | `pdi/audit.py`, `GET /operations` — `test_operations.py` |
+<table width="100%">
+<thead>
+<tr>
+<th width="4%" align="left">§</th>
+<th width="23%" align="left">The technical problem</th>
+<th width="30%" align="left">The particular solution, as built</th>
+<th width="26%" align="left">What it changes in the machine</th>
+<th width="17%" align="left">Reduced to practice in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td valign="top">1</td>
+<td valign="top">Three products that share a person's records must each hold them, and whichever holds them in the clear is the one a breach reads.</td>
+<td valign="top">One <strong>individually keyed encrypted vault</strong> is the seal point for the family: a guardian's biometric events, tandem exchanges and clinical captures are sealed at write time under an envelope whose key-encryption key never touches a record, with per-record provenance and a hash-chained audit history read back through a custody viewer scoped to the record owner.</td>
+<td valign="top">The products keep pointers and audit entries; the plaintext exists only inside the vault's decryption path. One tenant's rows are unreadable to another, and a wiped tenant is gone from every table.</td>
+<td valign="top"><code>pdi/crypto.py</code>,<br><code>pdi/vault.py</code> — <code>test_one_tenant_cannot_read_another.py</code>,<br><code>test_a_wiped_tenant_is_gone_from_every_table.py</code>,<br><code>test_the_other_tenants_shelf.py</code></td>
+</tr>
+<tr>
+<td valign="top">2</td>
+<td valign="top">Whether a person's data is vaulted is decided by how a server was deployed, which the person cannot see and an operator can change.</td>
+<td valign="top">Custody is a <strong>property of the plan</strong>: a free platform-custody tier holds nothing private and says so at every surface, paid tiers seal every write; the gate sits at the plan boundary, so a deployment cannot change a person's custody without changing their plan.</td>
+<td valign="top">The custody promise a screen shows is the custody the write path enforces, and a BAA is a plan property the same way.</td>
+<td valign="top"><code>pdi/compliance.py</code>,<br><code>pdi/baa.py</code> — <code>test_baa.py</code>,<br><code>test_hosting.py</code></td>
+</tr>
+<tr>
+<td valign="top">3</td>
+<td valign="top">Moving a vault from shared hosting to a person's own device changes the API the products call, so upgrading custody breaks the products.</td>
+<td valign="top">The <strong>same vault API</strong> is served across free colocation, leased space, self-hosting and the person's own device; the hosting mode is a property of the deployment the clients read, not a different surface, and admin key rotation is performed from the product apps themselves.</td>
+<td valign="top">Custody can be upgraded without any product changing a call; the mode is reported and tested rather than assumed.</td>
+<td valign="top"><code>pdi/hosting.py</code> — <code>test_hosting.py</code>,<br><code>test_hosting_modes.py</code>,<br><code>test_byok.py</code></td>
+</tr>
+<tr>
+<td valign="top">4</td>
+<td valign="top">Access granted in advance for a person's absence is a credential that exists now, and a credential that exists can be used now.</td>
+<td valign="top">A <strong>bequest</strong> names a grantee, a bounded set of key scopes and a condition, and <strong>no credential exists until the condition is attested</strong>: the grant token is minted at activation by the operator against a mandatory attestation reference recorded in the audit chain; it is read-only, bounded to its scopes, revocable, and a customer-held key stays part of the estate.</td>
+<td valign="top">A dormant bequest cannot be exercised, stolen or guessed, because there is nothing to steal; activation leaves an audit entry naming what was attested.</td>
+<td valign="top"><code>pdi/bequests.py</code> — <code>test_bequests.py</code>,<br><code>test_the_grant_outlived_the_vault.py</code></td>
+</tr>
+<tr>
+<td valign="top">6</td>
+<td valign="top">A profile whose owner cannot authorize anything has no way to change hands, and an unwatched profile keeps acting in the owner's name.</td>
+<td valign="top">Succession is <strong>gated by a reviewer holding a verification reference</strong> rather than the owner's token; with no named successor the profile sunsets to a frozen memorial; the same attestation reference joins the guardian's silence vigil (JIM-mini) and the vault's bequest activation (PDI).</td>
+<td valign="top">One attested event carries a person's absence through all three products, and a profile is never an orphan that keeps posting.</td>
+<td valign="top"><code>pdi/acceptance.py</code>,<br><code>pdi/transfers.py</code> — <code>test_transfers.py</code>,<br><code>test_a_guarantee_nobody_reruns_is_marketing.py</code>; QRME <code>test_memorial.py</code></td>
+</tr>
+<tr>
+<td valign="top">—</td>
+<td valign="top">A journal of what was done to a tenant's records is a second way to read those records, and a second door is a door the audit does not see.</td>
+<td valign="top">The operations journal is <strong>a view over the ordinary audited decryption path</strong>: every journal entry is read exactly as a direct read would be, so each journal read lands on the tamper-evident hash-chained audit log.</td>
+<td valign="top">The journal adds no door; reading the journal is itself in the journal.</td>
+<td valign="top"><code>pdi/audit.py</code>,<br><code>GET /operations</code> — <code>test_operations.py</code></td>
+</tr>
+</tbody>
+</table>
 
 ### Where each highlight is proven
 
