@@ -70,6 +70,14 @@ a step a person could take with a filing cabinet; each is a specific
 arrangement of keys, records, credentials and audit entries inside a
 running system, and each is photographed on the screens below.
 
+<!-- The frame, and why it is nested: GitHub caps a table at the
+     reader's screen and scrolls the columns under its own border,
+     so a five-column table reads as a two-column one on a phone.
+     The outer table takes the cap and does the scrolling; the
+     inner one carries the border, and the border reaches the last
+     column. -->
+<table><tbody><tr><td>
+
 <table width="100%">
 <thead>
 <tr>
@@ -125,6 +133,9 @@ running system, and each is photographed on the screens below.
 </tr>
 </tbody>
 </table>
+
+</td></tr></tbody></table>
+
 
 ### Where each highlight is proven
 
