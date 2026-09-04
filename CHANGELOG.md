@@ -6,6 +6,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.1.5] - 2026-09-04
+
+### Changed
+
+- **No functional changes — cut with the siblings.** QRME's talk
+  surface became a photograph and grew a job title under every name;
+  the three products keep one number.
+
 ## [3.1.4] - 2026-09-03
 
 ### Fixed
@@ -7972,7 +7980,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.1.4...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.1.5...HEAD
+[3.1.5]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.1.4...app-v3.1.5
 [3.1.4]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.1.3...app-v3.1.4
 [3.1.3]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.1.2...app-v3.1.3
 [3.1.2]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.1.1...app-v3.1.2
