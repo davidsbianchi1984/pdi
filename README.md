@@ -13,7 +13,7 @@ and memories — see [docs/tandem.md](docs/tandem.md). A deployment that
 runs PDI alone gets the same thing every tenant gets: custody it can
 prove.
 
-**Current release: v3.1.5** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v3.1.6** — see [CHANGELOG.md](CHANGELOG.md).
 
 PDI is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -410,6 +410,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 |---|---|
 | Release | What landed |
 |---|---|
+| **3.1.6** | **The writing travels with the clone** — `docs/github/` carries 255 release notes and 202 pull request bodies into the repository, so a clone holds the argument for every change and not only the diff; the long release history is split into parts GitHub will render on a phone, and `harvest.py` rewrites the whole folder from the API rather than being maintained by hand |
 | **3.1.5** | **No functional changes — cut with the siblings.** QRME's screen 199 became a photograph, its AI mark became one badge hung off every profile picture rather than cropped in half by it, and a job title joined the field under every name; the three products keep one number |
 | **3.1.4** | **A screenshot is the whole screen** — the content column is unrolled before the shutter, so a capture is no longer the first phone-height of its screen, and 24 phone-height slices stand beside the whole pictures. Cut with the siblings |
 | **3.1.3** | **For examination** — every highlight names its problem, implementation, numbers and test. No functional changes; cut with the siblings |
