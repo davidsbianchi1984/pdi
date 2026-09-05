@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.1.7] - 2026-09-05
+
+- **Version only.** Nothing in the vault changed this round. The three
+  products are deployed together and read each other's version, so they
+  are cut together; saying that plainly is better than a release note
+  inventing work to justify the number.
+
 ## [3.1.6] - 2026-09-05
 
 ### Added
@@ -8004,7 +8011,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.1.6...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.1.7...HEAD
+[3.1.7]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.1.6...app-v3.1.7
 [3.1.6]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.1.5...app-v3.1.6
 [3.1.5]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.1.4...app-v3.1.5
 [3.1.4]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.1.3...app-v3.1.4
