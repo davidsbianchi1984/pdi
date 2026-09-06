@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.3.1] - 2026-09-06
+
+### Changed
+
+- **Version only.** Nothing in the vault changed this round. The three
+  products are deployed together and read each other's version, so they
+  move together: QRME 3.3.1 puts a version check at the end of the
+  runbook's deploy block and examines the occupation catalogue on the
+  page written to be checked, and this release keeps the trio in step.
+
 ## [3.3.0] - 2026-09-06
 
 ### Changed
@@ -8077,7 +8087,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.3.0...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.3.1...HEAD
+[3.3.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.3.0...app-v3.3.1
 [3.3.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.2.1...app-v3.3.0
 [3.2.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.2.0...app-v3.2.1
 [3.2.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.1.10...app-v3.2.0
