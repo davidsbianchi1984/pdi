@@ -13,7 +13,7 @@ and memories — see [docs/tandem.md](docs/tandem.md). A deployment that
 runs PDI alone gets the same thing every tenant gets: custody it can
 prove.
 
-**Current release: v3.1.8** — see [CHANGELOG.md](CHANGELOG.md).
+**Current release: v3.1.9** — see [CHANGELOG.md](CHANGELOG.md).
 
 PDI is one of three products versioned and released together:
 [QRME](https://github.com/davidsbianchi1984/qrme) (synthetic profiles) and
@@ -310,6 +310,7 @@ how it got here; full detail in <a href="CHANGELOG.md">CHANGELOG.md</a>.</summar
 
 | Release | What landed |
 |---|---|
+| **3.1.9** | **Version only** — nothing in the vault changed this round. The three products are deployed together and read each other's version, so they are cut together |
 | **3.1.8** | **Version only** — nothing in the vault changed this round. The three products are deployed together and read each other's version, so they are cut together |
 | **3.1.7** | **Version only** — nothing in the vault changed this round. The three products deploy together and read each other's version, so they are cut together |
 | **3.1.6** | **The writing travels with the clone** — `docs/github/` carries 255 release notes and 202 pull request bodies into the repository, so a clone holds the argument for every change and not only the diff; the long release history is split into parts GitHub will render on a phone, and `harvest.py` rewrites the whole folder from the API rather than being maintained by hand |
