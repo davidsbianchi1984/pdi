@@ -7,6 +7,8 @@ be handed to a patent attorney as the starting point for provisional
 applications. It is a factual record, not legal advice and not a license
 (see LICENSE).*
 
+*Updated 2026-09-06: mechanisms 7–12 added. Each names the release that first shipped it; the recorded date above is the original disclosure's and is unchanged.*
+
 ## 1. Personal encrypted vault as the custody layer of a product family
 
 **The process:** an individually keyed encrypted vault
@@ -65,6 +67,65 @@ whose every entry is read through the ordinary audited decryption path,
 so the journal adds no second door: each journal read lands on the
 tamper-evident hash-chained audit log exactly as a direct read would
 (`GET /operations`; shipped v0.13.0, recorded 2026-07-29).
+
+## 7. Tenant isolation enforced in the SQL, held by a shrinking record
+
+**The process:** every query the vault runs is scoped by tenant in the
+statement itself rather than by the caller remembering to filter, and
+the count of statements not yet scoped is a recorded number that may
+only fall. One tenant's rows are unreadable to another, a wiped tenant
+is gone from every table, and another tenant's shelf stays theirs under
+every door (`pdi/db.py`, `pdi/vault.py`, `pdi/tests/tenant_unscoped.txt`;
+shipped v0.86.0).
+
+## 8. The resident intelligence: an agent living in the vault's process
+
+**The process:** an agent runs in the database's own process, beside the
+data, and plans, fetches, tabulates and searches sealed records without
+those records leaving the process; with a local model reachable it
+answers generation, and without one it says so rather than pretending.
+The resident keeps *standing tasks* — a plan with an interval, re-run
+on an in-process heartbeat with no cron, no worker and no caller — and
+has an off switch per task. A product asks the vault a question and
+gets an answer grounded in what the vault holds, with the model that
+answered named (`pdi/resident.py`; shipped v0.86.0, v0.88.0, v0.89.0).
+
+## 9. A ledger the resident cannot edit, and a posture that is proven
+
+**The process:** every run the resident makes lands on a runs ledger it
+can append to and never amend, so its account of itself cannot be
+tidied after the fact; a step that got no model is recorded as not
+finished rather than finished; and the deployment's posture — model
+reachable, pulled or not, inference honestly failing — is proven by a
+probe rather than stated by a flag (`pdi/resident.py`; shipped
+v0.93.0, v0.98.0).
+
+## 10. The capture grows eyes and ears
+
+**The process:** a fetch that reads what the server sends captures an
+empty shell where a JavaScript application stands, so the capture
+renders the page the way a person meets it; audio and video are turned
+into words on the deployment's own machine before sealing, so a vault
+that keeps text keeps what was said; and the reading tools refuse a
+recording rather than sealing bytes nobody can search
+(`pdi/renderer.py`, `pdi/ears.py`; shipped v0.93.0, v0.94.0, v0.97.0).
+
+## 11. Forgetting reaches the vectors
+
+**The process:** erasure that removes a record and leaves its embedding
+has not forgotten it. The resident's embedding index has its own doors
+out — one vector by key, a person's whole shelf by prefix — and the
+products' forgetting paths call them, so a deletion in any of the three
+reaches the vectors as well as the rows (`pdi/resident.py`
+`DELETE /resident/embeddings/{key}`; shipped v0.87.0).
+
+## 12. The resident learns from the corpus
+
+**The process:** the exchanges the guardian banks on the machine are
+the vault's training material: the resident reads the corpus and
+carries what it learned into its answers, on the same host, with nothing
+sent out. A sealed deployment grows more capable from its own history
+(`pdi/resident.py`; shipped v3.0.1).
 
 ---
 

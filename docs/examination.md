@@ -81,6 +81,48 @@ running system, and each is photographed on the screens below.
 <td valign="top">The journal adds no door; reading the journal is itself in the journal.</td>
 <td valign="top"><code>pdi/<wbr>audit.py</code>,<br><code>GET /<wbr>operations</code> — <code>test_<wbr>operations.py</code></td>
 </tr>
+<tr>
+<td valign="top">7</td>
+<td valign="top">A query that forgets the tenant filter reads every tenant, and nothing says which queries remembered.</td>
+<td valign="top">Every statement is <strong>scoped in the SQL itself</strong>, and the count of unscoped statements is a recorded number that may only fall.</td>
+<td valign="top">One tenant's rows are unreadable to another under every door, and a wiped tenant is gone from every table.</td>
+<td valign="top"><code>pdi/<wbr>db.py</code>,<br><code>pdi/<wbr>vault.py</code>,<br><code>pdi/<wbr>tests/<wbr>tenant_<wbr>unscoped.txt</code> — <code>test_<wbr>one_<wbr>tenant_<wbr>cannot_<wbr>read_<wbr>another.py</code>,<br><code>test_<wbr>a_<wbr>wiped_<wbr>tenant_<wbr>is_<wbr>gone_<wbr>from_<wbr>every_<wbr>table.py</code>,<br><code>test_<wbr>the_<wbr>other_<wbr>tenants_<wbr>shelf.py</code></td>
+</tr>
+<tr>
+<td valign="top">8</td>
+<td valign="top">Records sealed in a vault cannot be reasoned over without leaving it, and a scheduled job needs a scheduler outside it.</td>
+<td valign="top">An <strong>agent in the vault's own process</strong> plans, fetches, tabulates and searches beside the data; standing tasks re-run on an in-process heartbeat with no cron or caller, each with an off switch; answers are grounded in what the vault holds and name the model that answered, or say honestly that none did.</td>
+<td valign="top">The vault keeps its own appointments and answers its own questions, and the records never cross a wire to do it.</td>
+<td valign="top"><code>pdi/<wbr>resident.py</code> — <code>test_<wbr>the_<wbr>resident_<wbr>learns_<wbr>from_<wbr>the_<wbr>corpus.py</code>,<br><code>test_<wbr>the_<wbr>posture_<wbr>proves_<wbr>the_<wbr>model_<wbr>answers.py</code></td>
+</tr>
+<tr>
+<td valign="top">9</td>
+<td valign="top">An agent that writes its own account can tidy it, and a step that got no model can be filed as done.</td>
+<td valign="top">The <strong>runs ledger is append-only to the resident</strong>; a step with no model is recorded unfinished; the posture — reachable, pulled, honestly failing — is proven by a probe rather than a flag.</td>
+<td valign="top">What the resident says it did is what it did, and a deployment without a model says so on every surface.</td>
+<td valign="top"><code>pdi/<wbr>resident.py</code> — <code>test_<wbr>the_<wbr>runs_<wbr>ledger_<wbr>cannot_<wbr>edit_<wbr>its_<wbr>own_<wbr>account.py</code>,<br><code>test_<wbr>the_<wbr>posture_<wbr>proves_<wbr>the_<wbr>model_<wbr>answers.py</code></td>
+</tr>
+<tr>
+<td valign="top">10</td>
+<td valign="top">A fetch of a JavaScript page seals an empty shell; a vault that keeps only text loses what was said; a recording sealed as bytes cannot be searched.</td>
+<td valign="top">The capture <strong>renders the page as a person meets it</strong>, turns audio and video into words on the deployment's own machine before sealing, and the reading tools refuse a raw recording.</td>
+<td valign="top">What is sealed is what a person would have seen or heard, and it is searchable.</td>
+<td valign="top"><code>pdi/<wbr>renderer.py</code>,<br><code>pdi/<wbr>ears.py</code> — <code>test_<wbr>the_<wbr>capture_<wbr>grows_<wbr>eyes.py</code>,<br><code>test_<wbr>the_<wbr>capture_<wbr>grows_<wbr>ears.py</code></td>
+</tr>
+<tr>
+<td valign="top">11</td>
+<td valign="top">Erasure that removes a record and leaves its embedding has not forgotten it.</td>
+<td valign="top">The embedding index has <strong>its own doors out</strong> — one vector by key, a whole shelf by prefix — and every product's forgetting path calls them.</td>
+<td valign="top">A deletion in any of the three products reaches the vectors as well as the rows.</td>
+<td valign="top"><code>pdi/<wbr>resident.py</code> — <code>test_<wbr>a_<wbr>wiped_<wbr>tenant_<wbr>is_<wbr>gone_<wbr>from_<wbr>every_<wbr>table.py</code></td>
+</tr>
+<tr>
+<td valign="top">12</td>
+<td valign="top">A sealed deployment with a local model answers as well on its last day as its first.</td>
+<td valign="top">The resident <strong>reads the corpus the guardian banks</strong> and carries what it learned into its answers, on the same host.</td>
+<td valign="top">The deployment grows more capable from its own history with nothing sent out.</td>
+<td valign="top"><code>pdi/<wbr>resident.py</code> — <code>test_<wbr>the_<wbr>resident_<wbr>learns_<wbr>from_<wbr>the_<wbr>corpus.py</code></td>
+</tr>
 </tbody>
 </table>
 
