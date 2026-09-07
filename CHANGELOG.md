@@ -6,8 +6,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.4.0] - 2026-09-07
+
 ### Changed
 
+- **Cut with the siblings.** QRME 3.4.0 and JIM-mini 3.4.0 carry the
+  attention networks that condition every reply on the degree of
+  engagement and train offline on encrypted weights; the vault's own
+  change this round is the one below.
 - **The invention disclosure is retired.** `docs/patents/` says where the two products' applications live, with the
   receipt, application data sheet, specification, claims, abstract and
   drawings as the Office received them. The dated summary at
@@ -8096,7 +8102,8 @@ product of the three-product suite — the storage layer that
   screen designs; CI that smoke-builds the console and a per-OS installer
   release workflow.
 
-[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.3.1...HEAD
+[Unreleased]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.4.0...HEAD
+[3.4.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.3.1...app-v3.4.0
 [3.3.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.3.0...app-v3.3.1
 [3.3.0]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.2.1...app-v3.3.0
 [3.2.1]: https://github.com/davidsbianchi1984/pdi/compare/app-v3.2.0...app-v3.2.1
