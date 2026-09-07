@@ -25,7 +25,7 @@ by two pending applications: *Networked Responsive Personal Guidance System
 for Known Conditions* (US 19/038,196, published as US 2025/0246290 A1) and
 *Synthetic User Profile Management* (US 19/056,418, published as
 US 2025/0265659 A1). See
-[docs/invention-disclosure.md](docs/invention-disclosure.md).
+[docs/patents/](docs/patents/).
 
 ## Features
 
@@ -291,7 +291,7 @@ See [docs/hosting.md](docs/hosting.md) and
 | [docs/hosting.md](docs/hosting.md) | Production hosting. |
 | [docs/enterprise.md](docs/enterprise.md) | Enterprise compliance transfer. |
 | [docs/baa-template.md](docs/baa-template.md) | Business associate agreement template. |
-| [docs/invention-disclosure.md](docs/invention-disclosure.md) | The patent filings. |
+| [docs/patents/](docs/patents/) | The patent filings, and where each application lives. |
 | [docs/releasing.md](docs/releasing.md) | How releases are cut. |
 | [docs/gallery.md](docs/gallery.md) | The full desktop and mobile console gallery. |
 

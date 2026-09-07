@@ -18,8 +18,7 @@ The screens referred to below are shown in
 
 ## The mechanisms on file
 
-The numbered mechanisms in
-[docs/invention-disclosure.md](docs/invention-disclosure.md). Each row
+The numbered mechanisms. Each row
 names the technical problem in the machine, the particular structure this
 code uses to solve it, what that structure changes about how the machine
 behaves, and where the structure is reduced to practice and held by a
